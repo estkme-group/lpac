@@ -1,0 +1,7 @@
+add_subdirectory(asn1c)
+include_directories(asn1c)
+include_directories(asn1c/asn1)
+aux_source_directory(. LIB_EUICC_SRCS)
+add_library (euicc STATIC ${LIB_EUICC_SRCS})
+target_link_libraries(euicc euiccasn1)
+target_link_libraries(euicc cjson-static)

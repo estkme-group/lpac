@@ -1,0 +1,1 @@
+asn1c -fwide-types -fcompound-names -fincludes-quoted -no-gen-example asn1/PKIXExplicit88.asn asn1/PKIXImplicit88.asn asn1/rsp.asn
