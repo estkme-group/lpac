@@ -11,9 +11,9 @@ else()
     target_link_libraries(apduinterface_pcsc pcsclite)
 endif()
 
-if(!LINUX_MINGW32)
-    add_library(apduinterface_at SHARED at.c)
-    set_target_properties(apduinterface_at PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
-    set_target_properties(apduinterface_at PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
-    set_target_properties(apduinterface_at PROPERTIES LINK_FLAGS "-flto -s -Wl,--build-id=none")
-endif()
+
+add_library(apduinterface_at SHARED at.c)
+set_target_properties(apduinterface_at PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
+set_target_properties(apduinterface_at PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
+set_target_properties(apduinterface_at PROPERTIES LINK_FLAGS "-flto -s -Wl,--build-id=none")
+

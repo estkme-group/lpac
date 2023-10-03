@@ -26,7 +26,6 @@ static int es10x_transmit_iter(struct euicc_ctx *ctx, struct apdu_request *req, 
     struct apdu_request *request = NULL;
     struct apdu_response response;
 
-    // euicc_apdu_request_print(req);
     ret = es10x_transmit(ctx, &response, req, req_len);
     if (ret < 0)
     {
@@ -34,7 +33,6 @@ static int es10x_transmit_iter(struct euicc_ctx *ctx, struct apdu_request *req, 
     }
     do
     {
-        // euicc_apdu_response_print(&response);
         if (response.length > 0)
         {
             ret = callback(&response, userdata);
