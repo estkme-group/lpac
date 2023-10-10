@@ -191,7 +191,7 @@ static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t
         goto err;
     }
 
-    ret = hexutil_hex2bin(rx, *rx_len, hexstr, strlen(hexstr));
+    ret = hexutil_hex2bin(*rx, *rx_len, hexstr, strlen(hexstr));
     if (ret < 0)
     {
         goto err;
