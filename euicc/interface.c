@@ -38,15 +38,16 @@ int euicc_apdu_le(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla
     return le(*apdu, cla, ins, p1, p2, requestlen);
 }
 
-int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, struct apdu_request *req, unsigned int req_len)
+int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, const struct apdu_request *request, uint32_t request_len)
 {
-    int ret;
     struct euicc_apdu_interface *in = &ctx->interface.apdu;
 
     memset(response, 0x00, sizeof(*response));
-    response->length = EUICC_INTERFACE_BUFSZ;
-    ret = in->transmit((unsigned char *)req, req_len, response->data, &response->length);
-    if (ret < 0)
+
+    if (in->transmit(&response->data, &response->length, (uint8_t *)request, request_len) < 0)
+        return -1;
+
+    if (response->length < 2)
         return -1;
 
     response->sw1 = response->data[response->length - 2];
@@ -54,6 +55,13 @@ int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, s
     response->length -= 2;
 
     return 0;
+}
+
+void euicc_apdu_response_free(struct apdu_response *resp)
+{
+    free(resp->data);
+    resp->data = NULL;
+    resp->length = 0;
 }
 
 void euicc_apdu_request_print(struct apdu_request *req)

@@ -1,7 +1,10 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <curl/curl.h>
+
+#include <euicc/interface.h>
 
 struct es9p_trans_response_data
 {
@@ -29,7 +32,7 @@ static size_t es9p_trans_write_callback(void *contents, size_t size, size_t nmem
     return realsize;
 }
 
-int euicc_es9p_interface_transmit(unsigned int *rcode, unsigned char **rbuf, const char *url, const unsigned char *sbuf, unsigned int slen)
+static int es9p_interface_transmit(const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
     int fret = 0;
     CURL *curl;
@@ -44,10 +47,9 @@ int euicc_es9p_interface_transmit(unsigned int *rcode, unsigned char **rbuf, con
         NULL,
     };
 
-    (*rbuf) = NULL;
+    (*rx) = NULL;
     (*rcode) = 0;
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (!curl)
     {
@@ -70,10 +72,10 @@ int euicc_es9p_interface_transmit(unsigned int *rcode, unsigned char **rbuf, con
     }
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-    if (sbuf != NULL)
+    if (tx != NULL)
     {
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, sbuf);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, slen);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, tx);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, tx_len);
     }
 
     res = curl_easy_perform(curl);
@@ -85,9 +87,11 @@ int euicc_es9p_interface_transmit(unsigned int *rcode, unsigned char **rbuf, con
     }
 
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-    *rcode = (uint16_t)response_code;
-    *rbuf = responseData.data;
-    fret = responseData.size;
+    *rcode = response_code;
+    *rx = responseData.data;
+    *rx_len = responseData.size;
+
+    fret = 0;
     goto exit;
 
 err:
@@ -96,6 +100,17 @@ err:
 exit:
     curl_easy_cleanup(curl);
     curl_slist_free_all(headers);
-    curl_global_cleanup();
     return fret;
+}
+
+int libes9pinterface_main(struct euicc_es9p_interface *ifstruct)
+{
+    if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
+    {
+        return -1;
+    }
+
+    ifstruct->transmit = es9p_interface_transmit;
+
+    return 0;
 }

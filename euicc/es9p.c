@@ -6,34 +6,60 @@
 
 #include <cjson/cJSON.h>
 
-static int es9p_trans_ex(struct euicc_ctx *ctx, unsigned int *rcode, unsigned char **rbuf, const char *url, const char *url_postfix, const unsigned char *sbuf, unsigned int slen)
+static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url_postfix, unsigned int *rcode, char **str_rx, const char *str_tx)
 {
-    int ret;
-    char *full_url;
+    int fret = 0;
+    uint32_t rcode_mearged;
+    uint8_t *rbuf = NULL;
+    uint32_t rlen;
+    char *full_url = NULL;
     const char *url_prefix = "https://";
 
     if (!ctx->interface.es9p.transmit)
     {
-        return -1;
+        goto err;
     }
 
     full_url = malloc(strlen(url_prefix) + strlen(url) + strlen(url_postfix) + 1);
     if (full_url == NULL)
     {
-        return -1;
+        goto err;
     }
-    strcpy(full_url, url_prefix);
-    strcpy(full_url + strlen(url_prefix), url);
-    strcpy(full_url + strlen(url_prefix) + strlen(url), url_postfix);
-    ret = ctx->interface.es9p.transmit(rcode, rbuf, full_url, sbuf, slen);
 
-    // printf("url: %s\n", full_url);
-    // printf("sbuf: %s\n", sbuf);
-    // printf("rcode: %d\n", *rcode);
-    // printf("rbuf: %s\n", *rbuf);
+    full_url[0] = '\0';
+    strcat(full_url, url_prefix);
+    strcat(full_url, url);
+    strcat(full_url, url_postfix);
+    if (ctx->interface.es9p.transmit(full_url, &rcode_mearged, &rbuf, &rlen, str_tx, strlen(str_tx)) < 0)
+    {
+        goto err;
+    }
 
     free(full_url);
-    return ret;
+    full_url = NULL;
+
+    *str_rx = malloc(rlen + 1);
+    if (*str_rx == NULL)
+    {
+        goto err;
+    }
+    memcpy(*str_rx, rbuf, rlen);
+    (*str_rx)[rlen] = '\0';
+
+    free(rbuf);
+    rbuf = NULL;
+
+    *rcode = rcode_mearged;
+
+    fret = 0;
+    goto exit;
+
+err:
+    fret = -1;
+exit:
+    free(full_url);
+    free(rbuf);
+    return fret;
 }
 
 static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *api, const char *ikey[], const char *idata[], const char *okey[], char **optr[], char **status)
@@ -41,9 +67,8 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
     int fret = 0;
     cJSON *sjroot = NULL;
     char *sbuf = NULL;
-    size_t slen;
     unsigned int rcode;
-    uint8_t *rbuf = NULL;
+    char *rbuf = NULL;
     cJSON *rjroot = NULL;
 
     if (status)
@@ -68,11 +93,10 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
     {
         goto err;
     }
-    slen = strlen(sbuf);
     cJSON_Delete(sjroot);
     sjroot = NULL;
 
-    if (es9p_trans_ex(ctx, &rcode, &rbuf, smdp, api, sbuf, slen) < 0)
+    if (es9p_trans_ex(ctx, smdp, api, &rcode, &rbuf, sbuf) < 0)
     {
         if (status)
         {

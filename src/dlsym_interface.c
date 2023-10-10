@@ -14,72 +14,67 @@
 #define POSTFIX "so"
 #endif
 
-static void *apdu_interface_dlhandle;
+static void *apdu_interface_dlhandle = NULL;
 struct euicc_apdu_interface dlsym_apdu_interface = {0};
-static void *es9p_interface_dlhandle;
+static void *es9p_interface_dlhandle = NULL;
 struct euicc_es9p_interface dlsym_es9p_interface = {0};
 
 int dlsym_interface_init()
 {
-    const char *apduinterface_so;
-    const char *es9pinterface_so;
+    const char *libapduinterface_path = NULL;
+    const char *libes9pinterface_path = NULL;
+    int (*libapduinterface_main)(struct euicc_apdu_interface *ifstruct) = NULL;
+    int (*libes9pinterface_main)(struct euicc_es9p_interface *ifstruct) = NULL;
 
-    if (!(apduinterface_so = getenv("APDU_INTERFACE")))
+    if (!(libapduinterface_path = getenv("APDU_INTERFACE")))
     {
-        apduinterface_so = "./libapduinterface." POSTFIX;
+        libapduinterface_path = "./libapduinterface." POSTFIX;
     }
 
-    if (!(es9pinterface_so = getenv("ES9P_INTERFACE")))
+    if (!(libes9pinterface_path = getenv("ES9P_INTERFACE")))
     {
-        es9pinterface_so = "./libes9pinterface." POSTFIX;
+        libes9pinterface_path = "./libes9pinterface." POSTFIX;
     }
 
-    if (!(apdu_interface_dlhandle = dlopen(apduinterface_so, RTLD_LAZY)))
+    if (!(apdu_interface_dlhandle = dlopen(libapduinterface_path, RTLD_LAZY)))
     {
-        if (!(apdu_interface_dlhandle = dlopen("libapduinterface." POSTFIX, RTLD_LAZY)))
+        fprintf(stderr, "APDU interface env missing, current: APDU_INTERFACE=%s\n", libapduinterface_path);
+        return -1;
+    }
+
+    if (!(es9p_interface_dlhandle = dlopen(libes9pinterface_path, RTLD_LAZY)))
+    {
+        fprintf(stderr, "ES9P interface env missing, current: ES9P_INTERFACE=%s\n", libes9pinterface_path);
+    }
+
+    if (apdu_interface_dlhandle)
+    {
+        libapduinterface_main = dlsym(apdu_interface_dlhandle, "libapduinterface_main");
+        if (!libapduinterface_main)
         {
-            fprintf(stderr, "APDU interface missing, system can't continue.\nProvide it as \"libapduinterface." POSTFIX "\" or set \"APDU_INTERFACE=\" env variable\nCurrent: APDU_INTERFACE=%s\n", getenv("APDU_INTERFACE"));
+            fprintf(stderr, "APDU library broken\n");
+            return -1;
+        }
+        if (libapduinterface_main(&dlsym_apdu_interface) < 0)
+        {
+            fprintf(stderr, "APDU library init error\n");
             return -1;
         }
     }
-    if (!(dlsym_apdu_interface.connect = dlsym(apdu_interface_dlhandle, "euicc_apdu_interface_connect")))
-    {
-        fprintf(stderr, "apduinterface: missing symbol 'euicc_apdu_interface_connect'\n");
-        return -1;
-    }
-    if (!(dlsym_apdu_interface.disconnect = dlsym(apdu_interface_dlhandle, "euicc_apdu_interface_disconnect")))
-    {
-        fprintf(stderr, "apduinterface: missing symbol 'euicc_apdu_interface_disconnect'\n");
-        return -1;
-    }
-    if (!(dlsym_apdu_interface.logic_channel_open = dlsym(apdu_interface_dlhandle, "euicc_apdu_interface_logic_channel_open")))
-    {
-        fprintf(stderr, "apduinterface: missing symbol 'euicc_apdu_interface_logic_channel_open'\n");
-        return -1;
-    }
-    if (!(dlsym_apdu_interface.logic_channel_close = dlsym(apdu_interface_dlhandle, "euicc_apdu_interface_logic_channel_close")))
-    {
-        fprintf(stderr, "apduinterface: missing symbol 'euicc_apdu_interface_logic_channel_close'\n");
-        return -1;
-    }
-    if (!(dlsym_apdu_interface.transmit = dlsym(apdu_interface_dlhandle, "euicc_apdu_interface_transmit")))
-    {
-        fprintf(stderr, "apduinterface: missing symbol 'euicc_apdu_interface_transmit'\n");
-        return -1;
-    }
 
-    if (!(es9p_interface_dlhandle = dlopen(es9pinterface_so, RTLD_LAZY)))
+    if (es9p_interface_dlhandle)
     {
-        if (!(es9p_interface_dlhandle = dlopen("libes9pinterface." POSTFIX, RTLD_LAZY)))
+        libes9pinterface_main = dlsym(es9p_interface_dlhandle, "libes9pinterface_main");
+        if (!libes9pinterface_main)
         {
-            fprintf(stderr, "ES9P interface missing, download & notification process will not work.\nProvide as \"libes9pinterface." POSTFIX "\" or set \"ES9P_INTERFACE=\" env variable\nCurrent: ES9P_INTERFACE=%s\n", getenv("ES9P_INTERFACE"));
-            return 0;
+            fprintf(stderr, "ES9P library broken\n");
+            return -1;
         }
-    }
-    if (!(dlsym_es9p_interface.transmit = dlsym(es9p_interface_dlhandle, "euicc_es9p_interface_transmit")))
-    {
-        fprintf(stderr, "es9pinterface: missing symbol 'euicc_es9p_interface_transmit'\n");
-        return -1;
+        if (libes9pinterface_main(&dlsym_es9p_interface) < 0)
+        {
+            fprintf(stderr, "ES9P library init error\n");
+            return -1;
+        }
     }
 
     return 0;

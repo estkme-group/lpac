@@ -1,17 +1,16 @@
 #pragma once
-
-#define EUICC_INTERFACE_BUFSZ 264
+#include <inttypes.h>
 
 struct euicc_apdu_interface
 {
     int (*connect)(void);
     void (*disconnect)(void);
-    int (*logic_channel_open)(const unsigned char *aid, unsigned char aid_len);
-    void (*logic_channel_close)(unsigned char channel);
-    int (*transmit)(unsigned char *tx, unsigned int tx_len, unsigned char *rx, unsigned long *rx_len);
+    int (*logic_channel_open)(const uint8_t *aid, uint8_t aid_len);
+    void (*logic_channel_close)(uint8_t channel);
+    int (*transmit)(uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len);
 };
 
 struct euicc_es9p_interface
 {
-    int (*transmit)(unsigned int *rcode, unsigned char **rbuf, const char *url, const unsigned char *sbuf, unsigned int slen);
+    int (*transmit)(const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len);
 };

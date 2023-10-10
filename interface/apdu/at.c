@@ -4,9 +4,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <euicc/interface.h>
+
 static FILE *fuart;
-static int logic_channel;
-static int logic_channel_available = 0;
+static int logic_channel = 0;
 
 static int hexutil_hex2bin(char *output, unsigned output_len, const char *str, unsigned str_len)
 {
@@ -98,11 +99,11 @@ static int at_expect(char **response, const char *expected)
     return 0;
 }
 
-int euicc_apdu_interface_connect(void)
+static int apdu_interface_connect(void)
 {
     const char *device;
 
-    logic_channel_available = 0;
+    logic_channel = 0;
 
     if (!(device = getenv("AT_DEVICE")))
     {
@@ -138,26 +139,23 @@ int euicc_apdu_interface_connect(void)
     return 0;
 }
 
-void euicc_apdu_interface_disconnect(void)
+static void apdu_interface_disconnect(void)
 {
     fclose(fuart);
     fuart = NULL;
-    logic_channel_available = 0;
+    logic_channel = 0;
 }
 
-int euicc_apdu_interface_transmit(unsigned char *tx, unsigned int tx_len, unsigned char *rx, long unsigned int *rx_len)
+static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
     int fret = 0;
     int ret;
     char *response = NULL;
     char *hexstr;
 
-    if (!logic_channel_available)
+    if (!logic_channel)
     {
-        *rx_len = 2;
-        rx[0] = 0x6F;
-        rx[1] = 0x00;
-        return 0;
+        return -1;
     }
 
     fprintf(fuart, "AT+CGLA=%d,%u,\"", logic_channel, tx_len * 2);
@@ -185,7 +183,13 @@ int euicc_apdu_interface_transmit(unsigned char *tx, unsigned int tx_len, unsign
     {
         hexstr++;
     }
-    hexstr[strcspn(hexstr, "\"")] = 0;
+    hexstr[strcspn(hexstr, "\"")] = '\0';
+
+    *rx = malloc(strlen(hexstr) / 2);
+    if (!*rx)
+    {
+        goto err;
+    }
 
     ret = hexutil_hex2bin(rx, *rx_len, hexstr, strlen(hexstr));
     if (ret < 0)
@@ -203,41 +207,56 @@ exit:
     return fret;
 }
 
-int euicc_apdu_interface_logic_channel_open(const unsigned char *aid, unsigned char aid_len)
+static int apdu_interface_logic_channel_open(const uint8_t *aid, uint8_t aid_len)
 {
     char *response;
 
-    if (!logic_channel_available)
+    if (logic_channel)
     {
-        for (int i = 1; i <= 4; i++)
-        {
-            fprintf(fuart, "AT+CCHC=%d\r\n", i);
-            at_expect(NULL, NULL);
-        }
-        fprintf(fuart, "AT+CCHO=\"");
-        for (int i = 0; i < aid_len; i++)
-        {
-            fprintf(fuart, "%02X", aid[i] & 0xFF);
-        }
-        fprintf(fuart, "\"\r\n");
-        if (at_expect(&response, "+CCHO: "))
-        {
-            return -1;
-        }
-        if (response == NULL)
-        {
-            return -1;
-        }
-        logic_channel = atoi(response);
-        logic_channel_available = 1;
+        return logic_channel;
     }
+
+    for (int i = 1; i <= 4; i++)
+    {
+        fprintf(fuart, "AT+CCHC=%d\r\n", i);
+        at_expect(NULL, NULL);
+    }
+    fprintf(fuart, "AT+CCHO=\"");
+    for (int i = 0; i < aid_len; i++)
+    {
+        fprintf(fuart, "%02X", aid[i] & 0xFF);
+    }
+    fprintf(fuart, "\"\r\n");
+    if (at_expect(&response, "+CCHO: "))
+    {
+        return -1;
+    }
+    if (response == NULL)
+    {
+        return -1;
+    }
+    logic_channel = atoi(response);
 
     return logic_channel;
 }
 
-void euicc_apdu_interface_logic_channel_close(unsigned char channel)
+static void apdu_interface_logic_channel_close(uint8_t channel)
 {
+    if (!logic_channel)
+    {
+        return;
+    }
     fprintf(fuart, "AT+CCHC=%d\r\n", logic_channel);
     at_expect(NULL, NULL);
-    logic_channel_available = 0;
+}
+
+int libapduinterface_main(struct euicc_apdu_interface *ifstruct)
+{
+    ifstruct->connect = apdu_interface_connect;
+    ifstruct->disconnect = apdu_interface_disconnect;
+    ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
+    ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
+    ifstruct->transmit = apdu_interface_transmit;
+
+    return 0;
 }

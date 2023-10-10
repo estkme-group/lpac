@@ -508,6 +508,12 @@ static int entry_download(int argc, char **argv)
         }
     }
 
+    if (!smdp || (strlen(smdp) == 0))
+    {
+        jprint_error("smdp is null", NULL);
+        return -1;
+    }
+
     if (es10b_get_euicc_challenge(&ctx, &b64_euicc_challenge))
     {
         jprint_error("es10b_get_euicc_challenge", NULL);

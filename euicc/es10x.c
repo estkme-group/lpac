@@ -8,11 +8,10 @@
 #include <unistd.h>
 #include <string.h>
 
-#define APDU_ST33_MAGIC "\x90\xBD\x36\xBB\x00"
-#define APDU_TERMINAL_CAPABILITIES "\x80\xAA\x00\x00\x0A\xA9\x08\x81\x00\x82\x01\x01\x83\x01\x07"
 #define ISD_R_AID "\xA0\x00\x00\x05\x59\x10\x10\xFF\xFF\xFF\xFF\x89\x00\x00\x01\x00"
-#define APDU_CONTINUE_READ_HEADER 0x80, 0xC0, 0x00, 0x00
+
 #define APDU_EUICC_HEADER 0x80, 0xE2
+#define APDU_CONTINUE_READ_HEADER 0x80, 0xC0, 0x00, 0x00
 
 static int es10x_transmit(struct euicc_ctx *ctx, struct apdu_response *response, struct apdu_request *req, unsigned req_len)
 {
@@ -22,47 +21,49 @@ static int es10x_transmit(struct euicc_ctx *ctx, struct apdu_response *response,
 
 static int es10x_transmit_iter(struct euicc_ctx *ctx, struct apdu_request *req, unsigned req_len, int (*callback)(struct apdu_response *response, void *userdata), void *userdata)
 {
-    int ret;
     struct apdu_request *request = NULL;
     struct apdu_response response;
 
-    ret = es10x_transmit(ctx, &response, req, req_len);
-    if (ret < 0)
+    if (es10x_transmit(ctx, &response, req, req_len) < 0)
     {
-        goto err;
+        return -1;
     }
+
     do
     {
         if (response.length > 0)
         {
-            ret = callback(&response, userdata);
-            if (ret < 0)
-                goto err;
-        }
-
-        switch (response.sw1)
-        {
-        case SW1_OK:
-            return 0;
-        case SW1_LAST:
-            ret = euicc_apdu_le(ctx, &request, APDU_CONTINUE_READ_HEADER, response.sw2);
-            if (ret < 0)
-                goto err;
-            ret = es10x_transmit(ctx, &response, request, ret);
-            if (ret < 0)
-                goto err;
-            continue;
-        default:
-            if ((response.sw1 & 0xF0) == SW1_OK)
+            if (callback(&response, userdata) < 0)
             {
-                return 0;
+                return -1;
             }
-            goto err;
         }
-    } while (1);
 
-err:
-    return -1;
+        euicc_apdu_response_free(&response);
+
+        if (response.sw1 == SW1_LAST)
+        {
+            int ret;
+
+            if ((ret = euicc_apdu_le(ctx, &request, APDU_CONTINUE_READ_HEADER, response.sw2)) < 0)
+            {
+                return -1;
+            }
+
+            if (es10x_transmit(ctx, &response, request, ret) < 0)
+            {
+                return -1;
+            }
+
+            continue;
+        }
+        else if ((response.sw1 & 0xF0) == SW1_OK)
+        {
+            return 0;
+        }
+
+        return -1;
+    } while (1);
 }
 
 int es10x_command_buildrequest(struct euicc_ctx *ctx, struct apdu_request **request, uint8_t p1, uint8_t p2, uint8_t *der_req, unsigned req_len)
@@ -171,28 +172,8 @@ int es10x_command(struct euicc_ctx *ctx, uint8_t **resp, unsigned *resp_len, uin
 int es10x_init(struct euicc_ctx *ctx)
 {
     int ret;
-    struct apdu_request *request = NULL;
-    struct apdu_response response;
 
     ret = ctx->interface.apdu.connect();
-    if (ret < 0)
-    {
-        return -1;
-    }
-
-    if (euicc_apdu_transmit(ctx, &response, (struct apdu_request *)APDU_ST33_MAGIC, sizeof(APDU_ST33_MAGIC) - 1) < 0)
-    {
-        return -1;
-    }
-
-    ctx->interface.apdu.disconnect();
-    ret = ctx->interface.apdu.connect();
-    if (ret < 0)
-    {
-        return -1;
-    }
-
-    ret = euicc_apdu_transmit(ctx, &response, (struct apdu_request *)APDU_TERMINAL_CAPABILITIES, sizeof(APDU_TERMINAL_CAPABILITIES) - 1);
     if (ret < 0)
     {
         return -1;
