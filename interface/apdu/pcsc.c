@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#include <winscard.h>
+#include <PCSC/winscard.h>
 
 #include <euicc/interface.h>
 
