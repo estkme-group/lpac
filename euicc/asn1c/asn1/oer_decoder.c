@@ -2,8 +2,8 @@
  * Copyright (c) 2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <asn_codecs_prim.h>
+#include "asn_internal.h"
+#include "asn_codecs_prim.h"
 
 /*
  * The OER decoder of any type.

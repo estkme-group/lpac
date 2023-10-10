@@ -11,8 +11,8 @@
 #ifndef	_CONSTR_TYPE_H_
 #define	_CONSTR_TYPE_H_
 
-#include <ber_tlv_length.h>
-#include <ber_tlv_tag.h>
+#include "ber_tlv_length.h"
+#include "ber_tlv_tag.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,22 +34,22 @@ typedef struct asn_struct_ctx_s {
 	ber_tlv_len_t left;	/* Number of bytes left, -1 for indefinite */
 } asn_struct_ctx_t;
 
-#include <ber_decoder.h>	/* Basic Encoding Rules decoder */
-#include <der_encoder.h>	/* Distinguished Encoding Rules encoder */
-#include <xer_decoder.h>	/* Decoder of XER (XML, text) */
-#include <xer_encoder.h>	/* Encoder into XER (XML, text) */
-#include <per_decoder.h>	/* Packet Encoding Rules decoder */
-#include <per_encoder.h>	/* Packet Encoding Rules encoder */
-#include <constraints.h>	/* Subtype constraints support */
-#include <asn_random_fill.h>	/* Random structures support */
+#include "ber_decoder.h"
+#include "der_encoder.h"
+#include "xer_decoder.h"
+#include "xer_encoder.h"
+#include "per_decoder.h"
+#include "per_encoder.h"
+#include "constraints.h"
+#include "asn_random_fill.h"
 
 #ifdef  ASN_DISABLE_OER_SUPPORT
 typedef void (oer_type_decoder_f)(void);
 typedef void (oer_type_encoder_f)(void);
 typedef void asn_oer_constraints_t;
 #else
-#include <oer_decoder.h>	/* Octet Encoding Rules encoder */
-#include <oer_encoder.h>	/* Octet Encoding Rules encoder */
+#include "oer_decoder.h"
+#include "oer_encoder.h"
 #endif
 
 /*

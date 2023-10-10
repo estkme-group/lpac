@@ -3,8 +3,8 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <constr_SET.h>
+#include "asn_internal.h"
+#include "constr_SET.h"
 
 /* Check that all the mandatory members are present */
 static int _SET_is_populated(const asn_TYPE_descriptor_t *td, const void *st);

@@ -5,7 +5,7 @@
 #ifndef ASN_OPEN_TYPE_H
 #define ASN_OPEN_TYPE_H
 
-#include <asn_application.h>
+#include "asn_application.h"
 
 #ifdef __cplusplus
 extern "C" {

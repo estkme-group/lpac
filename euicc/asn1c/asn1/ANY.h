@@ -5,7 +5,7 @@
 #ifndef ASN_TYPE_ANY_H
 #define ASN_TYPE_ANY_H
 
-#include <OCTET_STRING.h>	/* Implemented via OCTET STRING type */
+#include "OCTET_STRING.h"
 
 #ifdef __cplusplus
 extern "C" {

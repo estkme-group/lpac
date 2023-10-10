@@ -5,7 +5,7 @@
 #ifndef	OER_SUPPORT_H
 #define	OER_SUPPORT_H
 
-#include <asn_system.h>		/* Platform-specific types */
+#include "asn_system.h"
 
 #ifdef __cplusplus
 extern "C" {

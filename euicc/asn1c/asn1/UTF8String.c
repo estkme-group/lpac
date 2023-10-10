@@ -3,8 +3,8 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <UTF8String.h>
+#include "asn_internal.h"
+#include "UTF8String.h"
 
 /*
  * UTF8String basic type description.

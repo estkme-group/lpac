@@ -2,10 +2,10 @@
  * Copyright (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <INTEGER.h>
-#include <OBJECT_IDENTIFIER.h>
-#include <OCTET_STRING.h>
+#include "asn_internal.h"
+#include "INTEGER.h"
+#include "OBJECT_IDENTIFIER.h"
+#include "OCTET_STRING.h"
 #include <limits.h>	/* for CHAR_BIT */
 #include <errno.h>
 

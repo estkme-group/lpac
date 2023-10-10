@@ -1,5 +1,4 @@
 include_directories(.)
-include_directories(asn1)
 aux_source_directory(asn1 LIB_EUICC_ASN1_SRCS)
 add_library (euiccasn1 STATIC ${LIB_EUICC_ASN1_SRCS})
 target_compile_definitions(euiccasn1 PRIVATE HAVE_CONFIG_H)

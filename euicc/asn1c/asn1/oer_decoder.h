@@ -5,8 +5,8 @@
 #ifndef	OER_DECODER_H
 #define	OER_DECODER_H
 
-#include <asn_application.h>
-#include <oer_support.h>
+#include "asn_application.h"
+#include "oer_support.h"
 
 #ifdef __cplusplus
 extern "C" {

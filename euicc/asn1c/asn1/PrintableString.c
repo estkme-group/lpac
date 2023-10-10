@@ -3,8 +3,8 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <PrintableString.h>
+#include "asn_internal.h"
+#include "PrintableString.h"
 
 /*
  * ASN.1:1984 (X.409)

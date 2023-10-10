@@ -5,9 +5,9 @@
  */
 #ifndef ASN_DISABLE_OER_SUPPORT
 
-#include <asn_internal.h>
-#include <constr_SEQUENCE.h>
-#include <OPEN_TYPE.h>
+#include "asn_internal.h"
+#include "constr_SEQUENCE.h"
+#include "OPEN_TYPE.h"
 #include <errno.h>
 
 /*

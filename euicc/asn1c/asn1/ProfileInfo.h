@@ -32,6 +32,7 @@ extern "C" {
 struct OperatorID;
 struct DpProprietaryData;
 struct NotificationConfigurationInformation;
+struct RefArDo;
 
 /* ProfileInfo */
 typedef struct ProfileInfo {
@@ -53,6 +54,12 @@ typedef struct ProfileInfo {
 	struct OperatorID	*profileOwner	/* OPTIONAL */;
 	struct DpProprietaryData	*dpProprietaryData	/* OPTIONAL */;
 	PprIds_t	*profilePolicyRules	/* OPTIONAL */;
+	struct ProfileInfo__refArDo {
+		A_SEQUENCE_OF(struct RefArDo) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *refArDo;
 	/*
 	 * This type is extensible,
 	 * possible extensions are below.
@@ -65,7 +72,7 @@ typedef struct ProfileInfo {
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_ProfileInfo;
 extern asn_SEQUENCE_specifics_t asn_SPC_ProfileInfo_specs_1;
-extern asn_TYPE_member_t asn_MBR_ProfileInfo_1[13];
+extern asn_TYPE_member_t asn_MBR_ProfileInfo_1[14];
 
 #ifdef __cplusplus
 }
@@ -75,6 +82,7 @@ extern asn_TYPE_member_t asn_MBR_ProfileInfo_1[13];
 #include "OperatorID.h"
 #include "DpProprietaryData.h"
 #include "NotificationConfigurationInformation.h"
+#include "RefArDo.h"
 
 #endif	/* _ProfileInfo_H_ */
 #include "asn_internal.h"

@@ -5,7 +5,7 @@
 #ifndef	ASN_BIT_DATA
 #define	ASN_BIT_DATA
 
-#include <asn_system.h>		/* Platform-specific types */
+#include "asn_system.h"
 
 #ifdef __cplusplus
 extern "C" {

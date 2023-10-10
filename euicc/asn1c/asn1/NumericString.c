@@ -2,8 +2,8 @@
  * Copyright (c) 2003, 2006 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <NumericString.h>
+#include "asn_internal.h"
+#include "NumericString.h"
 
 /*
  * NumericString basic type description.

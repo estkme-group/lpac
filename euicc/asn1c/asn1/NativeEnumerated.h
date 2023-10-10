@@ -12,7 +12,7 @@
 #ifndef	_NativeEnumerated_H_
 #define	_NativeEnumerated_H_
 
-#include <NativeInteger.h>
+#include "NativeInteger.h"
 
 #ifdef __cplusplus
 extern "C" {

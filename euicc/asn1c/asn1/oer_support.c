@@ -3,10 +3,10 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_system.h>
-#include <asn_internal.h>
+#include "asn_system.h"
+#include "asn_internal.h"
 
-#include <oer_support.h>
+#include "oer_support.h"
 
 /*
  * Fetch the length determinant (X.696 08/2015, #8.6) into *len_r.

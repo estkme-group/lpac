@@ -5,9 +5,9 @@
 #ifndef	_OBJECT_IDENTIFIER_H_
 #define	_OBJECT_IDENTIFIER_H_
 
-#include <asn_application.h>
-#include <asn_codecs_prim.h>
-#include <OCTET_STRING.h>
+#include "asn_application.h"
+#include "asn_codecs_prim.h"
+#include "OCTET_STRING.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -2,8 +2,8 @@
  * Copyright (c) 2004-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#include <asn_internal.h>
-#include <ANY.h>
+#include "asn_internal.h"
+#include "ANY.h"
 #include <errno.h>
 
 asn_OCTET_STRING_specifics_t asn_SPC_ANY_specs = {

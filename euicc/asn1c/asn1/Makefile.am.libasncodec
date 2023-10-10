@@ -148,6 +148,7 @@ ASN_MODULE_SRCS=	\
 	ProfileInfoListRequest.c	\
 	ProfileInfoListResponse.c	\
 	ProfileInfo.c	\
+	RefArDo.c	\
 	PprIds.c	\
 	OperatorID.c	\
 	ProfileInfoListError.c	\
@@ -409,6 +410,7 @@ ASN_MODULE_HDRS=	\
 	ProfileInfoListRequest.h	\
 	ProfileInfoListResponse.h	\
 	ProfileInfo.h	\
+	RefArDo.h	\
 	PprIds.h	\
 	OperatorID.h	\
 	ProfileInfoListError.h	\
