@@ -158,7 +158,18 @@ ProfileInfo ::= [PRIVATE 3] SEQUENCE { -- Tag 'E3'
     notificationConfigurationInfo [22] SEQUENCE OF NotificationConfigurationInformation OPTIONAL, -- Tag 'B6'
     profileOwner [23] OperatorID OPTIONAL, -- Tag 'B7'
     dpProprietaryData [24] DpProprietaryData OPTIONAL, -- Tag 'B8'
-    profilePolicyRules [25] PprIds OPTIONAL -- Tag '99'
+    profilePolicyRules [25] PprIds OPTIONAL, -- Tag '99'
+    refArDo [118] SEQUENCE OF RefArDo OPTIONAL -- Tag 'BF76'
+}
+ 
+RefArDo ::= [PRIVATE 2] SEQUENCE {  -- Tag 'E2'
+    refDo [PRIVATE 1] SEQUENCE {  -- Tag 'E1'
+        deviceAppIdRefDo [PRIVATE 1] OCTET STRING (SIZE(20|32)),  -- Tag 'C1'
+        pkgRefDo [PRIVATE 10] OCTET STRING (SIZE(0..127)) OPTIONAL  -- Tag 'CA'
+    },
+    arDo [PRIVATE 3] SEQUENCE {  -- Tag 'E3'
+        permArDo [PRIVATE 27] OCTET STRING (SIZE(8))  -- Tag 'DB'
+    }
 }
  
 PprIds ::= BIT STRING {-- Definition of Profile Policy Rules identifiers
