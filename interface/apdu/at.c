@@ -185,7 +185,8 @@ static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t
     }
     hexstr[strcspn(hexstr, "\"")] = '\0';
 
-    *rx = malloc(strlen(hexstr) / 2);
+    *rx_len = strlen(hexstr) / 2;
+    *rx = malloc(*rx_len);
     if (!*rx)
     {
         goto err;
