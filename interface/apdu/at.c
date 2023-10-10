@@ -151,7 +151,10 @@ static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t
     int fret = 0;
     int ret;
     char *response = NULL;
-    char *hexstr;
+    char *hexstr = NULL;
+
+    *rx = NULL;
+    *rx_len = 0;
 
     if (!logic_channel)
     {
@@ -203,6 +206,9 @@ static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t
 
 err:
     fret = -1;
+    free(*rx);
+    *rx = NULL;
+    *rx_len = 0;
 exit:
     free(response);
     return fret;
