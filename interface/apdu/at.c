@@ -164,7 +164,7 @@ static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t
     fprintf(fuart, "AT+CGLA=%d,%u,\"", logic_channel, tx_len * 2);
     for (int i = 0; i < tx_len; i++)
     {
-        fprintf(fuart, "%02X", tx[i] & 0xFF);
+        fprintf(fuart, "%02X", (uint8_t)(tx[i] & 0xFF));
     }
     fprintf(fuart, "\"\r\n");
     if (at_expect(&response, "+CGLA: "))
@@ -231,7 +231,7 @@ static int apdu_interface_logic_channel_open(const uint8_t *aid, uint8_t aid_len
     fprintf(fuart, "AT+CCHO=\"");
     for (int i = 0; i < aid_len; i++)
     {
-        fprintf(fuart, "%02X", aid[i] & 0xFF);
+        fprintf(fuart, "%02X", (uint8_t)(aid[i] & 0xFF));
     }
     fprintf(fuart, "\"\r\n");
     if (at_expect(&response, "+CCHO: "))
