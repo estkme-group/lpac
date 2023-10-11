@@ -8,10 +8,14 @@
 #include <dlfcn.h>
 #endif
 
+#ifndef POSTFIX
 #ifdef __MINGW32__
 #define POSTFIX "dll"
+#elif defined(__APPLE__)
+#define POSTFIX "dylib"
 #else
 #define POSTFIX "so"
+#endif
 #endif
 
 static void *apdu_interface_dlhandle = NULL;
