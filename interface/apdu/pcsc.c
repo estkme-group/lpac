@@ -3,8 +3,12 @@
 #include <unistd.h>
 #include <string.h>
 
+#ifdef __MINGW32__
+#include <winscard.h>
+#else
 #include <PCSC/wintypes.h>
 #include <PCSC/winscard.h>
+#endif
 
 #include <euicc/interface.h>
 
@@ -21,6 +25,11 @@
 #define SCardFreeMemory(ctx, ptr)
 #endif
 
+// macOS winscard does not define SCARD_AUTOALLOCATE
+#ifndef SCARD_AUTOALLOCATE
+#define SCARD_AUTOALLOCATE 0
+#endif
+
 static SCARDCONTEXT pcsc_ctx;
 static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
@@ -28,7 +37,6 @@ static LPSTR pcsc_mszReaders;
 static int pcsc_ctx_open(void)
 {
     int ret;
-    DWORD dwReaders = 0;
 
     pcsc_ctx = 0;
     pcsc_hCard = 0;
@@ -41,6 +49,7 @@ static int pcsc_ctx_open(void)
         return -1;
     }
 
+    DWORD dwReaders = SCARD_AUTOALLOCATE;
     ret = SCardListReaders(pcsc_ctx, NULL, (LPSTR)&pcsc_mszReaders, &dwReaders);
     if (ret != SCARD_S_SUCCESS)
     {
