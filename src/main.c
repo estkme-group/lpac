@@ -662,8 +662,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    ctx.interface.apdu = dlsym_apdu_interface;
-    ctx.interface.es9p = dlsym_es9p_interface;
+    ctx.interface.apdu = &dlsym_apdu_interface;
+    ctx.interface.http = &dlsym_http_interface;
 
     if (es10x_init(&ctx))
     {

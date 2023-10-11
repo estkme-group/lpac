@@ -3,8 +3,6 @@ option(LINUX_MINGW32 "Build for windows on Linux" OFF)
 add_library(apduinterface_pcsc SHARED pcsc.c)
 set_target_properties(apduinterface_pcsc PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 set_target_properties(apduinterface_pcsc PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
-set_target_properties(apduinterface_pcsc PROPERTIES LINK_FLAGS "-flto")
-
 if(LINUX_MINGW32)
     target_link_libraries(apduinterface_pcsc winscard)
 else()
@@ -16,6 +14,7 @@ endif()
 add_library(apduinterface_at SHARED at.c)
 set_target_properties(apduinterface_at PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 set_target_properties(apduinterface_at PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
-set_target_properties(apduinterface_at PROPERTIES LINK_FLAGS "-flto")
 
-
+add_library(apduinterface_stdio SHARED stdio.c)
+set_target_properties(apduinterface_stdio PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
+set_target_properties(apduinterface_stdio PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")

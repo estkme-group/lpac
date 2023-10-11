@@ -10,7 +10,7 @@ struct euicc_apdu_interface
     int (*transmit)(uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len);
 };
 
-struct euicc_es9p_interface
+struct euicc_http_interface
 {
     int (*transmit)(const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len);
 };

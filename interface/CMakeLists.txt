@@ -1,2 +1,2 @@
 add_subdirectory(apdu)
-add_subdirectory(es9p)
+add_subdirectory(http)

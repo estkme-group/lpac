@@ -22,7 +22,7 @@
 
 // for macOS SCardFreeMemory() compatibility
 #ifndef SCardFreeMemory
-#define SCardFreeMemory(ctx, ptr) free(ptr)
+#define SCardFreeMemory(ctx, ptr)
 #endif
 
 // macOS winscard does not define SCARD_AUTOALLOCATE
