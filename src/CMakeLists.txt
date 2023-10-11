@@ -1,8 +1,13 @@
 aux_source_directory(. DIR_SRCS)
 add_executable(lpac ${DIR_SRCS})
 set_target_properties(lpac PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
-# set_target_properties(lpac PROPERTIES LINK_FLAGS "-flto -s -Wl,--build-id=none")
-set_target_properties(lpac PROPERTIES LINK_FLAGS "-flto -Wl")
+
+if (APPLE)
+    set_target_properties(lpac PROPERTIES LINK_FLAGS "-flto -Wl")
+else()
+    set_target_properties(lpac PROPERTIES LINK_FLAGS "-flto -s -Wl,--build-id=none")
+endif()
+
 target_link_libraries(lpac euicc)
 target_link_libraries(lpac cjson-static)
 
