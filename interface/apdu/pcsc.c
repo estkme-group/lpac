@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include <PCSC/wintypes.h>
 #include <PCSC/winscard.h>
 
 #include <euicc/interface.h>
@@ -15,6 +16,11 @@
 #define APDU_CLOSELOGICCHANNEL "\x00\x70\x80\xFF\x00"
 #define APDU_SELECT_HEADER "\x00\xA4\x04\x00\xFF"
 
+// for macOS SCardFreeMemory() compatibility
+#ifndef SCardFreeMemory
+#define SCardFreeMemory(ctx, ptr)
+#endif
+
 static SCARDCONTEXT pcsc_ctx;
 static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
@@ -22,7 +28,7 @@ static LPSTR pcsc_mszReaders;
 static int pcsc_ctx_open(void)
 {
     int ret;
-    DWORD dwReaders;
+    DWORD dwReaders = 0;
 
     pcsc_ctx = 0;
     pcsc_hCard = 0;
@@ -35,7 +41,6 @@ static int pcsc_ctx_open(void)
         return -1;
     }
 
-    dwReaders = SCARD_AUTOALLOCATE;
     ret = SCardListReaders(pcsc_ctx, NULL, (LPSTR)&pcsc_mszReaders, &dwReaders);
     if (ret != SCARD_S_SUCCESS)
     {
