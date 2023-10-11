@@ -6,16 +6,16 @@
 
 #include <euicc/interface.h>
 
-struct es9p_trans_response_data
+struct http_trans_response_data
 {
     uint8_t *data;
     size_t size;
 };
 
-static size_t es9p_trans_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
+static size_t http_trans_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     size_t realsize = size * nmemb;
-    struct es9p_trans_response_data *mem = (struct es9p_trans_response_data *)userp;
+    struct http_trans_response_data *mem = (struct http_trans_response_data *)userp;
 
     mem->data = realloc(mem->data, mem->size + realsize + 1);
     if (mem->data == NULL)
@@ -32,12 +32,12 @@ static size_t es9p_trans_write_callback(void *contents, size_t size, size_t nmem
     return realsize;
 }
 
-static int es9p_interface_transmit(const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
+static int http_interface_transmit(const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
     int fret = 0;
     CURL *curl;
     CURLcode res;
-    struct es9p_trans_response_data responseData = {0};
+    struct http_trans_response_data responseData = {0};
     struct curl_slist *headers = NULL, *nheaders = NULL;
     long response_code;
     const char *h[] = {
@@ -57,7 +57,7 @@ static int es9p_interface_transmit(const char *url, uint32_t *rcode, uint8_t **r
     }
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, es9p_trans_write_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, http_trans_write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&responseData);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
@@ -103,14 +103,14 @@ exit:
     return fret;
 }
 
-int libes9pinterface_main(struct euicc_es9p_interface *ifstruct)
+int libhttpinterface_main(struct euicc_http_interface *ifstruct)
 {
     if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
     {
         return -1;
     }
 
-    ifstruct->transmit = es9p_interface_transmit;
+    ifstruct->transmit = http_interface_transmit;
 
     return 0;
 }

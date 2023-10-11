@@ -16,24 +16,24 @@
 
 static void *apdu_interface_dlhandle = NULL;
 struct euicc_apdu_interface dlsym_apdu_interface = {0};
-static void *es9p_interface_dlhandle = NULL;
-struct euicc_es9p_interface dlsym_es9p_interface = {0};
+static void *http_interface_dlhandle = NULL;
+struct euicc_http_interface dlsym_http_interface = {0};
 
 int dlsym_interface_init()
 {
     const char *libapduinterface_path = NULL;
-    const char *libes9pinterface_path = NULL;
+    const char *libhttpinterface_path = NULL;
     int (*libapduinterface_main)(struct euicc_apdu_interface *ifstruct) = NULL;
-    int (*libes9pinterface_main)(struct euicc_es9p_interface *ifstruct) = NULL;
+    int (*libhttpinterface_main)(struct euicc_http_interface *ifstruct) = NULL;
 
     if (!(libapduinterface_path = getenv("APDU_INTERFACE")))
     {
         libapduinterface_path = "./libapduinterface." POSTFIX;
     }
 
-    if (!(libes9pinterface_path = getenv("ES9P_INTERFACE")))
+    if (!(libhttpinterface_path = getenv("HTTP_INTERFACE")))
     {
-        libes9pinterface_path = "./libes9pinterface." POSTFIX;
+        libhttpinterface_path = "./libhttpinterface." POSTFIX;
     }
 
     if (!(apdu_interface_dlhandle = dlopen(libapduinterface_path, RTLD_LAZY)))
@@ -42,9 +42,9 @@ int dlsym_interface_init()
         return -1;
     }
 
-    if (!(es9p_interface_dlhandle = dlopen(libes9pinterface_path, RTLD_LAZY)))
+    if (!(http_interface_dlhandle = dlopen(libhttpinterface_path, RTLD_LAZY)))
     {
-        fprintf(stderr, "ES9P interface env missing, current: ES9P_INTERFACE=%s\n", libes9pinterface_path);
+        fprintf(stderr, "HTTP interface env missing, current: HTTP_INTERFACE=%s\n", libhttpinterface_path);
     }
 
     if (apdu_interface_dlhandle)
@@ -62,17 +62,17 @@ int dlsym_interface_init()
         }
     }
 
-    if (es9p_interface_dlhandle)
+    if (http_interface_dlhandle)
     {
-        libes9pinterface_main = dlsym(es9p_interface_dlhandle, "libes9pinterface_main");
-        if (!libes9pinterface_main)
+        libhttpinterface_main = dlsym(http_interface_dlhandle, "libhttpinterface_main");
+        if (!libhttpinterface_main)
         {
-            fprintf(stderr, "ES9P library broken\n");
+            fprintf(stderr, "HTTP library broken\n");
             return -1;
         }
-        if (libes9pinterface_main(&dlsym_es9p_interface) < 0)
+        if (libhttpinterface_main(&dlsym_http_interface) < 0)
         {
-            fprintf(stderr, "ES9P library init error\n");
+            fprintf(stderr, "HTTP library init error\n");
             return -1;
         }
     }

@@ -15,7 +15,7 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     char *full_url = NULL;
     const char *url_prefix = "https://";
 
-    if (!ctx->interface.es9p.transmit)
+    if (!ctx->interface.http)
     {
         goto err;
     }
@@ -30,7 +30,7 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     strcat(full_url, url_prefix);
     strcat(full_url, url);
     strcat(full_url, url_postfix);
-    if (ctx->interface.es9p.transmit(full_url, &rcode_mearged, &rbuf, &rlen, str_tx, strlen(str_tx)) < 0)
+    if (ctx->interface.http->transmit(full_url, &rcode_mearged, &rbuf, &rlen, str_tx, strlen(str_tx)) < 0)
     {
         goto err;
     }

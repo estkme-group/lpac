@@ -40,7 +40,7 @@ int euicc_apdu_le(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla
 
 int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, const struct apdu_request *request, uint32_t request_len)
 {
-    struct euicc_apdu_interface *in = &ctx->interface.apdu;
+    struct euicc_apdu_interface *in = ctx->interface.apdu;
 
     memset(response, 0x00, sizeof(*response));
 
