@@ -3,7 +3,12 @@
 #include <unistd.h>
 #include <string.h>
 
+#ifdef __MINGW32__
+#include <winscard.h>
+#else
+#include <PCSC/wintypes.h>
 #include <PCSC/winscard.h>
+#endif
 
 #include <euicc/interface.h>
 
