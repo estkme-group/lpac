@@ -665,7 +665,7 @@ static int entry_discovery(void)
     struct es10b_authenticate_server_param es10b_authenticate_server_param;
     char *b64_authenticate_server_response = NULL;
 
-    struct es9p_authenticate_client_resp es9p_authenticate_client_resp;
+    struct es11_authenticate_client_resp es11_authenticate_client_resp;
 
     imei = getenv("IMEI");
 
@@ -711,9 +711,9 @@ static int entry_discovery(void)
         return -1;
     }
 
-    if (es11_authenticate_client(&ctx, smds, transaction_id, b64_authenticate_server_response, &es9p_authenticate_client_resp))
+    if (es11_authenticate_client(&ctx, smds, transaction_id, b64_authenticate_server_response, &es11_authenticate_client_resp))
     {
-        jprint_error("es11_authenticate_client", es9p_authenticate_client_resp.status);
+        jprint_error("es11_authenticate_client", es11_authenticate_client_resp.status);
         return -1;
     }
 }
