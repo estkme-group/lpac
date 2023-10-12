@@ -16,5 +16,6 @@ set_target_properties(apduinterface_at PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CM
 set_target_properties(apduinterface_at PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 
 add_library(apduinterface_stdio SHARED stdio.c)
+target_link_libraries(apduinterface_stdio cjson-static)
 set_target_properties(apduinterface_stdio PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 set_target_properties(apduinterface_stdio PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
