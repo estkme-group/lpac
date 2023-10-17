@@ -1,17 +1,20 @@
 option(LINUX_MINGW32 "Build for windows on Linux" OFF)
 
 if (APPLE)
-    add_definitions(-framework PCSC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -framework PCSC")
 endif()
 
 add_library(apduinterface_pcsc SHARED pcsc.c)
 set_target_properties(apduinterface_pcsc PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 set_target_properties(apduinterface_pcsc PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
+
 if(LINUX_MINGW32)
     target_link_libraries(apduinterface_pcsc winscard)
 else()
-    include_directories("/usr/include/PCSC")
-    target_link_libraries(apduinterface_pcsc pcsclite)
+    if (!APPLE)
+        include_directories("/usr/include/PCSC")
+        target_link_libraries(apduinterface_pcsc pcsclite)
+    endif()
 endif()
 
 

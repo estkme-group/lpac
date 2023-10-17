@@ -44,8 +44,20 @@ static int pcsc_ctx_open(void)
     dwReaders = SCARD_AUTOALLOCATE;
     ret = SCardListReaders(pcsc_ctx, NULL, (LPSTR)&pcsc_mszReaders, &dwReaders);
 #else
+    // macOS does not support SCARD_AUTOALLOCATE, so we need to call SCardListReaders twice.
+    // First call to get the size of the buffer, second call to get the actual data.
     ret = SCardListReaders(pcsc_ctx, NULL, NULL, &dwReaders);
-    pcsc_mszReaders = calloc(dwReaders, sizeof(char));
+    if (ret != SCARD_S_SUCCESS)
+    {
+        fprintf(stderr, "SCardListReaders() failed: %08X\n", ret);
+        return -1;
+    }
+    pcsc_mszReaders = malloc(sizeof(char) * dwReaders);
+    if (pcsc_mszReaders == NULL)
+    {
+        fprintf(stderr, "malloc: not enough memory\n");
+        return -1;
+    }
     ret = SCardListReaders(pcsc_ctx, NULL, pcsc_mszReaders, &dwReaders);
 #endif
     if (ret != SCARD_S_SUCCESS)
@@ -118,12 +130,17 @@ static int pcsc_open_hCard(void)
 
 static void pcsc_close(void)
 {
-#ifdef SCARD_AUTOALLOCATE
     if (pcsc_mszReaders)
     {
+// macOS does not support SCARD_AUTOALLOCATE, so we need to free the buffer manually.
+#ifdef SCARD_AUTOALLOCATE
         SCardFreeMemory(pcsc_ctx, pcsc_mszReaders);
-    }
+#else
+        // on macOS, pcsc_mszReaders is allocated by malloc()
+        free(pcsc_mszReaders);
 #endif
+    }
+
     if (pcsc_hCard)
     {
         SCardDisconnect(pcsc_hCard, SCARD_UNPOWER_CARD);
