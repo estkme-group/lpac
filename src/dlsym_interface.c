@@ -8,10 +8,12 @@
 #include <dlfcn.h>
 #endif
 
-#ifdef __MINGW32__
-#define POSTFIX "dll"
+#if defined(__MINGW32__)
+#define INTERFACELIB_POSTFIX "dll"
+#elif defined(__APPLE__)
+#define INTERFACELIB_POSTFIX "dylib"
 #else
-#define POSTFIX "so"
+#define INTERFACELIB_POSTFIX "so"
 #endif
 
 static void *apdu_interface_dlhandle = NULL;
@@ -28,12 +30,12 @@ int dlsym_interface_init()
 
     if (!(libapduinterface_path = getenv("APDU_INTERFACE")))
     {
-        libapduinterface_path = "./libapduinterface." POSTFIX;
+        libapduinterface_path = "./libapduinterface." INTERFACELIB_POSTFIX;
     }
 
     if (!(libhttpinterface_path = getenv("HTTP_INTERFACE")))
     {
-        libhttpinterface_path = "./libhttpinterface." POSTFIX;
+        libhttpinterface_path = "./libhttpinterface." INTERFACELIB_POSTFIX;
     }
 
     if (!(apdu_interface_dlhandle = dlopen(libapduinterface_path, RTLD_LAZY)))

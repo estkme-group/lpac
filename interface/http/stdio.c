@@ -134,33 +134,113 @@ err:
     return -1;
 }
 
-static int apdu_interface_connect(void)
+static int json_print(cJSON *jpayload)
+{
+    cJSON *jroot = NULL;
+    char *jstr = NULL;
+
+    if (jpayload == NULL)
+    {
+        goto err;
+    }
+
+    jroot = cJSON_CreateObject();
+    if (jroot == NULL)
+    {
+        goto err;
+    }
+
+    if (cJSON_AddStringToObject(jroot, "type", "http") == NULL)
+    {
+        goto err;
+    }
+
+    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
+    {
+        goto err;
+    }
+
+    jstr = cJSON_PrintUnformatted(jroot);
+
+    if (jstr == NULL)
+    {
+        goto err;
+    }
+    cJSON_Delete(jroot);
+
+    fprintf(stdout, "%s\n", jstr);
+    fflush(stdout);
+
+    free(jstr);
+    jstr = NULL;
+
+    return 0;
+
+err:
+    cJSON_Delete(jroot);
+    free(jstr);
+    return -1;
+}
+
+static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len)
+{
+    int fret = 0;
+    char *tx_hex = NULL;
+    cJSON *jpayload = NULL;
+
+    tx_hex = malloc((2 * tx_len) + 1);
+    if (tx_hex == NULL)
+    {
+        goto err;
+    }
+    if (hexutil_bin2hex(tx_hex, (2 * tx_len) + 1, tx, tx_len) < 0)
+    {
+        goto err;
+    }
+
+    jpayload = cJSON_CreateObject();
+    if (jpayload == NULL)
+    {
+        goto err;
+    }
+    if (cJSON_AddStringToObject(jpayload, "url", url) == NULL)
+    {
+        goto err;
+    }
+    if (cJSON_AddStringToObject(jpayload, "tx", tx_hex) == NULL)
+    {
+        goto err;
+    }
+    free(tx_hex);
+    tx_hex = NULL;
+
+    fret = json_print(jpayload);
+    cJSON_Delete(jpayload);
+    jpayload = NULL;
+    goto exit;
+
+err:
+    fret = -1;
+exit:
+    cJSON_Delete(jpayload);
+    free(tx_hex);
+    return fret;
+}
+
+int json_parse(uint8_t **rx, uint32_t *rx_len, const char *rx_json)
 {
 }
 
-static void apdu_interface_disconnect(void)
+static int http_interface_transmit(const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
+    *rx = NULL;
+    json_request(url, tx, tx_len);
+    return -1;
 }
 
-static int apdu_interface_logic_channel_open(const uint8_t *aid, uint8_t aid_len)
+int libhttpinterface_main(struct euicc_http_interface *ifstruct)
 {
-}
-
-static void apdu_interface_logic_channel_close(uint8_t channel)
-{
-}
-
-static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
-{
-}
-
-int libapduinterface_main(struct euicc_apdu_interface *ifstruct)
-{
-    ifstruct->connect = apdu_interface_connect;
-    ifstruct->disconnect = apdu_interface_disconnect;
-    ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
-    ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
-    ifstruct->transmit = apdu_interface_transmit;
+    ifstruct->transmit = http_interface_transmit;
 
     return 0;
 }
