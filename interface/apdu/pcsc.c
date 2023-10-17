@@ -40,8 +40,14 @@ static int pcsc_ctx_open(void)
         return -1;
     }
 
+#ifdef SCARD_AUTOALLOCATE
     dwReaders = SCARD_AUTOALLOCATE;
     ret = SCardListReaders(pcsc_ctx, NULL, (LPSTR)&pcsc_mszReaders, &dwReaders);
+#else
+    ret = SCardListReaders(pcsc_ctx, NULL, NULL, &dwReaders);
+    pcsc_mszReaders = calloc(dwReaders, sizeof(char));
+    ret = SCardListReaders(pcsc_ctx, NULL, pcsc_mszReaders, &dwReaders);
+#endif
     if (ret != SCARD_S_SUCCESS)
     {
         fprintf(stderr, "SCardListReaders() failed: %08X\n", ret);
@@ -112,10 +118,12 @@ static int pcsc_open_hCard(void)
 
 static void pcsc_close(void)
 {
+#ifdef SCARD_AUTOALLOCATE
     if (pcsc_mszReaders)
     {
         SCardFreeMemory(pcsc_ctx, pcsc_mszReaders);
     }
+#endif
     if (pcsc_hCard)
     {
         SCardDisconnect(pcsc_hCard, SCARD_UNPOWER_CARD);
