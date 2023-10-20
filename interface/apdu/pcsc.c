@@ -15,7 +15,7 @@
 #define EUICC_INTERFACE_BUFSZ 264
 
 // #define APDU_ST33_MAGIC "\x90\xBD\x36\xBB\x00"
-// #define APDU_TERMINAL_CAPABILITIES "\x80\xAA\x00\x00\x0A\xA9\x08\x81\x00\x82\x01\x01\x83\x01\x07"
+#define APDU_TERMINAL_CAPABILITIES "\x80\xAA\x00\x00\x0A\xA9\x08\x81\x00\x82\x01\x01\x83\x01\x07"
 #define APDU_OPENLOGICCHANNEL "\x00\x70\x00\x00\x01"
 #define APDU_CLOSELOGICCHANNEL "\x00\x70\x80\xFF\x00"
 #define APDU_SELECT_HEADER "\x00\xA4\x04\x00\xFF"
@@ -231,14 +231,22 @@ err:
 
 static int apdu_interface_connect(void)
 {
+    uint8_t rx[EUICC_INTERFACE_BUFSZ];
+    uint32_t rx_len;
+
     if (pcsc_ctx_open() < 0)
     {
         return -1;
     }
+
     if (pcsc_open_hCard() < 0)
     {
         return -1;
     }
+
+    rx_len = sizeof(rx);
+    pcsc_transmit_lowlevel(rx, &rx_len, (const uint8_t *)APDU_TERMINAL_CAPABILITIES, sizeof(APDU_TERMINAL_CAPABILITIES) - 1);
+
     return 0;
 }
 
