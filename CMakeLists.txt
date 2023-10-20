@@ -1,5 +1,10 @@
 option(LINUX_MINGW32 "Build for windows on Linux" OFF)
 
+if (APPLE_X86_64)
+    set(CMAKE_OSX_ARCHITECTURES "x86_64")
+    message(STATUS "Building for macOS x86_64")
+endif()
+
 if(LINUX_MINGW32)
     set(CMAKE_SYSTEM_NAME Windows)
     set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
@@ -18,6 +23,7 @@ endif()
 
 cmake_minimum_required (VERSION 2.8.12)
 project (lpac)
+
 
 include_directories(.)
 add_subdirectory(cjson)
