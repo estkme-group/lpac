@@ -136,6 +136,11 @@ int euicc_derutil_tag_find(uint8_t **rptr, uint8_t *buffer, uint32_t buffer_len,
                     }
                     return current_length;
                 }
+                if (current_length == 0)
+                {
+                    state = 0;
+                    continue;
+                }
                 current_length--;
                 if (current_length == 0)
                 {
