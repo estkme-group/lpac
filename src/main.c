@@ -716,6 +716,9 @@ static int entry_discovery(void)
         jprint_error("es11_authenticate_client", es11_authenticate_client_resp.status);
         return -1;
     }
+
+    jprint_success((cJSON *)es11_authenticate_client_resp.cjson_array_result);
+    return 0;
 }
 
 int main(int argc, char **argv)

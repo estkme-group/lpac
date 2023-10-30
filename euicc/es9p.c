@@ -30,10 +30,14 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     strcat(full_url, url_prefix);
     strcat(full_url, url);
     strcat(full_url, url_postfix);
+    // printf("url: %s\n", full_url);
+    // printf("tx: %s\n", str_tx);
     if (ctx->interface.http->transmit(full_url, &rcode_mearged, &rbuf, &rlen, str_tx, strlen(str_tx)) < 0)
     {
         goto err;
     }
+    // printf("rcode: %d\n", rcode_mearged);
+    // printf("rx: %s\n", rbuf);
 
     free(full_url);
     full_url = NULL;
@@ -262,12 +266,12 @@ int es9p_cancel_session(struct euicc_ctx *ctx, const char *smdp, const char *tra
 
 int es11_authenticate_client(struct euicc_ctx *ctx, const char *smds, const char *transaction_id, const char *b64_authenticate_server_response, struct es11_authenticate_client_resp *resp)
 {
-    cJSON *j_arr_events;
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
     const char *idata[] = {transaction_id, b64_authenticate_server_response, NULL};
     const char *okey[] = {"eventEntries", NULL};
     const char oobj[] = {1};
-    void **optr[] = {(void **)&j_arr_events, NULL};
+    void **optr[] = {(void **)&resp->cjson_array_result, NULL};
 
+    resp->cjson_array_result = NULL;
     return es9p_trans_json(ctx, smds, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr, &resp->status);
 }

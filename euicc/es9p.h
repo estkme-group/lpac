@@ -29,6 +29,7 @@ struct es9p_authenticate_client_resp
 struct es11_authenticate_client_resp
 {
     char *status;
+    void *cjson_array_result;
 };
 
 int es9p_initiate_authentication(struct euicc_ctx *ctx, const char *smdp, const char *b64_euicc_challenge, const char *b64_euicc_info_1, struct es9p_initiate_authentication_resp *resp);
