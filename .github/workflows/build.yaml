@@ -1,0 +1,78 @@
+name: CI-Build
+on: [create,workflow_dispatch]
+
+jobs:
+  build-for-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      -
+        name: Checkout repo
+        uses: actions/checkout@v3 
+      -
+        name: Setup msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-curl-winssl
+      -
+        name: Build
+        run: |
+          mkdir build && cd build
+          cmake -DLINUX_MINGW32=ON ..
+          ninja
+      -
+        name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: lpac-windows_x86_64
+          path: build/output/*
+  
+  build-for-linux:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout repo
+        uses: actions/checkout@v3
+      -
+        name: Setup toolchain
+        run: |
+          sudo apt update
+          sudo apt install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake
+      - 
+        name: Build
+        run: |
+          mkdir build && cd build
+          cmake ..
+          make
+      -
+        name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: lpac-linux-x86_64
+          path: build/output/*
+
+  build-for-macos:
+    runs-on: macos-latest
+    steps:
+      -
+        name: Checkout repo
+        uses: actions/checkout@v3
+      -
+        name: Build
+        run: |
+          mkdir build && cd build
+          cmake -DAPPLE_X86_64=ON ..
+          make
+      -
+        name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: lpac-macos-x86_64
+          path: build/output/*
