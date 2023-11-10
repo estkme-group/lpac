@@ -1,78 +1,64 @@
 name: CI-Build
-on: [create,workflow_dispatch]
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
 
 jobs:
-  build-for-windows:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       -
         name: Checkout repo
         uses: actions/checkout@v3 
       -
         name: Setup msys2
+        if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
           update: true
           install: >-
+            zip
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-curl-winssl
       -
-        name: Build
-        run: |
-          mkdir build && cd build
-          cmake -DLINUX_MINGW32=ON ..
-          ninja
-      -
-        name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: lpac-windows_x86_64
-          path: build/output/*
-  
-  build-for-linux:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout repo
-        uses: actions/checkout@v3
-      -
         name: Setup toolchain
+        if: runner.os == 'Linux'
         run: |
           sudo apt update
           sudo apt install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake
-      - 
-        name: Build
+      -
+        name: Build for Windows
+        if: runner.os == 'Windows'
         run: |
-          mkdir build && cd build
-          cmake ..
-          make
-      -
-        name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: lpac-linux-x86_64
-          path: build/output/*
-
-  build-for-macos:
-    runs-on: macos-latest
-    steps:
-      -
-        name: Checkout repo
-        uses: actions/checkout@v3
+          mkdir build && cd build && cmake -DLINUX_MINGW32=ON .. && ninja
+          cd output && zip -r lpac-windows-x86_64.zip *
+        shell: msys2 {0}
       -
         name: Build
+        if: runner.os != 'Windows'
         run: |
-          mkdir build && cd build
-          cmake -DAPPLE_X86_64=ON ..
-          make
+          if [ "$RUNNER_OS" == "Linux" ]; then
+              mkdir build && cd build && cmake .. && make -j$(nproc)
+              cd output && tar zcf lpac-linux-x86_64.tar.gz *
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+              mkdir build && cd build && cmake -DAPPLE_X86_64=ON .. && make -j$(sysctl -n hw.ncpu)
+              cd output && zip -r lpac-macos-x86_64.zip *
+          fi
+        shell: bash
       -
-        name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: lpac-macos-x86_64
-          path: build/output/*
+          files: |
+            build/output/lpac-windows-x86_64.zip
+            build/output/lpac-linux-x86_64.tar.gz
+            build/output/lpac-macos-x86_64.zip
