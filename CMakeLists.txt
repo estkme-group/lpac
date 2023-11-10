@@ -1,9 +1,15 @@
 option(LINUX_MINGW32 "Build for windows on Linux" OFF)
 
-if (APPLE_X86_64)
-    set(CMAKE_OSX_ARCHITECTURES "x86_64")
-    message(STATUS "Building for macOS x86_64")
+if (APPLE)
+    set(CMAKE_OSX_ARCHITECTURES "arm64")
+    set(CMAKE_SYSTEM_PROCESSOR "arm64")
+
+    if (APPLE_X86_64)
+        set(CMAKE_OSX_ARCHITECTURES "x86_64")
+        message(STATUS "Building for macOS x86_64")
+    endif()
 endif()
+
 
 if(LINUX_MINGW32)
     set(CMAKE_SYSTEM_NAME Windows)
