@@ -40,13 +40,13 @@ int dlsym_interface_init()
 
     if (!(apdu_interface_dlhandle = dlopen(libapduinterface_path, RTLD_LAZY)))
     {
-        fprintf(stderr, "APDU interface env missing, current: APDU_INTERFACE=%s\n", libapduinterface_path);
+        fprintf(stderr, "APDU interface env missing, current: APDU_INTERFACE=%s err:%s\n", libapduinterface_path, dlerror());
         return -1;
     }
 
     if (!(http_interface_dlhandle = dlopen(libhttpinterface_path, RTLD_LAZY)))
     {
-        fprintf(stderr, "HTTP interface env missing, current: HTTP_INTERFACE=%s\n", libhttpinterface_path);
+        fprintf(stderr, "HTTP interface env missing, current: HTTP_INTERFACE=%s err:%s\n", libhttpinterface_path, dlerror());
     }
 
     if (apdu_interface_dlhandle)
