@@ -13,12 +13,12 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        
+
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-        
+
       - name: Setup msys2
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
@@ -55,9 +55,9 @@ jobs:
       - name: Build for macOS
         if: runner.os == 'macOS'
         run: |
-          mkdir build && cd build && cmake -DAPPLE_X86_64=ON .. && make -j$(sysctl -n hw.ncpu)
+          mkdir build && cd build && cmake .. && make -j$(sysctl -n hw.ncpu)
           chmod +x output/lpac
-          zip -r lpac-macos-x86_64.zip output/*
+          zip -r lpac-macos-universal.zip output/*
         shell: bash
 
       - name: Release
@@ -67,4 +67,4 @@ jobs:
           files: |
             build/lpac-windows-x86_64.zip
             build/lpac-linux-x86_64.tar.gz
-            build/lpac-macos-x86_64.zip
+            build/lpac-macos-universal.zip
