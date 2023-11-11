@@ -1,8 +1,9 @@
-name: CI-Build
+name: Release
 on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,13 +13,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        
     runs-on: ${{ matrix.os }}
     steps:
-      -
-        name: Checkout repo
-        uses: actions/checkout@v3 
-      -
-        name: Setup msys2
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        
+      - name: Setup msys2
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
@@ -29,36 +30,41 @@ jobs:
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-curl-winssl
-      -
-        name: Setup toolchain
+
+      - name: Setup toolchain
         if: runner.os == 'Linux'
         run: |
           sudo apt update
           sudo apt install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake
-      -
-        name: Build for Windows
+
+      - name: Build for windows
         if: runner.os == 'Windows'
         run: |
           mkdir build && cd build && cmake -DLINUX_MINGW32=ON .. && ninja
-          cd output && zip -r lpac-windows-x86_64.zip *
+          zip -r lpac-windows-x86_64.zip output/*
         shell: msys2 {0}
-      -
-        name: Build
-        if: runner.os != 'Windows'
+
+      - name: Build for Linux
+        if: runner.os == 'Linux'
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-              mkdir build && cd build && cmake .. && make -j$(nproc)
-              cd output && tar zcf lpac-linux-x86_64.tar.gz *
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-              mkdir build && cd build && cmake -DAPPLE_X86_64=ON .. && make -j$(sysctl -n hw.ncpu)
-              cd output && zip -r lpac-macos-x86_64.zip *
-          fi
+          mkdir build && cd build && cmake .. && make -j$(nproc)
+          chmod +x output/lpac
+          tar zcf lpac-linux-x86_64.tar.gz output/*
         shell: bash
-      -
-        name: Release
+
+      - name: Build for macOS
+        if: runner.os == 'macOS'
+        run: |
+          mkdir build && cd build && cmake -DAPPLE_X86_64=ON .. && make -j$(sysctl -n hw.ncpu)
+          chmod +x output/lpac
+          zip -r lpac-macos-x86_64.zip output/*
+        shell: bash
+
+      - name: Release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            build/output/lpac-windows-x86_64.zip
-            build/output/lpac-linux-x86_64.tar.gz
-            build/output/lpac-macos-x86_64.zip
+            build/lpac-windows-x86_64.zip
+            build/lpac-linux-x86_64.tar.gz
+            build/lpac-macos-x86_64.zip
