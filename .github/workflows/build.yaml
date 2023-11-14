@@ -36,7 +36,7 @@ jobs:
       - name: Build for Windows
         if: runner.os == 'Linux'
         run: |
-          mkdir build-mingw &&cd build-mingw && cmake -DLINUX_MINGW32=ON .. && make -j$(nproc)
+          mkdir build-mingw && cd build-mingw && cmake -DLINUX_MINGW32=ON .. && make -j$(nproc)
           wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
           zip -r -j lpac-windows-x86_64.zip output/*
 
