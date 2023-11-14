@@ -12,45 +12,33 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest,  macos-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup msys2
-        if: runner.os == 'Windows'
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: >-
-            zip
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-curl-winssl
-
       - name: Setup toolchain
         if: runner.os == 'Linux'
         run: |
           sudo apt update
-          sudo apt install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake
-
-      - name: Build for windows
-        if: runner.os == 'Windows'
-        run: |
-          mkdir build && cd build && cmake -DLINUX_MINGW32=ON .. && ninja
-          zip -r -j lpac-windows-x86_64.zip output/*
-        shell: msys2 {0}
+          sudo apt install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake gcc-mingw-w64 g++-mingw-w64 unzip
 
       - name: Build for Linux
         if: runner.os == 'Linux'
         run: |
-          mkdir build && cd build && cmake -D CMAKE_EXE_LINKER_FLAGS="-static" .. && make -j$(nproc)
+          mkdir build && cd build && cmake .. && make -j$(nproc)
           chmod +x output/lpac
           tar -czvf lpac-linux-x86_64.tar.gz -C output .
         shell: bash
+
+      - name: Build for Windows
+        if: runner.os == 'Linux'
+        run: |
+          mkdir build-mingw &&cd build-mingw && cmake -DLINUX_MINGW32=ON .. && make -j$(nproc)
+          wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+          zip -r -j lpac-windows-x86_64.zip output/*
 
       - name: Build for macOS
         if: runner.os == 'macOS'
@@ -65,6 +53,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            build/lpac-windows-x86_64.zip
+            build-mingw/lpac-windows-x86_64.zip
             build/lpac-linux-x86_64.tar.gz
             build/lpac-macos-universal.zip
