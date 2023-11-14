@@ -259,6 +259,8 @@ static void apdu_interface_logic_channel_close(uint8_t channel)
 
 int libapduinterface_main(struct euicc_apdu_interface *ifstruct)
 {
+    memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
+
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = apdu_interface_disconnect;
     ifstruct->logic_channel_open = apdu_interface_logic_channel_open;

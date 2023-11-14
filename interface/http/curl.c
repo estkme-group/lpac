@@ -105,6 +105,8 @@ exit:
 
 int libhttpinterface_main(struct euicc_http_interface *ifstruct)
 {
+    memset(ifstruct, 0, sizeof(struct euicc_http_interface));
+
     if (curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
     {
         return -1;
