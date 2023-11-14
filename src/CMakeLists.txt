@@ -7,8 +7,6 @@ target_link_libraries(lpac euicc)
 target_link_libraries(lpac cjson-static)
 
 if(LINUX_MINGW32)
-    include_directories(mingw32)
-    add_subdirectory(mingw32)
     target_link_libraries(lpac dlfcn-win32)
 else()
     target_link_libraries(lpac dl)
