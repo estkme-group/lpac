@@ -412,7 +412,7 @@ static int entry_notification_remove(int argc, char **argv)
 
     if (argc < 4)
     {
-        printf("Usage: %s notification retrieve <seqNumber>\n", argv[0]);
+        printf("Usage: %s notification remove <seqNumber>\n", argv[0]);
         return -1;
     }
 
