@@ -152,11 +152,11 @@ int libhttpinterface_main(struct euicc_http_interface *ifstruct)
     if (!(libcurl_path = getenv("LIBCURL")))
     {
 #if defined(__MINGW32__)
-libcurl_path = "./libcurl.dll";
+        libcurl_path = "./libcurl.dll";
 #elif defined(__APPLE__)
-libcurl_path = "./libcurl.dylib";
+        libcurl_path = "libcurl.4.dylib";
 #else
-libcurl_path = "libcurl.so.4";
+        libcurl_path = "libcurl.so.4";
 #endif
     }
 
