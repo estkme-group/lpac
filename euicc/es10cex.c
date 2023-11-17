@@ -71,7 +71,8 @@ int es10cex_get_euicc_info(struct euicc_ctx *ctx, struct es10cex_euicc_info *inf
         goto err;
     }
 
-    if (asn1resp->javacardVersion) {
+    if (asn1resp->javacardVersion)
+    {
         if (es10cex_version_to_string(*asn1resp->javacardVersion, &info->uicc_firmware_version))
         {
             goto err;
