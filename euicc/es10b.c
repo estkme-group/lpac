@@ -27,7 +27,7 @@
 #include "asn1c/asn1/NotificationSentResponse.h"
 #include "asn1c/asn1/CtxParams1.h"
 
-int es10b_version_to_string(VersionType_t version, char **out);
+static int es10b_version_to_string(VersionType_t version, char **out);
 
 int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es10b_prepare_download_param *param)
 {
@@ -592,12 +592,13 @@ exit:
 }
 
 
-int es10b_version_to_string(VersionType_t version, char **out) {
+static int es10b_version_to_string(VersionType_t version, char **out)
+{
     if (version.size != 3) return -1;
     int n;
-    char buf[10];
-    n = sprintf(buf, "%d.%d.%d", version.buf[0], version.buf[1], version.buf[2]);
-    *out = malloc(n);
+    char buf[12]; // "255.255.255" = 12 chars
+    n = snprintf(buf, 12, "%d.%d.%d", version.buf[0], version.buf[1], version.buf[2]);
+    *out = malloc(n+1);
     strncpy(*out, buf, n);
     return 0;
 }

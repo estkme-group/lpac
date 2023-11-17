@@ -99,7 +99,7 @@ static int entry_info(void)
     cJSON_AddStringToObject(jdata, "profile_version", info.profile_version);
     cJSON_AddStringToObject(jdata, "sgp22_version", info.sgp22_version);
     cJSON_AddStringToObject(jdata, "euicc_firmware_version", info.euicc_firmware_version);
-    cJSON_AddStringToObject(jdata, "javacard_version", info.javacard_version);
+    cJSON_AddStringToObject(jdata, "uicc_firmware_version", info.javacard_version);
     cJSON_AddStringToObject(jdata, "global_platform_version", info.global_platform_version);
     cJSON_AddStringToObject(jdata, "protection_profile_version", info.pp_version);
     cJSON_AddStringToObject(jdata, "sas_accreditation_number", info.sas_accreditation_number);
