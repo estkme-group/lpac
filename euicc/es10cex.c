@@ -100,15 +100,16 @@ int es10cex_get_euicc_info(struct euicc_ctx *ctx, struct es10cex_euicc_info *inf
         i++;
         uint8_t length = asn1resp->extCardResource.buf[i];
         i++;
+        uint8_t *b = &asn1resp->extCardResource.buf[i];
         switch (tag) {
             case 0x81:
-                info->installed_app = *((uint8_t *) &(asn1resp->extCardResource.buf[i]));
+                info->installed_app = b[0];
                 i += length;
             case 0x82:
-                info->free_nvram = *((uint32_t *) &(asn1resp->extCardResource.buf[i]));
+                info->free_nvram = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | (b[0]);
                 i += length;
             case 0x83:
-                info->free_ram = *((uint32_t *) &(asn1resp->extCardResource.buf[i]));
+                info->free_ram = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | (b[0]);
                 i += length;
             default:
                 i += length;
