@@ -38,28 +38,37 @@ WIP
 
     [在此报告问题](https://github.com/estkme-group/lpac/issues "在此报告问题"). 请善用搜索并搜索类似的问题和请求. 如果它并非异常但是还是需要反映一下的话, 请前往讨论群咨询. 
 
-## 开发
-WIP
-## 对开发有帮助的文献
-[SGP.22](https://www.gsma.com/esim/resources/sgp-22-v3-0/ "SGP.22")
 ## FAQ
-```
-    Q1: 执行 lpac 任意指令都返回类似 "SCardListReaders() failed:" 加8位的错误码, 例如以下 80100069, 80100066, 8010002E, 8010000F等
-	
+
+<details>
+
+<summary>Q1: 执行 lpac 任意指令都返回类似 "SCardListReaders() failed:" 加8位的错误码, 例如以下 80100069, 80100066, 8010002E, 8010000F等</summary>
+
     A1:80100069 意味你没插好你的UICC;
        80100066 意味你的卡并未响应请求, 请取下来擦拭触点再次尝试插入;
        8010002E 意味通信错误;
        8010000F 意味您插入的卡并非eUICC芯片;
        其他错误码请善用搜索引擎, 或者加群询问. 
-```
-```
-    Q2: xxx (电信业者)的卡下不了啊?
+
+</details>
+
+<details>
+
+<summary>Q2: xxx (电信业者)的卡下不了啊?</summary>
+
     A2: 电信业者的 SM-DP+ 服务器的验证是多种多样的, 请检查您输入的参数是否与电信业者提供给您的相符, 若电信业者询问了您其他参数(比如 IMEI 等), 请手动提供. 并咨询电信业者寻求帮助
-```
+
+</details>
+
 
 ## 编译
-### Linux系
-- 这里用Deb系举例. 
+
+<details>
+
+<summary>Linux系</summary>
+
+- 这里用Deb系举例.
+
 ```shell
 sudo apt install pcscd build-essential cmake git g++ libpcsclite-dev
 git clone --depth=1 https://github.com/estkme-group/lpac
@@ -67,21 +76,36 @@ cd lpac && mkdir build && cd build
 cmake -DLINUX_MINGW32=ON .. 
 make
 ```
+
 - 编译后的二进制在 output 目录内. 
 
-### macOS
+</details>
+
+<details>
+
+<summary>macOS</summary>
+
 - 您需要先安装[Homebrew](https://brew.sh/ "Homebrew").
 - WIP
 
-### Windows
-- 这里用Deb系举例. 
+</details>
+
+<details>
+
+<summary>Windows</summary>
+
+- 这里用Deb系举例.
+
 ```shell
 sudo apt install pcscd build-essential cmake git g++ libpcsclite-dev mingw-w64
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac && mkdir build && cd build
 cmake .. && make
 ```
+
 - 编译后的二进制在 output 目录内. 
+
+</details>
 
 ## 使用
 ### 概览和公共内容
@@ -112,27 +136,50 @@ lpac <选项1> [<选项2>] <参数>
 ```
 - 环境变量
      lpac需要环境变量告诉主程序需要使用的pcsc库和curl库. 以下为公共环境变量, 给出的示例依赖文件就放在与主程序相同的目录. 导入公共变量后才能正确执行lpac主程序
-	- Windows(使用PowerShell,)
+
+<details>
+
+<summary>Windows(使用PowerShell)</summary>
+
    ```
 		$env:APDU_INTERFACE=".\libapduinterface_pcsc.dll"
 		$env:HTTP_INTERFACE=".\libhttpinterface_curl.dll"
    ```
-	- Linux
+
+</details>
+
+<details>
+
+<summary>Linux</summary>
+
    ```
 		export APDU_INTERFACE=./libapduinterface_pcsc.so
 		export HTTP_INTERFACE=./libhttpinterface_curl.so
    ```
-	- macOS
+
+</details>
+
+<details>
+
+<summary>macOS</summary>
+
    ```
 		export APDU_INTERFACE=./libapduinterface_pcsc.dylib
 		export HTTP_INTERFACE=./libhttpinterface_curl.dylib
    ```
+
+</details>
+
 ### info
 
 - 本功能仅仅用于查看目前的eUICC卡的内置参数信息, 您可以在这查看您的eUICC卡的EID, 默认SM-DP+服务器和SM-DS服务器.
 
 `lpac info`
-- 以下是一个返回示例
+
+<details>
+
+<summary>以下是一个返回示例</summary>
+
 ```json
 {
    "type":"lpa", 
@@ -147,6 +194,9 @@ lpac <选项1> [<选项2>] <参数>
    }
 }
 ```
+
+</details>
+
 ### profile
 - 本功能用于Profile的管理, 您可以枚举(list), 设置别名(rename), 启用(enable), 禁用(disable)和删除(delete)配置文件. 
 ```
@@ -165,8 +215,10 @@ lpac profile [<选项2>] <参数>
 		示例: lpac profile delete <Profile的ICCID>
 ```
 - 删除 Profile 操作与实体卡的丢弃行为并无二致, 指令无二次确认, 请谨慎执行( 提示:本功能仅会删除 Profile 并签发 Notification, 但是不会自动发送, 您需要手动发送之. )
+<details>
 
-- 以下为 lpac profile list 的返回示例
+<summary>以下为 lpac profile list 的返回示例</summary>
+
 ```json
 {
    "type":"lpa", 
@@ -196,6 +248,8 @@ lpac profile [<选项2>] <参数>
 }
 ```
 
+</details>
+
 ### notification
 - 本功能用于 Notification 的管理, Notification 会根据Profile的设定, 在您进行任何操作的时候都有可能产生. 在这里, 您可以枚举(list), 发送(process), 移除(remove)通知报告. 
 ```
@@ -210,7 +264,11 @@ lpac notification [<选项2>] <参数>
 		示例: lpac notification remove <序列ID>
 ```
 - 提示: 下游开发或者最终用户应该在存在 Notification 报告时尽快发出, 以遵守 GSMA 规范. 对于开发者, 发送通知报告后 lpac 不会自动删除其, 请务必记住需要手动删除. 
-- 以下为 lpac notification list 的返回示例. 
+
+<details>
+
+<summary>以下为 lpac notification list 的返回示例.</summary>
+
 ```json
 {
    "type":"lpa", 
@@ -234,6 +292,9 @@ lpac notification [<选项2>] <参数>
    }
 }
 ```
+
+</details>
+
 ### download
 - 本功能用于 Profile 的下载(Pull Model), 主动连接 SM-DP+ 服务器完成 Profile 的签发和下载. 
 `lpac download`
@@ -286,6 +347,15 @@ SMDS=lpa.ds.gsma.com IMEI="" ./lpac discovery
 - 继续完善文档
 - stdio文档待更新
 - etc
+
+## 最后感谢各位
+
+<a href="https://github.com/estkme-group/lpac/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=estkme-group/lpac"  alt=""/>
+</a>
+
+---
+ 
 ## 许可证
 AGPL-3.0
 Copyright (c) 2023-2024 eSTKme Group
