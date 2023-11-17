@@ -17,8 +17,6 @@
 #include "asn1c/asn1/GetEuiccChallengeRequest.h"
 #include "asn1c/asn1/GetEuiccChallengeResponse.h"
 #include "asn1c/asn1/GetEuiccInfo1Request.h"
-#include "asn1c/asn1/GetEuiccInfo2Request.h"
-#include "asn1c/asn1/EUICCInfo2.h"
 #include "asn1c/asn1/ListNotificationRequest.h"
 #include "asn1c/asn1/ListNotificationResponse.h"
 #include "asn1c/asn1/RetrieveNotificationsListRequest.h"
@@ -26,8 +24,6 @@
 #include "asn1c/asn1/NotificationSentRequest.h"
 #include "asn1c/asn1/NotificationSentResponse.h"
 #include "asn1c/asn1/CtxParams1.h"
-
-static int es10b_version_to_string(VersionType_t version, char **out);
 
 int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es10b_prepare_download_param *param)
 {
@@ -517,90 +513,6 @@ exit:
     ASN_STRUCT_FREE(asn_DEF_GetEuiccInfo1Request, asn1req);
 
     return fret;
-}
-
-int es10b_get_euicc_info_extended(struct euicc_ctx *ctx, struct es10b_euicc_info *info)
-{
-    int fret = 0;
-    uint8_t *respbuf = NULL;
-    unsigned resplen;
-    asn_enc_rval_t asn1erval;
-    asn_dec_rval_t asn1drval;
-    GetEuiccInfo2Request_t *asn1req = NULL;
-    EUICCInfo2_t *asn1resp = NULL;
-
-    asn1req = malloc(sizeof(GetEuiccInfo2Request_t));
-    if (!asn1req)
-    {
-        goto err;
-    }
-    memset(asn1req, 0, sizeof(*asn1req));
-
-    asn1erval = der_encode_to_buffer(&asn_DEF_GetEuiccInfo2Request, asn1req, ctx->g_asn1_der_request_buf, sizeof(ctx->g_asn1_der_request_buf));
-    ASN_STRUCT_FREE(asn_DEF_GetEuiccInfo2Request, asn1req);
-    asn1req = NULL;
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->g_asn1_der_request_buf, asn1erval.encoded) < 0)
-    {
-        goto err;
-    }
-
-    asn1drval = ber_decode(NULL, &asn_DEF_EUICCInfo2, (void **)&asn1resp, respbuf, resplen);
-    free(respbuf);
-    respbuf = NULL;
-
-    if (asn1drval.code != RC_OK)
-    {
-        goto err;
-    }
-
-    es10b_version_to_string(asn1resp->profileVersion, &info->profile_version);
-    es10b_version_to_string(asn1resp->svn, &info->sgp22_version);
-    es10b_version_to_string(asn1resp->euiccFirmwareVer, &info->euicc_firmware_version);
-    es10b_version_to_string(asn1resp->ppVersion, &info->pp_version);
-    if (asn1resp->javacardVersion) {
-        es10b_version_to_string(*asn1resp->javacardVersion, &info->javacard_version);
-    }
-    if (asn1resp->globalplatformVersion) {
-        es10b_version_to_string(*asn1resp->globalplatformVersion, &info->global_platform_version);
-    }
-
-    info->sas_accreditation_number = malloc(asn1resp->sasAcreditationNumber.size+1);
-    memcpy(info->sas_accreditation_number, asn1resp->sasAcreditationNumber.buf, asn1resp->sasAcreditationNumber.size);
-    info->sas_accreditation_number[asn1resp->sasAcreditationNumber.size+1] = '\0';
-
-    info->b64_ext_card_resource = malloc(euicc_base64_encode_len(asn1resp->extCardResource.size));
-    if (euicc_base64_encode(info->b64_ext_card_resource,
-                            asn1resp->extCardResource.buf, asn1resp->extCardResource.size) < 0){
-        goto err;
-    }
-
-    goto exit;
-
-err:
-    fret = -1;
-exit:
-    free(respbuf);
-    ASN_STRUCT_FREE(asn_DEF_GetEuiccInfo2Request, asn1req);
-    ASN_STRUCT_FREE(asn_DEF_EUICCInfo2, asn1resp);
-
-    return fret;
-}
-
-
-static int es10b_version_to_string(VersionType_t version, char **out)
-{
-    if (version.size != 3) return -1;
-    int n;
-    char buf[12]; // "255.255.255" = 12 chars
-    n = snprintf(buf, 12, "%d.%d.%d", version.buf[0], version.buf[1], version.buf[2]);
-    *out = malloc(n+1);
-    strncpy(*out, buf, n);
-    return 0;
 }
 
 int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas, int *metadatas_count)

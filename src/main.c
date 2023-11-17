@@ -71,7 +71,7 @@ static int entry_info(void)
     char *eid = NULL;
     char *default_smdp = NULL;
     char *default_smds = NULL;
-    struct es10b_euicc_info info;
+    struct es10cex_euicc_info info;
     cJSON *jdata = NULL;
 
     if (es10c_get_eid(&ctx, &eid))
@@ -80,9 +80,9 @@ static int entry_info(void)
         return -1;
     }
 
-    if (es10b_get_euicc_info_extended(&ctx, &info))
+    if (es10cex_get_euicc_info(&ctx, &info))
     {
-        jprint_error("es10b_get_euicc_info_extended", NULL);
+        jprint_error("es10cex_get_euicc_info", NULL);
         return -1;
     }
 
@@ -99,16 +99,19 @@ static int entry_info(void)
     cJSON_AddStringToObject(jdata, "profile_version", info.profile_version);
     cJSON_AddStringToObject(jdata, "sgp22_version", info.sgp22_version);
     cJSON_AddStringToObject(jdata, "euicc_firmware_version", info.euicc_firmware_version);
-    cJSON_AddStringToObject(jdata, "uicc_firmware_version", info.javacard_version);
+    cJSON_AddStringToObject(jdata, "uicc_firmware_version", info.uicc_firmware_version);
     cJSON_AddStringToObject(jdata, "global_platform_version", info.global_platform_version);
     cJSON_AddStringToObject(jdata, "protection_profile_version", info.pp_version);
     cJSON_AddStringToObject(jdata, "sas_accreditation_number", info.sas_accreditation_number);
-    cJSON_AddStringToObject(jdata, "extended_card_resource", info.b64_ext_card_resource);
+    cJSON_AddNumberToObject(jdata, "installed_app", info.installed_app);
+    cJSON_AddNumberToObject(jdata, "free_nvram", info.free_nvram);
+    cJSON_AddNumberToObject(jdata, "free_ram", info.free_ram);
     jprint_success(jdata);
 
     free(eid);
     free(default_smdp);
     free(default_smds);
+    es10cex_euicc_info_free(&info);
 
     return 0;
 }
