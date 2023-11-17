@@ -30,6 +30,18 @@ struct es10b_authenticate_server_param
     const char *tac;
 };
 
+struct es10b_euicc_info
+{
+    char *profile_version;
+    char *sgp22_version;
+    char *euicc_firmware_version;
+    char *javacard_version;
+    char *global_platform_version;
+    char *b64_ext_card_resource;
+    char *sas_accreditation_number;
+    char *pp_version;
+};
+
 enum es10b_cancel_session_reason
 {
     ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION = 0,
@@ -45,6 +57,7 @@ int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es
 int es10b_load_bound_profile_package(struct euicc_ctx *ctx, const char *b64_bpp);
 int es10b_get_euicc_challenge(struct euicc_ctx *ctx, char **b64_payload);
 int es10b_get_euicc_info(struct euicc_ctx *ctx, char **b64_payload);
+int es10b_get_euicc_info_extended(struct euicc_ctx *ctx, struct es10b_euicc_info *info);
 int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas, int *count);
 int es10b_retrieve_notification(struct euicc_ctx *ctx, char **b64_payload, char **receiver, unsigned long seqNumber);
 int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber);
