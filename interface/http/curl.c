@@ -72,7 +72,7 @@ static size_t http_trans_write_callback(void *contents, size_t size, size_t nmem
     return realsize;
 }
 
-static int http_interface_transmit(const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
+static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
     int fret = 0;
     CURL *curl;

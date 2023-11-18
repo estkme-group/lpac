@@ -44,7 +44,7 @@ int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, c
 
     memset(response, 0x00, sizeof(*response));
 
-    if (in->transmit(&response->data, &response->length, (uint8_t *)request, request_len) < 0)
+    if (in->transmit(ctx, &response->data, &response->length, (uint8_t *)request, request_len) < 0)
         return -1;
 
     if (response->length < 2)
