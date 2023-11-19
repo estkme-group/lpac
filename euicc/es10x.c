@@ -173,13 +173,13 @@ int es10x_init(struct euicc_ctx *ctx)
 {
     int ret;
 
-    ret = ctx->interface.apdu->connect();
+    ret = ctx->interface.apdu->connect(ctx);
     if (ret < 0)
     {
         return -1;
     }
 
-    if ((ctx->es10x_logic_channel = ctx->interface.apdu->logic_channel_open(ISD_R_AID, sizeof(ISD_R_AID) - 1)) < 0)
+    if ((ctx->es10x_logic_channel = ctx->interface.apdu->logic_channel_open(ctx, ISD_R_AID, sizeof(ISD_R_AID) - 1)) < 0)
     {
         return -1;
     }
@@ -189,7 +189,7 @@ int es10x_init(struct euicc_ctx *ctx)
 
 void es10x_fini(struct euicc_ctx *ctx)
 {
-    ctx->interface.apdu->logic_channel_close(ctx->es10x_logic_channel);
-    ctx->interface.apdu->disconnect();
+    ctx->interface.apdu->logic_channel_close(ctx, ctx->es10x_logic_channel);
+    ctx->interface.apdu->disconnect(ctx);
     ctx->es10x_logic_channel = 0;
 }

@@ -134,23 +134,23 @@ err:
     return -1;
 }
 
-static int apdu_interface_connect(void)
+static int apdu_interface_connect(struct euicc_ctx *ctx)
 {
 }
 
-static void apdu_interface_disconnect(void)
+static void apdu_interface_disconnect(struct euicc_ctx *ctx)
 {
 }
 
-static int apdu_interface_logic_channel_open(const uint8_t *aid, uint8_t aid_len)
+static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
 {
 }
 
-static void apdu_interface_logic_channel_close(uint8_t channel)
+static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel)
 {
 }
 
-static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
 }
 
