@@ -237,12 +237,12 @@ lpac profile <选项> [参数]
 		list			枚举出您的 eUICC Profile
 		rename			给指定的 Profile 设置别名
 		示例: lpac profile rename <Profile 的 ICCID> <别名>
-		enable			启用指定的 Profile
-		示例: lpac profile enable <Profile 的 ICCID>
-		disable			禁用指定的 Profile
-		示例: lpac profile disable <Profile 的 ICCID>
+		enable			启用指定的 Profile，括号内为 RefreshFlag 状态，默认启用，可省略
+		示例: lpac profile enable <Profile 的 ICCID/AID> (1/0)
+		disable			禁用指定的 Profile，括号内为 RefreshFlag 状态，默认启用，可省略
+		示例: lpac profile disable <Profile 的 ICCID/AID> (1/0)
 		delete			删除指定的 Profile
-		示例: lpac profile delete <Profile 的 ICCID>
+		示例: lpac profile delete <Profile 的 ICCID/AID>
 ```
 删除 Profile 操作无二次确认，请谨慎执行( 提示:本功能仅会删除 Profile 并签发 Notification，但是不会自动发送，您需要手动发送之. )
 <details>
