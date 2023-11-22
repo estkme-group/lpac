@@ -191,7 +191,7 @@ static int entry_profile_enable(int argc, char **argv)
     param = argv[3];
     len = strlen(param);
 
-    if (len == 20)
+    if (len == 19 || len == 20)
     {
         if ((ret = es10c_enable_profile_iccid(&ctx, param)))
         {
@@ -273,7 +273,7 @@ static int entry_profile_disable(int argc, char **argv)
     param = argv[3];
     len = strlen(param);
     
-    if (len == 20)
+    if (len == 19 || len == 20)
     {
         if ((ret = es10c_disable_profile_iccid(&ctx, param)))
         {
@@ -349,7 +349,7 @@ static int entry_profile_delete(int argc, char **argv)
     param = argv[3];
     len = strlen(param);
 
-    if (len == 20)
+    if (len == 19 || len == 20)
     {
         if ((ret = es10c_delete_profile_iccid(&ctx, param)))
         {
