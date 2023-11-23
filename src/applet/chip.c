@@ -16,12 +16,12 @@ static const struct applet_entry *applets[] = {
     NULL,
 };
 
-static int main(int argc, char **argv)
+static int applet_main(int argc, char **argv)
 {
     return applet_entry(argc, argv, applets);
 }
 
 struct applet_entry applet_chip = {
     .name = "chip",
-    .main = main,
+    .main = applet_main,
 };

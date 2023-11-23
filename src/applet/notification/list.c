@@ -5,7 +5,7 @@
 #include <string.h>
 #include <main.h>
 
-static int main(int argc, char **argv)
+static int applet_main(int argc, char **argv)
 {
     struct es10b_notification_metadata *notifications;
     int notifications_count;
@@ -40,5 +40,5 @@ static int main(int argc, char **argv)
 
 struct applet_entry applet_notification_list = {
     .name = "list",
-    .main = main,
+    .main = applet_main,
 };

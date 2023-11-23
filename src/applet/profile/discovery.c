@@ -6,7 +6,7 @@
 #include <getopt.h>
 #include <main.h>
 
-static int main(int argc, char **argv)
+static int applet_main(int argc, char **argv)
 {
     int opt;
     static const char *opt_string = "s:i:h?";
@@ -101,5 +101,5 @@ static int main(int argc, char **argv)
 
 struct applet_entry applet_profile_discovery = {
     .name = "discovery",
-    .main = main,
+    .main = applet_main,
 };
