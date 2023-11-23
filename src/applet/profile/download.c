@@ -57,6 +57,7 @@ static int main(int argc, char **argv)
             printf("\t -i IMEI\r\n");
             printf("\t -c Confirmation Code (Password)\r\n");
             printf("\t -h This help info\r\n");
+            return -1;
             break;
         }
         opt = getopt(argc, argv, opt_string);

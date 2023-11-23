@@ -42,6 +42,7 @@ static int main(int argc, char **argv)
             printf("\t -s SM-DS Domain\r\n");
             printf("\t -i IMEI\r\n");
             printf("\t -h This help info\r\n");
+            return -1;
             break;
         }
         opt = getopt(argc, argv, opt_string);
