@@ -380,16 +380,28 @@ static int pcsc_list_iter(int index, const char *reader, void *userdata)
     cJSON *json = userdata;
     cJSON *jreader;
 
+    char *index_str;
+
     jreader = cJSON_CreateObject();
     if (!jreader)
     {
         return -1;
     }
 
-    if (!cJSON_AddNumberToObject(jreader, "env_value", index))
+    index_str = malloc(16);
+    if (!index_str)
     {
         return -1;
     }
+
+    snprintf(index_str, 16, "%d", index);
+
+    if (!cJSON_AddStringToObject(jreader, "env", index_str))
+    {
+        return -1;
+    }
+
+    free(index_str);
 
     if (!cJSON_AddStringToObject(jreader, "name", reader))
     {
