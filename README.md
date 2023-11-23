@@ -125,6 +125,8 @@ APDU:
 - `libapduinterface_pcsc` PCSC 读卡器接口
 - `libapduinterface_stdio` 标准输入输出
 
+温馨提示：libapduinterface_at 适用于 LTE 模块的 AT 指令接口，通常为 /dev/ttyUSBx，需要自行确认具体的 AT 指令接口，操作 /dev/USBx 通常需要程序使用 root 用户运行。
+
 HTTP:
 - `libhttpinterface_curl` curl http库
 - `libhttpinterface_stdio` 使用标准输入输出的 HTTP 接口，开发中
