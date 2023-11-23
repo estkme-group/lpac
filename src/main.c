@@ -16,6 +16,7 @@
 #include "applet/notification.h"
 
 static const struct applet_entry *applets[] = {
+    &applet_dlsym_interface,
     &applet_chip,
     &applet_profile,
     &applet_notification,

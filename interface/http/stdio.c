@@ -323,11 +323,16 @@ exit:
     return fret;
 }
 
-int libhttpinterface_main(struct euicc_http_interface *ifstruct)
+int libhttpinterface_init(struct euicc_http_interface *ifstruct)
 {
     memset(ifstruct, 0, sizeof(struct euicc_http_interface));
 
     ifstruct->transmit = http_interface_transmit;
 
+    return 0;
+}
+
+int libhttpinterface_main(int argc, char **argv)
+{
     return 0;
 }

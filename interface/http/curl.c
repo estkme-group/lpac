@@ -143,7 +143,7 @@ exit:
     return fret;
 }
 
-int libhttpinterface_main(struct euicc_http_interface *ifstruct)
+int libhttpinterface_init(struct euicc_http_interface *ifstruct)
 {
     const char *libcurl_path;
 
@@ -183,5 +183,10 @@ int libhttpinterface_main(struct euicc_http_interface *ifstruct)
 
     ifstruct->transmit = http_interface_transmit;
 
+    return 0;
+}
+
+int libhttpinterface_main(int argc, char **argv)
+{
     return 0;
 }

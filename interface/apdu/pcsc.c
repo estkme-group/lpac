@@ -310,7 +310,7 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
     pcsc_logic_channel_close(channel);
 }
 
-int libapduinterface_main(struct euicc_apdu_interface *ifstruct)
+int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
@@ -320,5 +320,10 @@ int libapduinterface_main(struct euicc_apdu_interface *ifstruct)
     ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
     ifstruct->transmit = apdu_interface_transmit;
 
+    return 0;
+}
+
+int libapduinterface_main(int argc, char **argv)
+{
     return 0;
 }
