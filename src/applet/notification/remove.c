@@ -5,7 +5,7 @@
 #include <string.h>
 #include <main.h>
 
-static int main(int argc, char **argv)
+static int applet_main(int argc, char **argv)
 {
     int ret;
     unsigned long seqNumber;
@@ -41,5 +41,5 @@ static int main(int argc, char **argv)
 
 struct applet_entry applet_notification_remove = {
     .name = "remove",
-    .main = main,
+    .main = applet_main,
 };

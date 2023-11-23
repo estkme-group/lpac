@@ -4,8 +4,6 @@ include_directories(.)
 aux_source_directory(. DIR_LPAC_SRCS)
 add_executable(lpac ${DIR_LPAC_SRCS})
 set_target_properties(lpac PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
-target_link_libraries(lpac euicc)
-target_link_libraries(lpac cjson-static)
 target_link_libraries(lpac lpac-applet)
 
 if(LINUX_MINGW32)

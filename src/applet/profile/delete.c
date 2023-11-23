@@ -5,7 +5,7 @@
 #include <string.h>
 #include <main.h>
 
-static int main(int argc, char **argv)
+static int applet_main(int argc, char **argv)
 {
     int ret;
     int len;
@@ -61,5 +61,5 @@ static int main(int argc, char **argv)
 
 struct applet_entry applet_profile_delete = {
     .name = "delete",
-    .main = main,
+    .main = applet_main,
 };

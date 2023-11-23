@@ -5,7 +5,7 @@
 #include <string.h>
 #include <main.h>
 
-static int main(int argc, char **argv)
+static int applet_main(int argc, char **argv)
 {
     const char *smdp;
 
@@ -30,5 +30,5 @@ static int main(int argc, char **argv)
 
 struct applet_entry applet_chip_defaultsmdp = {
     .name = "defaultsmdp",
-    .main = main,
+    .main = applet_main,
 };
