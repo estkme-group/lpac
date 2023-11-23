@@ -1,6 +1,7 @@
 option(LINUX_MINGW32 "Build for windows on Linux" OFF)
 
 add_library(apduinterface_pcsc SHARED pcsc.c)
+target_link_libraries(apduinterface_pcsc cjson-static)
 set_target_properties(apduinterface_pcsc PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 set_target_properties(apduinterface_pcsc PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 

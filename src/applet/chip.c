@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+
 #include <main.h>
 
 #include "chip/info.h"
@@ -18,6 +19,7 @@ static const struct applet_entry *applets[] = {
 
 static int applet_main(int argc, char **argv)
 {
+    main_init_euicc();
     return applet_entry(argc, argv, applets);
 }
 

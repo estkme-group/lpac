@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include <main.h>
+
 #include "notification/list.h"
 #include "notification/process.h"
 #include "notification/remove.h"
@@ -17,6 +19,7 @@ static const struct applet_entry *applets[] = {
 
 static int applet_main(int argc, char **argv)
 {
+    main_init_euicc();
     return applet_entry(argc, argv, applets);
 }
 

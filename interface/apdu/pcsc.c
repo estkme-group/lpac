@@ -12,6 +12,10 @@
 
 #include <euicc/interface.h>
 
+#include <cjson/cJSON.h>
+
+#define INTERFACE_SELECT_ENV "DRIVER_IFID"
+
 #define EUICC_INTERFACE_BUFSZ 264
 
 // #define APDU_ST33_MAGIC "\x90\xBD\x36\xBB\x00"
@@ -69,7 +73,7 @@ static int pcsc_ctx_open(void)
     return 0;
 }
 
-static int pcsc_iter_reader(int (*callback)(int index, const char *reader))
+static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void *userdata), void *userdata)
 {
     int ret;
     LPSTR psReader;
@@ -80,7 +84,7 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader))
         char *p = pcsc_mszReaders + i;
         if (*p == '\0')
         {
-            ret = callback(n, psReader);
+            ret = callback(n, psReader, userdata);
             if (ret < 0)
                 return -1;
             if (ret > 0)
@@ -96,16 +100,16 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader))
     return -1;
 }
 
-static int pcsc_open_hCard_iter(int index, const char *reader)
+static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
 {
     int ret;
     int id;
     DWORD dwActiveProtocol;
 
     id = 0;
-    if (getenv("DRIVER_IFID"))
+    if (getenv(INTERFACE_SELECT_ENV))
     {
-        id = atoi(getenv("DRIVER_IFID"));
+        id = atoi(getenv(INTERFACE_SELECT_ENV));
     }
 
     if (id != index)
@@ -125,7 +129,7 @@ static int pcsc_open_hCard_iter(int index, const char *reader)
 
 static int pcsc_open_hCard(void)
 {
-    return pcsc_iter_reader(pcsc_open_hCard_iter);
+    return pcsc_iter_reader(pcsc_open_hCard_iter, NULL);
 }
 
 static void pcsc_close(void)
@@ -254,15 +258,58 @@ err:
     return -1;
 }
 
+static int json_print(cJSON *jpayload)
+{
+    cJSON *jroot = NULL;
+    char *jstr = NULL;
+
+    if (jpayload == NULL)
+    {
+        goto err;
+    }
+
+    jroot = cJSON_CreateObject();
+    if (jroot == NULL)
+    {
+        goto err;
+    }
+
+    if (cJSON_AddStringToObject(jroot, "type", "driver") == NULL)
+    {
+        goto err;
+    }
+
+    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
+    {
+        goto err;
+    }
+
+    jstr = cJSON_PrintUnformatted(jroot);
+
+    if (jstr == NULL)
+    {
+        goto err;
+    }
+    cJSON_Delete(jroot);
+
+    fprintf(stdout, "%s\n", jstr);
+    fflush(stdout);
+
+    free(jstr);
+    jstr = NULL;
+
+    return 0;
+
+err:
+    cJSON_Delete(jroot);
+    free(jstr);
+    return -1;
+}
+
 static int apdu_interface_connect(struct euicc_ctx *ctx)
 {
     uint8_t rx[EUICC_INTERFACE_BUFSZ];
     uint32_t rx_len;
-
-    if (pcsc_ctx_open() < 0)
-    {
-        return -1;
-    }
 
     if (pcsc_open_hCard() < 0)
     {
@@ -314,6 +361,11 @@ int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
+    if (pcsc_ctx_open() < 0)
+    {
+        return -1;
+    }
+
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = apdu_interface_disconnect;
     ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
@@ -323,7 +375,76 @@ int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     return 0;
 }
 
+static int pcsc_list_iter(int index, const char *reader, void *userdata)
+{
+    cJSON *json = userdata;
+    cJSON *jreader;
+
+    jreader = cJSON_CreateObject();
+    if (!jreader)
+    {
+        return -1;
+    }
+
+    if (!cJSON_AddNumberToObject(jreader, "env_value", index))
+    {
+        return -1;
+    }
+
+    if (!cJSON_AddStringToObject(jreader, "name", reader))
+    {
+        return -1;
+    }
+
+    if (!cJSON_AddItemToArray(json, jreader))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
 int libapduinterface_main(int argc, char **argv)
 {
+    if (argc < 2)
+    {
+        fprintf(stderr, "Usage: %s <list>\n", argv[0]);
+        return -1;
+    }
+
+    if (strcmp(argv[1], "list") == 0)
+    {
+        cJSON *payload;
+        cJSON *data;
+
+        payload = cJSON_CreateObject();
+        if (!payload)
+        {
+            return -1;
+        }
+
+        if (!cJSON_AddStringToObject(payload, "env", INTERFACE_SELECT_ENV))
+        {
+            return -1;
+        }
+
+        data = cJSON_CreateArray();
+        if (!data)
+        {
+            return -1;
+        }
+
+        pcsc_iter_reader(pcsc_list_iter, data);
+
+        if (!cJSON_AddItemToObject(payload, "data", data))
+        {
+            return -1;
+        }
+
+        json_print(payload);
+
+        return 0;
+    }
+
     return 0;
 }

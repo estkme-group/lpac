@@ -23,7 +23,28 @@ static const struct applet_entry *applets[] = {
     NULL,
 };
 
+static int euicc_ctx_inited = 0;
 struct euicc_ctx euicc_ctx = {0};
+
+void main_init_euicc()
+{
+    if (es10x_init(&euicc_ctx))
+    {
+        jprint_error("es10x_init", NULL);
+        exit(-1);
+    }
+    euicc_ctx_inited = 1;
+}
+
+void main_fini_euicc()
+{
+    if (!euicc_ctx_inited)
+    {
+        return;
+    }
+    es10x_fini(&euicc_ctx);
+    euicc_ctx_inited = 0;
+}
 
 int main(int argc, char **argv)
 {
@@ -39,15 +60,9 @@ int main(int argc, char **argv)
     euicc_ctx.interface.apdu = &dlsym_apdu_interface;
     euicc_ctx.interface.http = &dlsym_http_interface;
 
-    if (es10x_init(&euicc_ctx))
-    {
-        jprint_error("es10x_init", NULL);
-        return -1;
-    }
-
     ret = applet_entry(argc, argv, applets);
 
-    es10x_fini(&euicc_ctx);
+    main_fini_euicc();
 
     return ret;
 }
