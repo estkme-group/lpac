@@ -30,13 +30,9 @@ lpac 是一个跨平台的本地 Profile 代理程序。致力于成为兼容性
     - [CLI](#cli)
     - [返回值](#返回值)
     - [命令选项](#命令选项)
-      - [info](#info)
+      - [chip](#chip)
       - [profile](#profile)
       - [notification](#notification)
-      - [download](#download)
-      - [defaultsmdp](#defaultsmdp)
-      - [purge](#purge)
-      - [discovery](#discovery)
   - [FAQ](#faq)
   - [贡献](#贡献)
   - [TODO 列表](#todo-列表)
@@ -122,12 +118,14 @@ sudo systemctl start pcscd
 - [lpa-agent](https://github.com/estkme-group/lpa-agent): 基于 Web 的 lpac 前端
 
 ### 库说明
-需要通过 `APDU_INTERFACE` 和 `HTTP_INTERFACE` 环境变量告诉 lpac 使用的 APDU 库和 HTTP 库。库文件在 lpac 程序目录下，根据系统不同，后缀为 `dll`, `so`, `dylib`
+默认会使用 `libapduinterface` APDU 库和 `libhttpinterface` HTTP 库，请提前重命名以选择需要使用的库。或者通过 `APDU_INTERFACE` 和 `HTTP_INTERFACE` 环境变量告诉 lpac 使用的 APDU 库和 HTTP 库。库文件在 lpac 程序目录下，根据系统不同，后缀为 `dll`, `so`, `dylib`
 
 APDU:
 - `libapduinterface_at` 适用于 LTE 模块的 `/dev/ttyUSB0` 的 AT 指令接口
 - `libapduinterface_pcsc` PCSC 读卡器接口
 - `libapduinterface_stdio` 标准输入输出
+
+温馨提示：libapduinterface_at 适用于 LTE 模块的 AT 指令接口，通常为 /dev/ttyUSBx，需要自行确认具体的 AT 指令接口，操作 /dev/USBx 通常需要程序使用 root 用户运行。
 
 HTTP:
 - `libhttpinterface_curl` curl http库
@@ -172,13 +170,9 @@ lpac 的命令格式如下
 ```
 lpac <选项1> [选项2] [参数]
   选项1:
-    info		查看您的 eUICC 卡片的信息
+    chip		查看与管理您的 eUICC 卡片本身的信息
     profile		管理您的 eUICC 卡片的配置文件
     notification	管理您的 eUICC 卡片内的通知
-    download		下载配置文件
-    defaultsmdp		修改您的 eUICC 的默认 SM-DP+ 服务器
-    purge		清空卡片，慎用
-    discovery		执行 discovery 请求
   选项2:
     请参考下面详细的指令介绍
 ```
@@ -204,9 +198,17 @@ lpac 的指令返回内容均为 json 格式，所有指令的返回都遵守下
 
 ### 命令选项
 
-#### info
+#### chip
 
-查看 eUICC 卡的 EID，默认 SM-DP+ 服务器和 SM-DS 服务器.
+查看 eUICC 卡的 EID，默认 SM-DP+ 服务器和 SM-DS 服务器.目前已支持 euicc_info2.
+
+lpac chip <选项> [参数]
+	选项:
+		info				查看您的 eUICC 卡片本身的信息
+		defaultsmdp			修改您的 eUICC 卡片的缺省 SM-DP+ 服务器地址
+		示例: lpac chip defaultsmdp <您想要修改的 SM-DP+ 服务器的地址>
+		purge				用于使 eUICC 恢复出厂状态，会清空所有 Profile。慎用！
+```
 
 <details>
 
@@ -214,37 +216,75 @@ lpac 的指令返回内容均为 json 格式，所有指令的返回都遵守下
 
 ```json
 {
-   "type":"lpa", 
-   "payload":{
-      "code":0, 
-      "message":"success", 
-      "data":{
-         "eid":"这里是EID", 
-         "default_smds":"testrootsmds.example.com", 
-         "default_smdp":""
+  "type": "lpa",
+  "payload": {
+    "code": 0,
+    "message": "success",
+    "data": {
+      "eid": " EID  ",
+      "default_smds": "testrootsmds.gsma.com",
+      "default_smdp": "",
+      "euicc_info2": {
+        "profile_version": "2.1.0",
+        "sgp22_version": "2.2.0",
+        "euicc_firmware_version": "4.6.0",
+        "uicc_firmware_version": "9.2.0",
+        "global_platform_version": "2.3.0",
+        "protection_profile_version": "0.0.1",
+        "sas_accreditation_number": "GI-BA-UP-0419",
+        "installed_app": 0,
+        "free_nvram": 295424,
+        "free_ram": 295424
       }
-   }
+    }
+  }
 }
 ```
 
 </details>
 
 #### profile
-Profile 管理，您可以枚举(list)，设置别名(rename)，启用(enable)，禁用(disable)和删除(delete)配置文件. 
-```
+Profile 管理，您可以枚举(list)，设置别名(nickname)，启用(enable)，禁用(disable)，删除(delete)，Pull 式下载(download)和 Push 式下载(discovery)配置文件. 
+``` list|enable|disable|nickname|delete|download|discovery
 lpac profile <选项> [参数]
 	选项:
 		list			枚举出您的 eUICC Profile
-		rename			给指定的 Profile 设置别名
-		示例: lpac profile rename <Profile 的 ICCID> <别名>
+		nickname		给指定的 Profile 设置别名
+		示例: lpac profile nickname <Profile 的 ICCID> <别名>
 		enable			启用指定的 Profile，括号内为 RefreshFlag 状态，默认启用，可省略
 		示例: lpac profile enable <Profile 的 ICCID/AID> (1/0)
 		disable			禁用指定的 Profile，括号内为 RefreshFlag 状态，默认启用，可省略
 		示例: lpac profile disable <Profile 的 ICCID/AID> (1/0)
 		delete			删除指定的 Profile
 		示例: lpac profile delete <Profile 的 ICCID/AID>
+		download		Pull 式下载新的 Profile
+		discovery		Push 式检查可下载的新 Profile
 ```
 删除 Profile 操作无二次确认，请谨慎执行( 提示:本功能仅会删除 Profile 并签发 Notification，但是不会自动发送，您需要手动发送之. )
+
+##### Pull 式下载需要连接 SM-DP+ 服务器以及需要以下额外的参数才能完成：
+- -s SM-DP+服务器：必填
+- -m Matching ID：激活码。**必须要有**但是可留空
+- -c Confirmation Code：确认码。可选
+- -i IMEI: 欲下载Profile的设备的IMEI,可选
+
+<details>
+
+<summary>这里用 BetterRoaming 的 公共 Profile 举例：</summary>
+
+```
+./lpac profile download -s rsp.truphone.com -m "QR-G-5C-1LS-1W1Z9P7"
+```
+
+</details>
+
+##### Push 式下载需要连接 SM-DS 服务器完成 Profile 的推送查询
+可以设置以下参数以自定义IMEI和SM-DS服务器：
+- -s SM-DS服务器：不提交则为 gsma 官方服务器"lpa.ds.gsma.com"
+- -i IMEI: 欲下载Profile的设备的IMEI,可选
+
+示例：`./lpac profile discovery -s lpa.ds.gsma.com -i ""`
+
 <details>
 
 <summary>以下为 lpac profile list 的返回示例</summary>
@@ -287,6 +327,7 @@ lpac profile <选项> [参数]
 - `profileClass`: Profile 版本
 
 </details>
+
 
 #### notification
 用于 Notification 的管理，Notification 是在对 Profile 的操作过程中由电信业者发送的。您可以枚举(list)，发送(process)，移除(remove) Notification.
@@ -334,43 +375,6 @@ lpac notification <选项> [参数]
 - `notificationAddress`: Profile 的通知报告服务器地址
 
 </details>
-
-#### download
-连接 SM-DP+ 服务器完成 Profile 的下载(Pull Model)
-
-需要以下额外的环境变量才能完成：
-- `SMDP`: SMDP服务器，必填且不能为空
-- `MATCHINGID`: 激活码，**必须要有**但是可留空
-- `CONFIRMATION_CODE`: 确认码，可选
-- `IMEI`: 欲下载Profile的设备的IMEI,可选
-
-设置完环境变量后执行 `lpac download` 下载 Profile
-
-这里用 BetterRoaming 的 公共 Profile 举例：
-```
-SMDP=rsp.truphone.com MATCHINGID="QR-G-5C-1LS-1W1Z9P7" CONFIRMATION_CODE=""  IMEI="" ./lpac download
-```
-
-#### defaultsmdp
-用于设置 eUICC 的默认 SM-DP+ 服务器。
-
-`lpac defaultsmdp <sm-dp+ 服务器地址>`
-
-若您需要查看您的默认 SM-DP+ 服务器地址，请使用 info 功能. 
-
-#### purge
-用于使 eUICC 恢复出厂状态，会恢复默认配置并清空所有 Profile，且不会发送 Notification 报告。慎用！
-
-用法：`lpac purge yes`
-
-#### discovery
-用于连接 SM-DS 服务器完成 Profile 的推送查询(Push Model)
-
-可以设置以下环境变量以自定义IMEI和SM-DS服务器：
-- `IMEI`: 欲自定义的IMEI，可不注入
-- `SMDS`: 欲请求的SM-DS服务器，若为空则为 gsma 官方服务器"lpa.ds.gsma.com"
-
-示例：`SMDS=lpa.ds.gsma.com IMEI="" ./lpac discovery`
 
 
 ## FAQ
