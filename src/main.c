@@ -181,103 +181,57 @@ static int entry_profile_enable(int argc, char **argv)
     int ret;
     int len;
     const char *param;
-    const char *refreshFlag;
+    int refreshflag;
 
-    if (argc < 4 || argc > 5)
+    if (argc < 4)
     {
-        printf("Usage: %s profile enable <iccid/aid>\n", argv[0]);
+        printf("Usage: %s profile enable <iccid/aid> [refreshflag]\n", argv[0]);
         return -1;
-    }
-
-    if (argc == 5)
-    {
-        int rf0;
-        int rf1;
-        rf0 = strcmp(argv[4], "0");
-        rf1 = strcmp(argv[4], "1");
-        if (rf0 == 0)
-        {
-            refreshFlag = "0";
-        }
-        else if (rf1 == 0)
-        {
-            refreshFlag = "1";
-        }
-        else
-        {
-            const char *reason;
-            reason = "You commit a wrong refreshFlag type. the right param is 1 or 0.";
-            jprint_error("es10c_enable_profile_syntax", reason);
-            return -1;
-        }
-    }
-    else
-    {
-        refreshFlag = "1";
     }
 
     param = argv[3];
     len = strlen(param);
 
-    if (len == 19 || len == 20)
+    refreshflag = 0;
+    if (argc > 4)
     {
-        if ((ret = es10c_enable_profile_iccid(&ctx, param, refreshFlag)))
-        {
-            const char *reason;
-            switch (ret)
-            {
-            case 1:
-                reason = "iccid not found";
-                break;
-            case 2:
-                reason = "profile not in disabled state";
-                break;
-            case 3:
-                reason = "disallowed by policy";
-                break;
-            case 4:
-                reason = "wrong profile reenabling";
-                break;
-            default:
-                reason = "unknown";
-                break;
-            }
-            jprint_error("es10c_enable_profile_iccid", reason);
-            return -1;
-        }
+        refreshflag = atoi(argv[4]);
     }
-    else if (len == 32)
+
+    if (len == 32)
     {
-        if ((ret = es10c_enable_profile_aid(&ctx, param, refreshFlag)))
-        {
-            const char *reason;
-            switch (ret)
-            {
-            case 1:
-                reason = "aid not found";
-                break;
-            case 2:
-                reason = "profile not in disabled state";
-                break;
-            case 3:
-                reason = "disallowed by policy";
-                break;
-            case 4:
-                reason = "wrong profile reenabling";
-                break;
-            default:
-                reason = "unknown";
-                break;
-            }
-            jprint_error("es10c_enable_profile_aid", reason);
-            return -1;
-        }
+        ret = es10c_enable_profile_aid(&ctx, param, refreshflag);
     }
     else
     {
+        ret = es10c_enable_profile_iccid(&ctx, param, refreshflag);
+    }
+
+    if (ret)
+    {
         const char *reason;
-        reason = "You commit a wrong param. the right param is iccid or Aid.";
-        jprint_error("es10c_enable_profile_syntax", reason);
+        switch (ret)
+        {
+        case 1:
+            reason = "iccid or aid not found";
+            break;
+        case 2:
+            reason = "profile not in disabled state";
+            break;
+        case 3:
+            reason = "disallowed by policy";
+            break;
+        case 4:
+            reason = "wrong profile reenabling";
+            break;
+        case -1:
+            reason = "internal error, maybe illegal iccid/aid coding";
+            break;
+        default:
+            reason = "unknown";
+            break;
+        }
+        jprint_error("es10c_enable_profile", reason);
         return -1;
     }
 
@@ -290,98 +244,55 @@ static int entry_profile_disable(int argc, char **argv)
 {
     int ret;
     int len;
-    const char *refreshFlag;
     const char *param;
+    int refreshflag;
 
-    if (argc < 4 || argc > 5)
+    if (argc < 4)
     {
-        printf("Usage: %s profile disable <iccid/aid>\n", argv[0]);
+        printf("Usage: %s profile disable <iccid/aid> [refreshflag]\n", argv[0]);
         return -1;
-    }
-
-    if (argc == 5)
-    {
-        int rf0;
-        int rf1;
-        rf0 = strcmp(argv[4], "0");
-        rf1 = strcmp(argv[4], "1");
-        if (rf0 == 0)
-        {
-            refreshFlag = "0";
-        }
-        else if (rf1 == 0)
-        {
-            refreshFlag = "1";
-        }
-        else
-        {
-            const char *reason;
-            reason = "You commit a wrong refreshFlag type. the right param is 1 or 0.";
-            jprint_error("es10c_enable_profile_syntax", reason);
-            return -1;
-        }
-    }
-    else
-    {
-        refreshFlag = "1";
     }
 
     param = argv[3];
     len = strlen(param);
 
-    if (len == 19 || len == 20)
+    refreshflag = 0;
+    if (argc > 4)
     {
-        if ((ret = es10c_disable_profile_iccid(&ctx, param, refreshFlag)))
-        {
-            const char *reason;
-            switch (ret)
-            {
-            case 1:
-                reason = "iccid not found";
-                break;
-            case 2:
-                reason = "profile not in enabled state";
-                break;
-            case 3:
-                reason = "disallowed by policy";
-                break;
-            default:
-                reason = "unknown";
-                break;
-            }
-            jprint_error("es10c_disable_profile_iccid", reason);
-            return -1;
-        }
+        refreshflag = atoi(argv[4]);
     }
-    else if (len == 32)
+
+    if (len == 32)
     {
-        if ((ret = es10c_disable_profile_aid(&ctx, param, refreshFlag)))
-        {
-            const char *reason;
-            switch (ret)
-            {
-            case 1:
-                reason = "aid not found";
-                break;
-            case 2:
-                reason = "profile not in enabled state";
-                break;
-            case 3:
-                reason = "disallowed by policy";
-                break;
-            default:
-                reason = "unknown";
-                break;
-            }
-            jprint_error("es10c_disable_profile_aid", reason);
-            return -1;
-        }
+        ret = es10c_disable_profile_aid(&ctx, param, refreshflag);
     }
     else
     {
+        ret = es10c_disable_profile_iccid(&ctx, param, refreshflag);
+    }
+
+    if (ret)
+    {
         const char *reason;
-        reason = "You commit a wrong param. the right param is iccid or Aid.";
-        jprint_error("es10c_disable_profile_syntax", reason);
+        switch (ret)
+        {
+        case 1:
+            reason = "iccid not found";
+            break;
+        case 2:
+            reason = "profile not in enabled state";
+            break;
+        case 3:
+            reason = "disallowed by policy";
+            break;
+        case -1:
+            reason = "internal error, maybe illegal iccid/aid coding";
+            break;
+        default:
+            reason = "unknown";
+            break;
+        }
+        jprint_error("es10c_disable_profile", reason);
         return -1;
     }
 
