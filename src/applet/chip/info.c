@@ -48,7 +48,7 @@ static int main(int argc, char **argv)
         cJSON_AddNumberToObject(jeuiccinfo2, "free_nvram", euiccinfo2.free_nvram);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_ram", euiccinfo2.free_ram);
     }
-    cJSON_AddItemToObject(jdata, "euicc_info2", jeuiccinfo2);
+    cJSON_AddItemToObject(jdata, "euiccinfo2", jeuiccinfo2);
 
     jprint_success(jdata);
 
