@@ -5,9 +5,9 @@
 #include <string.h>
 #include <main.h>
 
-#include <chip/info.h>
-#include <chip/defaultsmdp.h>
-#include <chip/purge.h>
+#include "chip/info.h"
+#include "chip/defaultsmdp.h"
+#include "chip/purge.h"
 
 static const struct applet_entry *applets[] = {
     &applet_chip_info,

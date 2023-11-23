@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include <string.h>
 
-#include <notification/list.h>
-#include <notification/process.h>
-#include <notification/remove.h>
+#include "notification/list.h"
+#include "notification/process.h"
+#include "notification/remove.h"
 
 static const struct applet_entry *applets[] = {
     &applet_notification_list,

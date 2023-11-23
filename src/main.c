@@ -10,10 +10,10 @@
 
 #include "dlsym_interface.h"
 
-#include <applet.h>
-#include <applet/chip.h>
-#include <applet/profile.h>
-#include <applet/notification.h>
+#include "applet.h"
+#include "applet/chip.h"
+#include "applet/profile.h"
+#include "applet/notification.h"
 
 static const struct applet_entry *applets[] = {
     &applet_chip,

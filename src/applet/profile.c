@@ -4,13 +4,13 @@
 #include <unistd.h>
 #include <string.h>
 
-#include <profile/list.h>
-#include <profile/enable.h>
-#include <profile/disable.h>
-#include <profile/nickname.h>
-#include <profile/delete.h>
-#include <profile/download.h>
-#include <profile/discovery.h>
+#include "profile/list.h"
+#include "profile/enable.h"
+#include "profile/disable.h"
+#include "profile/nickname.h"
+#include "profile/delete.h"
+#include "profile/download.h"
+#include "profile/discovery.h"
 
 static const struct applet_entry *applets[] = {
     &applet_profile_list,
