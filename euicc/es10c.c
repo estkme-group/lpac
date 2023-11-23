@@ -183,10 +183,11 @@ exit:
     return fret;
 }
 
-int es10c_enable_profile_aid(struct euicc_ctx *ctx, const char *aid)
+int es10c_enable_profile_aid(struct euicc_ctx *ctx, const char *aid, const char *togRefreshFlag)
 {
     int fret = 0;
     int ret;
+    int tRF;
     asn_enc_rval_t asn1erval;
     EnableProfileRequest_t *asn1req = NULL;
     uint8_t asn1aid[16];
@@ -205,7 +206,16 @@ int es10c_enable_profile_aid(struct euicc_ctx *ctx, const char *aid)
     }
     memset(asn1req, 0, sizeof(*asn1req));
 
-    asn1req->refreshFlag = 1;
+    tRF = atoi(togRefreshFlag);
+
+    if (tRF == 1)
+    {
+        asn1req->refreshFlag = 1;
+    }
+    else
+    {
+        asn1req->refreshFlag = 0;
+    }
     asn1req->profileIdentifier.present = EnableProfileRequest__profileIdentifier_PR_isdpAid;
     ret = OCTET_STRING_fromBuf(&asn1req->profileIdentifier.choice.isdpAid, asn1aid, ret);
     if (ret < 0)
@@ -240,10 +250,11 @@ exit:
     return fret;
 }
 
-int es10c_enable_profile_iccid(struct euicc_ctx *ctx, const char *iccid)
+int es10c_enable_profile_iccid(struct euicc_ctx *ctx, const char *iccid, const char *togRefreshFlag)
 {
     int fret = 0;
     int ret;
+    int tRF;
     asn_enc_rval_t asn1erval;
     EnableProfileRequest_t *asn1req = NULL;
     uint8_t asn1iccid[20];
@@ -262,7 +273,16 @@ int es10c_enable_profile_iccid(struct euicc_ctx *ctx, const char *iccid)
     }
     memset(asn1req, 0, sizeof(*asn1req));
 
-    asn1req->refreshFlag = 1;
+    tRF = atoi(togRefreshFlag);
+
+    if (tRF == 1)
+    {
+        asn1req->refreshFlag = 1;
+    }
+    else
+    {
+        asn1req->refreshFlag = 0;
+    }
     asn1req->profileIdentifier.present = EnableProfileRequest__profileIdentifier_PR_iccid;
     ret = OCTET_STRING_fromBuf(&asn1req->profileIdentifier.choice.iccid, asn1iccid, ret);
     if (ret < 0)
@@ -323,10 +343,11 @@ exit:
     return fret;
 }
 
-int es10c_disable_profile_aid(struct euicc_ctx *ctx, const char *aid)
+int es10c_disable_profile_aid(struct euicc_ctx *ctx, const char *aid, const char *togRefreshFlag)
 {
     int fret = 0;
     int ret;
+    int tRF;
     asn_enc_rval_t asn1erval;
     DisableProfileRequest_t *asn1req = NULL;
     uint8_t asn1aid[16];
@@ -345,7 +366,16 @@ int es10c_disable_profile_aid(struct euicc_ctx *ctx, const char *aid)
     }
     memset(asn1req, 0, sizeof(*asn1req));
 
-    asn1req->refreshFlag = 1;
+    tRF = atoi(togRefreshFlag);
+
+    if (tRF == 1)
+    {
+        asn1req->refreshFlag = 1;
+    }
+    else
+    {
+        asn1req->refreshFlag = 0;
+    }
     asn1req->profileIdentifier.present = DisableProfileRequest__profileIdentifier_PR_isdpAid;
     ret = OCTET_STRING_fromBuf(&asn1req->profileIdentifier.choice.isdpAid, asn1aid, ret);
     if (ret < 0)
@@ -380,10 +410,11 @@ exit:
     return fret;
 }
 
-int es10c_disable_profile_iccid(struct euicc_ctx *ctx, const char *iccid)
+int es10c_disable_profile_iccid(struct euicc_ctx *ctx, const char *iccid, const char *togRefreshFlag)
 {
     int fret = 0;
     int ret;
+    int tRF;
     asn_enc_rval_t asn1erval;
     DisableProfileRequest_t *asn1req = NULL;
     uint8_t asn1iccid[20];
@@ -402,7 +433,16 @@ int es10c_disable_profile_iccid(struct euicc_ctx *ctx, const char *iccid)
     }
     memset(asn1req, 0, sizeof(*asn1req));
 
-    asn1req->refreshFlag = 1;
+    tRF = atoi(togRefreshFlag);
+
+    if (tRF == 1)
+    {
+        asn1req->refreshFlag = 1;
+    }
+    else
+    {
+        asn1req->refreshFlag = 0;
+    }
     asn1req->profileIdentifier.present = DisableProfileRequest__profileIdentifier_PR_iccid;
     ret = OCTET_STRING_fromBuf(&asn1req->profileIdentifier.choice.iccid, asn1iccid, ret);
     if (ret < 0)
