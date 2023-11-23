@@ -5,13 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "asn1c/asn1/GetEuiccInfo1Request.h"
 #include "asn1c/asn1/GetEuiccInfo2Request.h"
 #include "asn1c/asn1/EUICCInfo2.h"
 
-static int es10cex_version_to_string(VersionType_t version, char **out);
+static int _versiontype_to_string(char *out, int out_len, VersionType_t version)
+{
+    if (version.size != 3)
+        return -1;
 
-int es10cex_get_euicc_info(struct euicc_ctx *ctx, struct es10cex_euicc_info *info)
+    return snprintf(out, out_len, "%d.%d.%d", version.buf[0], version.buf[1], version.buf[2]);
+}
+
+int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *info)
 {
     int fret = 0;
     uint8_t *respbuf = NULL;
@@ -42,7 +47,7 @@ int es10cex_get_euicc_info(struct euicc_ctx *ctx, struct es10cex_euicc_info *inf
         goto err;
     }
 
-    asn1drval = ber_decode(NULL, &asn_DEF_EUICCInfo2, (void **) &asn1resp, respbuf, resplen);
+    asn1drval = ber_decode(NULL, &asn_DEF_EUICCInfo2, (void **)&asn1resp, respbuf, resplen);
     free(respbuf);
     respbuf = NULL;
 
@@ -51,69 +56,46 @@ int es10cex_get_euicc_info(struct euicc_ctx *ctx, struct es10cex_euicc_info *inf
         goto err;
     }
 
-    if (es10cex_version_to_string(asn1resp->profileVersion, &info->profile_version))
-    {
-        goto err;
-    }
+    memset(info, 0, sizeof(*info));
 
-    if (es10cex_version_to_string(asn1resp->svn, &info->sgp22_version))
-    {
-        goto err;
-    }
-
-    if (es10cex_version_to_string(asn1resp->euiccFirmwareVer, &info->euicc_firmware_version))
-    {
-        goto err;
-    }
-
-    if (es10cex_version_to_string(asn1resp->ppVersion, &info->pp_version))
-    {
-        goto err;
-    }
-
+    _versiontype_to_string(info->profile_version, sizeof(info->profile_version), asn1resp->profileVersion);
+    _versiontype_to_string(info->sgp22_version, sizeof(info->sgp22_version), asn1resp->svn);
+    _versiontype_to_string(info->euicc_firmware_version, sizeof(info->euicc_firmware_version), asn1resp->euiccFirmwareVer);
+    _versiontype_to_string(info->pp_version, sizeof(info->pp_version), asn1resp->ppVersion);
     if (asn1resp->javacardVersion)
     {
-        if (es10cex_version_to_string(*asn1resp->javacardVersion, &info->uicc_firmware_version))
-        {
-            goto err;
-        }
+        _versiontype_to_string(info->uicc_firmware_version, sizeof(info->uicc_firmware_version),
+                           *asn1resp->javacardVersion);
     }
-
     if (asn1resp->globalplatformVersion)
     {
-        if (es10cex_version_to_string(*asn1resp->globalplatformVersion, &info->global_platform_version))
-        {
-            goto err;
-        }
+        _versiontype_to_string(info->global_platform_version, sizeof(info->global_platform_version),
+                           *asn1resp->globalplatformVersion);
     }
+    memcpy(info->sas_accreditation_number, asn1resp->sasAcreditationNumber.buf,
+           asn1resp->sasAcreditationNumber.size);
 
-    info->sas_accreditation_number = malloc(asn1resp->sasAcreditationNumber.size + 1);
-    if (info->sas_accreditation_number)
+    for (int i = 0; i < asn1resp->extCardResource.size;)
     {
-        memcpy(info->sas_accreditation_number, asn1resp->sasAcreditationNumber.buf,
-               asn1resp->sasAcreditationNumber.size);
-        info->sas_accreditation_number[asn1resp->sasAcreditationNumber.size + 1] = '\0';
-    }
-
-    for (int i = 0; i < asn1resp->extCardResource.size;) {
         uint8_t tag = asn1resp->extCardResource.buf[i];
         i++;
         uint8_t length = asn1resp->extCardResource.buf[i];
         i++;
         uint8_t *b = &asn1resp->extCardResource.buf[i];
-        switch (tag) {
-            case 0x81:
-                info->installed_app = b[0];
-                i += length;
-            case 0x82:
-                info->free_nvram = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | (b[0]);
-                i += length;
-            case 0x83:
-                info->free_ram = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | (b[0]);
-                i += length;
-            default:
-                i += length;
-                continue;
+        switch (tag)
+        {
+        case 0x81:
+            info->installed_app = b[0];
+            i += length;
+        case 0x82:
+            info->free_nvram = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | (b[0]);
+            i += length;
+        case 0x83:
+            info->free_ram = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | (b[0]);
+            i += length;
+        default:
+            i += length;
+            continue;
         }
     }
 
@@ -126,32 +108,4 @@ exit:
     ASN_STRUCT_FREE(asn_DEF_EUICCInfo2, asn1resp);
 
     return fret;
-}
-
-void es10cex_euicc_info_free(struct es10cex_euicc_info *info)
-{
-    if (!info) {
-        return;
-    }
-    free(info->profile_version);
-    free(info->sgp22_version);
-    free(info->euicc_firmware_version);
-    free(info->uicc_firmware_version);
-    free(info->global_platform_version);
-    free(info->sas_accreditation_number);
-    free(info->pp_version);
-}
-
-static int es10cex_version_to_string(VersionType_t version, char **out)
-{
-    if (version.size != 3) return -1;
-    char buf[12];
-    int n = snprintf(buf, 12, "%d.%d.%d", version.buf[0], version.buf[1], version.buf[2]);
-    *out = malloc(n + 1);
-    if (*out)
-    {
-        strncpy(*out, buf, n);
-        return 0;
-    }
-    return -1;
 }

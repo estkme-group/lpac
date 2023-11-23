@@ -10,6 +10,8 @@ static int main(int argc, char **argv)
     char *eid = NULL;
     char *default_smdp = NULL;
     char *default_smds = NULL;
+    struct es10cex_euiccinfo2 euiccinfo2;
+    cJSON *jeuiccinfo2 = NULL;
     cJSON *jdata = NULL;
 
     if (es10c_get_eid(&euicc_ctx, &eid))
@@ -24,10 +26,30 @@ static int main(int argc, char **argv)
         return -1;
     }
 
+    if (es10cex_get_euiccinfo2(&euicc_ctx, &euiccinfo2) == 0)
+    {
+        jeuiccinfo2 = cJSON_CreateObject();
+    }
+
     jdata = cJSON_CreateObject();
     cJSON_AddStringToObject(jdata, "eid", eid);
     cJSON_AddStringToObject(jdata, "default_smds", default_smds);
     cJSON_AddStringToObject(jdata, "default_smdp", default_smdp);
+    if (jeuiccinfo2)
+    {
+        cJSON_AddStringToObject(jeuiccinfo2, "profile_version", euiccinfo2.profile_version);
+        cJSON_AddStringToObject(jeuiccinfo2, "sgp22_version", euiccinfo2.sgp22_version);
+        cJSON_AddStringToObject(jeuiccinfo2, "euicc_firmware_version", euiccinfo2.euicc_firmware_version);
+        cJSON_AddStringToObject(jeuiccinfo2, "uicc_firmware_version", euiccinfo2.uicc_firmware_version);
+        cJSON_AddStringToObject(jeuiccinfo2, "global_platform_version", euiccinfo2.global_platform_version);
+        cJSON_AddStringToObject(jeuiccinfo2, "protection_profile_version", euiccinfo2.pp_version);
+        cJSON_AddStringToObject(jeuiccinfo2, "sas_accreditation_number", euiccinfo2.sas_accreditation_number);
+        cJSON_AddNumberToObject(jeuiccinfo2, "installed_app", euiccinfo2.installed_app);
+        cJSON_AddNumberToObject(jeuiccinfo2, "free_nvram", euiccinfo2.free_nvram);
+        cJSON_AddNumberToObject(jeuiccinfo2, "free_ram", euiccinfo2.free_ram);
+    }
+    cJSON_AddItemToObject(jdata, "euicc_info2", jeuiccinfo2);
+
     jprint_success(jdata);
 
     free(eid);
