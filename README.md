@@ -202,6 +202,7 @@ lpac 的指令返回内容均为 json 格式，所有指令的返回都遵守下
 
 查看 eUICC 卡的 EID，默认 SM-DP+ 服务器和 SM-DS 服务器.目前已支持 euicc_info2.
 
+```
 lpac chip <选项> [参数]
 	选项:
 		info				查看您的 eUICC 卡片本身的信息
@@ -263,10 +264,10 @@ lpac profile <选项> [参数]
 删除 Profile 操作无二次确认，请谨慎执行( 提示:本功能仅会删除 Profile 并签发 Notification，但是不会自动发送，您需要手动发送之. )
 
 ##### Pull 式下载需要连接 SM-DP+ 服务器以及需要以下额外的参数才能完成：
-- -s SM-DP+服务器：必填
-- -m Matching ID：激活码。**必须要有**但是可留空
-- -c Confirmation Code：确认码。可选
-- -i IMEI: 欲下载Profile的设备的IMEI,可选
+- -s SM-DP+服务器：可选，若不提供则会尝试读取defaultsmdp属性。
+- -m Matching ID：激活码。可选。
+- -c Confirmation Code：确认码。可选。
+- -i IMEI: 欲下载Profile的设备的IMEI。可选。
 
 <details>
 
