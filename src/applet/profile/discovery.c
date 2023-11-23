@@ -3,10 +3,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <getopt.h>
 #include <main.h>
 
 static int main(int argc, char **argv)
 {
+    int opt;
+    static const char *opt_string = "s:i:h?";
+
     char *transaction_id = NULL;
 
     char *smds = NULL;
@@ -21,9 +25,28 @@ static int main(int argc, char **argv)
 
     struct es11_authenticate_client_resp es11_authenticate_client_resp;
 
-    imei = getenv("IMEI");
+    opt = getopt(argc, argv, opt_string);
+    while (opt != -1)
+    {
+        switch (opt)
+        {
+        case 's':
+            smds = strdup(optarg);
+            break;
+        case 'i':
+            imei = strdup(optarg);
+            break;
+        case 'h':
+        case '?':
+            printf("Usage: %s [OPTIONS]\r\n", argv[0]);
+            printf("\t -s SM-DS Domain\r\n");
+            printf("\t -i IMEI\r\n");
+            printf("\t -h This help info\r\n");
+            break;
+        }
+        opt = getopt(argc, argv, opt_string);
+    }
 
-    smds = getenv("SMDS");
     if (smds == NULL)
     {
         // smds = "prod.smds.rsp.goog";

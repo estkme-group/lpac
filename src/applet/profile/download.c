@@ -3,10 +3,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <getopt.h>
 #include <main.h>
 
 static int main(int argc, char **argv)
 {
+    int opt;
+    static const char *opt_string = "s:m:i:c:h?";
+
     char *transaction_id = NULL;
 
     char *smdp = NULL;
@@ -28,10 +32,35 @@ static int main(int argc, char **argv)
 
     struct es9p_get_bound_profile_package_resp es9p_get_bound_profile_package_resp;
 
-    smdp = getenv("SMDP");
-    matchingId = getenv("MATCHINGID");
-    imei = getenv("IMEI");
-    confirmation_code = getenv("CONFIRMATION_CODE");
+    opt = getopt(argc, argv, opt_string);
+    while (opt != -1)
+    {
+        switch (opt)
+        {
+        case 's':
+            smdp = strdup(optarg);
+            break;
+        case 'm':
+            matchingId = strdup(optarg);
+            break;
+        case 'i':
+            imei = strdup(optarg);
+            break;
+        case 'c':
+            confirmation_code = strdup(optarg);
+            break;
+        case 'h':
+        case '?':
+            printf("Usage: %s [OPTIONS]\r\n", argv[0]);
+            printf("\t -s SM-DP+ Domain\r\n");
+            printf("\t -m Matching ID\r\n");
+            printf("\t -i IMEI\r\n");
+            printf("\t -c Confirmation Code (Password)\r\n");
+            printf("\t -h This help info\r\n");
+            break;
+        }
+        opt = getopt(argc, argv, opt_string);
+    }
 
     if (smdp == NULL)
     {
