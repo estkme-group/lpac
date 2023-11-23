@@ -126,6 +126,8 @@ static int afgets(char **obuf, FILE *fp)
         }
     }
 
+    (*obuf)[strcspn(*obuf, "\r\n")] = 0;
+
     return 0;
 
 err:
@@ -227,19 +229,104 @@ exit:
     return fret;
 }
 
-int json_parse(uint8_t **rx, uint32_t *rx_len, const char *rx_json)
+// {"type":"http","payload":{"rcode":404,"rx":"333435"}}
+static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
-}
+    int fret = 0;
+    char *rx_json;
+    cJSON *rx_jroot;
+    cJSON *rx_payload;
+    cJSON *jtmp;
 
-static int http_interface_transmit(const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
-{
     *rx = NULL;
+
     json_request(url, tx, tx_len);
-    return -1;
+    if (afgets(&rx_json, stdin) < 0)
+    {
+        return -1;
+    }
+
+    rx_jroot = cJSON_Parse(rx_json);
+    free(rx_json);
+    rx_json = NULL;
+    if (rx_jroot == NULL)
+    {
+        return -1;
+    }
+
+    jtmp = cJSON_GetObjectItem(rx_jroot, "type");
+    if (!jtmp)
+    {
+        goto err;
+    }
+    if (!cJSON_IsString(jtmp))
+    {
+        goto err;
+    }
+    if (strcmp("http", jtmp->valuestring) != 0)
+    {
+        goto err;
+    }
+
+    rx_payload = cJSON_GetObjectItem(rx_jroot, "payload");
+    if (!rx_payload)
+    {
+        goto err;
+    }
+    if (!cJSON_IsObject(rx_payload))
+    {
+        goto err;
+    }
+
+    jtmp = cJSON_GetObjectItem(rx_payload, "rcode");
+    if (!jtmp)
+    {
+        goto err;
+    }
+    if (!cJSON_IsNumber(jtmp))
+    {
+        goto err;
+    }
+    *rcode = jtmp->valueint;
+
+    jtmp = cJSON_GetObjectItem(rx_payload, "rx");
+    if (!jtmp)
+    {
+        goto err;
+    }
+    if (!cJSON_IsString(jtmp))
+    {
+        goto err;
+    }
+    *rx_len = strlen(jtmp->valuestring) / 2;
+    *rx = malloc(*rx_len);
+    if (!*rx)
+    {
+        goto err;
+    }
+    if (hexutil_hex2bin(*rx, *rx_len, jtmp->valuestring, strlen(jtmp->valuestring)) < 0)
+    {
+        goto err;
+    }
+
+    fret = 0;
+    goto exit;
+
+err:
+    fret = -1;
+    free(*rx);
+    *rx = NULL;
+    *rx_len = 0;
+exit:
+    free(rx_json);
+    cJSON_Delete(rx_jroot);
+    return fret;
 }
 
 int libhttpinterface_main(struct euicc_http_interface *ifstruct)
 {
+    memset(ifstruct, 0, sizeof(struct euicc_http_interface));
+
     ifstruct->transmit = http_interface_transmit;
 
     return 0;

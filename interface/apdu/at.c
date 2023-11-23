@@ -99,7 +99,7 @@ static int at_expect(char **response, const char *expected)
     return 0;
 }
 
-static int apdu_interface_connect(void)
+static int apdu_interface_connect(struct euicc_ctx *ctx)
 {
     const char *device;
 
@@ -139,14 +139,14 @@ static int apdu_interface_connect(void)
     return 0;
 }
 
-static void apdu_interface_disconnect(void)
+static void apdu_interface_disconnect(struct euicc_ctx *ctx)
 {
     fclose(fuart);
     fuart = NULL;
     logic_channel = 0;
 }
 
-static int apdu_interface_transmit(uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
     int fret = 0;
     int ret;
@@ -214,7 +214,7 @@ exit:
     return fret;
 }
 
-static int apdu_interface_logic_channel_open(const uint8_t *aid, uint8_t aid_len)
+static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
 {
     char *response;
 
@@ -247,7 +247,7 @@ static int apdu_interface_logic_channel_open(const uint8_t *aid, uint8_t aid_len
     return logic_channel;
 }
 
-static void apdu_interface_logic_channel_close(uint8_t channel)
+static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel)
 {
     if (!logic_channel)
     {
@@ -259,6 +259,8 @@ static void apdu_interface_logic_channel_close(uint8_t channel)
 
 int libapduinterface_main(struct euicc_apdu_interface *ifstruct)
 {
+    memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
+
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = apdu_interface_disconnect;
     ifstruct->logic_channel_open = apdu_interface_logic_channel_open;

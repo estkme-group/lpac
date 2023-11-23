@@ -27,10 +27,10 @@ struct es10c_profile_info
 };
 
 int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **profiles, int *count);
-int es10c_enable_profile_aid(struct euicc_ctx *ctx, const char *aid);
-int es10c_enable_profile_iccid(struct euicc_ctx *ctx, const char *iccid);
-int es10c_disable_profile_aid(struct euicc_ctx *ctx, const char *aid);
-int es10c_disable_profile_iccid(struct euicc_ctx *ctx, const char *iccid);
+int es10c_enable_profile_aid(struct euicc_ctx *ctx, const char *aid, int refreshflag);
+int es10c_enable_profile_iccid(struct euicc_ctx *ctx, const char *iccid, int refreshflag);
+int es10c_disable_profile_aid(struct euicc_ctx *ctx, const char *aid, int refreshflag);
+int es10c_disable_profile_iccid(struct euicc_ctx *ctx, const char *iccid, int refreshflag);
 int es10c_delete_profile_aid(struct euicc_ctx *ctx, const char *aid);
 int es10c_delete_profile_iccid(struct euicc_ctx *ctx, const char *iccid);
 int es10c_euicc_memory_reset(struct euicc_ctx *ctx, int op, int tp, int addr);
