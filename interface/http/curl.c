@@ -38,7 +38,7 @@ static struct libcurl_interface
     CURLcode (*curl_easy_setopt)(CURL *curl, CURLoption option, ...);
     CURLcode (*curl_easy_perform)(CURL *curl);
     CURLcode (*curl_easy_getinfo)(CURL *curl, CURLINFO info, ...);
-    const char (*curl_easy_strerror)(CURLcode);
+    const char *(*curl_easy_strerror)(CURLcode);
     void (*curl_easy_cleanup)(CURL *curl);
 
     struct curl_slist *(*curl_slist_append)(struct curl_slist *list, const char *data);
