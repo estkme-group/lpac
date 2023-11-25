@@ -858,7 +858,7 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
     }
     if (param->imei)
     {
-        if ((binimei_len = euicc_hexutil_hex2bin(binimei, sizeof(binimei), param->imei)) < 0)
+        if ((binimei_len = euicc_hexutil_gsmbcd2bin(binimei, sizeof(binimei), param->imei)) < 0)
         {
             goto err;
         }
