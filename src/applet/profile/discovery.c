@@ -55,18 +55,21 @@ static int applet_main(int argc, char **argv)
         smds = "lpa.ds.gsma.com";
     }
 
+    jprint_progress("es10b_get_euicc_challenge");
     if (es10b_get_euicc_challenge(&euicc_ctx, &b64_euicc_challenge))
     {
         jprint_error("es10b_get_euicc_challenge", NULL);
         return -1;
     }
 
+    jprint_progress("es10b_get_euicc_info");
     if (es10b_get_euicc_info(&euicc_ctx, &b64_euicc_info_1))
     {
         jprint_error("es10b_get_euicc_info", NULL);
         return -1;
     }
 
+    jprint_progress("es9p_initiate_authentication");
     if (es9p_initiate_authentication(&euicc_ctx, smds, b64_euicc_challenge, b64_euicc_info_1, &es11_initiate_authentication_resp))
     {
         jprint_error("es11_initiate_authentication", es11_initiate_authentication_resp.status);
@@ -83,12 +86,14 @@ static int applet_main(int argc, char **argv)
     es10b_authenticate_server_param.imei = imei;
     es10b_authenticate_server_param.tac = NULL;
 
+    jprint_progress("es10b_authenticate_server");
     if (es10b_authenticate_server(&euicc_ctx, &b64_authenticate_server_response, &es10b_authenticate_server_param))
     {
         jprint_error("es10b_authenticate_server", NULL);
         return -1;
     }
 
+    jprint_progress("es11_authenticate_client");
     if (es11_authenticate_client(&euicc_ctx, smds, transaction_id, b64_authenticate_server_response, &es11_authenticate_client_resp))
     {
         jprint_error("es11_authenticate_client", es11_authenticate_client_resp.status);

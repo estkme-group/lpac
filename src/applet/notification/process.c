@@ -19,12 +19,14 @@ static int applet_main(int argc, char **argv)
 
     seqNumber = atol(argv[1]);
 
+    jprint_progress("es10b_retrieve_notification");
     if (es10b_retrieve_notification(&euicc_ctx, &b64payload, &receiver, seqNumber))
     {
         jprint_error("es10b_retrieve_notification", NULL);
         return -1;
     }
 
+    jprint_progress("es9p_handle_notification");
     if (es9p_handle_notification(&euicc_ctx, receiver, b64payload))
     {
         jprint_error("es9p_handle_notification", NULL);

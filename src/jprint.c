@@ -30,6 +30,27 @@ void jprint_error(const char *function_name, const char *detail)
     free(jstr);
 }
 
+void jprint_progress(const char *function_name)
+{
+    cJSON *jroot = NULL;
+    cJSON *jpayload = NULL;
+    char *jstr = NULL;
+
+    jroot = cJSON_CreateObject();
+    cJSON_AddStringToObject(jroot, "type", "progress");
+    jpayload = cJSON_CreateObject();
+    cJSON_AddNumberToObject(jpayload, "code", 0);
+    cJSON_AddStringToObject(jpayload, "message", function_name);
+    cJSON_AddNullToObject(jpayload, "data");
+    cJSON_AddItemToObject(jroot, "payload", jpayload);
+
+    jstr = cJSON_PrintUnformatted(jroot);
+    cJSON_Delete(jroot);
+
+    printf("%s\n", jstr);
+    free(jstr);
+}
+
 void jprint_success(cJSON *jdata)
 {
     cJSON *jroot = NULL;
