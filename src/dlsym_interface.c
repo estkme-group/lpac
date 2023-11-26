@@ -55,7 +55,7 @@ static void dlsym_interfaces_get_path(void)
 
     if (!(libhttpinterface_path = getenv("HTTP_INTERFACE")))
     {
-        libhttpinterface_path = "./libhttpinterface_curl.so." INTERFACELIB_POSTFIX;
+        libhttpinterface_path = "./libhttpinterface_curl." INTERFACELIB_POSTFIX;
     }
 }
 
