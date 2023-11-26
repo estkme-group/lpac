@@ -22,8 +22,8 @@ jobs:
       - name: Setup toolchain
         if: runner.os == 'Linux'
         run: |
-          sudo apt update
-          sudo apt install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake gcc-mingw-w64 g++-mingw-w64 unzip
+          sudo apt-get update
+          sudo apt-get install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake gcc-mingw-w64 g++-mingw-w64 unzip
 
       - name: Build for Linux
         if: runner.os == 'Linux'
