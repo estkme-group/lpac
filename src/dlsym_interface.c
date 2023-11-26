@@ -12,10 +12,13 @@
 
 #if defined(__MINGW32__)
 #define INTERFACELIB_POSTFIX "dll"
+#define DIRSEP "\\"
 #elif defined(__APPLE__)
 #define INTERFACELIB_POSTFIX "dylib"
+#define DIRSEP "/"
 #else
 #define INTERFACELIB_POSTFIX "so"
+#define DIRSEP "/"
 #endif
 
 static struct applet_entry applet_apdu = {
@@ -50,12 +53,12 @@ static void dlsym_interfaces_get_path(void)
 {
     if (!(libapduinterface_path = getenv("APDU_INTERFACE")))
     {
-        libapduinterface_path = "./libapduinterface_pcsc." INTERFACELIB_POSTFIX;
+        libapduinterface_path = "." DIRSEP "libapduinterface_pcsc." INTERFACELIB_POSTFIX;
     }
 
     if (!(libhttpinterface_path = getenv("HTTP_INTERFACE")))
     {
-        libhttpinterface_path = "./libhttpinterface_curl." INTERFACELIB_POSTFIX;
+        libhttpinterface_path = "." DIRSEP "libhttpinterface_curl." INTERFACELIB_POSTFIX;
     }
 }
 
