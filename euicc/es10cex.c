@@ -33,7 +33,7 @@ static int _read_ext_resource(uint8_t *buf, int len, uint16_t tag)
     ret = 0;
     for (int i = 0; i < value_len; i++)
     {
-        ret |= (value[i] << i);
+        ret |= (value[i] << (8 * i));
     }
 
     return ret;
