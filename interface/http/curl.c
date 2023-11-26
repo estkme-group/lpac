@@ -137,7 +137,7 @@ exit:
     return fret;
 }
 
-int libhttpinterface_init(struct euicc_http_interface *ifstruct)
+EUICC_SHARED_EXPORT int libhttpinterface_init(struct euicc_http_interface *ifstruct)
 {
     const char *libcurl_path;
 
@@ -180,7 +180,7 @@ int libhttpinterface_init(struct euicc_http_interface *ifstruct)
     return 0;
 }
 
-int libhttpinterface_main(int argc, char **argv)
+EUICC_SHARED_EXPORT int libhttpinterface_main(int argc, char **argv)
 {
     return 0;
 }

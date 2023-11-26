@@ -357,24 +357,6 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
     pcsc_logic_channel_close(channel);
 }
 
-int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
-{
-    memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
-
-    if (pcsc_ctx_open() < 0)
-    {
-        return -1;
-    }
-
-    ifstruct->connect = apdu_interface_connect;
-    ifstruct->disconnect = apdu_interface_disconnect;
-    ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
-    ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
-    ifstruct->transmit = apdu_interface_transmit;
-
-    return 0;
-}
-
 static int pcsc_list_iter(int index, const char *reader, void *userdata)
 {
     cJSON *json = userdata;
@@ -407,7 +389,25 @@ static int pcsc_list_iter(int index, const char *reader, void *userdata)
     return 0;
 }
 
-int libapduinterface_main(int argc, char **argv)
+EUICC_SHARED_EXPORT int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
+{
+    memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
+
+    if (pcsc_ctx_open() < 0)
+    {
+        return -1;
+    }
+
+    ifstruct->connect = apdu_interface_connect;
+    ifstruct->disconnect = apdu_interface_disconnect;
+    ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
+    ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
+    ifstruct->transmit = apdu_interface_transmit;
+
+    return 0;
+}
+
+EUICC_SHARED_EXPORT int libapduinterface_main(int argc, char **argv)
 {
     if (argc < 2)
     {
