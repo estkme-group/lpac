@@ -91,7 +91,7 @@ int dlsym_interface_init()
         libapduinterface_init = dlsym(apdu_interface_dlhandle, "libapduinterface_init");
         if (!libapduinterface_init)
         {
-            fprintf(stderr, "APDU library broken\n");
+            fprintf(stderr, "APDU library broken: missing libapduinterface_init\n");
             return -1;
         }
         if (libapduinterface_init(&dlsym_apdu_interface) < 0)
@@ -102,7 +102,7 @@ int dlsym_interface_init()
         libapduinterface_main = dlsym(apdu_interface_dlhandle, "libapduinterface_main");
         if (!libapduinterface_main)
         {
-            fprintf(stderr, "APDU library broken\n");
+            fprintf(stderr, "APDU library broken: missing libapduinterface_main\n");
             return -1;
         }
         applet_apdu.main = libapduinterface_main;
@@ -113,7 +113,7 @@ int dlsym_interface_init()
         libhttpinterface_init = dlsym(http_interface_dlhandle, "libhttpinterface_init");
         if (!libhttpinterface_init)
         {
-            fprintf(stderr, "HTTP library broken\n");
+            fprintf(stderr, "HTTP library broken: missing libhttpinterface_init\n");
             return -1;
         }
         if (libhttpinterface_init(&dlsym_http_interface) < 0)
@@ -124,7 +124,7 @@ int dlsym_interface_init()
         libhttpinterface_main = dlsym(http_interface_dlhandle, "libhttpinterface_main");
         if (!libhttpinterface_main)
         {
-            fprintf(stderr, "HTTP library broken\n");
+            fprintf(stderr, "HTTP library broken: missing libhttpinterface_main\n");
             return -1;
         }
         applet_http.main = libhttpinterface_main;
