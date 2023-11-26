@@ -6,6 +6,13 @@
 
 #include <cjson/cJSON.h>
 
+static const char *lpa_header[] = {
+    "User-Agent: gsma-rsp-lpad",
+    "X-Admin-Protocol: gsma/rsp/v2.2.0",
+    "Content-Type: application/json",
+    NULL,
+};
+
 static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url_postfix, unsigned int *rcode, char **str_rx, const char *str_tx)
 {
     int fret = 0;
@@ -32,7 +39,7 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     strcat(full_url, url_postfix);
     // printf("url: %s\n", full_url);
     // printf("tx: %s\n", str_tx);
-    if (ctx->interface.http->transmit(ctx, full_url, &rcode_mearged, &rbuf, &rlen, str_tx, strlen(str_tx)) < 0)
+    if (ctx->interface.http->transmit(ctx, full_url, &rcode_mearged, &rbuf, &rlen, str_tx, strlen(str_tx), lpa_header) < 0)
     {
         goto err;
     }

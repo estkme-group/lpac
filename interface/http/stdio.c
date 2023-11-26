@@ -184,11 +184,12 @@ err:
     return -1;
 }
 
-static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len)
+static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
     int fret = 0;
     char *tx_hex = NULL;
     cJSON *jpayload = NULL;
+    cJSON *jheaders = NULL;
 
     tx_hex = malloc((2 * tx_len) + 1);
     if (tx_hex == NULL)
@@ -216,6 +217,22 @@ static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len)
     free(tx_hex);
     tx_hex = NULL;
 
+    jheaders = cJSON_AddArrayToObject(jpayload, "headers");
+    if (jheaders == NULL)
+    {
+        goto err;
+    }
+
+    for (int i = 0; headers[i] != NULL; i++)
+    {
+        cJSON *jh = cJSON_CreateString(headers[i]);
+        if (jh == NULL)
+        {
+            goto err;
+        }
+        cJSON_AddItemToArray(jheaders, jh);
+    }
+
     fret = json_print(jpayload);
     cJSON_Delete(jpayload);
     jpayload = NULL;
@@ -230,7 +247,7 @@ exit:
 }
 
 // {"type":"http","payload":{"rcode":404,"rx":"333435"}}
-static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
+static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
     int fret = 0;
     char *rx_json;
@@ -240,7 +257,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
 
     *rx = NULL;
 
-    json_request(url, tx, tx_len);
+    json_request(url, tx, tx_len, headers);
     if (afgets(&rx_json, stdin) < 0)
     {
         return -1;
