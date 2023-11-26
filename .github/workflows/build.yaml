@@ -48,6 +48,15 @@ jobs:
           zip -r -j lpac-macos-universal.zip output/*
         shell: bash
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            build-mingw/lpac-windows-x86_64.zip
+            build/lpac-linux-x86_64.tar.gz
+            build/lpac-macos-universal.zip
+
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
