@@ -50,12 +50,12 @@ static void dlsym_interfaces_get_path(void)
 {
     if (!(libapduinterface_path = getenv("APDU_INTERFACE")))
     {
-        libapduinterface_path = "./libapduinterface." INTERFACELIB_POSTFIX;
+        libapduinterface_path = "./libapduinterface_pcsc." INTERFACELIB_POSTFIX;
     }
 
     if (!(libhttpinterface_path = getenv("HTTP_INTERFACE")))
     {
-        libhttpinterface_path = "./libhttpinterface." INTERFACELIB_POSTFIX;
+        libhttpinterface_path = "./libhttpinterface_curl.so." INTERFACELIB_POSTFIX;
     }
 }
 
