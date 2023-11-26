@@ -11,9 +11,9 @@ struct es10cex_euiccinfo2
     char global_platform_version[16];
     char sas_accreditation_number[65];
     char pp_version[16];
-    uint8_t installed_app;
-    uint32_t free_nvram;
-    uint32_t free_ram;
+    int installed_app;
+    int free_nvram;
+    int free_ram;
 };
 
 int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *info);

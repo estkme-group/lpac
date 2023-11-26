@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "derutil.h"
+
 #include "asn1c/asn1/GetEuiccInfo2Request.h"
 #include "asn1c/asn1/EUICCInfo2.h"
 
@@ -14,6 +16,27 @@ static int _versiontype_to_string(char *out, int out_len, VersionType_t version)
         return -1;
 
     return snprintf(out, out_len, "%d.%d.%d", version.buf[0], version.buf[1], version.buf[2]);
+}
+
+static int _read_ext_resource(uint8_t *buf, int len, uint16_t tag)
+{
+    int ret;
+    uint8_t *value;
+    int value_len;
+
+    value_len = euicc_derutil_tag_find(&value, buf, len, &tag, 0);
+    if (value_len == -1)
+    {
+        return -1;
+    }
+
+    ret = 0;
+    for (int i = 0; i < value_len; i++)
+    {
+        ret |= (value[i] << i);
+    }
+
+    return ret;
 }
 
 int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *info)
@@ -65,39 +88,19 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *inf
     if (asn1resp->javacardVersion)
     {
         _versiontype_to_string(info->uicc_firmware_version, sizeof(info->uicc_firmware_version),
-                           *asn1resp->javacardVersion);
+                               *asn1resp->javacardVersion);
     }
     if (asn1resp->globalplatformVersion)
     {
         _versiontype_to_string(info->global_platform_version, sizeof(info->global_platform_version),
-                           *asn1resp->globalplatformVersion);
+                               *asn1resp->globalplatformVersion);
     }
     memcpy(info->sas_accreditation_number, asn1resp->sasAcreditationNumber.buf,
            asn1resp->sasAcreditationNumber.size);
 
-    for (int i = 0; i < asn1resp->extCardResource.size;)
-    {
-        uint8_t tag = asn1resp->extCardResource.buf[i];
-        i++;
-        uint8_t length = asn1resp->extCardResource.buf[i];
-        i++;
-        uint8_t *b = &asn1resp->extCardResource.buf[i];
-        switch (tag)
-        {
-        case 0x81:
-            info->installed_app = b[0];
-            i += length;
-        case 0x82:
-            info->free_nvram = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | (b[0]);
-            i += length;
-        case 0x83:
-            info->free_ram = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | (b[0]);
-            i += length;
-        default:
-            i += length;
-            continue;
-        }
-    }
+    info->installed_app = _read_ext_resource(asn1resp->extCardResource.buf, asn1resp->extCardResource.size, 0x81);
+    info->free_nvram = _read_ext_resource(asn1resp->extCardResource.buf, asn1resp->extCardResource.size, 0x82);
+    info->free_ram = _read_ext_resource(asn1resp->extCardResource.buf, asn1resp->extCardResource.size, 0x83);
 
     goto exit;
 err:
