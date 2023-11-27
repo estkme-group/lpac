@@ -104,12 +104,12 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
 
         if (asn1p->profileState)
         {
-            asn_INTEGER2long(asn1p->profileState, &p->profileState);
+            asn_INTEGER2ulong(asn1p->profileState, &p->profileState);
         }
 
         if (asn1p->profileClass)
         {
-            asn_INTEGER2long(asn1p->profileClass, &p->profileClass);
+            asn_INTEGER2ulong(asn1p->profileClass, &p->profileClass);
         }
 
         if (asn1p->profileNickname)
@@ -144,7 +144,7 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
 
         if (asn1p->iconType)
         {
-            asn_INTEGER2long(asn1p->iconType, &p->iconType);
+            asn_INTEGER2ulong(asn1p->iconType, &p->iconType);
         }
 
         if (asn1p->icon)

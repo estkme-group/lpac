@@ -30,7 +30,7 @@ struct es10c_profile_info
     char *profileNickname;
     char *serviceProviderName;
     char *profileName;
-    long iconType;
+    unsigned long iconType;
     char *icon;
 };
 
