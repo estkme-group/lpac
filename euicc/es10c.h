@@ -25,8 +25,8 @@ struct es10c_profile_info
 {
     char iccid[(10 * 2) + 1];
     char isdpAid[(16 * 2) + 1];
-    long profileState;
-    long profileClass;
+    unsigned long profileState;
+    unsigned long profileClass;
     char *profileNickname;
     char *serviceProviderName;
     char *profileName;
