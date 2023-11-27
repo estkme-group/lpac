@@ -15,15 +15,23 @@ enum es10c_profile_info_class
     ES10C_PROFILE_INFO_CLASS_OPERATIONAL = 2,
 };
 
+enum es10_icon_type
+{
+    ES10_ICON_TYPE_JPEG = 0,
+    ES10_ICON_TYPE_PNG = 1,
+};
+
 struct es10c_profile_info
 {
     char iccid[(10 * 2) + 1];
     char isdpAid[(16 * 2) + 1];
-    unsigned long profileState;
-    unsigned long profileClass;
+    long profileState;
+    long profileClass;
     char *profileNickname;
     char *serviceProviderName;
     char *profileName;
+    long iconType;
+    char *icon;
 };
 
 int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **profiles, int *count);

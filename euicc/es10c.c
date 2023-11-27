@@ -2,6 +2,7 @@
 #include "es10x.private.h"
 
 #include "hexutil.h"
+#include "base64.h"
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -138,6 +139,24 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
             {
                 memcpy(p->profileName, asn1p->profileName->buf, asn1p->profileName->size);
                 p->profileName[asn1p->profileName->size] = '\0';
+            }
+        }
+
+        if (asn1p->iconType)
+        {
+            asn_INTEGER2long(asn1p->iconType, &p->iconType);
+        }
+
+        if (asn1p->icon)
+        {
+            char *icon = malloc(asn1p->icon->size + 1);
+            p->icon = malloc(euicc_base64_encode_len(icon) + 1);
+            if (icon && p->icon)
+            {
+                memcpy(icon, asn1p->icon->buf, asn1p->icon->size);
+                icon[asn1p->icon->size] = '\0';
+                euicc_base64_encode(p->icon, icon, asn1p->icon->size);
+                free(icon);
             }
         }
     }
