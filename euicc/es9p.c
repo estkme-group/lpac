@@ -262,6 +262,7 @@ int es9p_handle_notification(struct euicc_ctx *ctx, const char *smdp, const char
 int es9p_cancel_session(struct euicc_ctx *ctx, const char *smdp, const char *transaction_id, const char *b64_cancel_session_response)
 {
     // /gsma/rsp2/es9plus/cancelSession
+    return -1;
 }
 
 int es11_authenticate_client(struct euicc_ctx *ctx, const char *smds, const char *transaction_id, const char *b64_authenticate_server_response, struct es11_authenticate_client_resp *resp)
