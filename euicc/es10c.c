@@ -2,6 +2,7 @@
 #include "es10x.private.h"
 
 #include "hexutil.h"
+#include "base64.h"
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -103,12 +104,12 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
 
         if (asn1p->profileState)
         {
-            asn_INTEGER2long(asn1p->profileState, &p->profileState);
+            asn_INTEGER2ulong(asn1p->profileState, &p->profileState);
         }
 
         if (asn1p->profileClass)
         {
-            asn_INTEGER2long(asn1p->profileClass, &p->profileClass);
+            asn_INTEGER2ulong(asn1p->profileClass, &p->profileClass);
         }
 
         if (asn1p->profileNickname)
@@ -138,6 +139,25 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
             {
                 memcpy(p->profileName, asn1p->profileName->buf, asn1p->profileName->size);
                 p->profileName[asn1p->profileName->size] = '\0';
+            }
+        }
+
+        p->iconType = ES10C_ICON_TYPE_INVALID;
+        if (asn1p->iconType)
+        {
+            asn_INTEGER2long(asn1p->iconType, &p->iconType);
+        }
+
+        if (asn1p->icon)
+        {
+            p->icon = malloc(euicc_base64_encode_len(asn1p->icon->size));
+            if (p->icon)
+            {
+                euicc_base64_encode(p->icon, asn1p->icon->buf, asn1p->icon->size);
+            }
+            else
+            {
+                p->iconType = ES10C_ICON_TYPE_INVALID;
             }
         }
     }
@@ -863,6 +883,7 @@ void es10c_profile_info_free_all(struct es10c_profile_info *profiles, int count)
         free(profiles[i].profileNickname);
         free(profiles[i].serviceProviderName);
         free(profiles[i].profileName);
+        free(profiles[i].icon);
     }
     free(profiles);
 }
