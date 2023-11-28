@@ -15,10 +15,11 @@ enum es10c_profile_info_class
     ES10C_PROFILE_INFO_CLASS_OPERATIONAL = 2,
 };
 
-enum es10_icon_type
+enum es10c_icon_type
 {
-    ES10_ICON_TYPE_JPEG = 0,
-    ES10_ICON_TYPE_PNG = 1,
+    ES10C_ICON_TYPE_INVALID = -1,
+    ES10C_ICON_TYPE_JPEG = 0,
+    ES10C_ICON_TYPE_PNG = 1,
 };
 
 struct es10c_profile_info
@@ -30,7 +31,7 @@ struct es10c_profile_info
     char *profileNickname;
     char *serviceProviderName;
     char *profileName;
-    unsigned long iconType;
+    long iconType;
     char *icon;
 };
 

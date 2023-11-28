@@ -142,21 +142,22 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
             }
         }
 
+        p->iconType = ES10C_ICON_TYPE_INVALID;
         if (asn1p->iconType)
         {
-            asn_INTEGER2ulong(asn1p->iconType, &p->iconType);
+            asn_INTEGER2long(asn1p->iconType, &p->iconType);
         }
 
         if (asn1p->icon)
         {
-            char *icon = malloc(asn1p->icon->size + 1);
-            p->icon = malloc(euicc_base64_encode_len(icon) + 1);
-            if (icon && p->icon)
+            p->icon = malloc(euicc_base64_encode_len(asn1p->icon->size));
+            if (p->icon)
             {
-                memcpy(icon, asn1p->icon->buf, asn1p->icon->size);
-                icon[asn1p->icon->size] = '\0';
-                euicc_base64_encode(p->icon, icon, asn1p->icon->size);
-                free(icon);
+                euicc_base64_encode(p->icon, asn1p->icon->buf, asn1p->icon->size);
+            }
+            else
+            {
+                p->iconType = ES10C_ICON_TYPE_INVALID;
             }
         }
     }
@@ -882,6 +883,7 @@ void es10c_profile_info_free_all(struct es10c_profile_info *profiles, int count)
         free(profiles[i].profileNickname);
         free(profiles[i].serviceProviderName);
         free(profiles[i].profileName);
+        free(profiles[i].icon);
     }
     free(profiles);
 }
