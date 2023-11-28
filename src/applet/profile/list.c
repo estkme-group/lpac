@@ -29,8 +29,11 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringToObject(jprofile, "profileNickname", profiles[i].profileNickname);
         cJSON_AddStringToObject(jprofile, "serviceProviderName", profiles[i].serviceProviderName);
         cJSON_AddStringToObject(jprofile, "profileName", profiles[i].profileName);
-        cJSON_AddNumberToObject(jprofile, "iconType", profiles[i].iconType);
-        cJSON_AddStringToObject(jprofile, "icon", profiles[i].icon);
+        if (profiles[i].iconType != ES10C_ICON_TYPE_INVALID)
+        {
+            cJSON_AddNumberToObject(jprofile, "iconType", profiles[i].iconType);
+            cJSON_AddStringToObject(jprofile, "icon", profiles[i].icon);
+        }
         cJSON_AddNumberToObject(jprofile, "profileClass", profiles[i].profileClass);
         cJSON_AddItemToArray(jdata, jprofile);
     }
