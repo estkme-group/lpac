@@ -32,5 +32,3 @@ int euicc_apdu_lc(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla
 int euicc_apdu_le(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla, uint8_t ins, uint8_t p1, uint8_t p2, uint8_t requestlen);
 int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, const struct apdu_request *req, uint32_t req_len);
 void euicc_apdu_response_free(struct apdu_response *resp);
-void euicc_apdu_request_print(struct apdu_request *req);
-void euicc_apdu_response_print(struct apdu_response *resp);
