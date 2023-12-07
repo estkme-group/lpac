@@ -37,14 +37,19 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     strcat(full_url, url_prefix);
     strcat(full_url, url);
     strcat(full_url, url_postfix);
-    // printf("url: %s\n", full_url);
-    // printf("tx: %s\n", str_tx);
+
+    if (getenv("LIBEUICC_DEBUG_HTTP"))
+    {
+        fprintf(stderr, "[DEBUG] [HTTP] [TX] url: %s, data: %s\n", full_url, str_tx);
+    }
     if (ctx->interface.http->transmit(ctx, full_url, &rcode_mearged, &rbuf, &rlen, str_tx, strlen(str_tx), lpa_header) < 0)
     {
         goto err;
     }
-    // printf("rcode: %d\n", rcode_mearged);
-    // printf("rx: %s\n", rbuf);
+    if (getenv("LIBEUICC_DEBUG_HTTP"))
+    {
+        fprintf(stderr, "[DEBUG] [HTTP] [RX] rcode: %d, data: %s\n", rcode_mearged, rbuf);
+    }
 
     free(full_url);
     full_url = NULL;
