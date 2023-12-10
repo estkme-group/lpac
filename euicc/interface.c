@@ -40,7 +40,7 @@ int euicc_apdu_le(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla
 
 static void euicc_apdu_request_print(const struct apdu_request *req, uint32_t request_len)
 {
-    fprintf(stderr, "[DEBUG] [REQ] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X, Data: ", req->cla, req->ins, req->p1, req->p2, req->length);
+    fprintf(stderr, "[DEBUG] [APDU] [TX] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X, Data: ", req->cla, req->ins, req->p1, req->p2, req->length);
     for (int i = 0; i < (request_len - sizeof(struct apdu_request)); i++)
         fprintf(stderr, "%02X ", (req->data[i] & 0xFF));
     fprintf(stderr, "\n");
@@ -48,7 +48,7 @@ static void euicc_apdu_request_print(const struct apdu_request *req, uint32_t re
 
 static void euicc_apdu_response_print(const struct apdu_response *resp)
 {
-    fprintf(stderr, "[DEBUG] [RES] SW1: %02X, SW2: %02X, Data: ", resp->sw1, resp->sw2);
+    fprintf(stderr, "[DEBUG] [APDU] [RX] SW1: %02X, SW2: %02X, Data: ", resp->sw1, resp->sw2);
     for (int i = 0; i < resp->length; i++)
         fprintf(stderr, "%02X ", (resp->data[i] & 0xFF));
     fprintf(stderr, "\n");
@@ -61,7 +61,9 @@ int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, c
     memset(response, 0x00, sizeof(*response));
 
     if (getenv("LIBEUICC_DEBUG_APDU"))
+    {
         euicc_apdu_request_print(request, request_len);
+    }
 
     if (in->transmit(ctx, &response->data, &response->length, (uint8_t *)request, request_len) < 0)
         return -1;
@@ -74,7 +76,9 @@ int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, c
     response->length -= 2;
 
     if (getenv("LIBEUICC_DEBUG_APDU"))
+    {
         euicc_apdu_response_print(response);
+    }
 
     return 0;
 }
