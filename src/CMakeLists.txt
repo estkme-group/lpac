@@ -7,7 +7,10 @@ aux_source_directory(applet/chip DIR_LPAC_SRCS)
 aux_source_directory(applet/notification DIR_LPAC_SRCS)
 aux_source_directory(applet/profile DIR_LPAC_SRCS)
 add_executable(lpac ${DIR_LPAC_SRCS})
-set_target_properties(lpac PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
+set_target_properties(lpac PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output"
+    BUILD_RPATH "$ORIGIN"
+)
 target_link_libraries(lpac euicc)
 
 if(LINUX_MINGW32)
