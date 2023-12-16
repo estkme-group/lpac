@@ -22,7 +22,7 @@ if(LINUX_MINGW32)
     set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 endif()
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.8)
 project (lpac)
 
 

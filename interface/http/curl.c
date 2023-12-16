@@ -146,7 +146,7 @@ EUICC_SHARED_EXPORT int libhttpinterface_init(struct euicc_http_interface *ifstr
     if (!(libcurl_path = getenv("LIBCURL")))
     {
 #if defined(__MINGW32__)
-        libcurl_path = ".\\libcurl.dll";
+        libcurl_path = "libcurl.dll";
 #elif defined(__APPLE__)
         libcurl_path = "libcurl.4.dylib";
 #else

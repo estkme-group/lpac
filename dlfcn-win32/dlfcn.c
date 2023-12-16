@@ -414,8 +414,11 @@ void *dlopen( const char *file, int mode )
              * LOAD_WITH_ALTERED_SEARCH_PATH is used to make it behave more closely
              * to UNIX's search paths (start with system folders instead of current
              * folder).
+             * FIXME: Remove LOAD_WITH_ALTERED_SEARCH_PATH because it lead to Undefined
+             * Behavior and doesn't provide expected search paths.
+             * See also: https://github.com/dlfcn-win32/dlfcn-win32/issues/104
              */
-            hModule = LoadLibraryExA( lpFileName, NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
+            hModule = LoadLibraryExA( lpFileName, NULL, NULL );
 
             if( !hModule )
             {
