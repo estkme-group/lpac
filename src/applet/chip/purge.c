@@ -11,8 +11,7 @@ static int applet_main(int argc, char **argv)
 
     if (argc < 2)
     {
-        printf("Usage: %s <confirm>\n", argv[0]);
-        printf("\t<confirm>: [yes|other]\n");
+        printf("Usage: %s [yes|other]\n", argv[0]);
         printf("\t\tConfirm purge eUICC, all data will lost!\n");
         return -1;
     }

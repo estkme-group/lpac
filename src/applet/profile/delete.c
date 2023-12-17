@@ -13,7 +13,7 @@ static int applet_main(int argc, char **argv)
 
     if (argc < 2)
     {
-        printf("Usage: %s <iccid/aid>\n", argv[0]);
+        printf("Usage: %s [iccid/aid]\n", argv[0]);
         return -1;
     }
 
