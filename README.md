@@ -250,13 +250,13 @@ lpac profile <选项> [参数]
 	选项:
 		list			枚举出您的 eUICC Profile
 		nickname		给指定的 Profile 设置别名
-		示例: lpac profile nickname <Profile 的 ICCID> <别名>
+		示例: lpac profile nickname [Profile 的 ICCID] [别名]
 		enable			启用指定的 Profile，括号内为 RefreshFlag 状态，默认启用，可省略
-		示例: lpac profile enable <Profile 的 ICCID/AID> (1/0)
+		示例: lpac profile enable [Profile 的 ICCID/AID] (1/0)
 		disable			禁用指定的 Profile，括号内为 RefreshFlag 状态，默认启用，可省略
-		示例: lpac profile disable <Profile 的 ICCID/AID> (1/0)
+		示例: lpac profile disable [Profile 的 ICCID/AID] (1/0)
 		delete			删除指定的 Profile
-		示例: lpac profile delete <Profile 的 ICCID/AID>
+		示例: lpac profile delete [Profile 的 ICCID/AID]
 		download		Pull 式下载新的 Profile
 		discovery		Push 式检查可下载的新 Profile
 ```
