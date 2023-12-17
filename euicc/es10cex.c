@@ -98,7 +98,6 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *inf
     memcpy(info->sas_accreditation_number, asn1resp->sasAcreditationNumber.buf,
            asn1resp->sasAcreditationNumber.size);
 
-    info->installed_app = _read_ext_resource(asn1resp->extCardResource.buf, asn1resp->extCardResource.size, 0x81);
     info->free_nvram = _read_ext_resource(asn1resp->extCardResource.buf, asn1resp->extCardResource.size, 0x82);
     info->free_ram = _read_ext_resource(asn1resp->extCardResource.buf, asn1resp->extCardResource.size, 0x83);
 

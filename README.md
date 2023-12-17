@@ -233,7 +233,6 @@ lpac chip <选项> [参数]
         "global_platform_version": "2.3.0",
         "protection_profile_version": "0.0.1",
         "sas_accreditation_number": "GI-BA-UP-0419",
-        "installed_app": 0,
         "free_nvram": 295424,
         "free_ram": 295424
       }

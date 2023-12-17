@@ -44,7 +44,6 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringToObject(jeuiccinfo2, "global_platform_version", euiccinfo2.global_platform_version);
         cJSON_AddStringToObject(jeuiccinfo2, "protection_profile_version", euiccinfo2.pp_version);
         cJSON_AddStringToObject(jeuiccinfo2, "sas_accreditation_number", euiccinfo2.sas_accreditation_number);
-        cJSON_AddNumberToObject(jeuiccinfo2, "installed_app", euiccinfo2.installed_app);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_nvram", euiccinfo2.free_nvram);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_ram", euiccinfo2.free_ram);
     }
