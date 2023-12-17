@@ -11,7 +11,6 @@ struct es10cex_euiccinfo2
     char global_platform_version[16];
     char sas_accreditation_number[65];
     char pp_version[16];
-    int installed_app;
     int free_nvram;
     int free_ram;
 };
