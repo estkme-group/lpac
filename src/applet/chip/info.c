@@ -32,18 +32,18 @@ static int applet_main(int argc, char **argv)
     }
 
     jdata = cJSON_CreateObject();
-    cJSON_AddStringToObject(jdata, "eid", eid);
-    cJSON_AddStringToObject(jdata, "default_smds", default_smds);
-    cJSON_AddStringToObject(jdata, "default_smdp", default_smdp);
+    cJSON_AddStringOrNullToObject(jdata, "eid", eid);
+    cJSON_AddStringOrNullToObject(jdata, "default_smds", default_smds);
+    cJSON_AddStringOrNullToObject(jdata, "default_smdp", default_smdp);
     if (jeuiccinfo2)
     {
-        cJSON_AddStringToObject(jeuiccinfo2, "profile_version", euiccinfo2.profile_version);
-        cJSON_AddStringToObject(jeuiccinfo2, "sgp22_version", euiccinfo2.sgp22_version);
-        cJSON_AddStringToObject(jeuiccinfo2, "euicc_firmware_version", euiccinfo2.euicc_firmware_version);
-        cJSON_AddStringToObject(jeuiccinfo2, "uicc_firmware_version", euiccinfo2.uicc_firmware_version);
-        cJSON_AddStringToObject(jeuiccinfo2, "global_platform_version", euiccinfo2.global_platform_version);
-        cJSON_AddStringToObject(jeuiccinfo2, "protection_profile_version", euiccinfo2.pp_version);
-        cJSON_AddStringToObject(jeuiccinfo2, "sas_accreditation_number", euiccinfo2.sas_accreditation_number);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "profile_version", euiccinfo2.profile_version);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "sgp22_version", euiccinfo2.sgp22_version);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "euicc_firmware_version", euiccinfo2.euicc_firmware_version);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "uicc_firmware_version", euiccinfo2.uicc_firmware_version);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "global_platform_version", euiccinfo2.global_platform_version);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "protection_profile_version", euiccinfo2.pp_version);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "sas_accreditation_number", euiccinfo2.sas_accreditation_number);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_nvram", euiccinfo2.free_nvram);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_ram", euiccinfo2.free_ram);
     }

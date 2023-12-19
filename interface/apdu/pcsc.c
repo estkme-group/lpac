@@ -12,7 +12,7 @@
 
 #include <euicc/interface.h>
 
-#include <cjson/cJSON.h>
+#include <cjson/cJSON_ex.h>
 
 #define INTERFACE_SELECT_ENV "DRIVER_IFID"
 
@@ -274,7 +274,7 @@ static int json_print(cJSON *jpayload)
         goto err;
     }
 
-    if (cJSON_AddStringToObject(jroot, "type", "driver") == NULL)
+    if (cJSON_AddStringOrNullToObject(jroot, "type", "driver") == NULL)
     {
         goto err;
     }
@@ -371,12 +371,12 @@ static int pcsc_list_iter(int index, const char *reader, void *userdata)
         return -1;
     }
 
-    if (!cJSON_AddStringToObject(jreader, "env", index_str))
+    if (!cJSON_AddStringOrNullToObject(jreader, "env", index_str))
     {
         return -1;
     }
 
-    if (!cJSON_AddStringToObject(jreader, "name", reader))
+    if (!cJSON_AddStringOrNullToObject(jreader, "name", reader))
     {
         return -1;
     }
@@ -426,7 +426,7 @@ EUICC_SHARED_EXPORT int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        if (!cJSON_AddStringToObject(payload, "env", INTERFACE_SELECT_ENV))
+        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_ENV))
         {
             return -1;
         }

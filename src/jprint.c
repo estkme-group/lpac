@@ -16,11 +16,11 @@ void jprint_error(const char *function_name, const char *detail)
     }
 
     jroot = cJSON_CreateObject();
-    cJSON_AddStringToObject(jroot, "type", "lpa");
+    cJSON_AddStringOrNullToObject(jroot, "type", "lpa");
     jpayload = cJSON_CreateObject();
     cJSON_AddNumberToObject(jpayload, "code", -1);
-    cJSON_AddStringToObject(jpayload, "message", function_name);
-    cJSON_AddStringToObject(jpayload, "data", detail);
+    cJSON_AddStringOrNullToObject(jpayload, "message", function_name);
+    cJSON_AddStringOrNullToObject(jpayload, "data", detail);
     cJSON_AddItemToObject(jroot, "payload", jpayload);
 
     jstr = cJSON_PrintUnformatted(jroot);
@@ -37,10 +37,10 @@ void jprint_progress(const char *function_name)
     char *jstr = NULL;
 
     jroot = cJSON_CreateObject();
-    cJSON_AddStringToObject(jroot, "type", "progress");
+    cJSON_AddStringOrNullToObject(jroot, "type", "progress");
     jpayload = cJSON_CreateObject();
     cJSON_AddNumberToObject(jpayload, "code", 0);
-    cJSON_AddStringToObject(jpayload, "message", function_name);
+    cJSON_AddStringOrNullToObject(jpayload, "message", function_name);
     cJSON_AddNullToObject(jpayload, "data");
     cJSON_AddItemToObject(jroot, "payload", jpayload);
 
@@ -58,10 +58,10 @@ void jprint_success(cJSON *jdata)
     char *jstr = NULL;
 
     jroot = cJSON_CreateObject();
-    cJSON_AddStringToObject(jroot, "type", "lpa");
+    cJSON_AddStringOrNullToObject(jroot, "type", "lpa");
     jpayload = cJSON_CreateObject();
     cJSON_AddNumberToObject(jpayload, "code", 0);
-    cJSON_AddStringToObject(jpayload, "message", "success");
+    cJSON_AddStringOrNullToObject(jpayload, "message", "success");
     if (jdata)
     {
         cJSON_AddItemToObject(jpayload, "data", jdata);

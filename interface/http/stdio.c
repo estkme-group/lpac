@@ -4,7 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <cjson/cJSON.h>
+#include <cjson/cJSON_ex.h>
 
 #include <euicc/interface.h>
 
@@ -152,7 +152,7 @@ static int json_print(cJSON *jpayload)
         goto err;
     }
 
-    if (cJSON_AddStringToObject(jroot, "type", "http") == NULL)
+    if (cJSON_AddStringOrNullToObject(jroot, "type", "http") == NULL)
     {
         goto err;
     }
@@ -206,11 +206,11 @@ static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len, con
     {
         goto err;
     }
-    if (cJSON_AddStringToObject(jpayload, "url", url) == NULL)
+    if (cJSON_AddStringOrNullToObject(jpayload, "url", url) == NULL)
     {
         goto err;
     }
-    if (cJSON_AddStringToObject(jpayload, "tx", tx_hex) == NULL)
+    if (cJSON_AddStringOrNullToObject(jpayload, "tx", tx_hex) == NULL)
     {
         goto err;
     }

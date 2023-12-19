@@ -23,15 +23,15 @@ static int applet_main(int argc, char **argv)
         cJSON *jprofile = NULL;
 
         jprofile = cJSON_CreateObject();
-        cJSON_AddStringToObject(jprofile, "iccid", profiles[i].iccid);
-        cJSON_AddStringToObject(jprofile, "isdpAid", profiles[i].isdpAid);
-        cJSON_AddStringToObject(jprofile, "profileState", profiles[i].profileState);
-        cJSON_AddStringToObject(jprofile, "profileNickname", profiles[i].profileNickname);
-        cJSON_AddStringToObject(jprofile, "serviceProviderName", profiles[i].serviceProviderName);
-        cJSON_AddStringToObject(jprofile, "profileName", profiles[i].profileName);
-        cJSON_AddStringToObject(jprofile, "iconType", profiles[i].iconType);
-        cJSON_AddStringToObject(jprofile, "icon", profiles[i].icon);
-        cJSON_AddStringToObject(jprofile, "profileClass", profiles[i].profileClass);
+        cJSON_AddStringOrNullToObject(jprofile, "iccid", profiles[i].iccid);
+        cJSON_AddStringOrNullToObject(jprofile, "isdpAid", profiles[i].isdpAid);
+        cJSON_AddStringOrNullToObject(jprofile, "profileState", profiles[i].profileState);
+        cJSON_AddStringOrNullToObject(jprofile, "profileNickname", profiles[i].profileNickname);
+        cJSON_AddStringOrNullToObject(jprofile, "serviceProviderName", profiles[i].serviceProviderName);
+        cJSON_AddStringOrNullToObject(jprofile, "profileName", profiles[i].profileName);
+        cJSON_AddStringOrNullToObject(jprofile, "iconType", profiles[i].iconType);
+        cJSON_AddStringOrNullToObject(jprofile, "icon", profiles[i].icon);
+        cJSON_AddStringOrNullToObject(jprofile, "profileClass", profiles[i].profileClass);
         cJSON_AddItemToArray(jdata, jprofile);
     }
     es10c_profile_info_free_all(profiles, profiles_count);

@@ -24,9 +24,9 @@ static int applet_main(int argc, char **argv)
 
         jnotification = cJSON_CreateObject();
         cJSON_AddNumberToObject(jnotification, "seqNumber", notifications[i].seqNumber);
-        cJSON_AddStringToObject(jnotification, "profileManagementOperation", notifications[i].profileManagementOperation);
-        cJSON_AddStringToObject(jnotification, "notificationAddress", notifications[i].notificationAddress);
-        cJSON_AddStringToObject(jnotification, "iccid", notifications[i].iccid);
+        cJSON_AddStringOrNullToObject(jnotification, "profileManagementOperation", notifications[i].profileManagementOperation);
+        cJSON_AddStringOrNullToObject(jnotification, "notificationAddress", notifications[i].notificationAddress);
+        cJSON_AddStringOrNullToObject(jnotification, "iccid", notifications[i].iccid);
 
         cJSON_AddItemToArray(jdata, jnotification);
     }
