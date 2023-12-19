@@ -104,12 +104,45 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
 
         if (asn1p->profileState)
         {
-            asn_INTEGER2ulong(asn1p->profileState, &p->profileState);
+            long profileState;
+
+            asn_INTEGER2long(asn1p->profileState, &profileState);
+
+            switch (profileState)
+            {
+            case ES10C_PROFILE_INFO_STATE_DISABLED:
+                p->profileState = strdup("disabled");
+                break;
+            case ES10C_PROFILE_INFO_STATE_ENABLED:
+                p->profileState = strdup("enabled");
+                break;
+            default:
+                p->profileState = strdup("unknown");
+                break;
+            }
         }
 
         if (asn1p->profileClass)
         {
-            asn_INTEGER2ulong(asn1p->profileClass, &p->profileClass);
+            long profileClass;
+
+            asn_INTEGER2long(asn1p->profileClass, &profileClass);
+
+            switch (profileClass)
+            {
+            case ES10C_PROFILE_INFO_CLASS_TEST:
+                p->profileClass = strdup("test");
+                break;
+            case ES10C_PROFILE_INFO_CLASS_PROVISIONING:
+                p->profileClass = strdup("provisioning");
+                break;
+            case ES10C_PROFILE_INFO_CLASS_OPERATIONAL:
+                p->profileClass = strdup("operational");
+                break;
+            default:
+                p->profileClass = strdup("unknown");
+                break;
+            }
         }
 
         if (asn1p->profileNickname)
@@ -142,10 +175,28 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
             }
         }
 
-        p->iconType = ES10C_ICON_TYPE_INVALID;
         if (asn1p->iconType)
         {
-            asn_INTEGER2long(asn1p->iconType, &p->iconType);
+            long iconType;
+
+            asn_INTEGER2long(asn1p->iconType, &iconType);
+
+            switch (iconType)
+            {
+            case ES10C_ICON_TYPE_JPEG:
+                p->iconType = strdup("jpeg");
+                break;
+            case ES10C_ICON_TYPE_PNG:
+                p->iconType = strdup("png");
+                break;
+            default:
+                p->iconType = strdup("unknown");
+                break;
+            }
+        }
+        else
+        {
+            p->iconType = strdup("none");
         }
 
         if (asn1p->icon)
@@ -154,10 +205,6 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
             if (p->icon)
             {
                 euicc_base64_encode(p->icon, asn1p->icon->buf, asn1p->icon->size);
-            }
-            else
-            {
-                p->iconType = ES10C_ICON_TYPE_INVALID;
             }
         }
     }
@@ -880,9 +927,12 @@ void es10c_profile_info_free_all(struct es10c_profile_info *profiles, int count)
     }
     for (int i = 0; i < count; i++)
     {
+        free(profiles[i].profileState);
+        free(profiles[i].profileClass);
         free(profiles[i].profileNickname);
         free(profiles[i].serviceProviderName);
         free(profiles[i].profileName);
+        free(profiles[i].iconType);
         free(profiles[i].icon);
     }
     free(profiles);
@@ -892,10 +942,9 @@ void es10c_profile_info_print(struct es10c_profile_info *p)
 {
     printf("\ticcid: %s\n", p->iccid);
     printf("\tisdpAid: %s\n", p->isdpAid);
-    printf("\tprofileState: %s\n", p->profileState ? "Enabled" : "Disabled");
+    printf("\tprofileState: %s\n", p->profileState);
     printf("\tprofileNickname: %s\n", p->profileNickname ? p->profileNickname : "(null)");
     printf("\tserviceProviderName: %s\n", p->serviceProviderName ? p->serviceProviderName : "(null)");
     printf("\tprofileName: %s\n", p->profileName ? p->profileName : "(null)");
-    printf("\tprofileClass: %s\n", p->profileClass == ES10C_PROFILE_INFO_CLASS_TEST ? "Test" : p->profileClass == ES10C_PROFILE_INFO_CLASS_PROVISIONING ? "Provisioning"
-                                                                                                                                                        : "Operational");
+    printf("\tprofileClass: %s\n", p->profileClass);
 }

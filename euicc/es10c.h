@@ -26,12 +26,12 @@ struct es10c_profile_info
 {
     char iccid[(10 * 2) + 1];
     char isdpAid[(16 * 2) + 1];
-    unsigned long profileState;
-    unsigned long profileClass;
+    char *profileState;
+    char *profileClass;
     char *profileNickname;
     char *serviceProviderName;
     char *profileName;
-    long iconType;
+    char *iconType;
     char *icon;
 };
 

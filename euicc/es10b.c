@@ -577,7 +577,21 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
         memset(metadata, 0, sizeof(*metadata));
         asn_INTEGER2ulong(&asn1metadata->seqNumber, &metadata->seqNumber);
 
-        metadata->profileManagementOperation = asn1metadata->profileManagementOperation.buf[0];
+        switch (asn1metadata->profileManagementOperation.buf[0])
+        {
+        case 128:
+            metadata->profileManagementOperation = strdup("install");
+            break;
+        case 64:
+            metadata->profileManagementOperation = strdup("enable");
+            break;
+        case 32:
+            metadata->profileManagementOperation = strdup("disable");
+            break;
+        case 16:
+            metadata->profileManagementOperation = strdup("delete");
+            break;
+        }
 
         metadata->notificationAddress = malloc(asn1metadata->notificationAddress.size + 1);
         if (metadata->notificationAddress)
@@ -951,6 +965,7 @@ void es10b_notification_metadata_free_all(struct es10b_notification_metadata *me
     }
     for (int i = 0; i < count; i++)
     {
+        free(metadatas[i].profileManagementOperation);
         free(metadatas[i].notificationAddress);
         free(metadatas[i].iccid);
     }
@@ -960,7 +975,7 @@ void es10b_notification_metadata_free_all(struct es10b_notification_metadata *me
 void es10b_notification_metadata_print(struct es10b_notification_metadata *n)
 {
     printf("\tseqNumber: %ld\n", n->seqNumber);
-    printf("\tprofileManagementOperation: %d\n", n->profileManagementOperation);
+    printf("\tprofileManagementOperation: %s\n", n->profileManagementOperation);
     printf("\tnotificationAddress: %s\n", n->notificationAddress ? n->notificationAddress : "(null)");
     printf("\ticcid: %s\n", n->iccid ? n->iccid : "(null)");
 }

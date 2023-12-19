@@ -25,16 +25,13 @@ static int applet_main(int argc, char **argv)
         jprofile = cJSON_CreateObject();
         cJSON_AddStringToObject(jprofile, "iccid", profiles[i].iccid);
         cJSON_AddStringToObject(jprofile, "isdpAid", profiles[i].isdpAid);
-        cJSON_AddNumberToObject(jprofile, "profileState", profiles[i].profileState);
+        cJSON_AddStringToObject(jprofile, "profileState", profiles[i].profileState);
         cJSON_AddStringToObject(jprofile, "profileNickname", profiles[i].profileNickname);
         cJSON_AddStringToObject(jprofile, "serviceProviderName", profiles[i].serviceProviderName);
         cJSON_AddStringToObject(jprofile, "profileName", profiles[i].profileName);
-        if (profiles[i].iconType != ES10C_ICON_TYPE_INVALID)
-        {
-            cJSON_AddNumberToObject(jprofile, "iconType", profiles[i].iconType);
-            cJSON_AddStringToObject(jprofile, "icon", profiles[i].icon);
-        }
-        cJSON_AddNumberToObject(jprofile, "profileClass", profiles[i].profileClass);
+        cJSON_AddStringToObject(jprofile, "iconType", profiles[i].iconType);
+        cJSON_AddStringToObject(jprofile, "icon", profiles[i].icon);
+        cJSON_AddStringToObject(jprofile, "profileClass", profiles[i].profileClass);
         cJSON_AddItemToArray(jdata, jprofile);
     }
     es10c_profile_info_free_all(profiles, profiles_count);
