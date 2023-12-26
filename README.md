@@ -25,7 +25,6 @@ lpac 是一个跨平台的本地 Profile 代理程序。致力于成为兼容性
   - [编译](#编译)
   - [使用](#使用)
     - [Linux pcscd](#linux-pcscd)
-    - [图形前端](#图形前端)
     - [库说明](#库说明)
     - [CLI](#cli)
     - [返回值](#返回值)
@@ -112,10 +111,6 @@ wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip
 sudo apt install pcscd
 sudo systemctl start pcscd
 ```
-
-### 图形前端
-
-- [lpa-agent](https://github.com/estkme-group/lpa-agent): 基于 Web 的 lpac 前端
 
 ### 库说明
 默认会使用 `libapduinterface` APDU 库和 `libhttpinterface` HTTP 库，请提前重命名以选择需要使用的库。或者通过 `APDU_INTERFACE` 和 `HTTP_INTERFACE` 环境变量告诉 lpac 使用的 APDU 库和 HTTP 库。库文件在 lpac 程序目录下，根据系统不同，后缀为 `dll`, `so`, `dylib`
