@@ -5,6 +5,9 @@
 
 #ifdef __MINGW32__
 #include <winscard.h>
+#elif defined(__CYGWIN__)
+#include "/usr/include/w32api/winscard.h"
+#include "/usr/include/w32api/wtypes.h"
 #else
 #include <PCSC/wintypes.h>
 #include <PCSC/winscard.h>

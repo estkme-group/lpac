@@ -12,6 +12,8 @@
 
 #if defined(__MINGW32__)
 #define INTERFACELIB_POSTFIX "dll"
+#elif defined(__CYGWIN__)
+#define INTERFACELIB_POSTFIX "dll"
 #elif defined(__APPLE__)
 #define INTERFACELIB_POSTFIX "dylib"
 #else

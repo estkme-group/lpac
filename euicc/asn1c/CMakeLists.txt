@@ -4,7 +4,7 @@ add_library (euiccasn1 STATIC ${LIB_EUICC_ASN1_SRCS})
 target_compile_definitions(euiccasn1 PRIVATE HAVE_CONFIG_H)
 
 option(LINUX_MINGW32 "Build for windows on Linux" OFF)
-if(LINUX_MINGW32)
+if(LINUX_MINGW32 AND NOT CYGWIN)
     add_subdirectory(mingw32)
     target_link_libraries(euiccasn1 euiccasn1mingw32)
 endif()
