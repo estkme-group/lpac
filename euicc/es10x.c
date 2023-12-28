@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#define ISD_R_AID (const unsigned char *)"\xA0\x00\x00\x05\x59\x10\x10\xFF\xFF\xFF\xFF\x89\x00\x00\x01\x00"
+#define ISD_R_AID "\xA0\x00\x00\x05\x59\x10\x10\xFF\xFF\xFF\xFF\x89\x00\x00\x01\x00"
 
 #define APDU_EUICC_HEADER 0x80, 0xE2
 #define APDU_CONTINUE_READ_HEADER 0x80, 0xC0, 0x00, 0x00
