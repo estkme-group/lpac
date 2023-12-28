@@ -334,6 +334,7 @@ err:
     free(*rx);
     *rx = NULL;
     *rx_len = 0;
+    *rcode = 500;
 exit:
     free(rx_json);
     cJSON_Delete(rx_jroot);
