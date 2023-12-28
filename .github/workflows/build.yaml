@@ -43,13 +43,13 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           mkdir build-mingw && cd build-mingw && cmake -DLINUX_MINGW32=ON .. && make -j$(nproc)
-          wget https://curl.se/windows/dl-8.5.0_3/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+          wget https://curl.se/windows/dl-8.5.0_3/curl-8.5.0_3-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
           zip -r -j lpac-windows-x86_64-mingw.zip output/*
 
       - name: Build for Windows(Cygwin)
         if: runner.os == 'Windows'
         run: |
-          mkdir build-cygwin && cd build-cygwin && cmake -DLINUX_MINGW32=ON -DCYGWIN=ON .. && make
+          mkdir build-cygwin && cd build-cygwin && cmake -DCYGWIN=ON .. && make
           wget https://curl.se/windows/dl-8.5.0_3/curl-8.5.0_3-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
           cp C:\tools\cygwin\bin\cygwin1.dll output
           zip -r -j lpac-windows-x86_64-cygwin.zip output/*

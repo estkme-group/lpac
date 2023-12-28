@@ -60,7 +60,7 @@ With `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed
 ```bash
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac && mkdir build && cd build
-cmake -DLINUX_MINGW32=ON -DCYGWIN=ON .. && make
+cmake -DCYGWIN=ON .. && make
 # Download libcurl
 wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
 ```
