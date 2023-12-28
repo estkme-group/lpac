@@ -7,7 +7,11 @@ lpac 是一个跨平台的本地 Profile 代理程序。致力于成为兼容性
 下载地址: 
 [Github Release](https://github.com/estkme-group/lpac/releases/latest)
 
-加入我们的 [Telegram 群组](https://t.me/estkme)进行讨论！
+关于 Release 的预构建分发：
+- macOS 理论上需要 12 以后版本，无法运行请自行编译
+- Linux 基于 Ubuntu 22.04 构建，需要安装 pcscd libpcsclite 依赖。无法运行请自行编译
+
+加入我们的 [Telegram 群组](https://t.me/estkme) 进行讨论！
 
 特性：
 - 支持激活码(Activate Code)和确认码(Confirm Code)
@@ -24,7 +28,7 @@ lpac 是一个跨平台的本地 Profile 代理程序。致力于成为兼容性
   - [目录](#目录)
   - [编译](#编译)
   - [使用](#使用)
-    - [Linux pcscd](#linux-pcscd)
+    - [Linux 依赖](#linux-依赖)
     - [库说明](#库说明)
     - [CLI](#cli)
     - [返回值](#返回值)
@@ -75,6 +79,8 @@ make
 <details>
 <summary>Windows</summary>
 
+使用 MinGW 编译的 lpac 存在无法发送通知的 bug，如果不需要用到该功能可以忽略。如有需要可尝试使用 Cygwin 编译
+
 - 在 Linux 上编译
 
 ```bash
@@ -99,18 +105,35 @@ cmake -DLINUX_MINGW32=ON .. && ninja
 wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
 ```
 编译后的二进制在 output 目录内.
+
+- 在 Windows 上编译(Cygwin)
+
+安装好 `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget`
+
+```bash
+git clone --depth=1 https://github.com/estkme-group/lpac
+cd lpac && mkdir build && cd build
+cmake -DLINUX_MINGW32=ON -DCYGWIN=ON .. && make
+# 下载 libcurl
+wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+```
+编译后的二进制在 output 目录内.
+
+在 Cygwin shell 外运行程序需要把 `cygwin1.dll` 放置一份于程序目录下。对于默认路径安装的 Cygwin 这个文件应该位于 `C:\cygwin64\bin\cygwin1.dll`
 </details>
 
 
 ## 使用
 
-### Linux pcscd
+### Linux 依赖
 
 在 Linux 下访问 PCSC 读卡器需要安装 `pcscd` 并启动。
 ```bash
 sudo apt install pcscd
 sudo systemctl start pcscd
 ```
+
+`libpcsclite` 也需要安装
 
 ### 库说明
 默认会使用 `libapduinterface` APDU 库和 `libhttpinterface` HTTP 库，请提前重命名以选择需要使用的库。或者通过 `APDU_INTERFACE` 和 `HTTP_INTERFACE` 环境变量告诉 lpac 使用的 APDU 库和 HTTP 库。库文件在 lpac 程序目录下，根据系统不同，后缀为 `dll`, `so`, `dylib`
@@ -131,10 +154,10 @@ HTTP:
 
 <summary>Windows(使用PowerShell)</summary>
 
-   ```
-		$env:APDU_INTERFACE=".\libapduinterface_pcsc.dll"
-		$env:HTTP_INTERFACE=".\libhttpinterface_curl.dll"
-   ```
+```
+$env:APDU_INTERFACE=".\libapduinterface_pcsc.dll"
+$env:HTTP_INTERFACE=".\libhttpinterface_curl.dll"
+```
 
 </details>
 
@@ -142,10 +165,10 @@ HTTP:
 
 <summary>Linux</summary>
 
-   ```
-		export APDU_INTERFACE=./libapduinterface_pcsc.so
-		export HTTP_INTERFACE=./libhttpinterface_curl.so
-   ```
+```
+export APDU_INTERFACE=./libapduinterface_pcsc.so
+export HTTP_INTERFACE=./libhttpinterface_curl.so
+```
 
 </details>
 
@@ -153,10 +176,10 @@ HTTP:
 
 <summary>macOS</summary>
 
-   ```
-		export APDU_INTERFACE=./libapduinterface_pcsc.dylib
-		export HTTP_INTERFACE=./libhttpinterface_curl.dylib
-   ```
+```
+export APDU_INTERFACE=./libapduinterface_pcsc.dylib
+export HTTP_INTERFACE=./libhttpinterface_curl.dylib
+```
 
 </details>
 

@@ -5,7 +5,7 @@ target_link_libraries(apduinterface_pcsc cjson-static)
 set_target_properties(apduinterface_pcsc PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 set_target_properties(apduinterface_pcsc PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
 
-if(LINUX_MINGW32)
+if(LINUX_MINGW32 OR CYGWIN)
     target_link_libraries(apduinterface_pcsc winscard)
 elseif (APPLE)
     target_link_libraries(apduinterface_pcsc "-framework PCSC")

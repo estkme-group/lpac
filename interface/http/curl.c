@@ -147,6 +147,8 @@ EUICC_SHARED_EXPORT int libhttpinterface_init(struct euicc_http_interface *ifstr
     {
 #if defined(__MINGW32__)
         libcurl_path = "libcurl.dll";
+#elif defined(__CYGWIN__)
+        libcurl_path = "libcurl.dll";
 #elif defined(__APPLE__)
         libcurl_path = "libcurl.4.dylib";
 #else

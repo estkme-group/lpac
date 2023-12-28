@@ -2,25 +2,34 @@
 
 [中文](README.md)
 
-LPAC is a cross platform local profile agent program. Committed to becoming the most compatible, powerful, and concise LPA program.
+LPAC is a cross platform local profile agent program.
+
+Features:
+- Support Activate Code and **Confirm Code**
+- Support custom IMEI sent to server
+- Support esim Discovery(Push)
+- Notification manage
+- Lookup eUICC chip info
+- etc
 
 Download: 
 [Github Release](https://github.com/estkme-group/lpac/releases/latest)
 
-Join our [Telegram Group](https://t.me/estkme)to discuss!
+lpac is dynamic-linked, Release is built by Github action, if you can't run it you need to compile by yourself
+
+Join our [Telegram Group](https://t.me/estkme) to discuss!
 
 # Usage
 
-## Linux pcscd
+## Linux dependency
 You need to install `pcscd` and keep its daemon running to access pcsc smart card reader.
 ```bash
 sudo apt install pcscd
 sudo systemctl start pcscd
 ```
 
-## GUI Frontend
+`libpcsclite` is alse needed
 
-- [lpa-agent](https://github.com/estkme-group/lpa-agent): Web based lpac frontend
 
 # Compile
 
@@ -39,6 +48,24 @@ make
 WIP
 
 ## Windows
+
+Due to a [bug in asn1c](https://github.com/vlm/asn1c/issues/196), the MinGW version of lpac cannot send notification successfully. Building with Cygwin seems to avoid it.
+
+Windows need prebuilt libcurl.dll, you can replace the download link to newest curl version.
+
+- Build on Windows(Cygwin)
+
+With `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed
+
+```bash
+git clone --depth=1 https://github.com/estkme-group/lpac
+cd lpac && mkdir build && cd build
+cmake -DLINUX_MINGW32=ON -DCYGWIN=ON .. && make
+# Download libcurl
+wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+```
+To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folder to distribute.
+`cygwin1.dll` is located in `C:\cygwin64\bin\cygwin1.dll` (Default Cygwin installation location)
 
 - Build on Linux(MINGW)
 
