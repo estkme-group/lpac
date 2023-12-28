@@ -62,7 +62,7 @@ int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es
 
         memset(&sha256ctx, 0, sizeof(sha256ctx));
         euicc_sha256_init(&sha256ctx);
-        euicc_sha256_update(&sha256ctx, param->str_checkcode, strlen(param->str_checkcode));
+        euicc_sha256_update(&sha256ctx, (uint8_t *)param->str_checkcode, strlen(param->str_checkcode));
         euicc_sha256_final(&sha256ctx, hashCC);
 
         memcpy(merged, hashCC, sizeof(hashCC));
@@ -648,7 +648,7 @@ int es10b_retrieve_notification(struct euicc_ctx *ctx, char **b64_payload, char 
     RetrieveNotificationsListResponse_t *asn1resp = NULL;
     PendingNotification_t *asn1notification;
     NotificationMetadata_t *asn1metadata;
-    char *payload = NULL;
+    uint8_t *payload = NULL;
     unsigned payload_length = 0;
 
     *b64_payload = NULL;
@@ -882,7 +882,7 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
             goto err;
         }
         memset(ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.imei, 0, sizeof(Octet8_t));
-        if (OCTET_STRING_fromBuf(ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.imei, binimei, binimei_len) < 0)
+        if (OCTET_STRING_fromBuf(ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.imei, (const char *)binimei, binimei_len) < 0)
         {
             goto err;
         }
@@ -891,9 +891,9 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
 
     if (!param->tac)
     {
-        param->tac = "\x35\x29\x06\x11";
+        param->tac = (const unsigned char *)"\x35\x29\x06\x11";
     }
-    if (OCTET_STRING_fromBuf(&ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.tac, param->tac, 4) < 0)
+    if (OCTET_STRING_fromBuf(&ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.tac, (const char *)param->tac, 4) < 0)
     {
         goto err;
     }

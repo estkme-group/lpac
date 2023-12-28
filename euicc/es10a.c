@@ -153,7 +153,7 @@ static int iter_SetDefaultDpAddressResponse(struct apdu_response *response, void
         goto err;
     }
 
-    asn_INTEGER2ulong(&asn1resp->setDefaultDpAddressResult, eresult);
+    asn_INTEGER2long(&asn1resp->setDefaultDpAddressResult, eresult);
     goto exit;
 
 err:

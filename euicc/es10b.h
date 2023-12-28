@@ -27,7 +27,7 @@ struct es10b_authenticate_server_param
     const char *b64_server_certificate;
     const char *matchingId;
     const char *imei;
-    const char *tac;
+    const unsigned char *tac;
 };
 
 enum es10b_cancel_session_reason

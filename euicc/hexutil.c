@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int euicc_hexutil_bin2hex(char *output, unsigned output_len, const char *bin, int bin_len)
+int euicc_hexutil_bin2hex(char *output, unsigned output_len, const unsigned char *bin, int bin_len)
 {
     const char hexDigits[] = "0123456789abcdef";
 
@@ -29,12 +29,12 @@ int euicc_hexutil_bin2hex(char *output, unsigned output_len, const char *bin, in
     return 0;
 }
 
-int euicc_hexutil_hex2bin(char *output, unsigned output_len, const char *str)
+int euicc_hexutil_hex2bin(unsigned char *output, unsigned output_len, const char *str)
 {
     return euicc_hexutil_hex2bin_r(output, output_len, str, strlen(str));
 }
 
-int euicc_hexutil_hex2bin_r(char *output, unsigned output_len, const char *str, unsigned str_len)
+int euicc_hexutil_hex2bin_r(unsigned char *output, unsigned output_len, const char *str, unsigned str_len)
 {
     int length;
 
@@ -94,7 +94,7 @@ int euicc_hexutil_hex2bin_r(char *output, unsigned output_len, const char *str, 
     return length;
 }
 
-int euicc_hexutil_gsmbcd2bin(char *output, unsigned output_len, const char *str)
+int euicc_hexutil_gsmbcd2bin(unsigned char *output, unsigned output_len, const char *str)
 {
     unsigned str_length;
     unsigned idx = 0;
@@ -135,7 +135,7 @@ int euicc_hexutil_gsmbcd2bin(char *output, unsigned output_len, const char *str)
     return idx;
 }
 
-int euicc_hexutil_bin2gsmbcd(char *output, unsigned output_len, const char *binData, int length)
+int euicc_hexutil_bin2gsmbcd(char *output, unsigned output_len, const unsigned char *binData, int length)
 {
     int j = 0;
 

@@ -8,7 +8,7 @@
 
 #include <euicc/interface.h>
 
-static int hexutil_bin2hex(char *output, unsigned output_len, const char *bin, int bin_len)
+static int hexutil_bin2hex(char *output, unsigned output_len, const unsigned char *bin, int bin_len)
 {
     const char hexDigits[] = "0123456789abcdef";
 
@@ -33,7 +33,7 @@ static int hexutil_bin2hex(char *output, unsigned output_len, const char *bin, i
     return 0;
 }
 
-static int hexutil_hex2bin(char *output, unsigned output_len, const char *str, unsigned str_len)
+static int hexutil_hex2bin(unsigned char *output, unsigned output_len, const char *str, unsigned str_len)
 {
     int length;
 

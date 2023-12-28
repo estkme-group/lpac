@@ -9,7 +9,7 @@
 static FILE *fuart;
 static int logic_channel = 0;
 
-static int hexutil_hex2bin(char *output, unsigned output_len, const char *str, unsigned str_len)
+static int hexutil_hex2bin(unsigned char *output, unsigned output_len, const char *str, unsigned str_len)
 {
     int length;
 
@@ -71,7 +71,7 @@ static int hexutil_hex2bin(char *output, unsigned output_len, const char *str, u
 
 static int at_expect(char **response, const char *expected)
 {
-    uint8_t buffer[1024];
+    char buffer[1024];
 
     if (response)
         *response = NULL;

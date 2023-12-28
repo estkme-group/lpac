@@ -42,7 +42,7 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     {
         fprintf(stderr, "[DEBUG] [HTTP] [TX] url: %s, data: %s\n", full_url, str_tx);
     }
-    if (ctx->interface.http->transmit(ctx, full_url, &rcode_mearged, &rbuf, &rlen, str_tx, strlen(str_tx), lpa_header) < 0)
+    if (ctx->interface.http->transmit(ctx, full_url, &rcode_mearged, &rbuf, &rlen, (const uint8_t *)str_tx, strlen(str_tx), lpa_header) < 0)
     {
         goto err;
     }

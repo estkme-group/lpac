@@ -39,7 +39,7 @@ int euicc_base64_decode_len(const char *bufcoded)
     return nbytesdecoded + 1;
 }
 
-int euicc_base64_decode(char *bufplain, const char *bufcoded)
+int euicc_base64_decode(unsigned char *bufplain, const char *bufcoded)
 {
     int nbytesdecoded;
     register const unsigned char *bufin;
@@ -94,7 +94,7 @@ int euicc_base64_encode_len(int len)
     return ((len + 2) / 3 * 4) + 1;
 }
 
-int euicc_base64_encode(char *encoded, const char *string, int len)
+int euicc_base64_encode(char *encoded, const unsigned char *string, int len)
 {
     int i;
     char *p;

@@ -10,14 +10,12 @@
 #include <dlfcn.h>
 #endif
 
-#if defined(__MINGW32__)
-#define INTERFACELIB_POSTFIX "dll"
-#elif defined(__CYGWIN__)
-#define INTERFACELIB_POSTFIX "dll"
+#if defined(WIN32)
+#define INTERFACELIB_EXTENSION "dll"
 #elif defined(__APPLE__)
-#define INTERFACELIB_POSTFIX "dylib"
+#define INTERFACELIB_EXTENSION "dylib"
 #else
-#define INTERFACELIB_POSTFIX "so"
+#define INTERFACELIB_EXTENSION "so"
 #endif
 
 static struct applet_entry applet_apdu = {
@@ -52,12 +50,12 @@ static void dlsym_interfaces_get_path(void)
 {
     if (!(libapduinterface_path = getenv("APDU_INTERFACE")))
     {
-        libapduinterface_path = "libapduinterface_pcsc." INTERFACELIB_POSTFIX;
+        libapduinterface_path = "libapduinterface_pcsc." INTERFACELIB_EXTENSION;
     }
 
     if (!(libhttpinterface_path = getenv("HTTP_INTERFACE")))
     {
-        libhttpinterface_path = "libhttpinterface_curl." INTERFACELIB_POSTFIX;
+        libhttpinterface_path = "libhttpinterface_curl." INTERFACELIB_EXTENSION;
     }
 }
 

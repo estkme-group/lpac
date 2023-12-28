@@ -12,6 +12,14 @@
 #include <euicc/interface.h>
 
 /* BEGIN MINIMAL CURL DEFINE */
+#if defined(WIN32)
+#define LIBCURL_DEFAULT_PATH "libcurl.dll"
+#elif defined(__APPLE__)
+#define LIBCURL_DEFAULT_PATH "libcurl.4.dylib"
+#else
+#define LIBCURL_DEFAULT_PATH "libcurl.so.4"
+#endif
+
 #define CURL_GLOBAL_DEFAULT ((1 << 0) | (1 << 1))
 #define CURLE_OK 0
 #define CURLOPT_URL 10002
@@ -145,15 +153,7 @@ EUICC_SHARED_EXPORT int libhttpinterface_init(struct euicc_http_interface *ifstr
 
     if (!(libcurl_path = getenv("LIBCURL")))
     {
-#if defined(__MINGW32__)
-        libcurl_path = "libcurl.dll";
-#elif defined(__CYGWIN__)
-        libcurl_path = "libcurl.dll";
-#elif defined(__APPLE__)
-        libcurl_path = "libcurl.4.dylib";
-#else
-        libcurl_path = "libcurl.so.4";
-#endif
+        libcurl_path = LIBCURL_DEFAULT_PATH;
     }
 
     if (!(libcurl_interface_dlhandle = dlopen(libcurl_path, RTLD_LAZY)))
