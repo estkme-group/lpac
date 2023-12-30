@@ -18,6 +18,21 @@ static int _versiontype_to_string(char *out, int out_len, VersionType_t version)
     return snprintf(out, out_len, "%d.%d.%d", version.buf[0], version.buf[1], version.buf[2]);
 }
 
+static char* _OCTET_STRING_to_hex(OCTET_STRING_t* in)
+{
+    const char * const byte2hex = "0123456789ABCDEF";
+    char *ret = (char*)malloc(sizeof(char) * (in->size * 2) + 1);
+    char *p = ret;
+    uint8_t *buf = in->buf;
+    uint8_t *end = buf + in->size;
+    for(; buf < end; buf++) {
+            *p++ = byte2hex[(*buf >> 4) & 0x0F];
+            *p++ = byte2hex[*buf & 0x0F];
+    }
+    *p = '\0';
+    return ret;
+}
+
 static int _read_ext_resource(uint8_t *buf, int len, uint16_t tag)
 {
     int ret;
@@ -94,6 +109,16 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *inf
     {
         _versiontype_to_string(info->global_platform_version, sizeof(info->global_platform_version),
                                *asn1resp->globalplatformVersion);
+    }
+    info->euicc_ci_public_key_id_list_for_verification.count = asn1resp->euiccCiPKIdListForVerification.list.count;
+    info->euicc_ci_public_key_id_list_for_verification.list = (char**)malloc(sizeof(char*) * info->euicc_ci_public_key_id_list_for_verification.count);
+    for (int i = 0; i < asn1resp->euiccCiPKIdListForVerification.list.count; i++) {
+        info->euicc_ci_public_key_id_list_for_verification.list[i] = _OCTET_STRING_to_hex(asn1resp->euiccCiPKIdListForVerification.list.array[i]);
+    }
+    info->euicc_ci_public_key_id_list_for_signing.count = asn1resp->euiccCiPKIdListForSigning.list.count;
+    info->euicc_ci_public_key_id_list_for_signing.list = (char**)malloc(sizeof(char*) * info->euicc_ci_public_key_id_list_for_signing.count);
+    for (int i = 0; i < asn1resp->euiccCiPKIdListForSigning.list.count; i++) {
+        info->euicc_ci_public_key_id_list_for_signing.list[i] = _OCTET_STRING_to_hex(asn1resp->euiccCiPKIdListForSigning.list.array[i]);
     }
     memcpy(info->sas_accreditation_number, asn1resp->sasAcreditationNumber.buf,
            asn1resp->sasAcreditationNumber.size);

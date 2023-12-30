@@ -46,6 +46,12 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringOrNullToObject(jeuiccinfo2, "sas_accreditation_number", euiccinfo2.sas_accreditation_number);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_nvram", euiccinfo2.free_nvram);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_ram", euiccinfo2.free_ram);
+        cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_verification",
+                cJSON_CreateStringArray((const char * const*)euiccinfo2.euicc_ci_public_key_id_list_for_verification.list,
+                    euiccinfo2.euicc_ci_public_key_id_list_for_verification.count));
+        cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_signing",
+                cJSON_CreateStringArray((const char * const*)euiccinfo2.euicc_ci_public_key_id_list_for_signing.list,
+                    euiccinfo2.euicc_ci_public_key_id_list_for_signing.count));
     }
     cJSON_AddItemToObject(jdata, "euiccinfo2", jeuiccinfo2);
 

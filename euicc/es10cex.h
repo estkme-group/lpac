@@ -9,6 +9,14 @@ struct es10cex_euiccinfo2
     char euicc_firmware_version[16];
     char uicc_firmware_version[16];
     char global_platform_version[16];
+    struct {
+        char **list;
+        int count;
+    } euicc_ci_public_key_id_list_for_verification;
+    struct {
+        char **list;
+        int count;
+    } euicc_ci_public_key_id_list_for_signing;
     char sas_accreditation_number[65];
     char pp_version[16];
     int free_nvram;
