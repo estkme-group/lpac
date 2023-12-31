@@ -126,3 +126,18 @@ exit:
 
     return fret;
 }
+
+int es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info)
+{
+    if (info->euicc_ci_public_key_id_list_for_verification.count) {
+        for (int i = 0; i < info->euicc_ci_public_key_id_list_for_verification.count; i++) {
+            free(info->euicc_ci_public_key_id_list_for_verification.list[i]);
+        }
+    }
+    if (info->euicc_ci_public_key_id_list_for_signing.count) {
+        for (int i = 0; i < info->euicc_ci_public_key_id_list_for_signing.count; i++) {
+            free(info->euicc_ci_public_key_id_list_for_signing.list[i]);
+        }
+    }
+    free(info);
+}
