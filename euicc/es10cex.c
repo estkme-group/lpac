@@ -96,15 +96,19 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *inf
         _versiontype_to_string(info->global_platform_version, sizeof(info->global_platform_version),
                                *asn1resp->globalplatformVersion);
     }
-    info->euicc_ci_public_key_id_list_for_verification.count = asn1resp->euiccCiPKIdListForVerification.list.count;
-    for (int i = 0; i < asn1resp->euiccCiPKIdListForVerification.list.count; i++) {
-        euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_verification.list[i], asn1resp->euiccCiPKIdListForVerification.list.array[i]->size * 2 + 1,
-                              asn1resp->euiccCiPKIdListForVerification.list.array[i]->buf, asn1resp->euiccCiPKIdListForVerification.list.array[i]->size);
+    if (asn1resp->euiccCiPKIdListForVerification.list.count) {
+        info->euicc_ci_public_key_id_list_for_verification.count = asn1resp->euiccCiPKIdListForVerification.list.count;
+        for (int i = 0; i < asn1resp->euiccCiPKIdListForVerification.list.count; i++) {
+            euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_verification.list[i], asn1resp->euiccCiPKIdListForVerification.list.array[i]->size * 2 + 1,
+                                asn1resp->euiccCiPKIdListForVerification.list.array[i]->buf, asn1resp->euiccCiPKIdListForVerification.list.array[i]->size);
+        }
     }
-    info->euicc_ci_public_key_id_list_for_signing.count = asn1resp->euiccCiPKIdListForSigning.list.count;
-    for (int i = 0; i < asn1resp->euiccCiPKIdListForSigning.list.count; i++) {
-        euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_signing.list[i], asn1resp->euiccCiPKIdListForSigning.list.array[i]->size * 2 + 1,
-                              asn1resp->euiccCiPKIdListForSigning.list.array[i]->buf, asn1resp->euiccCiPKIdListForSigning.list.array[i]->size);
+    if (asn1resp->euiccCiPKIdListForSigning.list.count) {
+        info->euicc_ci_public_key_id_list_for_signing.count = asn1resp->euiccCiPKIdListForSigning.list.count;
+        for (int i = 0; i < asn1resp->euiccCiPKIdListForSigning.list.count; i++) {
+            euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_signing.list[i], asn1resp->euiccCiPKIdListForSigning.list.array[i]->size * 2 + 1,
+                                asn1resp->euiccCiPKIdListForSigning.list.array[i]->buf, asn1resp->euiccCiPKIdListForSigning.list.array[i]->size);
+        }
     }
     memcpy(info->sas_accreditation_number, asn1resp->sasAcreditationNumber.buf,
            asn1resp->sasAcreditationNumber.size);
