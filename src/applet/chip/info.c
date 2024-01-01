@@ -10,7 +10,7 @@ static int applet_main(int argc, char **argv)
     char *eid = NULL;
     char *default_smdp = NULL;
     char *default_smds = NULL;
-    struct es10cex_euiccinfo2 *euiccinfo2 = NULL;
+    struct es10cex_euiccinfo2 *euiccinfo2 = (struct es10cex_euiccinfo2*)malloc(sizeof(struct es10cex_euiccinfo2));
     cJSON *jeuiccinfo2 = NULL;
     cJSON *jdata = NULL;
 
