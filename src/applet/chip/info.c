@@ -51,10 +51,10 @@ static int applet_main(int argc, char **argv)
         {
             cJSON *a = cJSON_CreateArray();
             char **p = euiccinfo2.euicc_ci_public_key_id_list_for_verification;
-            while (*p++)
+            while (*p)
             {
                 cJSON_AddItemToArray(a, cJSON_CreateString(*p));
-                free(*p);
+                free(*p++);
             }
             cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_verification", a);
             free(euiccinfo2.euicc_ci_public_key_id_list_for_verification);
@@ -67,10 +67,10 @@ static int applet_main(int argc, char **argv)
         {
             cJSON *a = cJSON_CreateArray();
             char **p = euiccinfo2.euicc_ci_public_key_id_list_for_signing;
-            while (*p++)
+            while (*p)
             {
                 cJSON_AddItemToArray(a, cJSON_CreateString(*p));
-                free(*p);
+                free(*p++);
             }
             cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_signing", a);
             free(euiccinfo2.euicc_ci_public_key_id_list_for_signing);

@@ -138,18 +138,18 @@ int es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info)
     if (info->euicc_ci_public_key_id_list_for_verification)
     {
         char **p = info->euicc_ci_public_key_id_list_for_verification;
-        while (*p++)
+        while (*p)
         {
-            free(*p);
+            free(*p++);
         }
         free(info->euicc_ci_public_key_id_list_for_verification);
     }
     if (info->euicc_ci_public_key_id_list_for_signing)
     {
         char **p = info->euicc_ci_public_key_id_list_for_signing;
-        while (*p++)
+        while (*p)
         {
-            free(*p);
+            free(*p++);
         }
         free(info->euicc_ci_public_key_id_list_for_signing);
     }
