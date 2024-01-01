@@ -98,21 +98,23 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *inf
     }
     if (asn1resp->euiccCiPKIdListForVerification.list.count)
     {
-        info->euicc_ci_public_key_id_list_for_verification.count = asn1resp->euiccCiPKIdListForVerification.list.count;
+        info->euicc_ci_public_key_id_list_for_verification = (char **)malloc(sizeof(char*) * (asn1resp->euiccCiPKIdListForVerification.list.count + 1));
         for (int i = 0; i < asn1resp->euiccCiPKIdListForVerification.list.count; i++)
         {
-            euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_verification.list[i], asn1resp->euiccCiPKIdListForVerification.list.array[i]->size * 2 + 1,
+            euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_verification[i], asn1resp->euiccCiPKIdListForVerification.list.array[i]->size * 2 + 1,
                                 asn1resp->euiccCiPKIdListForVerification.list.array[i]->buf, asn1resp->euiccCiPKIdListForVerification.list.array[i]->size);
         }
+        info->euicc_ci_public_key_id_list_for_verification[asn1resp->euiccCiPKIdListForVerification.list.count] = NULL;
     }
     if (asn1resp->euiccCiPKIdListForSigning.list.count)
     {
-        info->euicc_ci_public_key_id_list_for_signing.count = asn1resp->euiccCiPKIdListForSigning.list.count;
+        info->euicc_ci_public_key_id_list_for_signing = (char **)malloc(sizeof(char*) * (asn1resp->euiccCiPKIdListForSigning.list.count + 1));
         for (int i = 0; i < asn1resp->euiccCiPKIdListForSigning.list.count; i++)
         {
-            euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_signing.list[i], asn1resp->euiccCiPKIdListForSigning.list.array[i]->size * 2 + 1,
+            euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_signing[i], asn1resp->euiccCiPKIdListForSigning.list.array[i]->size * 2 + 1,
                                 asn1resp->euiccCiPKIdListForSigning.list.array[i]->buf, asn1resp->euiccCiPKIdListForSigning.list.array[i]->size);
         }
+        info->euicc_ci_public_key_id_list_for_signing[asn1resp->euiccCiPKIdListForSigning.list.count] = NULL;
     }
     memcpy(info->sas_accreditation_number, asn1resp->sasAcreditationNumber.buf,
            asn1resp->sasAcreditationNumber.size);
@@ -133,19 +135,23 @@ exit:
 
 int es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info)
 {
-    if (info->euicc_ci_public_key_id_list_for_verification.count)
+    if (info->euicc_ci_public_key_id_list_for_verification)
     {
-        for (int i = 0; i < info->euicc_ci_public_key_id_list_for_verification.count; i++)
+        char **p = info->euicc_ci_public_key_id_list_for_verification;
+        while (*p++)
         {
-            free(info->euicc_ci_public_key_id_list_for_verification.list[i]);
+            free(*p);
         }
+        free(info->euicc_ci_public_key_id_list_for_verification);
     }
-    if (info->euicc_ci_public_key_id_list_for_signing.count)
+    if (info->euicc_ci_public_key_id_list_for_signing)
     {
-        for (int i = 0; i < info->euicc_ci_public_key_id_list_for_signing.count; i++)
+        char **p = info->euicc_ci_public_key_id_list_for_signing;
+        while (*p++)
         {
-            free(info->euicc_ci_public_key_id_list_for_signing.list[i]);
+            free(*p);
         }
+        free(info->euicc_ci_public_key_id_list_for_signing);
     }
     free(info);
 }
