@@ -1,4 +1,5 @@
 #include "info.h"
+#include "cjson/cJSON.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -46,6 +47,38 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringOrNullToObject(jeuiccinfo2, "sas_accreditation_number", euiccinfo2.sas_accreditation_number);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_nvram", euiccinfo2.free_nvram);
         cJSON_AddNumberToObject(jeuiccinfo2, "free_ram", euiccinfo2.free_ram);
+        if (euiccinfo2.euicc_ci_public_key_id_list_for_verification)
+        {
+            cJSON *a = cJSON_CreateArray();
+            char **p = euiccinfo2.euicc_ci_public_key_id_list_for_verification;
+            while (*p)
+            {
+                cJSON_AddItemToArray(a, cJSON_CreateString(*p));
+                free(*p++);
+            }
+            cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_verification", a);
+            free(euiccinfo2.euicc_ci_public_key_id_list_for_verification);
+        }
+        else
+        {
+            cJSON_AddNullToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_verification");
+        }
+        if (euiccinfo2.euicc_ci_public_key_id_list_for_signing)
+        {
+            cJSON *a = cJSON_CreateArray();
+            char **p = euiccinfo2.euicc_ci_public_key_id_list_for_signing;
+            while (*p)
+            {
+                cJSON_AddItemToArray(a, cJSON_CreateString(*p));
+                free(*p++);
+            }
+            cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_signing", a);
+            free(euiccinfo2.euicc_ci_public_key_id_list_for_signing);
+        }
+        else
+        {
+            cJSON_AddNullToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_signing");
+        }
     }
     cJSON_AddItemToObject(jdata, "euiccinfo2", jeuiccinfo2);
 
