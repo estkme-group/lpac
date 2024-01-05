@@ -179,7 +179,7 @@ int es10x_init(struct euicc_ctx *ctx)
         return -1;
     }
 
-    if ((ctx->es10x_logic_channel = ctx->interface.apdu->logic_channel_open(ctx, ISD_R_AID, sizeof(ISD_R_AID) - 1)) < 0)
+    if ((ctx->es10x_logic_channel = ctx->interface.apdu->logic_channel_open(ctx, (const uint8_t *)ISD_R_AID, sizeof(ISD_R_AID) - 1)) < 0)
     {
         return -1;
     }

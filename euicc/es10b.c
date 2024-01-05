@@ -891,7 +891,7 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
 
     if (!param->tac)
     {
-        param->tac = "\x35\x29\x06\x11";
+        param->tac = (const uint8_t *)"\x35\x29\x06\x11";
     }
     if (OCTET_STRING_fromBuf(&ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.tac, (const char *)param->tac, 4) < 0)
     {

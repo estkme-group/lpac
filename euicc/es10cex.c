@@ -91,28 +91,33 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *inf
         _versiontype_to_string(info->uicc_firmware_version, sizeof(info->uicc_firmware_version),
                                *asn1resp->javacardVersion);
     }
+
     if (asn1resp->globalplatformVersion)
     {
         _versiontype_to_string(info->global_platform_version, sizeof(info->global_platform_version),
                                *asn1resp->globalplatformVersion);
     }
+
     if (asn1resp->euiccCiPKIdListForVerification.list.count)
     {
-        info->euicc_ci_public_key_id_list_for_verification = (char **)malloc(sizeof(char*) * (asn1resp->euiccCiPKIdListForVerification.list.count + 1));
+        info->euicc_ci_public_key_id_list_for_verification = (char **)malloc(sizeof(char *) * (asn1resp->euiccCiPKIdListForVerification.list.count + 1));
         for (int i = 0; i < asn1resp->euiccCiPKIdListForVerification.list.count; i++)
         {
+            info->euicc_ci_public_key_id_list_for_verification[i] = (char *)malloc((asn1resp->euiccCiPKIdListForVerification.list.array[i]->size * 2 + 1) * sizeof(char));
             euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_verification[i], asn1resp->euiccCiPKIdListForVerification.list.array[i]->size * 2 + 1,
-                                asn1resp->euiccCiPKIdListForVerification.list.array[i]->buf, asn1resp->euiccCiPKIdListForVerification.list.array[i]->size);
+                                  asn1resp->euiccCiPKIdListForVerification.list.array[i]->buf, asn1resp->euiccCiPKIdListForVerification.list.array[i]->size);
         }
         info->euicc_ci_public_key_id_list_for_verification[asn1resp->euiccCiPKIdListForVerification.list.count] = NULL;
     }
+
     if (asn1resp->euiccCiPKIdListForSigning.list.count)
     {
-        info->euicc_ci_public_key_id_list_for_signing = (char **)malloc(sizeof(char*) * (asn1resp->euiccCiPKIdListForSigning.list.count + 1));
+        info->euicc_ci_public_key_id_list_for_signing = (char **)malloc(sizeof(char *) * (asn1resp->euiccCiPKIdListForSigning.list.count + 1));
         for (int i = 0; i < asn1resp->euiccCiPKIdListForSigning.list.count; i++)
         {
+            info->euicc_ci_public_key_id_list_for_signing[i] = (char *)malloc((asn1resp->euiccCiPKIdListForSigning.list.array[i]->size * 2 + 1) * sizeof(char));
             euicc_hexutil_bin2hex(info->euicc_ci_public_key_id_list_for_signing[i], asn1resp->euiccCiPKIdListForSigning.list.array[i]->size * 2 + 1,
-                                asn1resp->euiccCiPKIdListForSigning.list.array[i]->buf, asn1resp->euiccCiPKIdListForSigning.list.array[i]->size);
+                                  asn1resp->euiccCiPKIdListForSigning.list.array[i]->buf, asn1resp->euiccCiPKIdListForSigning.list.array[i]->size);
         }
         info->euicc_ci_public_key_id_list_for_signing[asn1resp->euiccCiPKIdListForSigning.list.count] = NULL;
     }
@@ -133,24 +138,21 @@ exit:
     return fret;
 }
 
-int es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info)
+void es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info)
 {
     if (info->euicc_ci_public_key_id_list_for_verification)
     {
-        char **p = info->euicc_ci_public_key_id_list_for_verification;
-        while (*p)
-        {
-            free(*p++);
-        }
+        for (int i = 0; info->euicc_ci_public_key_id_list_for_verification[i] != NULL; i++)
+            free(info->euicc_ci_public_key_id_list_for_verification[i]);
+
         free(info->euicc_ci_public_key_id_list_for_verification);
     }
+
     if (info->euicc_ci_public_key_id_list_for_signing)
     {
-        char **p = info->euicc_ci_public_key_id_list_for_signing;
-        while (*p)
-        {
-            free(*p++);
-        }
+        for (int i = 0; info->euicc_ci_public_key_id_list_for_signing[i] != NULL; i++)
+            free(info->euicc_ci_public_key_id_list_for_signing[i]);
+
         free(info->euicc_ci_public_key_id_list_for_signing);
     }
     free(info);
