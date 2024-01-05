@@ -55,7 +55,6 @@ static int applet_main(int argc, char **argv)
                 cJSON_AddItemToArray(verification_keys, cJSON_CreateString(euiccinfo2.euicc_ci_public_key_id_list_for_verification[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_verification", verification_keys);
-            free(euiccinfo2.euicc_ci_public_key_id_list_for_verification);
         }
         else
         {
@@ -70,7 +69,6 @@ static int applet_main(int argc, char **argv)
                 cJSON_AddItemToArray(signing_keys, cJSON_CreateString(euiccinfo2.euicc_ci_public_key_id_list_for_signing[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_signing", signing_keys);
-            free(euiccinfo2.euicc_ci_public_key_id_list_for_signing);
         }
         else
         {
@@ -84,6 +82,7 @@ static int applet_main(int argc, char **argv)
     free(eid);
     free(default_smdp);
     free(default_smds);
+    es10cex_free_euiccinfo2(&euiccinfo2);
 
     return 0;
 }
