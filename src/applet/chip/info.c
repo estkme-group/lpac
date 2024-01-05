@@ -49,30 +49,27 @@ static int applet_main(int argc, char **argv)
         cJSON_AddNumberToObject(jeuiccinfo2, "free_ram", euiccinfo2.free_ram);
         if (euiccinfo2.euicc_ci_public_key_id_list_for_verification)
         {
-            cJSON *a = cJSON_CreateArray();
-            char **p = euiccinfo2.euicc_ci_public_key_id_list_for_verification;
-            while (*p)
+            cJSON *verification_keys = cJSON_CreateArray();
+            for (int i = 0; euiccinfo2.euicc_ci_public_key_id_list_for_verification[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(a, cJSON_CreateString(*p));
-                free(*p++);
+                cJSON_AddItemToArray(verification_keys, cJSON_CreateString(euiccinfo2.euicc_ci_public_key_id_list_for_verification[i]));
             }
-            cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_verification", a);
+            cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_verification", verification_keys);
             free(euiccinfo2.euicc_ci_public_key_id_list_for_verification);
         }
         else
         {
             cJSON_AddNullToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_verification");
         }
+
         if (euiccinfo2.euicc_ci_public_key_id_list_for_signing)
         {
-            cJSON *a = cJSON_CreateArray();
-            char **p = euiccinfo2.euicc_ci_public_key_id_list_for_signing;
-            while (*p)
+            cJSON *signing_keys = cJSON_CreateArray();
+            for (int i = 0; euiccinfo2.euicc_ci_public_key_id_list_for_signing[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(a, cJSON_CreateString(*p));
-                free(*p++);
+                cJSON_AddItemToArray(signing_keys, cJSON_CreateString(euiccinfo2.euicc_ci_public_key_id_list_for_signing[i]));
             }
-            cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_signing", a);
+            cJSON_AddItemToObject(jeuiccinfo2, "euicc_ci_public_key_id_list_for_signing", signing_keys);
             free(euiccinfo2.euicc_ci_public_key_id_list_for_signing);
         }
         else

@@ -18,4 +18,4 @@ struct es10cex_euiccinfo2
 };
 
 int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 *info);
-int es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info);
+void es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info);
