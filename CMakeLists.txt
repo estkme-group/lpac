@@ -1,5 +1,7 @@
 option(LINUX_MINGW32 "Build for windows on Linux" OFF)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 if (APPLE)
     message(STATUS "Building for macOS")
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
