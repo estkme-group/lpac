@@ -18,6 +18,8 @@ static int applet_main(int argc, char **argv)
     char *imei = NULL;
     char *confirmation_code = NULL;
 
+    struct es10a_euicc_configured_addresses configured_addresses;
+
     char *b64_euicc_challenge = NULL;
     char *b64_euicc_info_1 = NULL;
     struct es9p_initiate_authentication_resp es9p_initiate_authentication_resp;
@@ -66,10 +68,14 @@ static int applet_main(int argc, char **argv)
     if (smdp == NULL)
     {
         jprint_progress("es10a_get_euicc_configured_addresses");
-        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &smdp, NULL))
+        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses))
         {
             jprint_error("es10a_get_euicc_configured_addresses", NULL);
             return -1;
+        }
+        else
+        {
+            smdp = configured_addresses.defaultDpAddress;
         }
     }
 

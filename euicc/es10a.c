@@ -14,23 +14,15 @@
 #include "asn1c/asn1/SetDefaultDpAddressRequest.h"
 #include "asn1c/asn1/SetDefaultDpAddressResponse.h"
 
-struct userdata_get_euicc_configured_addresses
-{
-    char **smds;
-    char **smdp;
-};
-
 static int iter_EuiccConfiguredAddressesResponse(struct apdu_response *response, void *userdata)
 {
-    struct userdata_get_euicc_configured_addresses *ud = (struct userdata_get_euicc_configured_addresses *)userdata;
+    struct es10a_euicc_configured_addresses *ud = (struct es10a_euicc_configured_addresses *)userdata;
     int fret = 0;
     asn_dec_rval_t asn1drval;
     EuiccConfiguredAddressesResponse_t *asn1resp = NULL;
 
-    if (ud->smds)
-        *ud->smds = NULL;
-    if (ud->smdp)
-        *ud->smdp = NULL;
+    ud->defaultDpAddress = NULL;
+    ud->rootDsAddress = NULL;
 
     asn1drval = ber_decode(NULL, &asn_DEF_EuiccConfiguredAddressesResponse, (void **)&asn1resp, response->data, response->length);
     if (asn1drval.code != RC_OK)
@@ -38,54 +30,33 @@ static int iter_EuiccConfiguredAddressesResponse(struct apdu_response *response,
         goto err;
     }
 
-    if (ud->smds)
+    if (asn1resp->defaultDpAddress)
     {
-        *ud->smds = malloc(asn1resp->rootDsAddress.size + 1);
-        if (!*ud->smds)
+        ud->defaultDpAddress = malloc(asn1resp->defaultDpAddress->size + 1);
+        if (!ud->defaultDpAddress)
         {
             goto err;
         }
-        memcpy(*ud->smds, asn1resp->rootDsAddress.buf, asn1resp->rootDsAddress.size);
-        (*ud->smds)[asn1resp->rootDsAddress.size] = '\0';
+        memcpy(ud->defaultDpAddress, asn1resp->defaultDpAddress->buf, asn1resp->defaultDpAddress->size);
+        ud->defaultDpAddress[asn1resp->defaultDpAddress->size] = '\0';
     }
 
-    if (ud->smdp)
+    ud->rootDsAddress = malloc(asn1resp->rootDsAddress.size + 1);
+    if (!ud->rootDsAddress)
     {
-        if (asn1resp->defaultDpAddress)
-        {
-            *ud->smdp = malloc(asn1resp->defaultDpAddress->size + 1);
-            if (!*ud->smdp)
-            {
-                goto err;
-            }
-            memcpy(*ud->smdp, asn1resp->defaultDpAddress->buf, asn1resp->defaultDpAddress->size);
-            (*ud->smdp)[asn1resp->defaultDpAddress->size] = '\0';
-        }
-        else
-        {
-            *ud->smdp = malloc(1);
-            if (!*ud->smdp)
-            {
-                goto err;
-            }
-            (*ud->smdp)[0] = '\0';
-        }
+        goto err;
     }
+    memcpy(ud->rootDsAddress, asn1resp->rootDsAddress.buf, asn1resp->rootDsAddress.size);
+    ud->rootDsAddress[asn1resp->rootDsAddress.size] = '\0';
 
     goto exit;
 
 err:
     fret = -1;
-    if (*ud->smds)
-    {
-        free(*ud->smds);
-        *ud->smds = NULL;
-    }
-    if (*ud->smdp)
-    {
-        free(*ud->smdp);
-        *ud->smdp = NULL;
-    }
+    free(ud->rootDsAddress);
+    ud->rootDsAddress = NULL;
+    free(ud->defaultDpAddress);
+    ud->defaultDpAddress = NULL;
 exit:
     if (asn1resp)
     {
@@ -95,13 +66,12 @@ exit:
     return fret;
 }
 
-int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, char **smdp, char **smds)
+int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, struct es10a_euicc_configured_addresses *address)
 {
     int fret = 0;
     int ret;
     asn_enc_rval_t asn1erval;
     EuiccConfiguredAddressesRequest_t *asn1req = NULL;
-    struct userdata_get_euicc_configured_addresses ud;
 
     asn1req = malloc(sizeof(EuiccConfiguredAddressesRequest_t));
     if (!asn1req)
@@ -118,10 +88,7 @@ int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, char **smdp, cha
         goto err;
     }
 
-    ud.smdp = smdp;
-    ud.smds = smds;
-
-    ret = es10x_command_iter(ctx, ctx->g_asn1_der_request_buf, asn1erval.encoded, iter_EuiccConfiguredAddressesResponse, &ud);
+    ret = es10x_command_iter(ctx, ctx->g_asn1_der_request_buf, asn1erval.encoded, iter_EuiccConfiguredAddressesResponse, address);
     if (ret < 0)
     {
         goto err;
