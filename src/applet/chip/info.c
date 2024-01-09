@@ -94,6 +94,15 @@ static int applet_main(int argc, char **argv)
             cJSON_AddItemToObject(jeuiccinfo2, "euiccCiPKIdListForSigning", signing_keys);
         }
         cJSON_AddStringOrNullToObject(jeuiccinfo2, "euiccCategory", euiccinfo2->euiccCategory);
+        if (euiccinfo2->forbiddenProfilePolicyRules)
+        {
+            cJSON *jforbiddenProfilePolicyRules = cJSON_CreateArray();
+            for (int i = 0; euiccinfo2->forbiddenProfilePolicyRules[i] != NULL; i++)
+            {
+                cJSON_AddItemToArray(jforbiddenProfilePolicyRules, cJSON_CreateString(euiccinfo2->forbiddenProfilePolicyRules[i]));
+            }
+            cJSON_AddItemToObject(jeuiccinfo2, "forbiddenProfilePolicyRules", jforbiddenProfilePolicyRules);
+        }
         cJSON_AddStringOrNullToObject(jeuiccinfo2, "ppVersion", euiccinfo2->ppVersion);
         cJSON_AddStringOrNullToObject(jeuiccinfo2, "sasAcreditationNumber", euiccinfo2->sasAcreditationNumber);
         {

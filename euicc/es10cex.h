@@ -20,7 +20,7 @@ struct es10cex_euiccinfo2
     char **euiccCiPKIdListForVerification;
     char **euiccCiPKIdListForSigning;
     const char *euiccCategory;
-    // forbiddenProfilePolicyRules
+    const char **forbiddenProfilePolicyRules;
     char ppVersion[16];
     char sasAcreditationNumber[65];
     struct

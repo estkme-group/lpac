@@ -251,6 +251,16 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 **al
         }
     }
 
+    if (asn1resp->forbiddenProfilePolicyRules)
+    {
+        static const char *desc[] = {"pprUpdateControl", "ppr1", "ppr2", "ppr3"};
+
+        if (_read_bitwise_cap(&info->forbiddenProfilePolicyRules, asn1resp->forbiddenProfilePolicyRules->buf, asn1resp->forbiddenProfilePolicyRules->size, desc))
+        {
+            goto err;
+        }
+    }
+
     _versiontype_to_string(info->ppVersion, sizeof(info->ppVersion), asn1resp->ppVersion);
 
     memcpy(info->sasAcreditationNumber, asn1resp->sasAcreditationNumber.buf,
