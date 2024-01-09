@@ -192,7 +192,7 @@ lpac chip <subcommand> [parameters]
 
 #### profile
 
-Profile management, you can enumerate (list), set alias (nickname), enable (enable), disable (disable), delete (delete), Pull download (download) and Push download (discovery) configuration files.
+Profile management, you can list, set alias (nickname), enable, disable, delete, download and discovery Profiles.
 ```
 lpac profile <subcommand> [parameters]
   subcommand:
@@ -213,7 +213,7 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 > [!NOTE]
 > This function will only delete the Profile and issue a Notification, but it will not be sent automatically. You need to send it manually.
 
-##### Pull download requires connection to SM-DP+ server and the following additional parameters:
+##### Download requires connection to SM-DP+ server and the following additional parameters:
 - `-s`: SM-DP+ server, optional, if not provided, it will try to read the defaultsmdp attribute.
 - `-m`: Matching ID, activation code. optional.
 - `-c`: Confirmation Code, optional.
@@ -228,7 +228,7 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 ```
 </details>
 
-##### Push download requires connecting to the SM-DS server to do the profile push query
+##### Discovery requires connecting to the SM-DS server to do the profile push query
 
 The following parameters can be used to customize the IMEI and SM-DS server:
 - `-s`: SM-DS server. If not provided, it will be gsma official server "lpa.ds.gsma.com"
