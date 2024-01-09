@@ -580,16 +580,16 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
         switch (asn1metadata->profileManagementOperation.buf[0])
         {
         case 128:
-            metadata->profileManagementOperation = strdup("install");
+            metadata->profileManagementOperation = "install";
             break;
         case 64:
-            metadata->profileManagementOperation = strdup("enable");
+            metadata->profileManagementOperation = "enable";
             break;
         case 32:
-            metadata->profileManagementOperation = strdup("disable");
+            metadata->profileManagementOperation = "disable";
             break;
         case 16:
-            metadata->profileManagementOperation = strdup("delete");
+            metadata->profileManagementOperation = "delete";
             break;
         }
 
@@ -965,7 +965,6 @@ void es10b_notification_metadata_free_all(struct es10b_notification_metadata *me
     }
     for (int i = 0; i < count; i++)
     {
-        free(metadatas[i].profileManagementOperation);
         free(metadatas[i].notificationAddress);
         free(metadatas[i].iccid);
     }

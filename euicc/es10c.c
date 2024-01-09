@@ -111,13 +111,13 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
             switch (profileState)
             {
             case ES10C_PROFILE_INFO_STATE_DISABLED:
-                p->profileState = strdup("disabled");
+                p->profileState = "disabled";
                 break;
             case ES10C_PROFILE_INFO_STATE_ENABLED:
-                p->profileState = strdup("enabled");
+                p->profileState = "enabled";
                 break;
             default:
-                p->profileState = strdup("unknown");
+                p->profileState = "unknown";
                 break;
             }
         }
@@ -131,16 +131,16 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
             switch (profileClass)
             {
             case ES10C_PROFILE_INFO_CLASS_TEST:
-                p->profileClass = strdup("test");
+                p->profileClass = "test";
                 break;
             case ES10C_PROFILE_INFO_CLASS_PROVISIONING:
-                p->profileClass = strdup("provisioning");
+                p->profileClass = "provisioning";
                 break;
             case ES10C_PROFILE_INFO_CLASS_OPERATIONAL:
-                p->profileClass = strdup("operational");
+                p->profileClass = "operational";
                 break;
             default:
-                p->profileClass = strdup("unknown");
+                p->profileClass = "unknown";
                 break;
             }
         }
@@ -184,19 +184,19 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **p
             switch (iconType)
             {
             case ES10C_ICON_TYPE_JPEG:
-                p->iconType = strdup("jpeg");
+                p->iconType = "jpeg";
                 break;
             case ES10C_ICON_TYPE_PNG:
-                p->iconType = strdup("png");
+                p->iconType = "png";
                 break;
             default:
-                p->iconType = strdup("unknown");
+                p->iconType = "unknown";
                 break;
             }
         }
         else
         {
-            p->iconType = strdup("none");
+            p->iconType = "none";
         }
 
         if (asn1p->icon)
@@ -923,12 +923,9 @@ void es10c_profile_info_free_all(struct es10c_profile_info *profiles, int count)
     }
     for (int i = 0; i < count; i++)
     {
-        free(profiles[i].profileState);
-        free(profiles[i].profileClass);
         free(profiles[i].profileNickname);
         free(profiles[i].serviceProviderName);
         free(profiles[i].profileName);
-        free(profiles[i].iconType);
         free(profiles[i].icon);
     }
     free(profiles);

@@ -14,7 +14,7 @@ struct es10b_prepare_download_param
 struct es10b_notification_metadata
 {
     unsigned long seqNumber;
-    char *profileManagementOperation;
+    const char *profileManagementOperation;
     char *notificationAddress;
     char *iccid;
 };
