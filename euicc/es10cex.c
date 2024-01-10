@@ -297,4 +297,48 @@ exit:
 
 void es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info)
 {
+    if (info->euiccCiPKIdListForVerification)
+    {
+        for (int i = 0; info->euiccCiPKIdListForVerification[i] != NULL; i++)
+        {
+            free(info->euiccCiPKIdListForVerification[i]);
+        }
+        free(info->euiccCiPKIdListForVerification);
+    }
+
+    if (info->euiccCiPKIdListForSigning)
+    {
+        for (int i = 0; info->euiccCiPKIdListForSigning[i] != NULL; i++)
+        {
+            free(info->euiccCiPKIdListForSigning[i]);
+        }
+        free(info->euiccCiPKIdListForSigning);
+    }
+
+    if (info->uiccCapability)
+    {
+        free(info->uiccCapability);
+    }
+
+    if (info->rspCapability)
+    {
+        free(info->rspCapability);
+    }
+
+    if (info->forbiddenProfilePolicyRules)
+    {
+        free(info->forbiddenProfilePolicyRules);
+    }
+
+    if (info->certificationDataObject.discoveryBaseURL)
+    {
+        free(info->certificationDataObject.discoveryBaseURL);
+    }
+
+    if (info->certificationDataObject.platformLabel)
+    {
+        free(info->certificationDataObject.platformLabel);
+    }
+
+    free(info);
 }

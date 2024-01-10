@@ -119,7 +119,7 @@ static int applet_main(int argc, char **argv)
     jprint_success(jdata);
 
     free(eid);
-    // es10cex_free_euiccinfo2(&euiccinfo2);
+    es10cex_free_euiccinfo2(euiccinfo2);
 
     return 0;
 }
