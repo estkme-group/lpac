@@ -265,9 +265,11 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 <details>
 
 <summary>Example</summary>
+
 ```bash
 ./lpac profile download -s rsp.truphone.com -m "QR-G-5C-1LS-1W1Z9P7"
 ```
+
 </details>
 
 ##### Discovery requires connecting to the SM-DS server to query registered profile
@@ -282,40 +284,69 @@ The following parameters can be used to customize the IMEI and SM-DS server:
 
 ```json
 {
-   "type": "lpa", 
-   "payload": {
-      "code": 0, 
-      "message": "success", 
-      "data": [
-         {
-            "iccid": "8999990000... ",
-            "isdpAid": "A0000005591010...",
-            "profileState": 1,
-            "profileNickname": "tel-u",
-            "serviceProviderName": "eSIM",
-            "profileName": "NEWARE_CUG_V001",
-            "profileClass": 2
-         }, 
-         {
-            "iccid": "894447860000...", 
-            "isdpAid": "A0000005591011...", 
-            "profileState": 0,
-            "serviceProviderName": "BetterRoaming", 
-            "profileName": "BetterRoaming", 
-            "profileClass": 2
-         }
-      ]
-   }
+  "type": "lpa",
+  "payload": {
+    "code": 0,
+    "message": "success",
+    "data": [
+      {
+        "iccid": "89353...",
+        "isdpAid": "A0000005591010FFFFFFFF8900001000",
+        "profileState": "disabled",
+        "profileNickname": null,
+        "serviceProviderName": "Vodafone IE",
+        "profileName": "Vodafone IE eSIM",
+        "iconType": "png",
+        "icon": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAMFBMVEUAAADgp6booKDoeXfrZ2Xn0tLsUE3sOjbtLCjtHhnvoaDpwsLvdHH1y8r57u7///9RHT9XAAAADHRSTlMASX2gyyX3/////lKi+t6IAAACOUlEQVR42pWX27KsIAxE5SLpIOD//+0ua86ZNtSI0A++9SJprm6Pcj7Ej0LwblvT7mMSAKrXB4Ck6Pdpu49yOeWri6SQfMzZExRCQSEl19ZaLfEdcSRV49aUazsv5Ysc3bj3YOyiKPX8qH7qUoTx8DD23M5/yor/NcXHND1s9aWd9N+48pBE6Iav51e1a8xP+FOjvwnkLqh/9Rfa2cCI4K0/n3exABKOLn88jm8TYJK7mX9R0z/N7KAnxDsgqoGfVkXlh+4xHDaA1gG4vO4C2ERSG2CnWkQxasLf/WADVKsF2gOA42cBlT5bhuKhhGMwAwbRFwE4TsGoAK7ojqDhswZgE5gnIDFCTsGQAFiCW+iAq9r2sCfTQTvHKtrPg4NQ4C6aKgFp37wB5PNNyabgtoC3CEZbU73NEO+ABtNDWAcIOgAsYC0E7QAyASgjAFYBEi1A8wxgFGJZBwQDSNMhEmDntS2uA8+lzBBW9qPbnMhSD0W7zbQlW0Jd6UAjDxSWsLSXeKQxhYUzDY6HKi/uNn8gJR7rFOS9AXbAi4VSaXN+yM6rzRDQHvz4cbUxRgqoP/IrDzcbU7BvxM6eRcVKg30hWamW2owdg1cSt6RBSMk515pzgmL0xGGOVrh8EKW7T5BygCxJ0z54aE74cdC7RuBDdUBYHJ8EXfZbHaJz+dHfE+KojcEvDxWgL3bx21BHhA7sCBx+hMDD6PHYZuRCggLWrEgc/VW7C1FEAf57Bw4+DfHh+/f/PPYfW1Z8RhpATXMAAAAASUVORK5CYII=",
+        "profileClass": "operational"
+      },
+      {
+        "iccid": "89012...",
+        "isdpAid": "A0000005591010FFFFFFFF8900001100",
+        "profileState": "disabled",
+        "profileNickname": null,
+        "serviceProviderName": "T-Mobile",
+        "profileName": "CONVSIM5G_Adaptive",
+        "iconType": "png",
+        "icon": "iVBORw0KGgoAAAANSUhEUgAAADkAAABABAMAAABSG8K/AAAAMFBMVEXcAVrgir3VTpvXKYvXA33NGH7uAY7qAXztAYrvzebkcbL7/f3jq8/EGXHaMpThAW+lJAaXAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACIklEQVR4nL3UMWsUQRQA4O1UtEhtKrGSFCrXCEIsRM9OEX/AFeHt6w6i3GxnCPr2VZ69WFgJgmDOHEfYmAVbCysLsVSIlaRyQZFz5s3s7szcJoWKrzh25pvZe/NmdhI+JEDHIPkXSoDUpaQk5kpVfaXuq75tj1gUz7yw8Ux+T7vWc+YNrcMnRVeUKDro1sehvr1iHp7efmebr5xKY/dCNTZa5gcXF3TnVsZWEfKPsS4BoNN7vLEc6tZ3ZLCqh/EPL2f9+J6ASZY20zUitRxoH8AtfIamjj99nYyYAl33tSQK5w59PS/b49T8Ca9oJbMLelyfI4WT+n3g9BhGev1EsV3r1iieS5utTnBBrxbTWt8sqO6c2pwfmvQixUHxGkSvdWi6VuxloumH/XRhbv75jjlXgKhPK3h1Ng0E0zlIdLeGPMu8SmbmfDsFkzGGu6AJyc5VMjZQZqWcfuv1Vle/tJqf7en4aquxKUdw2ig9kI6JXdEjaWy3OpaOvUM095SOVL5rlbDOSv0ftVnNGkWn7OVcNjnXand/PaoVk1+r9CDRUbVz80Q67LkCG61KD+INURvotMT2fgtuwr/WWaAATVbjeq7tOFoh1GHx55qKQocikf4YC7l+ICM5742m+sDnp4zuHifz6XAwVw+tVmRvljLgWLP5r3OCxc7LeZVhoPip8ONSqHA50P1IbyZ+xG9G8AIxUva2BsyV6q8X2I+FWnXrb4Q67QSVBN1hAAAAAElFTkSuQmCC",
+        "profileClass": "operational"
+      },
+      {
+        "iccid": "89444...",
+        "isdpAid": "A0000005591010FFFFFFFF8900001200",
+        "profileState": "enabled",
+        "profileNickname": null,
+        "serviceProviderName": "BetterRoaming",
+        "profileName": "BetterRoaming",
+        "iconType": "none",
+        "icon": null,
+        "profileClass": "operational"
+      },
+      {
+        "iccid": "89852...",
+        "isdpAid": "A0000005591010FFFFFFFF8900001300",
+        "profileState": "disabled",
+        "profileNickname": null,
+        "serviceProviderName": "Redtea Mobile",
+        "profileName": "RedteaGO",
+        "iconType": "none",
+        "icon": null,
+        "profileClass": "operational"
+      }
+    ]
+  }
 }
 ```
 
 - `iccid`: ICCID of Profile
 - `isdpAid`: Aid of Profile
-- `profileState`: State of Profile, 1 is enabled. You can enable multiple Profile only when device support MEP (Multiple Enabled Profiles)
+- `profileState`: State of Profile, "Enabled" or "Disabled"
 - `profileNickname`: Nickname of Profile
 - `serviceProviderName`: Telecom operators of Profile
 - `profileName`: Name of Profile
-- `profileClass`: Version of Profile
+- `iconType`: Profile icon data struct, "none", "png", "jpg"
+- `icon`: Profile icon data in base64
+- `profileClass`: Type of Profile
 
 </details>
 
