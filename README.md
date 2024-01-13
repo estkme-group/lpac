@@ -6,7 +6,7 @@ lpac is a cross platform local profile agent program.
 Features:
 - Support Activate Code and Confirm Code
 - Support custom IMEI sent to server
-- Support eSIM Discovery (Push Model)
+- Support Profile Discovery (SM-DS)
 - Profile management: list, enable, disable, delete and nickname
 - Notification management: list, send and delete
 - Lookup eUICC chip info
@@ -120,7 +120,7 @@ lpac <subcommand> [subcommand] [parameters]
     chip          View and manage information about your eUICC card itself
     profile       Manage the profile of your eUICC card
     notification  Manage notifications within your eUICC card
-    driver        View backend info
+    driver        View libXXXXinterface info
   subcommand 2:
     Please refer to the detailed instructions below
 ```
@@ -170,19 +170,58 @@ lpac chip <subcommand> [parameters]
     "code": 0,
     "message": "success",
     "data": {
-      "eid": " EID  ",
-      "default_smds": "testrootsmds.gsma.com",
-      "default_smdp": "",
-      "euicc_info2": {
-        "profile_version": "2.1.0",
-        "sgp22_version": "2.2.0",
-        "euicc_firmware_version": "4.6.0",
-        "uicc_firmware_version": "9.2.0",
-        "global_platform_version": "2.3.0",
-        "protection_profile_version": "0.0.1",
-        "sas_accreditation_number": "GI-BA-UP-0419",
-        "free_nvram": 295424,
-        "free_ram": 295424
+      "eidValue": "[EID]",
+      "EuiccConfiguredAddresses": {
+        "defaultDpAddress": null,
+        "rootDsAddress": "testrootsmds.gsma.com"
+      },
+      "EUICCInfo2": {
+        "profileVersion": "2.1.0",
+        "svn": "2.2.0",
+        "euiccFirmwareVer": "4.6.0",
+        "extCardResource": {
+          "installedApplication": 0,
+          "freeNonVolatileMemory": 291666,
+          "freeVolatileMemory": 5970
+        },
+        "uiccCapability": [
+          "usimSupport",
+          "isimSupport",
+          "csimSupport",
+          "akaMilenage",
+          "akaCave",
+          "akaTuak128",
+          "akaTuak256",
+          "gbaAuthenUsim",
+          "gbaAuthenISim",
+          "eapClient",
+          "javacard",
+          "multipleUsimSupport",
+          "multipleIsimSupport"
+        ],
+        "javacardVersion": "9.2.0",
+        "globalplatformVersion": "2.3.0",
+        "rspCapability": [
+          "additionalProfile",
+          "testProfileSupport"
+        ],
+        "euiccCiPKIdListForVerification": [
+          "81370f5125d0b1d408d4c3b232e6d25e795bebfb"
+        ],
+        "euiccCiPKIdListForSigning": [
+          "81370f5125d0b1d408d4c3b232e6d25e795bebfb"
+        ],
+        "euiccCategory": null,
+        "forbiddenProfilePolicyRules": [
+          "pprUpdateControl",
+          "ppr1"
+        ],
+        "ppVersion": "0.0.1",
+        "sasAcreditationNumber": "GI-BA-UP-0419",
+        "certificationDataObject": {
+          "platformLabel": "1.2.840.1234567/myPlatformLabel",
+          "discoveryBaseURL": "https://mycompany.com/myDLOARegistrar"
+        }
       }
     }
   }
@@ -205,9 +244,12 @@ lpac profile <subcommand> [parameters]
               Example: lpac profile disable <ICCID/AID of Profile> [1/0]
     delete    deletes the specified Profile
               Example: lpac profile delete <ICCID/AID of Profile>
-    download  Pull method to download new Profile
-    discovery Push method to download Profiles
+    download  Download profile from SM-DP server
+    discovery Detect available profile registered on SM-DS server
 ```
+
+> [!NOTE]
+> Some eUICC chip have trouble when enable profile (e.g. These removeable eUICC cards from ECP), try AID, ICCID, refreshFlag with 1 or 0 to find out the working way for these chips.
 
 There is no secondary confirmation for deleting a Profile, so please perform it with caution.
 > [!NOTE]
@@ -228,7 +270,7 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 ```
 </details>
 
-##### Discovery requires connecting to the SM-DS server to do the profile push query
+##### Discovery requires connecting to the SM-DS server to query registered profile
 
 The following parameters can be used to customize the IMEI and SM-DS server:
 - `-s`: SM-DS server. If not provided, it will be gsma official server "lpa.ds.gsma.com"
@@ -298,30 +340,36 @@ lpac notification <subcommand> [parameters]
 
 ```json
 {
-   "type": "lpa",
-   "payload": {
-      "code": 0,
-      "message": "success",
-      "data": [
-         {
-            "seqNumber": 7,
-            "profileManagementOperation": 32,
-            "notificationAddress": "rsp-eu.simlessly.com",
-            "iccid": "8999990000"
-         },
-         {
-            "seqNumber": 8,
-            "profileManagementOperation": 64,
-            "notificationAddress": "rsp.truphone.com",
-            "iccid": "894447860000"
-         }
-      ]
-   }
+  "type": "lpa",
+  "payload": {
+    "code": 0,
+    "message": "success",
+    "data": [
+      {
+        "seqNumber": 178,
+        "profileManagementOperation": "install",
+        "notificationAddress": "rsp-eu.redteamobile.com",
+        "iccid": "89852..."
+      },
+      {
+        "seqNumber": 215,
+        "profileManagementOperation": "disable",
+        "notificationAddress": "cust-005-v4-prod-atl2.gdsb.net",
+        "iccid": "89012..."
+      },
+      {
+        "seqNumber": 216,
+        "profileManagementOperation": "enable",
+        "notificationAddress": "rsp.truphone.com",
+        "iccid": "89444..."
+      }
+    ]
+  }
 }
 ```
 
 - `seqNumber`: Sequence ID
-- `profileManagementOperation`: Profile status identifier
+- `profileManagementOperation`: Which operation generated this notification
 - `notificationAddress`: Profile's notification reporting server address
 
 </details>
@@ -360,5 +408,8 @@ A: The verification of SM-DP+ servers of telecom operators is diverse. Please ch
 ---
 
 ## License
-AGPL-3.0
+- lpac (/src): AGPL-3.0
+- libeuicc (/euicc): LGPL-v2
+- interfaces (/interface): MIT
+
 Copyright (c) 2023-2024 eSTKme Group
