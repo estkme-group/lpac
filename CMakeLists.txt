@@ -29,7 +29,6 @@ if(CYGWIN)
     set(CMAKE_SYSTEM_NAME Windows)
     message(STATUS "Building for Cygwin")
     add_definitions(-DHAVE_TIMEGM=1)
-    add_definitions(-DWIN32)
 endif()
 
 cmake_minimum_required (VERSION 3.8)

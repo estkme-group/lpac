@@ -10,7 +10,7 @@
 #include <dlfcn.h>
 #endif
 
-#if defined(WIN32)
+#if defined (_WIN32) || defined (__CYGWIN__)
 #define INTERFACELIB_EXTENSION "dll"
 #elif defined(__APPLE__)
 #define INTERFACELIB_EXTENSION "dylib"

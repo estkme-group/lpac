@@ -17,6 +17,10 @@ Download:
 
 lpac is dynamic-linked, Release is built by Github action, if you can't run it you need to compile by yourself
 
+## GUI Frontend
+
+- [EasyLPAC](https://github.com/creamlike1024/EasyLPAC)
+
 # Compile
 
 <details>

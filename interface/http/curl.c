@@ -12,7 +12,7 @@
 #include <euicc/interface.h>
 
 /* BEGIN MINIMAL CURL DEFINE */
-#if defined(WIN32)
+#if defined (_WIN32) || defined (__CYGWIN__)
 #define LIBCURL_DEFAULT_PATH "libcurl.dll"
 #elif defined(__APPLE__)
 #define LIBCURL_DEFAULT_PATH "libcurl.4.dylib"
