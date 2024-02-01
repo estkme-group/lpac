@@ -25,11 +25,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake gcc-mingw-w64 g++-mingw-w64 unzip
 
-      - name: Build for Windows(Cygwin)
+      - name: Setup toolchain for Windows(Cygwin)
         if: runner.os == 'Windows'
         uses: egor-tensin/setup-cygwin@v4
         with:
           packages: cmake gcc-g++ make zip wget
+
+      - name: Build for Windows(Cygwin)
+        if: runner.os == 'Windows'
         run: |
           mkdir build-cygwin && cd build-cygwin && cmake -DCYGWIN=ON .. && make
           wget https://curl.se/windows/dl-8.5.0_3/curl-8.5.0_3-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
