@@ -25,34 +25,32 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake gcc-mingw-w64 g++-mingw-w64 unzip
 
-      - name: Setup Cygwin
+      - name: Build for Windows(Cygwin)
         if: runner.os == 'Windows'
         uses: egor-tensin/setup-cygwin@v4
         with:
           packages: cmake gcc-g++ make zip wget
-
-      - name: Build for Linux
-        if: runner.os == 'Linux'
-        run: |
-          mkdir build && cd build && cmake .. && make -j$(nproc)
-          chmod +x output/lpac
-          tar -czvf lpac-linux-x86_64.tar.gz -C output .
-        shell: bash
-
-      - name: Build for Windows(MinGW)
-        if: runner.os == 'Linux'
-        run: |
-          mkdir build-mingw && cd build-mingw && cmake -DLINUX_MINGW32=ON .. && make -j$(nproc)
-          wget https://curl.se/windows/dl-8.5.0_3/curl-8.5.0_3-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
-          zip -r -j lpac-windows-x86_64-mingw.zip output/*
-
-      - name: Build for Windows(Cygwin)
-        if: runner.os == 'Windows'
         run: |
           mkdir build-cygwin && cd build-cygwin && cmake -DCYGWIN=ON .. && make
           wget https://curl.se/windows/dl-8.5.0_3/curl-8.5.0_3-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
           cp C:\tools\cygwin\bin\cygwin1.dll output
           zip -r -j lpac-windows-x86_64-cygwin.zip output/*
+
+      - name: Build for Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir build && cd build && cmake .. && make -j$(nproc)
+          chmod +x output/lpac
+          zip -r -j lpac-linux-x86_64.zip output/*
+
+      - name: Build for Windows(MinGW)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir build-mingw && cd build-mingw && cmake -DLINUX_MINGW32=ON .. && make -j$(nproc)
+          wget https://curl.se/windows/dl-8.5.0_3/curl-8.5.0_3-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+          zip -r -j lpac-windows-x86_64-mingw.zip output/*
 
       - name: Build for macOS
         if: runner.os == 'macOS'
@@ -65,11 +63,10 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
           path: |
             build-mingw/lpac-windows-x86_64-mingw.zip
             build-cygwin/lpac-windows-x86_64-cygwin.zip
-            build/lpac-linux-x86_64.tar.gz
+            build/lpac-linux-x86_64.zip
             build/lpac-macos-universal.zip
 
       - name: Release
@@ -79,5 +76,5 @@ jobs:
           files: |
             build-mingw/lpac-windows-x86_64-mingw.zip
             build-cygwin/lpac-windows-x86_64-cygwin.zip
-            build/lpac-linux-x86_64.tar.gz
+            build/lpac-linux-x86_64.zip
             build/lpac-macos-universal.zip
