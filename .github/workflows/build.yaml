@@ -66,6 +66,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
+          name: artifact-${{ matrix.os }}
           path: |
             build-mingw/lpac-windows-x86_64-mingw.zip
             build-cygwin/lpac-windows-x86_64-cygwin.zip
