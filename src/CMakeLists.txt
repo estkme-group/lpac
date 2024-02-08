@@ -24,3 +24,5 @@ if(LINUX_MINGW32)
 else()
     target_link_libraries(lpac dl)
 endif()
+
+install(TARGETS lpac RUNTIME DESTINATION bin)
