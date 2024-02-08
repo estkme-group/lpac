@@ -68,7 +68,7 @@ With `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed
 ```bash
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac && mkdir build && cd build
-cmake -DCYGWIN=ON .. && make
+cmake .. && make
 # Download libcurl
 wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
 ```
@@ -81,7 +81,7 @@ To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folde
 sudo apt install build-essential cmake git g++ libpcsclite-dev libcurl4-openssl-dev gcc-mingw-w64 g++-mingw-w64
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac && mkdir build && cd build
-cmake -DLINUX_MINGW32=ON .. && make
+cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake .. && make
 # Download libcurl
 wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
 ```
@@ -92,7 +92,7 @@ wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip
 pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac && mkdir build && cd build
-cmake -DLINUX_MINGW32=ON .. && ninja
+cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake .. && ninja
 # Download libcurl
 wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
 ```
