@@ -1,8 +1,7 @@
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/asn1 LIB_EUICC_ASN1_SRCS)
 add_library(euiccasn1 STATIC ${LIB_EUICC_ASN1_SRCS})
 target_compile_definitions(euiccasn1 PRIVATE HAVE_CONFIG_H)
-target_include_directories(euiccasn1 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/asn1>
+target_include_directories(euiccasn1 PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 if(MINGW)
