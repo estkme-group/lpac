@@ -11,6 +11,13 @@ if(CYGWIN)
     add_definitions(-DHAVE_TIMEGM=1)
 endif()
 
+if(UNIX)
+    include(GNUInstallDirs)
+    if(NOT CMAKE_INSTALL_RPATH)
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}/lpac")
+    endif
+endif()
+
 add_subdirectory(cjson)
 add_subdirectory(euicc)
 add_subdirectory(interface)

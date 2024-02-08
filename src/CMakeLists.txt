@@ -16,3 +16,7 @@ set_target_properties(lpac PROPERTIES
 )
 target_link_libraries(lpac euicc ${DL_LIBRARY})
 target_include_directories(lpac PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+if(UNIX)
+    install(TARGETS lpac RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()
