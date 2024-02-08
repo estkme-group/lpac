@@ -23,35 +23,38 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake gcc-mingw-w64 g++-mingw-w64 unzip
+          sudo apt-get install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake gcc-mingw-w64 g++-mingw-w64 unzip ninja-build
 
       - name: Setup toolchain for Windows(Cygwin)
         if: runner.os == 'Windows'
         uses: egor-tensin/setup-cygwin@v4
         with:
-          packages: cmake gcc-g++ make zip wget
+          packages: cmake gcc-g++ make zip wget ninja
 
       - name: Build for Windows(Cygwin)
         if: runner.os == 'Windows'
         run: |
-          mkdir build-cygwin && cd build-cygwin && cmake .. && make
-          wget https://curl.se/windows/dl-8.5.0_3/curl-8.5.0_3-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
-          cp C:\tools\cygwin\bin\cygwin1.dll output
-          zip -r -j lpac-windows-x86_64-cygwin.zip output/*
+          mkdir build-cygwin && cd build-cygwin && cmake .. -GNinja -DCPACK_GENERATOR=CygwinBinary && ninja package
 
       - name: Build for Linux
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          mkdir build && cd build && cmake .. && make -j$(nproc)
+          mkdir build && cd build && cmake .. -GNinja && ninja
           chmod +x output/lpac
           zip -r -j lpac-linux-x86_64.zip output/*
+
+      - name: Build for Debian
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir build-deb && cd build-deb && cmake .. -GNinja -DCPACK_GENERATOR=DEB && ninja package
 
       - name: Build for Windows(MinGW)
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          mkdir build-mingw && cd build-mingw && cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake .. && make -j$(nproc)
+          mkdir build-mingw && cd build-mingw && cmake -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake .. && ninja
           wget https://curl.se/windows/dl-8.5.0_3/curl-8.5.0_3-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.5.0_3-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
           zip -r -j lpac-windows-x86_64-mingw.zip output/*
 
@@ -69,7 +72,8 @@ jobs:
           name: artifact-${{ matrix.os }}
           path: |
             build-mingw/lpac-windows-x86_64-mingw.zip
-            build-cygwin/lpac-windows-x86_64-cygwin.zip
+            build-cygwin/lpac-*.tar.bz2
+            build-deb/lpac-*.deb
             build/lpac-linux-x86_64.zip
             build/lpac-macos-universal.zip
 
@@ -79,6 +83,7 @@ jobs:
         with:
           files: |
             build-mingw/lpac-windows-x86_64-mingw.zip
-            build-cygwin/lpac-windows-x86_64-cygwin.zip
+            build-cygwin/lpac-*.tar.bz2
+            build-deb/lpac-*.deb
             build/lpac-linux-x86_64.zip
             build/lpac-macos-universal.zip
