@@ -11,8 +11,11 @@ struct euicc_ctx
         struct euicc_apdu_interface *apdu;
         struct euicc_http_interface *http;
     } interface;
-    uint8_t g_apdu_request_buf[256 + 8];
-    uint8_t g_asn1_der_request_buf[256];
+    struct
+    {
+        uint8_t apdu_header[5];
+        uint8_t body[255];
+    } __attribute__((packed)) apdu_request_buffer;
     int es10x_logic_channel;
     void *userdata;
 };

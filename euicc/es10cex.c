@@ -114,8 +114,8 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 **al
     }
     memset(asn1req, 0, sizeof(*asn1req));
 
-    asn1erval = der_encode_to_buffer(&asn_DEF_GetEuiccInfo2Request, asn1req, ctx->g_asn1_der_request_buf,
-                                     sizeof(ctx->g_asn1_der_request_buf));
+    asn1erval = der_encode_to_buffer(&asn_DEF_GetEuiccInfo2Request, asn1req, ctx->apdu_request_buffer.body,
+                                     sizeof(ctx->apdu_request_buffer.body));
     ASN_STRUCT_FREE(asn_DEF_GetEuiccInfo2Request, asn1req);
     asn1req = NULL;
     if (asn1erval.encoded == -1)
@@ -123,7 +123,7 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 **al
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->g_asn1_der_request_buf, asn1erval.encoded) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, asn1erval.encoded) < 0)
     {
         goto err;
     }

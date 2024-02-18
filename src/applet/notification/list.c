@@ -7,31 +7,31 @@
 
 static int applet_main(int argc, char **argv)
 {
-    struct es10b_notification_metadata *notifications;
-    int notifications_count;
+    struct es10b_notification_metadata *notifications, *rptr;
     cJSON *jdata = NULL;
 
-    if (es10b_list_notification(&euicc_ctx, &notifications, &notifications_count))
+    if (es10b_list_notification(&euicc_ctx, &notifications))
     {
         jprint_error("es10b_list_notification", NULL);
         return -1;
     }
 
     jdata = cJSON_CreateArray();
-    for (int i = 0; i < notifications_count; i++)
+    rptr = notifications;
+    while (rptr)
     {
         cJSON *jnotification = NULL;
 
         jnotification = cJSON_CreateObject();
-        cJSON_AddNumberToObject(jnotification, "seqNumber", notifications[i].seqNumber);
-        cJSON_AddStringOrNullToObject(jnotification, "profileManagementOperation", notifications[i].profileManagementOperation);
-        cJSON_AddStringOrNullToObject(jnotification, "notificationAddress", notifications[i].notificationAddress);
-        cJSON_AddStringOrNullToObject(jnotification, "iccid", notifications[i].iccid);
-
+        cJSON_AddNumberToObject(jnotification, "seqNumber", rptr->seqNumber);
+        cJSON_AddStringOrNullToObject(jnotification, "profileManagementOperation", rptr->profileManagementOperation);
+        cJSON_AddStringOrNullToObject(jnotification, "notificationAddress", rptr->notificationAddress);
+        cJSON_AddStringOrNullToObject(jnotification, "iccid", rptr->iccid);
         cJSON_AddItemToArray(jdata, jnotification);
-    }
 
-    es10b_notification_metadata_free_all(notifications, notifications_count);
+        rptr = rptr->next;
+    }
+    es10b_notification_metadata_free_all(notifications);
 
     jprint_success(jdata);
 

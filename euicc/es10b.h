@@ -17,6 +17,14 @@ struct es10b_notification_metadata
     const char *profileManagementOperation;
     char *notificationAddress;
     char *iccid;
+
+    struct es10b_notification_metadata *next;
+};
+
+struct es10b_notification
+{
+    char *receiver;
+    char *b64_payload;
 };
 
 struct es10b_authenticate_server_param
@@ -45,11 +53,11 @@ int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es
 int es10b_load_bound_profile_package(struct euicc_ctx *ctx, const char *b64_bpp);
 int es10b_get_euicc_challenge(struct euicc_ctx *ctx, char **b64_payload);
 int es10b_get_euicc_info(struct euicc_ctx *ctx, char **b64_payload);
-int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas, int *count);
-int es10b_retrieve_notification(struct euicc_ctx *ctx, char **b64_payload, char **receiver, unsigned long seqNumber);
+int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas);
+int es10b_retrieve_notification(struct euicc_ctx *ctx, struct es10b_notification *notification, unsigned long seqNumber);
 int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber);
 int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct es10b_authenticate_server_param *param);
 int es10b_cancel_session(struct euicc_ctx *ctx, const unsigned char *transactionId, unsigned char transactionIdLen, unsigned char reason);
 
-void es10b_notification_metadata_free_all(struct es10b_notification_metadata *notifications, int count);
-void es10b_notification_metadata_print(struct es10b_notification_metadata *n);
+void es10b_notification_metadata_free_all(struct es10b_notification_metadata *notifications);
+void es10b_notification_free(struct es10b_notification *notification);

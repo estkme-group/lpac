@@ -8,8 +8,7 @@
 static int applet_main(int argc, char **argv)
 {
     unsigned long seqNumber;
-    char *b64payload = NULL;
-    char *receiver = NULL;
+    struct es10b_notification notification;
 
     if (argc < 2)
     {
@@ -20,21 +19,20 @@ static int applet_main(int argc, char **argv)
     seqNumber = atol(argv[1]);
 
     jprint_progress("es10b_retrieve_notification");
-    if (es10b_retrieve_notification(&euicc_ctx, &b64payload, &receiver, seqNumber))
+    if (es10b_retrieve_notification(&euicc_ctx, &notification, seqNumber))
     {
         jprint_error("es10b_retrieve_notification", NULL);
         return -1;
     }
 
     jprint_progress("es9p_handle_notification");
-    if (es9p_handle_notification(&euicc_ctx, receiver, b64payload))
+    if (es9p_handle_notification(&euicc_ctx, notification.receiver, notification.b64_payload))
     {
         jprint_error("es9p_handle_notification", NULL);
         return -1;
     }
 
-    free(b64payload);
-    free(receiver);
+    es10b_notification_free(&notification);
 
     jprint_success(NULL);
 

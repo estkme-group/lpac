@@ -28,13 +28,13 @@ static int le(struct apdu_request *apdu, uint8_t cla, uint8_t ins, uint8_t p1, u
 
 int euicc_apdu_lc(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla, uint8_t ins, uint8_t p1, uint8_t p2, uint8_t datalen)
 {
-    *apdu = (struct apdu_request *)ctx->g_apdu_request_buf;
+    *apdu = (struct apdu_request *)&ctx->apdu_request_buffer;
     return lc(*apdu, cla, ins, p1, p2, datalen);
 }
 
 int euicc_apdu_le(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla, uint8_t ins, uint8_t p1, uint8_t p2, uint8_t requestlen)
 {
-    *apdu = (struct apdu_request *)ctx->g_apdu_request_buf;
+    *apdu = (struct apdu_request *)&ctx->apdu_request_buffer;
     return le(*apdu, cla, ins, p1, p2, requestlen);
 }
 

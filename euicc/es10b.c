@@ -1,6 +1,7 @@
 #include "es10b.h"
 #include "es10x.private.h"
 
+#include "derutils.h"
 #include "hexutil.h"
 #include "derutil.h"
 #include "base64.h"
@@ -14,15 +15,6 @@
 
 #include "asn1c/asn1/BoundProfilePackage.h"
 #include "asn1c/asn1/ProfileInstallationResult.h"
-#include "asn1c/asn1/GetEuiccChallengeRequest.h"
-#include "asn1c/asn1/GetEuiccChallengeResponse.h"
-#include "asn1c/asn1/GetEuiccInfo1Request.h"
-#include "asn1c/asn1/ListNotificationRequest.h"
-#include "asn1c/asn1/ListNotificationResponse.h"
-#include "asn1c/asn1/RetrieveNotificationsListRequest.h"
-#include "asn1c/asn1/RetrieveNotificationsListResponse.h"
-#include "asn1c/asn1/NotificationSentRequest.h"
-#include "asn1c/asn1/NotificationSentResponse.h"
 #include "asn1c/asn1/CtxParams1.h"
 
 int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es10b_prepare_download_param *param)
@@ -402,48 +394,42 @@ exit:
 int es10b_get_euicc_challenge(struct euicc_ctx *ctx, char **b64_payload)
 {
     int fret = 0;
+    struct derutils_node n_request = {
+        .tag = 0xBF2E, // GetEuiccDataRequest
+    };
+    uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
-    asn_enc_rval_t asn1erval;
-    asn_dec_rval_t asn1drval;
-    GetEuiccChallengeRequest_t *asn1req = NULL;
-    GetEuiccChallengeResponse_t *asn1resp = NULL;
 
-    asn1req = malloc(sizeof(GetEuiccChallengeRequest_t));
-    if (!asn1req)
-    {
-        goto err;
-    }
-    memset(asn1req, 0, sizeof(*asn1req));
+    struct derutils_node tmpnode;
 
-    asn1erval = der_encode_to_buffer(&asn_DEF_GetEuiccChallengeRequest, asn1req, ctx->g_asn1_der_request_buf, sizeof(ctx->g_asn1_der_request_buf));
-    ASN_STRUCT_FREE(asn_DEF_GetEuiccChallengeRequest, asn1req);
-    asn1req = NULL;
-    if (asn1erval.encoded == -1)
+    reqlen = sizeof(ctx->apdu_request_buffer.body);
+    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->g_asn1_der_request_buf, asn1erval.encoded) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
 
-    asn1drval = ber_decode(NULL, &asn_DEF_GetEuiccChallengeResponse, (void **)&asn1resp, respbuf, resplen);
-    free(respbuf);
-    respbuf = NULL;
-
-    if (asn1drval.code != RC_OK)
+    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
     {
         goto err;
     }
 
-    *b64_payload = malloc(euicc_base64_encode_len(asn1resp->euiccChallenge.size));
+    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length))
+    {
+        goto err;
+    }
+
+    *b64_payload = malloc(euicc_base64_encode_len(tmpnode.length));
     if (!(*b64_payload))
     {
         goto err;
     }
-    if (euicc_base64_encode(*b64_payload, asn1resp->euiccChallenge.buf, asn1resp->euiccChallenge.size) < 0)
+    if (euicc_base64_encode(*b64_payload, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
@@ -456,48 +442,44 @@ err:
     *b64_payload = NULL;
 exit:
     free(respbuf);
-    ASN_STRUCT_FREE(asn_DEF_GetEuiccChallengeRequest, asn1req);
-    ASN_STRUCT_FREE(asn_DEF_GetEuiccChallengeResponse, asn1resp);
-
+    respbuf = NULL;
     return fret;
 }
 
 int es10b_get_euicc_info(struct euicc_ctx *ctx, char **b64_payload)
 {
     int fret = 0;
+    struct derutils_node n_request = {
+        .tag = 0xBF20, // GetEuiccInfo1Request
+    };
+    uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
-    asn_enc_rval_t asn1erval;
-    GetEuiccInfo1Request_t *asn1req = NULL;
 
-    *b64_payload = NULL;
+    struct derutils_node tmpnode;
 
-    asn1req = malloc(sizeof(GetEuiccInfo1Request_t));
-    if (!asn1req)
-    {
-        goto err;
-    }
-    memset(asn1req, 0, sizeof(*asn1req));
-
-    asn1erval = der_encode_to_buffer(&asn_DEF_GetEuiccInfo1Request, asn1req, ctx->g_asn1_der_request_buf, sizeof(ctx->g_asn1_der_request_buf));
-    ASN_STRUCT_FREE(asn_DEF_GetEuiccInfo1Request, asn1req);
-    asn1req = NULL;
-    if (asn1erval.encoded == -1)
+    reqlen = sizeof(ctx->apdu_request_buffer.body);
+    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->g_asn1_der_request_buf, asn1erval.encoded) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
 
-    *b64_payload = malloc(euicc_base64_encode_len(resplen));
+    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
+    {
+        goto err;
+    }
+
+    *b64_payload = malloc(euicc_base64_encode_len(tmpnode.self.length));
     if (!(*b64_payload))
     {
         goto err;
     }
-    if (euicc_base64_encode(*b64_payload, respbuf, resplen) < 0)
+    if (euicc_base64_encode(*b64_payload, tmpnode.self.ptr, tmpnode.self.length) < 0)
     {
         goto err;
     }
@@ -510,328 +492,316 @@ err:
     *b64_payload = NULL;
 exit:
     free(respbuf);
-    ASN_STRUCT_FREE(asn_DEF_GetEuiccInfo1Request, asn1req);
-
+    respbuf = NULL;
     return fret;
 }
 
-int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas, int *metadatas_count)
+int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas)
 {
     int fret = 0;
+    struct derutils_node n_request = {
+        .tag = 0xBF28, // ListNotificationRequest
+    };
+    uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
-    asn_enc_rval_t asn1erval;
-    asn_dec_rval_t asn1drval;
-    ListNotificationRequest_t *asn1req = NULL;
-    ListNotificationResponse_t *asn1resp = NULL;
+
+    struct derutils_node tmpnode, n_notificationMetadataList, n_NotificationMetadata;
+
+    struct es10b_notification_metadata *metadatas_wptr;
 
     *metadatas = NULL;
-    *metadatas_count = 0;
 
-    asn1req = malloc(sizeof(ListNotificationRequest_t));
-    if (!asn1req)
-    {
-        goto err;
-    }
-    memset(asn1req, 0, sizeof(*asn1req));
-
-    asn1erval = der_encode_to_buffer(&asn_DEF_ListNotificationRequest, asn1req, ctx->g_asn1_der_request_buf, sizeof(ctx->g_asn1_der_request_buf));
-    ASN_STRUCT_FREE(asn_DEF_ListNotificationRequest, asn1req);
-    asn1req = NULL;
-    if (asn1erval.encoded == -1)
+    reqlen = sizeof(ctx->apdu_request_buffer.body);
+    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->g_asn1_der_request_buf, asn1erval.encoded) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
 
-    asn1drval = ber_decode(NULL, &asn_DEF_ListNotificationResponse, (void **)&asn1resp, respbuf, resplen);
-    free(respbuf);
-    respbuf = NULL;
-
-    if (asn1drval.code != RC_OK)
+    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (asn1resp->present != ListNotificationResponse_PR_notificationMetadataList)
+    if (derutils_unpack_find_tag(&n_notificationMetadataList, 0xA0, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    *metadatas_count = asn1resp->choice.notificationMetadataList.list.count;
-    *metadatas = malloc(sizeof(struct es10b_notification_metadata) * (*metadatas_count));
-    if (!(*metadatas))
+    n_NotificationMetadata.self.ptr = n_notificationMetadataList.value;
+    n_NotificationMetadata.self.length = 0;
+
+    while (derutils_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value, n_notificationMetadataList.length) == 0)
     {
-        goto err;
-    }
+        struct es10b_notification_metadata *p;
 
-    for (int i = 0; i < *metadatas_count; i++)
-    {
-        struct NotificationMetadata *asn1metadata = asn1resp->choice.notificationMetadataList.list.array[i];
-        struct es10b_notification_metadata *metadata = &((*metadatas)[i]);
-
-        memset(metadata, 0, sizeof(*metadata));
-        asn_INTEGER2ulong(&asn1metadata->seqNumber, &metadata->seqNumber);
-
-        switch (asn1metadata->profileManagementOperation.buf[0])
+        if (n_NotificationMetadata.tag != 0xBF2F)
         {
-        case 128:
-            metadata->profileManagementOperation = "install";
-            break;
-        case 64:
-            metadata->profileManagementOperation = "enable";
-            break;
-        case 32:
-            metadata->profileManagementOperation = "disable";
-            break;
-        case 16:
-            metadata->profileManagementOperation = "delete";
-            break;
+            continue;
         }
 
-        metadata->notificationAddress = malloc(asn1metadata->notificationAddress.size + 1);
-        if (metadata->notificationAddress)
+        p = malloc(sizeof(struct es10b_notification_metadata));
+        if (!p)
         {
-            memcpy(metadata->notificationAddress, asn1metadata->notificationAddress.buf, asn1metadata->notificationAddress.size);
-            metadata->notificationAddress[asn1metadata->notificationAddress.size] = '\0';
-        }
-        else
-        {
-            metadata->notificationAddress = NULL;
+            goto err;
         }
 
-        if (asn1metadata->iccid)
+        memset(p, 0, sizeof(*p));
+
+        tmpnode.self.ptr = n_NotificationMetadata.value;
+        tmpnode.self.length = 0;
+        while (derutils_unpack_next(&tmpnode, &tmpnode, n_NotificationMetadata.value, n_NotificationMetadata.length) == 0)
         {
-            metadata->iccid = malloc((asn1metadata->iccid->size * 2) + 1);
-            if (metadata->iccid)
+            switch (tmpnode.tag)
             {
-                if (euicc_hexutil_bin2gsmbcd(metadata->iccid, (asn1metadata->iccid->size * 2) + 1, asn1metadata->iccid->buf, asn1metadata->iccid->size) < 0)
+            case 0x80:
+                p->seqNumber = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                break;
+            case 0x81:
+                if (tmpnode.length >= 2)
                 {
-                    free(metadata->iccid);
-                    metadata->iccid = NULL;
+                    switch (tmpnode.value[1])
+                    {
+                    case 0x80:
+                        p->profileManagementOperation = "install";
+                        break;
+                    case 0x40:
+                        p->profileManagementOperation = "enable";
+                        break;
+                    case 0x20:
+                        p->profileManagementOperation = "disable";
+                        break;
+                    case 0x10:
+                        p->profileManagementOperation = "delete";
+                        break;
+                    }
                 }
+                break;
+            case 0x0C:
+                p->notificationAddress = malloc(tmpnode.length + 1);
+                if (p->notificationAddress)
+                {
+                    memcpy(p->notificationAddress, tmpnode.value, tmpnode.length);
+                    p->notificationAddress[tmpnode.length] = '\0';
+                }
+                break;
+            case 0x5A:
+                p->iccid = malloc((tmpnode.length * 2) + 1);
+                if (p->iccid)
+                {
+                    if (euicc_hexutil_bin2gsmbcd(p->iccid, (tmpnode.length * 2) + 1, tmpnode.value, tmpnode.length) < 0)
+                    {
+                        free(p->iccid);
+                        p->iccid = NULL;
+                    }
+                }
+                break;
             }
         }
+
+        if (*metadatas == NULL)
+        {
+            *metadatas = p;
+        }
         else
         {
-            metadata->iccid = NULL;
+            metadatas_wptr->next = p;
         }
+
+        metadatas_wptr = p;
     }
 
     goto exit;
 
 err:
     fret = -1;
-    free(*metadatas);
-    *metadatas = NULL;
-    *metadatas_count = 0;
+    es10b_notification_metadata_free_all(*metadatas);
 exit:
     free(respbuf);
-    ASN_STRUCT_FREE(asn_DEF_ListNotificationRequest, asn1req);
-    ASN_STRUCT_FREE(asn_DEF_ListNotificationResponse, asn1resp);
-
+    respbuf = NULL;
     return fret;
 }
 
-int es10b_retrieve_notification(struct euicc_ctx *ctx, char **b64_payload, char **receiver, unsigned long seqNumber)
+int es10b_retrieve_notification(struct euicc_ctx *ctx, struct es10b_notification *notification, unsigned long seqNumber)
 {
     int fret = 0;
+    uint8_t seqNumber_buf[sizeof(seqNumber)];
+    uint32_t seqNumber_buf_len = sizeof(seqNumber_buf);
+    struct derutils_node n_request;
+    uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
-    asn_enc_rval_t asn1erval;
-    asn_dec_rval_t asn1drval;
-    RetrieveNotificationsListRequest_t *asn1req = NULL;
-    RetrieveNotificationsListResponse_t *asn1resp = NULL;
-    PendingNotification_t *asn1notification;
-    NotificationMetadata_t *asn1metadata;
-    uint8_t *payload = NULL;
-    unsigned payload_length = 0;
 
-    *b64_payload = NULL;
-    *receiver = NULL;
+    struct derutils_node tmpnode, n_PendingNotification, n_NotificationMetadata;
 
-    asn1req = malloc(sizeof(RetrieveNotificationsListRequest_t));
-    if (!asn1req)
-    {
-        goto err;
-    }
-    memset(asn1req, 0, sizeof(*asn1req));
+    memset(notification, 0, sizeof(struct es10b_notification));
 
-    asn1req->searchCriteria = malloc(sizeof(struct RetrieveNotificationsListRequest__searchCriteria));
-    if (!asn1req->searchCriteria)
-    {
-        goto err;
-    }
-    memset(asn1req->searchCriteria, 0, sizeof(*asn1req->searchCriteria));
-
-    asn1req->searchCriteria->present = RetrieveNotificationsListRequest__searchCriteria_PR_seqNumber;
-    if (asn_ulong2INTEGER(&asn1req->searchCriteria->choice.seqNumber, seqNumber) < 0)
+    if (derutils_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
     {
         goto err;
     }
 
-    asn1erval = der_encode_to_buffer(&asn_DEF_RetrieveNotificationsListRequest, asn1req, ctx->g_asn1_der_request_buf, sizeof(ctx->g_asn1_der_request_buf));
-    ASN_STRUCT_FREE(asn_DEF_RetrieveNotificationsListRequest, asn1req);
-    asn1req = NULL;
-    if (asn1erval.encoded == -1)
+    n_request = (struct derutils_node){
+        .tag = 0xBF2B, // RetrieveNotificationsListRequest
+        .pack = {
+            .child = &(struct derutils_node){
+                .tag = 0xA0, // searchCriteria
+                .pack = {
+                    .child = &(struct derutils_node){
+                        .tag = 0x80, // seqNumber
+                        .value = seqNumber_buf,
+                        .length = seqNumber_buf_len,
+                    },
+                },
+            },
+        },
+    };
+
+    reqlen = sizeof(ctx->apdu_request_buffer.body);
+    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->g_asn1_der_request_buf, asn1erval.encoded) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
 
-    asn1drval = ber_decode(NULL, &asn_DEF_RetrieveNotificationsListResponse, (void **)&asn1resp, respbuf, resplen);
-    free(respbuf);
-    respbuf = NULL;
-
-    if (asn1drval.code != RC_OK)
+    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (asn1resp->present != RetrieveNotificationsListResponse_PR_notificationList)
+    if (derutils_unpack_find_tag(&tmpnode, 0xA0, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    if (asn1resp->choice.notificationList.list.count < 1)
+    if (derutils_unpack_find_alias_tags(&n_PendingNotification, (uint16_t[]){0xBF37, 0x30}, 2, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    asn1notification = asn1resp->choice.notificationList.list.array[0];
-
-    switch (asn1notification->present)
+    switch (n_PendingNotification.tag)
     {
-    case PendingNotification_PR_profileInstallationResult:
-        asn1metadata = &asn1notification->choice.profileInstallationResult.profileInstallationResultData.notificationMetadata;
+    case 0xBF37: // profileInstallationResult
+        if (derutils_unpack_find_tag(&tmpnode, 0xBF27, n_PendingNotification.value, n_PendingNotification.length) < 0)
+        {
+            goto err;
+        }
+        if (derutils_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) < 0)
+        {
+            goto err;
+        }
         break;
-    case PendingNotification_PR_otherSignedNotification:
-        asn1metadata = &asn1notification->choice.otherSignedNotification.tbsOtherNotification;
+    case 0x30: // otherSignedNotification
+        if (derutils_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, n_PendingNotification.value, n_PendingNotification.length) < 0)
+        {
+            goto err;
+        }
         break;
-    default:
-        goto err;
     }
 
-    *receiver = malloc(asn1metadata->notificationAddress.size + 1);
-    memset(*receiver, 0, asn1metadata->notificationAddress.size + 1);
-    if (!(*receiver))
-    {
-        goto err;
-    }
-    memcpy(*receiver, asn1metadata->notificationAddress.buf, asn1metadata->notificationAddress.size);
-
-    asn1erval = der_encode(&asn_DEF_PendingNotification, asn1notification, NULL, NULL);
-    if (asn1erval.encoded == -1)
+    if (derutils_unpack_find_tag(&tmpnode, 0x0C, n_NotificationMetadata.value, n_NotificationMetadata.length) < 0)
     {
         goto err;
     }
 
-    payload_length = asn1erval.encoded;
-    payload = malloc(payload_length);
-    if (!payload)
+    notification->receiver = malloc(tmpnode.length + 1);
+    if (!notification->receiver)
+    {
+        goto err;
+    }
+    memcpy(notification->receiver, tmpnode.value, tmpnode.length);
+    notification->receiver[tmpnode.length] = '\0';
+
+    notification->b64_payload = malloc(euicc_base64_encode_len(n_PendingNotification.self.length));
+    if (!notification->b64_payload)
+    {
+        goto err;
+    }
+    if (euicc_base64_encode(notification->b64_payload, n_PendingNotification.self.ptr, n_PendingNotification.self.length) < 0)
     {
         goto err;
     }
 
-    asn1erval = der_encode_to_buffer(&asn_DEF_PendingNotification, asn1notification, payload, payload_length);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-
-    *b64_payload = malloc(euicc_base64_encode_len(payload_length));
-    if (!(*b64_payload))
-    {
-        goto err;
-    }
-    if (euicc_base64_encode(*b64_payload, payload, payload_length) < 0)
-    {
-        goto err;
-    }
+    fret = 0;
 
     goto exit;
 
 err:
     fret = -1;
-    free(*b64_payload);
-    *b64_payload = NULL;
-    free(*receiver);
-    *receiver = NULL;
+    es10b_notification_free(notification);
 exit:
-    free(payload);
     free(respbuf);
-    ASN_STRUCT_FREE(asn_DEF_RetrieveNotificationsListRequest, asn1req);
-    ASN_STRUCT_FREE(asn_DEF_RetrieveNotificationsListResponse, asn1resp);
-
+    respbuf = NULL;
     return fret;
 }
 
 int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber)
 {
     int fret = 0;
+    uint8_t seqNumber_buf[sizeof(seqNumber)];
+    uint32_t seqNumber_buf_len = sizeof(seqNumber_buf);
+    struct derutils_node n_request;
+    uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
-    asn_enc_rval_t asn1erval;
-    asn_dec_rval_t asn1drval;
-    NotificationSentRequest_t *asn1req = NULL;
-    NotificationSentResponse_t *asn1resp = NULL;
-    long eresult;
 
-    asn1req = malloc(sizeof(NotificationSentRequest_t));
-    if (!asn1req)
-    {
-        goto err;
-    }
-    memset(asn1req, 0, sizeof(*asn1req));
+    struct derutils_node tmpnode;
 
-    if (asn_ulong2INTEGER(&asn1req->seqNumber, seqNumber) < 0)
+    if (derutils_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
     {
         goto err;
     }
 
-    asn1erval = der_encode_to_buffer(&asn_DEF_NotificationSentRequest, asn1req, ctx->g_asn1_der_request_buf, sizeof(ctx->g_asn1_der_request_buf));
-    ASN_STRUCT_FREE(asn_DEF_NotificationSentRequest, asn1req);
-    asn1req = NULL;
-    if (asn1erval.encoded == -1)
+    n_request = (struct derutils_node){
+        .tag = 0xBF30, // NotificationSentRequest
+        .pack = {
+            .child = &(struct derutils_node){
+                .tag = 0x80, // seqNumber
+                .value = seqNumber_buf,
+                .length = seqNumber_buf_len,
+            },
+        },
+    };
+
+    reqlen = sizeof(ctx->apdu_request_buffer.body);
+    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->g_asn1_der_request_buf, asn1erval.encoded) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
 
-    asn1drval = ber_decode(NULL, &asn_DEF_NotificationSentResponse, (void **)&asn1resp, respbuf, resplen);
-    free(respbuf);
-    respbuf = NULL;
-
-    if (asn1drval.code != RC_OK)
+    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (asn_INTEGER2long(&asn1resp->deleteNotificationStatus, &eresult) < 0)
+    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    fret = eresult;
+    fret = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+
     goto exit;
 
 err:
     fret = -1;
 exit:
-    ASN_STRUCT_FREE(asn_DEF_NotificationSentRequest, asn1req);
-    ASN_STRUCT_FREE(asn_DEF_NotificationSentResponse, asn1resp);
+    free(respbuf);
+    respbuf = NULL;
     return fret;
 }
 
@@ -957,24 +927,21 @@ exit:
     return fret;
 }
 
-void es10b_notification_metadata_free_all(struct es10b_notification_metadata *metadatas, int count)
+void es10b_notification_metadata_free_all(struct es10b_notification_metadata *metadatas)
 {
-    if (!metadatas)
+    while (metadatas)
     {
-        return;
+        struct es10b_notification_metadata *next = metadatas->next;
+        free(metadatas->notificationAddress);
+        free(metadatas->iccid);
+        free(metadatas);
+        metadatas = next;
     }
-    for (int i = 0; i < count; i++)
-    {
-        free(metadatas[i].notificationAddress);
-        free(metadatas[i].iccid);
-    }
-    free(metadatas);
 }
 
-void es10b_notification_metadata_print(struct es10b_notification_metadata *n)
+void es10b_notification_free(struct es10b_notification *notification)
 {
-    printf("\tseqNumber: %ld\n", n->seqNumber);
-    printf("\tprofileManagementOperation: %s\n", n->profileManagementOperation);
-    printf("\tnotificationAddress: %s\n", n->notificationAddress ? n->notificationAddress : "(null)");
-    printf("\ticcid: %s\n", n->iccid ? n->iccid : "(null)");
+    free(notification->receiver);
+    free(notification->b64_payload);
+    memset(notification, 0, sizeof(struct es10b_notification));
 }
