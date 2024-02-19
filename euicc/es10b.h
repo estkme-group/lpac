@@ -8,7 +8,7 @@ struct es10b_PrepareDownload_param
     const char *b64_smdpSigned2;
     const char *b64_smdpSignature2;
     const char *b64_smdpCertificate;
-    const char *str_confirmationCode;
+    const char *confirmationCode;
 };
 
 struct es10b_notification_metadata

@@ -13,7 +13,7 @@
 static int applet_main(int argc, char **argv)
 {
     char *eid = NULL;
-    struct es10a_euicc_configured_addresses addresses;
+    struct es10a_EuiccConfiguredAddresses addresses;
     struct es10cex_euiccinfo2 *euiccinfo2 = NULL;
     cJSON *jaddresses = NULL;
     cJSON *jeuiccinfo2 = NULL;

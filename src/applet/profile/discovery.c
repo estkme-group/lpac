@@ -25,7 +25,7 @@ static int applet_main(int argc, char **argv)
     struct es10b_AuthenticateServer_param es10b_AuthenticateServer_param;
     char *b64_authenticate_server_response = NULL;
 
-    struct es11_authenticate_client_resp es11_authenticate_client_resp;
+    struct es11_AuthenticateClient_resp es11_AuthenticateClient_resp;
 
     opt = getopt(argc, argv, opt_string);
     while (opt != -1)
@@ -74,8 +74,8 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
-    jprint_progress("es9p_initiate_authentication");
-    if (es9p_initiate_authentication(&es9p_ctx, &es10b_AuthenticateServer_param, b64_euicc_challenge, b64_euicc_info_1))
+    jprint_progress("es9p_InitiateAuthentication");
+    if (es9p_InitiateAuthentication(&es9p_ctx, &es10b_AuthenticateServer_param, b64_euicc_challenge, b64_euicc_info_1))
     {
         jprint_error("es11_initiate_authentication", es9p_ctx.statusCodeData.message);
         return -1;
@@ -92,14 +92,14 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
-    jprint_progress("es11_authenticate_client");
-    if (es11_authenticate_client(&es9p_ctx, &es11_authenticate_client_resp, b64_authenticate_server_response))
+    jprint_progress("es11_AuthenticateClient");
+    if (es11_AuthenticateClient(&es9p_ctx, &es11_AuthenticateClient_resp, b64_authenticate_server_response))
     {
-        jprint_error("es11_authenticate_client", es11_authenticate_client_resp.status);
+        jprint_error("es11_AuthenticateClient", es11_AuthenticateClient_resp.status);
         return -1;
     }
 
-    jprint_success((cJSON *)es11_authenticate_client_resp.cjson_array_result);
+    jprint_success((cJSON *)es11_AuthenticateClient_resp.cjson_array_result);
     return 0;
 }
 

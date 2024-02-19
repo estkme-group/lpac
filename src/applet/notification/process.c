@@ -32,10 +32,10 @@ static int applet_main(int argc, char **argv)
     es9p_ctx.euicc_ctx = &euicc_ctx;
     es9p_ctx.address = notification.notificationAddress;
 
-    jprint_progress("es9p_handle_notification");
-    if (es9p_handle_notification(&es9p_ctx, notification.b64_payload))
+    jprint_progress("es9p_HandleNotification");
+    if (es9p_HandleNotification(&es9p_ctx, notification.b64_payload))
     {
-        jprint_error("es9p_handle_notification", NULL);
+        jprint_error("es9p_HandleNotification", NULL);
         return -1;
     }
 

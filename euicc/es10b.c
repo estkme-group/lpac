@@ -103,14 +103,14 @@ int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_response, struct es1
 
     if (derutils_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length))
     {
-        if (!param->str_confirmationCode || strlen(param->str_confirmationCode) == 0)
+        if (!param->confirmationCode || strlen(param->confirmationCode) == 0)
         {
             goto err;
         }
 
         memset(&sha256ctx, 0, sizeof(sha256ctx));
         euicc_sha256_init(&sha256ctx);
-        euicc_sha256_update(&sha256ctx, (uint8_t *)param->str_confirmationCode, strlen(param->str_confirmationCode));
+        euicc_sha256_update(&sha256ctx, (uint8_t *)param->confirmationCode, strlen(param->confirmationCode));
         euicc_sha256_final(&sha256ctx, hashCC);
 
         memset(&sha256ctx, 0, sizeof(sha256ctx));

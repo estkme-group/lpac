@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 
-int es10a_GetEuiccConfiguredAddresses(struct euicc_ctx *ctx, struct es10a_euicc_configured_addresses *address)
+int es10a_GetEuiccConfiguredAddresses(struct euicc_ctx *ctx, struct es10a_EuiccConfiguredAddresses *address)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -126,9 +126,9 @@ exit:
     return fret;
 }
 
-void es10a_euicc_configured_addresses_free(struct es10a_euicc_configured_addresses *address)
+void es10a_euicc_configured_addresses_free(struct es10a_EuiccConfiguredAddresses *address)
 {
     free(address->defaultDpAddress);
     free(address->rootDsAddress);
-    memset(address, 0, sizeof(struct es10a_euicc_configured_addresses));
+    memset(address, 0, sizeof(struct es10a_EuiccConfiguredAddresses));
 }
