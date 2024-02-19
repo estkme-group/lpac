@@ -2,26 +2,6 @@
 
 #include "euicc.h"
 
-enum es10c_profile_info_state
-{
-    ES10C_PROFILE_INFO_STATE_DISABLED = 0,
-    ES10C_PROFILE_INFO_STATE_ENABLED = 1,
-};
-
-enum es10c_profile_info_class
-{
-    ES10C_PROFILE_INFO_CLASS_TEST = 0,
-    ES10C_PROFILE_INFO_CLASS_PROVISIONING = 1,
-    ES10C_PROFILE_INFO_CLASS_OPERATIONAL = 2,
-};
-
-enum es10c_icon_type
-{
-    ES10C_ICON_TYPE_INVALID = -1,
-    ES10C_ICON_TYPE_JPEG = 0,
-    ES10C_ICON_TYPE_PNG = 1,
-};
-
 struct es10c_profile_info
 {
     char iccid[(10 * 2) + 1];
@@ -49,6 +29,7 @@ struct es10c_profile_info
         char *dpOid;
     } dpProprietaryData;
     char **profilePolicyRules;
+
     struct es10c_profile_info *next;
 };
 

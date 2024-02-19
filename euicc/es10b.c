@@ -19,72 +19,135 @@
 int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es10b_prepare_download_param *param)
 {
     int fret = 0;
-    uint8_t *reqbuf = NULL, *reqwptr = NULL;
-    unsigned reqlen;
+    uint8_t *reqbuf = NULL;
+    uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
+    EUICC_SHA256_CTX sha256ctx;
+    uint8_t hashCC[SHA256_BLOCK_SIZE];
+
+    uint8_t *smdpSigned2 = NULL, *smdpSignature2 = NULL, *smdpCertificate = NULL;
+    int smdpSigned2_len, smdpSignature2_len, smdpCertificate_len;
+    struct derutils_node n_request, n_smdpSigned2, n_smdpSignature2, n_smdpCertificate, n_hashCc, n_transactionId, n_ccRequiredFlag;
+
     *b64_response = NULL;
 
-    reqlen = 0;
-    reqlen += 7; // PrepareDownload Tag + Length (MAX)
-    reqlen += euicc_base64_decode_len(param->b64_smdp_signed_2);
-    reqlen += euicc_base64_decode_len(param->b64_smdp_signature_2);
-    reqlen += SHA256_BLOCK_SIZE + 1 + 1; // hashCC + tag + len
-    reqlen += euicc_base64_decode_len(param->b64_smdp_certificate);
+    memset(&n_request, 0, sizeof(n_request));
+    memset(&n_smdpSigned2, 0, sizeof(n_smdpSigned2));
+    memset(&n_smdpSignature2, 0, sizeof(n_smdpSignature2));
+    memset(&n_smdpCertificate, 0, sizeof(n_smdpCertificate));
+    memset(&n_hashCc, 0, sizeof(n_hashCc));
 
-    reqbuf = malloc(reqlen);
-    if (!reqbuf)
+    smdpSigned2 = malloc(euicc_base64_decode_len(param->b64_smdpSigned2));
+    if (!smdpSigned2)
     {
         goto err;
     }
-    memset(reqbuf, 0, reqlen);
 
-    reqwptr = reqbuf;
-    reqwptr += 7; // Skip Tag + Length
-    reqwptr += euicc_base64_decode(reqwptr, param->b64_smdp_signed_2);
-    reqwptr += euicc_base64_decode(reqwptr, param->b64_smdp_signature_2);
-    if (param->hexstr_transcation_id && param->str_checkcode)
+    smdpSignature2 = malloc(euicc_base64_decode_len(param->b64_smdpSignature2));
+    if (!smdpSignature2)
     {
-        EUICC_SHA256_CTX sha256ctx;
-        uint8_t hashCC[SHA256_BLOCK_SIZE];
-        uint8_t merged[sizeof(hashCC) + 16];
-        int mergedlen;
+        goto err;
+    }
 
-        memset(&sha256ctx, 0, sizeof(sha256ctx));
-        euicc_sha256_init(&sha256ctx);
-        euicc_sha256_update(&sha256ctx, (uint8_t *)param->str_checkcode, strlen(param->str_checkcode));
-        euicc_sha256_final(&sha256ctx, hashCC);
+    smdpCertificate = malloc(euicc_base64_decode_len(param->b64_smdpCertificate));
+    if (!smdpCertificate)
+    {
+        goto err;
+    }
 
-        memcpy(merged, hashCC, sizeof(hashCC));
-        mergedlen = euicc_hexutil_hex2bin(merged + sizeof(hashCC), sizeof(merged) - sizeof(hashCC), param->hexstr_transcation_id);
-        if (mergedlen < 0)
+    if ((smdpSigned2_len = euicc_base64_decode(smdpSigned2, param->b64_smdpSigned2)) < 0)
+    {
+        goto err;
+    }
+
+    if ((smdpSignature2_len = euicc_base64_decode(smdpSignature2, param->b64_smdpSignature2)) < 0)
+    {
+        goto err;
+    }
+
+    if ((smdpCertificate_len = euicc_base64_decode(smdpCertificate, param->b64_smdpCertificate)) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_smdpSigned2, 0x30, smdpSigned2, smdpSigned2_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_smdpSignature2, 0x5F37, smdpSignature2, smdpSignature2_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_smdpCertificate, 0x30, smdpCertificate, smdpCertificate_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_transactionId, 0x80, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_ccRequiredFlag, 0x01, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
+    {
+        goto err;
+    }
+
+    n_request.tag = 0xBF21;
+    n_request.pack.child = &n_smdpSigned2;
+    n_smdpSigned2.pack.next = &n_smdpSignature2;
+
+    if (derutils_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length))
+    {
+        if (!param->str_confirmationCode || strlen(param->str_confirmationCode) == 0)
         {
             goto err;
         }
-        mergedlen += sizeof(hashCC);
 
         memset(&sha256ctx, 0, sizeof(sha256ctx));
         euicc_sha256_init(&sha256ctx);
-        euicc_sha256_update(&sha256ctx, merged, mergedlen);
+        euicc_sha256_update(&sha256ctx, (uint8_t *)param->str_confirmationCode, strlen(param->str_confirmationCode));
         euicc_sha256_final(&sha256ctx, hashCC);
 
-        *reqwptr++ = 0x04;
-        *reqwptr++ = sizeof(hashCC);
-        memcpy(reqwptr, hashCC, sizeof(hashCC));
-        reqwptr += sizeof(hashCC);
+        memset(&sha256ctx, 0, sizeof(sha256ctx));
+        euicc_sha256_init(&sha256ctx);
+        euicc_sha256_update(&sha256ctx, hashCC, sizeof(hashCC));
+        euicc_sha256_update(&sha256ctx, n_transactionId.value, n_transactionId.length);
+        euicc_sha256_final(&sha256ctx, hashCC);
+
+        n_hashCc.tag = 0x04;
+        n_hashCc.value = hashCC;
+        n_hashCc.length = sizeof(hashCC);
+
+        n_smdpSignature2.pack.next = &n_hashCc;
+        n_hashCc.pack.next = &n_smdpCertificate;
     }
-    reqwptr += euicc_base64_decode(reqwptr, param->b64_smdp_certificate);
+    else
+    {
+        n_smdpSignature2.pack.next = &n_smdpCertificate;
+    }
 
-    reqlen = reqwptr - reqbuf; // re-calculated length, for not accounting base64_decode_len
-
-    reqwptr = euicc_derutil_tag_leftpad(reqbuf, reqlen, 7, 0xBF21);
-    reqlen = reqlen - (reqwptr - reqbuf); // re-calculated length, for add tag and length
-
-    if (es10x_command(ctx, &respbuf, &resplen, reqwptr, reqlen) < 0)
+    if (derutils_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
     {
         goto err;
     }
+
+    free(smdpSigned2);
+    smdpSigned2 = NULL;
+    free(smdpSignature2);
+    smdpSignature2 = NULL;
+    free(smdpCertificate);
+    smdpCertificate = NULL;
+
+    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqlen) < 0)
+    {
+        goto err;
+    }
+
     free(reqbuf);
     reqbuf = NULL;
 
@@ -93,14 +156,31 @@ int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es
     {
         goto err;
     }
-    euicc_base64_encode(*b64_response, respbuf, resplen);
+
+    if (euicc_base64_encode(*b64_response, respbuf, resplen) < 0)
+    {
+        goto err;
+    }
+
+    fret = 0;
 
     goto exit;
 
 err:
     fret = -1;
-    free(reqbuf);
+    free(*b64_response);
+    *b64_response = NULL;
 exit:
+    free(smdpSigned2);
+    smdpSigned2 = NULL;
+    free(smdpSignature2);
+    smdpSignature2 = NULL;
+    free(smdpCertificate);
+    smdpCertificate = NULL;
+    free(reqbuf);
+    reqbuf = NULL;
+    free(respbuf);
+    respbuf = NULL;
     return fret;
 }
 
@@ -712,13 +792,13 @@ int es10b_retrieve_notification(struct euicc_ctx *ctx, struct es10b_notification
         goto err;
     }
 
-    notification->receiver = malloc(tmpnode.length + 1);
-    if (!notification->receiver)
+    notification->notificationAddress = malloc(tmpnode.length + 1);
+    if (!notification->notificationAddress)
     {
         goto err;
     }
-    memcpy(notification->receiver, tmpnode.value, tmpnode.length);
-    notification->receiver[tmpnode.length] = '\0';
+    memcpy(notification->notificationAddress, tmpnode.value, tmpnode.length);
+    notification->notificationAddress[tmpnode.length] = '\0';
 
     notification->b64_payload = malloc(euicc_base64_encode_len(n_PendingNotification.self.length));
     if (!notification->b64_payload)
@@ -814,18 +894,18 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
 
     uint8_t imei[8];
     int imei_len;
-    uint8_t *server_signed_1 = NULL, *server_signature_1 = NULL, *euicc_ci_pkid_to_be_used = NULL, *server_certificate = NULL;
-    int server_signed_1_len, server_signature_1_len, euicc_ci_pkid_to_be_used_len, server_certificate_len;
-    struct derutils_node n_request, n_server_signed_1, n_server_signature_1, n_euicc_ci_pkid_to_be_used, n_server_certificate, n_ctx_params1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
+    uint8_t *serverSigned1 = NULL, *serverSignature1 = NULL, *euiccCiPKIdToBeUsed = NULL, *serverCertificate = NULL;
+    int serverSigned1_len, serverSignature1_len, euiccCiPKIdToBeUsed_len, serverCertificate_len;
+    struct derutils_node n_request, n_serverSigned1, n_serverSignature1, n_euiccCiPKIdToBeUsed, n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
 
     *b64_response = NULL;
 
     memset(&n_request, 0, sizeof(n_request));
-    memset(&n_server_signed_1, 0, sizeof(n_server_signed_1));
-    memset(&n_server_signature_1, 0, sizeof(n_server_signature_1));
-    memset(&n_euicc_ci_pkid_to_be_used, 0, sizeof(n_euicc_ci_pkid_to_be_used));
-    memset(&n_server_certificate, 0, sizeof(n_server_certificate));
-    memset(&n_ctx_params1, 0, sizeof(n_ctx_params1));
+    memset(&n_serverSigned1, 0, sizeof(n_serverSigned1));
+    memset(&n_serverSignature1, 0, sizeof(n_serverSignature1));
+    memset(&n_euiccCiPKIdToBeUsed, 0, sizeof(n_euiccCiPKIdToBeUsed));
+    memset(&n_serverCertificate, 0, sizeof(n_serverCertificate));
+    memset(&n_CtxParams1, 0, sizeof(n_CtxParams1));
     memset(&n_matchingId, 0, sizeof(n_matchingId));
     memset(&n_deviceInfo, 0, sizeof(n_deviceInfo));
     memset(&n_tac, 0, sizeof(n_tac));
@@ -844,77 +924,77 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
         memcpy(imei, "\x35\x29\x06\x11", 4);
     }
 
-    server_signed_1 = malloc(euicc_base64_decode_len(param->b64_server_signed_1));
-    if (!server_signed_1)
+    serverSigned1 = malloc(euicc_base64_decode_len(param->b64_serverSigned1));
+    if (!serverSigned1)
     {
         goto err;
     }
 
-    server_signature_1 = malloc(euicc_base64_decode_len(param->b64_server_signature_1));
-    if (!server_signature_1)
+    serverSignature1 = malloc(euicc_base64_decode_len(param->b64_serverSignature1));
+    if (!serverSignature1)
     {
         goto err;
     }
 
-    euicc_ci_pkid_to_be_used = malloc(euicc_base64_decode_len(param->b64_euicc_ci_pkid_to_be_used));
-    if (!euicc_ci_pkid_to_be_used)
+    euiccCiPKIdToBeUsed = malloc(euicc_base64_decode_len(param->b64_euiccCiPKIdToBeUsed));
+    if (!euiccCiPKIdToBeUsed)
     {
         goto err;
     }
 
-    server_certificate = malloc(euicc_base64_decode_len(param->b64_server_certificate));
-    if (!server_certificate)
+    serverCertificate = malloc(euicc_base64_decode_len(param->b64_serverCertificate));
+    if (!serverCertificate)
     {
         goto err;
     }
 
-    if ((server_signed_1_len = euicc_base64_decode(server_signed_1, param->b64_server_signed_1)) < 0)
+    if ((serverSigned1_len = euicc_base64_decode(serverSigned1, param->b64_serverSigned1)) < 0)
     {
         goto err;
     }
 
-    if ((server_signature_1_len = euicc_base64_decode(server_signature_1, param->b64_server_signature_1)) < 0)
+    if ((serverSignature1_len = euicc_base64_decode(serverSignature1, param->b64_serverSignature1)) < 0)
     {
         goto err;
     }
 
-    if ((euicc_ci_pkid_to_be_used_len = euicc_base64_decode(euicc_ci_pkid_to_be_used, param->b64_euicc_ci_pkid_to_be_used)) < 0)
+    if ((euiccCiPKIdToBeUsed_len = euicc_base64_decode(euiccCiPKIdToBeUsed, param->b64_euiccCiPKIdToBeUsed)) < 0)
     {
         goto err;
     }
 
-    if ((server_certificate_len = euicc_base64_decode(server_certificate, param->b64_server_certificate)) < 0)
+    if ((serverCertificate_len = euicc_base64_decode(serverCertificate, param->b64_serverCertificate)) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_server_signed_1, 0x30, server_signed_1, server_signed_1_len) < 0)
+    if (derutils_unpack_find_tag(&n_serverSigned1, 0x30, serverSigned1, serverSigned1_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_server_signature_1, 0x5F37, server_signature_1, server_signature_1_len) < 0)
+    if (derutils_unpack_find_tag(&n_serverSignature1, 0x5F37, serverSignature1, serverSignature1_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_euicc_ci_pkid_to_be_used, 0x04, euicc_ci_pkid_to_be_used, euicc_ci_pkid_to_be_used_len) < 0)
+    if (derutils_unpack_find_tag(&n_euiccCiPKIdToBeUsed, 0x04, euiccCiPKIdToBeUsed, euiccCiPKIdToBeUsed_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_server_certificate, 0x30, server_certificate, server_certificate_len) < 0)
+    if (derutils_unpack_find_tag(&n_serverCertificate, 0x30, serverCertificate, serverCertificate_len) < 0)
     {
         goto err;
     }
 
     n_request.tag = 0xBF38;
-    n_request.pack.child = &n_server_signed_1;
-    n_server_signed_1.pack.next = &n_server_signature_1;
-    n_server_signature_1.pack.next = &n_euicc_ci_pkid_to_be_used;
-    n_euicc_ci_pkid_to_be_used.pack.next = &n_server_certificate;
-    n_server_certificate.pack.next = &n_ctx_params1;
-    n_ctx_params1.tag = 0xA0;
+    n_request.pack.child = &n_serverSigned1;
+    n_serverSigned1.pack.next = &n_serverSignature1;
+    n_serverSignature1.pack.next = &n_euiccCiPKIdToBeUsed;
+    n_euiccCiPKIdToBeUsed.pack.next = &n_serverCertificate;
+    n_serverCertificate.pack.next = &n_CtxParams1;
+    n_CtxParams1.tag = 0xA0;
 
     n_deviceInfo.tag = 0xA1;
     n_deviceInfo.pack.child = &n_tac;
@@ -933,7 +1013,7 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
 
     if (param->matchingId)
     {
-        n_ctx_params1.pack.child = &n_matchingId;
+        n_CtxParams1.pack.child = &n_matchingId;
         n_matchingId.tag = 0x80;
         n_matchingId.value = (const uint8_t *)param->matchingId;
         n_matchingId.length = strlen(param->matchingId);
@@ -941,7 +1021,7 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
     }
     else
     {
-        n_ctx_params1.pack.child = &n_deviceInfo;
+        n_CtxParams1.pack.child = &n_deviceInfo;
     }
 
     if (derutils_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
@@ -949,14 +1029,14 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
         goto err;
     }
 
-    free(server_signed_1);
-    server_signed_1 = NULL;
-    free(server_signature_1);
-    server_signature_1 = NULL;
-    free(euicc_ci_pkid_to_be_used);
-    euicc_ci_pkid_to_be_used = NULL;
-    free(server_certificate);
-    server_certificate = NULL;
+    free(serverSigned1);
+    serverSigned1 = NULL;
+    free(serverSignature1);
+    serverSignature1 = NULL;
+    free(euiccCiPKIdToBeUsed);
+    euiccCiPKIdToBeUsed = NULL;
+    free(serverCertificate);
+    serverCertificate = NULL;
 
     if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqlen) < 0)
     {
@@ -986,14 +1066,14 @@ err:
     free(*b64_response);
     *b64_response = NULL;
 exit:
-    free(server_signed_1);
-    server_signed_1 = NULL;
-    free(server_signature_1);
-    server_signature_1 = NULL;
-    free(euicc_ci_pkid_to_be_used);
-    euicc_ci_pkid_to_be_used = NULL;
-    free(server_certificate);
-    server_certificate = NULL;
+    free(serverSigned1);
+    serverSigned1 = NULL;
+    free(serverSignature1);
+    serverSignature1 = NULL;
+    free(euiccCiPKIdToBeUsed);
+    euiccCiPKIdToBeUsed = NULL;
+    free(serverCertificate);
+    serverCertificate = NULL;
     free(reqbuf);
     reqbuf = NULL;
     free(respbuf);
@@ -1015,7 +1095,7 @@ void es10b_notification_metadata_free_all(struct es10b_notification_metadata *me
 
 void es10b_notification_free(struct es10b_notification *notification)
 {
-    free(notification->receiver);
+    free(notification->notificationAddress);
     free(notification->b64_payload);
     memset(notification, 0, sizeof(struct es10b_notification));
 }

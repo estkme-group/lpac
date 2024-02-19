@@ -4,11 +4,11 @@
 
 struct es10b_prepare_download_param
 {
-    const char *b64_smdp_signed_2;
-    const char *b64_smdp_signature_2;
-    const char *b64_smdp_certificate;
-    const char *str_checkcode;
-    const char *hexstr_transcation_id;
+    const char *b64_profileMetadata;
+    const char *b64_smdpSigned2;
+    const char *b64_smdpSignature2;
+    const char *b64_smdpCertificate;
+    const char *str_confirmationCode;
 };
 
 struct es10b_notification_metadata
@@ -23,16 +23,16 @@ struct es10b_notification_metadata
 
 struct es10b_notification
 {
-    char *receiver;
+    char *notificationAddress;
     char *b64_payload;
 };
 
 struct es10b_authenticate_server_param
 {
-    const char *b64_server_signed_1;
-    const char *b64_server_signature_1;
-    const char *b64_euicc_ci_pkid_to_be_used;
-    const char *b64_server_certificate;
+    const char *b64_serverSigned1;
+    const char *b64_serverSignature1;
+    const char *b64_euiccCiPKIdToBeUsed;
+    const char *b64_serverCertificate;
     const char *matchingId;
     const char *imei;
     const unsigned char *tac;

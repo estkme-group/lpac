@@ -26,7 +26,7 @@ static int applet_main(int argc, char **argv)
     }
 
     jprint_progress("es9p_handle_notification");
-    if (es9p_handle_notification(&euicc_ctx, notification.receiver, notification.b64_payload))
+    if (es9p_handle_notification(&euicc_ctx, notification.notificationAddress, notification.b64_payload))
     {
         jprint_error("es9p_handle_notification", NULL);
         return -1;

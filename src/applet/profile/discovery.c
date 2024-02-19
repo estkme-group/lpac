@@ -78,10 +78,10 @@ static int applet_main(int argc, char **argv)
 
     transaction_id = strdup(es11_initiate_authentication_resp.transaction_id);
 
-    es10b_authenticate_server_param.b64_server_signed_1 = es11_initiate_authentication_resp.b64_server_signed_1;
-    es10b_authenticate_server_param.b64_server_signature_1 = es11_initiate_authentication_resp.b64_server_signature_1;
-    es10b_authenticate_server_param.b64_euicc_ci_pkid_to_be_used = es11_initiate_authentication_resp.b64_euicc_ci_pkid_to_be_used;
-    es10b_authenticate_server_param.b64_server_certificate = es11_initiate_authentication_resp.b64_server_certificate;
+    es10b_authenticate_server_param.b64_serverSigned1 = es11_initiate_authentication_resp.b64_server_signed_1;
+    es10b_authenticate_server_param.b64_serverSignature1 = es11_initiate_authentication_resp.b64_server_signature_1;
+    es10b_authenticate_server_param.b64_euiccCiPKIdToBeUsed = es11_initiate_authentication_resp.b64_euicc_ci_pkid_to_be_used;
+    es10b_authenticate_server_param.b64_serverCertificate = es11_initiate_authentication_resp.b64_server_certificate;
     es10b_authenticate_server_param.matchingId = NULL;
     es10b_authenticate_server_param.imei = imei;
     es10b_authenticate_server_param.tac = NULL;

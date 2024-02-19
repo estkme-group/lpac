@@ -107,10 +107,10 @@ static int applet_main(int argc, char **argv)
     }
 
     transaction_id = strdup(es9p_initiate_authentication_resp.transaction_id);
-    es10b_authenticate_server_param.b64_server_signed_1 = es9p_initiate_authentication_resp.b64_server_signed_1;
-    es10b_authenticate_server_param.b64_server_signature_1 = es9p_initiate_authentication_resp.b64_server_signature_1;
-    es10b_authenticate_server_param.b64_euicc_ci_pkid_to_be_used = es9p_initiate_authentication_resp.b64_euicc_ci_pkid_to_be_used;
-    es10b_authenticate_server_param.b64_server_certificate = es9p_initiate_authentication_resp.b64_server_certificate;
+    es10b_authenticate_server_param.b64_serverSigned1 = es9p_initiate_authentication_resp.b64_server_signed_1;
+    es10b_authenticate_server_param.b64_serverSignature1 = es9p_initiate_authentication_resp.b64_server_signature_1;
+    es10b_authenticate_server_param.b64_euiccCiPKIdToBeUsed = es9p_initiate_authentication_resp.b64_euicc_ci_pkid_to_be_used;
+    es10b_authenticate_server_param.b64_serverCertificate = es9p_initiate_authentication_resp.b64_server_certificate;
     es10b_authenticate_server_param.matchingId = matchingId;
     es10b_authenticate_server_param.imei = imei;
     es10b_authenticate_server_param.tac = NULL;
@@ -129,17 +129,16 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
-    es10b_prepare_download_param.b64_smdp_signed_2 = es9p_authenticate_client_resp.b64_smdp_signed_2;
-    es10b_prepare_download_param.b64_smdp_signature_2 = es9p_authenticate_client_resp.b64_smdp_signature_2;
-    es10b_prepare_download_param.b64_smdp_certificate = es9p_authenticate_client_resp.b64_smdp_certificate;
+    es10b_prepare_download_param.b64_smdpSigned2 = es9p_authenticate_client_resp.b64_smdp_signed_2;
+    es10b_prepare_download_param.b64_smdpSignature2 = es9p_authenticate_client_resp.b64_smdp_signature_2;
+    es10b_prepare_download_param.b64_smdpCertificate = es9p_authenticate_client_resp.b64_smdp_certificate;
     if (confirmation_code)
     {
-        es10b_prepare_download_param.str_checkcode = confirmation_code;
-        es10b_prepare_download_param.hexstr_transcation_id = transaction_id;
+        es10b_prepare_download_param.str_confirmationCode = confirmation_code;
     }
     else
     {
-        es10b_prepare_download_param.str_checkcode = NULL;
+        es10b_prepare_download_param.str_confirmationCode = NULL;
     }
 
     jprint_progress("es10b_prepare_download");
