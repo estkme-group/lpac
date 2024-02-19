@@ -14,3 +14,16 @@ set_target_properties(httpinterface_stdio PROPERTIES RUNTIME_OUTPUT_DIRECTORY "$
 if(UNIX)
     install(TARGETS httpinterface_stdio LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/lpac")
 endif()
+
+if(CYGWIN)
+    add_custom_command(TARGET httpinterface_curl POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rename
+            ${CMAKE_BINARY_DIR}/output/cyghttpinterface_curl.dll ${CMAKE_BINARY_DIR}/output/libhttpinterface_curl.dll
+        COMMAND ${CMAKE_COMMAND} -E echo
+            "Renamed ${CMAKE_BINARY_DIR}/output/cyghttpinterface_curl.dll to ${CMAKE_BINARY_DIR}/output/libhttpinterface_curl.dll")
+    add_custom_command(TARGET httpinterface_stdio POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rename
+            ${CMAKE_BINARY_DIR}/output/cyghttpinterface_stdio.dll ${CMAKE_BINARY_DIR}/output/libhttpinterface_stdio.dll
+        COMMAND ${CMAKE_COMMAND} -E echo
+            "Renamed ${CMAKE_BINARY_DIR}/output/cyghttpinterface_stdio.dll to ${CMAKE_BINARY_DIR}/output/libhttpinterface_stdio.dll")
+endif()
