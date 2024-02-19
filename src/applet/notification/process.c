@@ -11,7 +11,7 @@
 static int applet_main(int argc, char **argv)
 {
     unsigned long seqNumber;
-    struct es10b_notification notification;
+    struct es10b_PendingNotification notification;
     struct es9p_ctx es9p_ctx = {0};
 
     if (argc < 2)
@@ -33,7 +33,7 @@ static int applet_main(int argc, char **argv)
     es9p_ctx.address = notification.notificationAddress;
 
     jprint_progress("es9p_HandleNotification");
-    if (es9p_HandleNotification(&es9p_ctx, notification.b64_payload))
+    if (es9p_HandleNotification(&es9p_ctx, notification.b64_PendingNotification))
     {
         jprint_error("es9p_HandleNotification", NULL);
         return -1;

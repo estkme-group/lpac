@@ -2,7 +2,7 @@
 
 #include "euicc.h"
 
-struct es10c_profile_info
+struct es10c_ProfileInfoList
 {
     char iccid[(10 * 2) + 1];
     char isdpAid[(16 * 2) + 1];
@@ -30,15 +30,15 @@ struct es10c_profile_info
     } dpProprietaryData;
     char **profilePolicyRules;
 
-    struct es10c_profile_info *next;
+    struct es10c_ProfileInfoList *next;
 };
 
-int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info **profiles);
+int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **profileInfoList);
 int es10c_EnableProfile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag);
 int es10c_DisableProfile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag);
 int es10c_DeleteProfile(struct euicc_ctx *ctx, const char *id);
 int es10c_eUICCMemoryReset(struct euicc_ctx *ctx);
-int es10c_GetEID(struct euicc_ctx *ctx, char **eid);
-int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *nickname);
+int es10c_GetEID(struct euicc_ctx *ctx, char **eidValue);
+int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *profileNickname);
 
-void es10c_profile_info_free_all(struct es10c_profile_info *profiles);
+void es10c_profile_info_free_all(struct es10c_ProfileInfoList *profileInfoList);

@@ -112,7 +112,6 @@ static int applet_main(int argc, char **argv)
 
     es10b_AuthenticateServer_param.matchingId = matchingId;
     es10b_AuthenticateServer_param.imei = imei;
-    es10b_AuthenticateServer_param.tac = NULL;
 
     jprint_progress("es10b_AuthenticateServer");
     if (es10b_AuthenticateServer(&euicc_ctx, &b64_authenticate_server_response, &es10b_AuthenticateServer_param))

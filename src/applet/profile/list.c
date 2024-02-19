@@ -9,7 +9,7 @@
 
 static int applet_main(int argc, char **argv)
 {
-    struct es10c_profile_info *profiles, *rptr;
+    struct es10c_ProfileInfoList *profiles, *rptr;
     cJSON *jdata = NULL;
 
     if (es10c_GetProfilesInfo(&euicc_ctx, &profiles))

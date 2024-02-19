@@ -9,7 +9,7 @@
 
 static int applet_main(int argc, char **argv)
 {
-    struct es10b_notification_metadata *notifications, *rptr;
+    struct es10b_NotificationMetadataList *notifications, *rptr;
     cJSON *jdata = NULL;
 
     if (es10b_ListNotification(&euicc_ctx, &notifications))

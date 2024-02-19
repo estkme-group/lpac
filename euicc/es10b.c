@@ -16,7 +16,7 @@
 #include "asn1c/asn1/BoundProfilePackage.h"
 #include "asn1c/asn1/ProfileInstallationResult.h"
 
-int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_response, struct es10b_PrepareDownload_param *param)
+int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_PrepareDownload_param *param)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -31,7 +31,7 @@ int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_response, struct es1
     int smdpSigned2_len, smdpSignature2_len, smdpCertificate_len;
     struct derutils_node n_request, n_smdpSigned2, n_smdpSignature2, n_smdpCertificate, n_hashCc, n_transactionId, n_ccRequiredFlag;
 
-    *b64_response = NULL;
+    *b64_PrepareDownloadResponse = NULL;
 
     memset(&n_request, 0, sizeof(n_request));
     memset(&n_smdpSigned2, 0, sizeof(n_smdpSigned2));
@@ -151,13 +151,13 @@ int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_response, struct es1
     free(reqbuf);
     reqbuf = NULL;
 
-    *b64_response = malloc(euicc_base64_encode_len(resplen));
-    if (!(*b64_response))
+    *b64_PrepareDownloadResponse = malloc(euicc_base64_encode_len(resplen));
+    if (!(*b64_PrepareDownloadResponse))
     {
         goto err;
     }
 
-    if (euicc_base64_encode(*b64_response, respbuf, resplen) < 0)
+    if (euicc_base64_encode(*b64_PrepareDownloadResponse, respbuf, resplen) < 0)
     {
         goto err;
     }
@@ -168,8 +168,8 @@ int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_response, struct es1
 
 err:
     fret = -1;
-    free(*b64_response);
-    *b64_response = NULL;
+    free(*b64_PrepareDownloadResponse);
+    *b64_PrepareDownloadResponse = NULL;
 exit:
     free(smdpSigned2);
     smdpSigned2 = NULL;
@@ -184,7 +184,7 @@ exit:
     return fret;
 }
 
-int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, const char *b64_bpp)
+int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, const char *b64_BoundProfilePackage)
 {
     int fret = 0, ret;
     uint8_t *bpp_buf = NULL;
@@ -204,12 +204,12 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, const char *b64_bpp)
     int apdus_count = 0;
     ProfileInstallationResult_t *asn1resp = NULL;
 
-    bpp_buf = malloc(euicc_base64_decode_len(b64_bpp));
+    bpp_buf = malloc(euicc_base64_decode_len(b64_BoundProfilePackage));
     if (!bpp_buf)
     {
         goto err;
     }
-    if ((bpp_len = euicc_base64_decode(bpp_buf, b64_bpp)) < 0)
+    if ((bpp_len = euicc_base64_decode(bpp_buf, b64_BoundProfilePackage)) < 0)
     {
         goto err;
     }
@@ -470,7 +470,7 @@ exit:
     return fret;
 }
 
-int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_payload)
+int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_euiccChallenge)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -503,12 +503,12 @@ int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_payload)
         goto err;
     }
 
-    *b64_payload = malloc(euicc_base64_encode_len(tmpnode.length));
-    if (!(*b64_payload))
+    *b64_euiccChallenge = malloc(euicc_base64_encode_len(tmpnode.length));
+    if (!(*b64_euiccChallenge))
     {
         goto err;
     }
-    if (euicc_base64_encode(*b64_payload, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_base64_encode(*b64_euiccChallenge, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
@@ -517,15 +517,15 @@ int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_payload)
 
 err:
     fret = -1;
-    free(*b64_payload);
-    *b64_payload = NULL;
+    free(*b64_euiccChallenge);
+    *b64_euiccChallenge = NULL;
 exit:
     free(respbuf);
     respbuf = NULL;
     return fret;
 }
 
-int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_payload)
+int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_EUICCInfo1)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -553,12 +553,12 @@ int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_payload)
         goto err;
     }
 
-    *b64_payload = malloc(euicc_base64_encode_len(tmpnode.self.length));
-    if (!(*b64_payload))
+    *b64_EUICCInfo1 = malloc(euicc_base64_encode_len(tmpnode.self.length));
+    if (!(*b64_EUICCInfo1))
     {
         goto err;
     }
-    if (euicc_base64_encode(*b64_payload, tmpnode.self.ptr, tmpnode.self.length) < 0)
+    if (euicc_base64_encode(*b64_EUICCInfo1, tmpnode.self.ptr, tmpnode.self.length) < 0)
     {
         goto err;
     }
@@ -567,15 +567,15 @@ int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_payload)
 
 err:
     fret = -1;
-    free(*b64_payload);
-    *b64_payload = NULL;
+    free(*b64_EUICCInfo1);
+    *b64_EUICCInfo1 = NULL;
 exit:
     free(respbuf);
     respbuf = NULL;
     return fret;
 }
 
-int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas)
+int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_NotificationMetadataList **notificationMetadataList)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -587,9 +587,9 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
 
     struct derutils_node tmpnode, n_notificationMetadataList, n_NotificationMetadata;
 
-    struct es10b_notification_metadata *metadatas_wptr;
+    struct es10b_NotificationMetadataList *metadatas_wptr;
 
-    *metadatas = NULL;
+    *notificationMetadataList = NULL;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
@@ -617,14 +617,14 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
 
     while (derutils_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value, n_notificationMetadataList.length) == 0)
     {
-        struct es10b_notification_metadata *p;
+        struct es10b_NotificationMetadataList *p;
 
         if (n_NotificationMetadata.tag != 0xBF2F)
         {
             continue;
         }
 
-        p = malloc(sizeof(struct es10b_notification_metadata));
+        p = malloc(sizeof(struct es10b_NotificationMetadataList));
         if (!p)
         {
             goto err;
@@ -683,9 +683,9 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
             }
         }
 
-        if (*metadatas == NULL)
+        if (*notificationMetadataList == NULL)
         {
-            *metadatas = p;
+            *notificationMetadataList = p;
         }
         else
         {
@@ -699,14 +699,14 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
 
 err:
     fret = -1;
-    es10b_notification_metadata_free_all(*metadatas);
+    es10b_notification_metadata_free_all(*notificationMetadataList);
 exit:
     free(respbuf);
     respbuf = NULL;
     return fret;
 }
 
-int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_notification *notification, unsigned long seqNumber)
+int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_PendingNotification *PendingNotification, unsigned long seqNumber)
 {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
@@ -718,7 +718,7 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_notifica
 
     struct derutils_node tmpnode, n_PendingNotification, n_NotificationMetadata;
 
-    memset(notification, 0, sizeof(struct es10b_notification));
+    memset(PendingNotification, 0, sizeof(struct es10b_PendingNotification));
 
     if (derutils_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
     {
@@ -792,20 +792,20 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_notifica
         goto err;
     }
 
-    notification->notificationAddress = malloc(tmpnode.length + 1);
-    if (!notification->notificationAddress)
+    PendingNotification->notificationAddress = malloc(tmpnode.length + 1);
+    if (!PendingNotification->notificationAddress)
     {
         goto err;
     }
-    memcpy(notification->notificationAddress, tmpnode.value, tmpnode.length);
-    notification->notificationAddress[tmpnode.length] = '\0';
+    memcpy(PendingNotification->notificationAddress, tmpnode.value, tmpnode.length);
+    PendingNotification->notificationAddress[tmpnode.length] = '\0';
 
-    notification->b64_payload = malloc(euicc_base64_encode_len(n_PendingNotification.self.length));
-    if (!notification->b64_payload)
+    PendingNotification->b64_PendingNotification = malloc(euicc_base64_encode_len(n_PendingNotification.self.length));
+    if (!PendingNotification->b64_PendingNotification)
     {
         goto err;
     }
-    if (euicc_base64_encode(notification->b64_payload, n_PendingNotification.self.ptr, n_PendingNotification.self.length) < 0)
+    if (euicc_base64_encode(PendingNotification->b64_PendingNotification, n_PendingNotification.self.ptr, n_PendingNotification.self.length) < 0)
     {
         goto err;
     }
@@ -816,7 +816,7 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_notifica
 
 err:
     fret = -1;
-    es10b_notification_free(notification);
+    es10b_notification_free(PendingNotification);
 exit:
     free(respbuf);
     respbuf = NULL;
@@ -884,7 +884,7 @@ exit:
     return fret;
 }
 
-int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_response, struct es10b_AuthenticateServer_param *param)
+int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_AuthenticateServerResponse, struct es10b_AuthenticateServer_param *param)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -898,7 +898,7 @@ int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_response, struct 
     int serverSigned1_len, serverSignature1_len, euiccCiPKIdToBeUsed_len, serverCertificate_len;
     struct derutils_node n_request, n_serverSigned1, n_serverSignature1, n_euiccCiPKIdToBeUsed, n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
 
-    *b64_response = NULL;
+    *b64_AuthenticateServerResponse = NULL;
 
     memset(&n_request, 0, sizeof(n_request));
     memset(&n_serverSigned1, 0, sizeof(n_serverSigned1));
@@ -1046,13 +1046,13 @@ int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_response, struct 
     free(reqbuf);
     reqbuf = NULL;
 
-    *b64_response = malloc(euicc_base64_encode_len(resplen));
-    if (!(*b64_response))
+    *b64_AuthenticateServerResponse = malloc(euicc_base64_encode_len(resplen));
+    if (!(*b64_AuthenticateServerResponse))
     {
         goto err;
     }
 
-    if (euicc_base64_encode(*b64_response, respbuf, resplen) < 0)
+    if (euicc_base64_encode(*b64_AuthenticateServerResponse, respbuf, resplen) < 0)
     {
         goto err;
     }
@@ -1063,8 +1063,8 @@ int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_response, struct 
 
 err:
     fret = -1;
-    free(*b64_response);
-    *b64_response = NULL;
+    free(*b64_AuthenticateServerResponse);
+    *b64_AuthenticateServerResponse = NULL;
 exit:
     free(serverSigned1);
     serverSigned1 = NULL;
@@ -1081,21 +1081,26 @@ exit:
     return fret;
 }
 
-void es10b_notification_metadata_free_all(struct es10b_notification_metadata *metadatas)
+int es10b_CancelSession(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_CancelSession_param *param)
 {
-    while (metadatas)
+    return -1;
+}
+
+void es10b_notification_metadata_free_all(struct es10b_NotificationMetadataList *notificationMetadataList)
+{
+    while (notificationMetadataList)
     {
-        struct es10b_notification_metadata *next = metadatas->next;
-        free(metadatas->notificationAddress);
-        free(metadatas->iccid);
-        free(metadatas);
-        metadatas = next;
+        struct es10b_NotificationMetadataList *next = notificationMetadataList->next;
+        free(notificationMetadataList->notificationAddress);
+        free(notificationMetadataList->iccid);
+        free(notificationMetadataList);
+        notificationMetadataList = next;
     }
 }
 
-void es10b_notification_free(struct es10b_notification *notification)
+void es10b_notification_free(struct es10b_PendingNotification *PendingNotification)
 {
-    free(notification->notificationAddress);
-    free(notification->b64_payload);
-    memset(notification, 0, sizeof(struct es10b_notification));
+    free(PendingNotification->notificationAddress);
+    free(PendingNotification->b64_PendingNotification);
+    memset(PendingNotification, 0, sizeof(struct es10b_PendingNotification));
 }

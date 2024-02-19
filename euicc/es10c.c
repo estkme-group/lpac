@@ -31,7 +31,7 @@ enum es10c_icon_type
     ES10C_ICON_TYPE_PNG = 1,
 };
 
-int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info **profiles)
+int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **profileInfoList)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -43,9 +43,9 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info **pro
 
     struct derutils_node tmpnode, n_profileInfoListOk, n_ProfileInfo;
 
-    struct es10c_profile_info *profiles_wptr;
+    struct es10c_ProfileInfoList *profiles_wptr;
 
-    *profiles = NULL;
+    *profileInfoList = NULL;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
@@ -73,14 +73,14 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info **pro
 
     while (derutils_unpack_next(&n_ProfileInfo, &n_ProfileInfo, n_profileInfoListOk.value, n_profileInfoListOk.length) == 0)
     {
-        struct es10c_profile_info *p;
+        struct es10c_ProfileInfoList *p;
 
         if (n_ProfileInfo.tag != 0xE3)
         {
             continue;
         }
 
-        p = malloc(sizeof(struct es10c_profile_info));
+        p = malloc(sizeof(struct es10c_ProfileInfoList));
         if (!p)
         {
             goto err;
@@ -190,9 +190,9 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info **pro
             }
         }
 
-        if (*profiles == NULL)
+        if (*profileInfoList == NULL)
         {
-            *profiles = p;
+            *profileInfoList = p;
         }
         else
         {
@@ -206,7 +206,7 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info **pro
 
 err:
     fret = -1;
-    es10c_profile_info_free_all(*profiles);
+    es10c_profile_info_free_all(*profileInfoList);
 exit:
     free(respbuf);
     respbuf = NULL;
@@ -410,7 +410,7 @@ exit:
     return fret;
 }
 
-int es10c_GetEID(struct euicc_ctx *ctx, char **eid)
+int es10c_GetEID(struct euicc_ctx *ctx, char **eidValue)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -450,27 +450,27 @@ int es10c_GetEID(struct euicc_ctx *ctx, char **eid)
         goto err;
     }
 
-    *eid = malloc((tmpnode.length * 2) + 1);
-    if (*eid == NULL)
+    *eidValue = malloc((tmpnode.length * 2) + 1);
+    if (*eidValue == NULL)
     {
         goto err;
     }
 
-    euicc_hexutil_bin2hex(*eid, (tmpnode.length * 2) + 1, tmpnode.value, tmpnode.length);
+    euicc_hexutil_bin2hex(*eidValue, (tmpnode.length * 2) + 1, tmpnode.value, tmpnode.length);
 
     goto exit;
 
 err:
     fret = -1;
-    free(*eid);
-    *eid = NULL;
+    free(*eidValue);
+    *eidValue = NULL;
 exit:
     free(respbuf);
     respbuf = NULL;
     return fret;
 }
 
-int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *nickname)
+int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *profileNickname)
 {
     int fret = 0;
     uint8_t asn1iccid[10];
@@ -484,8 +484,8 @@ int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *nick
                 .pack = {
                     .next = &(struct derutils_node){
                         .tag = 0x90, // profileNickname
-                        .length = strlen(nickname),
-                        .value = (const uint8_t *)nickname,
+                        .length = strlen(profileNickname),
+                        .value = (const uint8_t *)profileNickname,
                     },
                 },
             },
@@ -535,16 +535,16 @@ exit:
     return fret;
 }
 
-void es10c_profile_info_free_all(struct es10c_profile_info *profiles)
+void es10c_profile_info_free_all(struct es10c_ProfileInfoList *profileInfoList)
 {
-    while (profiles)
+    while (profileInfoList)
     {
-        struct es10c_profile_info *next = profiles->next;
-        free(profiles->profileNickname);
-        free(profiles->serviceProviderName);
-        free(profiles->profileName);
-        free(profiles->icon);
-        free(profiles);
-        profiles = next;
+        struct es10c_ProfileInfoList *next = profileInfoList->next;
+        free(profileInfoList->profileNickname);
+        free(profileInfoList->serviceProviderName);
+        free(profileInfoList->profileName);
+        free(profileInfoList->icon);
+        free(profileInfoList);
+        profileInfoList = next;
     }
 }
