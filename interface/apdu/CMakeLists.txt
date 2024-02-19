@@ -30,3 +30,21 @@ set_target_properties(apduinterface_stdio PROPERTIES RUNTIME_OUTPUT_DIRECTORY "$
 if(UNIX)
     install(TARGETS apduinterface_stdio LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/lpac")
 endif()
+
+if(CYGWIN)
+    add_custom_command(TARGET apduinterface_pcsc POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rename
+            ${CMAKE_BINARY_DIR}/output/cygapduinterface_pcsc.dll ${CMAKE_BINARY_DIR}/output/libapduinterface_pcsc.dll
+        COMMAND ${CMAKE_COMMAND} -E echo
+            "Renamed ${CMAKE_BINARY_DIR}/output/cygapduinterface_pcsc.dll to ${CMAKE_BINARY_DIR}/output/libapduinterface_pcsc.dll")
+    add_custom_command(TARGET apduinterface_at POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rename
+            ${CMAKE_BINARY_DIR}/output/cygapduinterface_at.dll ${CMAKE_BINARY_DIR}/output/libapduinterface_at.dll
+        COMMAND ${CMAKE_COMMAND} -E echo
+            "Renamed ${CMAKE_BINARY_DIR}/output/cygapduinterface_at.dll to ${CMAKE_BINARY_DIR}/output/libapduinterface_at.dll")
+    add_custom_command(TARGET apduinterface_stdio POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rename
+            ${CMAKE_BINARY_DIR}/output/cygapduinterface_stdio.dll ${CMAKE_BINARY_DIR}/output/libapduinterface_stdio.dll
+        COMMAND ${CMAKE_COMMAND} -E echo
+            "Renamed ${CMAKE_BINARY_DIR}/output/cygapduinterface_stdio.dll to ${CMAKE_BINARY_DIR}/output/libapduinterface_stdio.dll")
+endif()
