@@ -8,7 +8,6 @@
 static int applet_main(int argc, char **argv)
 {
     int ret;
-    int len;
     const char *param;
     int refreshflag;
 
@@ -20,7 +19,6 @@ static int applet_main(int argc, char **argv)
     }
 
     param = argv[1];
-    len = strlen(param);
 
     refreshflag = 0;
     if (argc > 2)
@@ -28,14 +26,7 @@ static int applet_main(int argc, char **argv)
         refreshflag = atoi(argv[2]);
     }
 
-    if (len == 32)
-    {
-        ret = es10c_enable_profile_aid(&euicc_ctx, param, refreshflag);
-    }
-    else
-    {
-        ret = es10c_enable_profile_iccid(&euicc_ctx, param, refreshflag);
-    }
+    ret = es10c_EnableProfile(&euicc_ctx, param, refreshflag);
 
     if (ret)
     {

@@ -20,7 +20,7 @@ static int applet_main(int argc, char **argv)
     char *b64_euicc_info_1 = NULL;
     struct es9p_initiate_authentication_resp es11_initiate_authentication_resp;
 
-    struct es10b_authenticate_server_param es10b_authenticate_server_param;
+    struct es10b_AuthenticateServer_param es10b_AuthenticateServer_param;
     char *b64_authenticate_server_response = NULL;
 
     struct es11_authenticate_client_resp es11_authenticate_client_resp;
@@ -55,17 +55,17 @@ static int applet_main(int argc, char **argv)
         smds = "lpa.ds.gsma.com";
     }
 
-    jprint_progress("es10b_get_euicc_challenge");
-    if (es10b_get_euicc_challenge(&euicc_ctx, &b64_euicc_challenge))
+    jprint_progress("es10b_GetEUICCChallenge");
+    if (es10b_GetEUICCChallenge(&euicc_ctx, &b64_euicc_challenge))
     {
-        jprint_error("es10b_get_euicc_challenge", NULL);
+        jprint_error("es10b_GetEUICCChallenge", NULL);
         return -1;
     }
 
-    jprint_progress("es10b_get_euicc_info");
-    if (es10b_get_euicc_info(&euicc_ctx, &b64_euicc_info_1))
+    jprint_progress("es10b_GetEUICCInfo");
+    if (es10b_GetEUICCInfo(&euicc_ctx, &b64_euicc_info_1))
     {
-        jprint_error("es10b_get_euicc_info", NULL);
+        jprint_error("es10b_GetEUICCInfo", NULL);
         return -1;
     }
 
@@ -78,18 +78,18 @@ static int applet_main(int argc, char **argv)
 
     transaction_id = strdup(es11_initiate_authentication_resp.transaction_id);
 
-    es10b_authenticate_server_param.b64_serverSigned1 = es11_initiate_authentication_resp.b64_server_signed_1;
-    es10b_authenticate_server_param.b64_serverSignature1 = es11_initiate_authentication_resp.b64_server_signature_1;
-    es10b_authenticate_server_param.b64_euiccCiPKIdToBeUsed = es11_initiate_authentication_resp.b64_euicc_ci_pkid_to_be_used;
-    es10b_authenticate_server_param.b64_serverCertificate = es11_initiate_authentication_resp.b64_server_certificate;
-    es10b_authenticate_server_param.matchingId = NULL;
-    es10b_authenticate_server_param.imei = imei;
-    es10b_authenticate_server_param.tac = NULL;
+    es10b_AuthenticateServer_param.b64_serverSigned1 = es11_initiate_authentication_resp.b64_server_signed_1;
+    es10b_AuthenticateServer_param.b64_serverSignature1 = es11_initiate_authentication_resp.b64_server_signature_1;
+    es10b_AuthenticateServer_param.b64_euiccCiPKIdToBeUsed = es11_initiate_authentication_resp.b64_euicc_ci_pkid_to_be_used;
+    es10b_AuthenticateServer_param.b64_serverCertificate = es11_initiate_authentication_resp.b64_server_certificate;
+    es10b_AuthenticateServer_param.matchingId = NULL;
+    es10b_AuthenticateServer_param.imei = imei;
+    es10b_AuthenticateServer_param.tac = NULL;
 
-    jprint_progress("es10b_authenticate_server");
-    if (es10b_authenticate_server(&euicc_ctx, &b64_authenticate_server_response, &es10b_authenticate_server_param))
+    jprint_progress("es10b_AuthenticateServer");
+    if (es10b_AuthenticateServer(&euicc_ctx, &b64_authenticate_server_response, &es10b_AuthenticateServer_param))
     {
-        jprint_error("es10b_authenticate_server", NULL);
+        jprint_error("es10b_AuthenticateServer", NULL);
         return -1;
     }
 

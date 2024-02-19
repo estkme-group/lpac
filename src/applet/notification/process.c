@@ -18,10 +18,10 @@ static int applet_main(int argc, char **argv)
 
     seqNumber = atol(argv[1]);
 
-    jprint_progress("es10b_retrieve_notification");
-    if (es10b_retrieve_notification(&euicc_ctx, &notification, seqNumber))
+    jprint_progress("es10b_RetrieveNotificationsList");
+    if (es10b_RetrieveNotificationsList(&euicc_ctx, &notification, seqNumber))
     {
-        jprint_error("es10b_retrieve_notification", NULL);
+        jprint_error("es10b_RetrieveNotificationsList", NULL);
         return -1;
     }
 

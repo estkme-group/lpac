@@ -31,7 +31,7 @@ enum es10c_icon_type
     ES10C_ICON_TYPE_PNG = 1,
 };
 
-int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info **profiles)
+int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info **profiles)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -213,135 +213,80 @@ exit:
     return fret;
 }
 
-static int es10c_enable_disable_profile(struct euicc_ctx *ctx, uint16_t op_tag, uint8_t id_tag, const uint8_t *id, uint8_t id_len, uint8_t refreshflag)
+static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t op_tag, const char *str_id, uint8_t refreshFlag)
 {
     int fret = 0;
-    struct derutils_node n_request = {
-        .tag = op_tag,
-        .pack = {
-            .child = &(struct derutils_node){
-                .tag = 0xA0, // profileIdentifier
-                .pack = {
-                    .child = &(struct derutils_node){
-                        .tag = id_tag,
-                        .value = id,
-                        .length = id_len,
-                    },
-                    .next = &(struct derutils_node){
-                        .tag = 0x81, // refreshFlag
-                        .value = &refreshflag,
-                        .length = 1,
+    uint8_t id[16];
+    int id_len;
+    uint8_t id_tag;
+    struct derutils_node n_request;
+    uint32_t reqlen;
+    uint8_t *respbuf = NULL;
+    unsigned resplen;
+
+    struct derutils_node tmpnode;
+
+    if (strlen(id) == 32)
+    {
+        if (euicc_hexutil_hex2bin(id, sizeof(id), str_id) < 0)
+        {
+            return -1;
+        }
+        id_len = sizeof(id);
+        id_tag = 0x4F;
+    }
+    else
+    {
+        if ((id_len = euicc_hexutil_gsmbcd2bin(id, sizeof(id), str_id)) < 0)
+        {
+            return -1;
+        }
+        id_tag = 0x5A;
+    }
+
+    if (0b10000000 & refreshFlag)
+    {
+        refreshFlag &= 0b01111111;
+
+        if (refreshFlag)
+        {
+            refreshFlag = 0xFF;
+        }
+
+        n_request = (struct derutils_node){
+            .tag = op_tag,
+            .pack = {
+                .child = &(struct derutils_node){
+                    .tag = 0xA0, // profileIdentifier
+                    .pack = {
+                        .child = &(struct derutils_node){
+                            .tag = id_tag,
+                            .value = id,
+                            .length = id_len,
+                        },
+                        .next = &(struct derutils_node){
+                            .tag = 0x81, // refreshFlag
+                            .value = &refreshFlag,
+                            .length = 1,
+                        },
                     },
                 },
             },
-        },
-    };
-    uint32_t reqlen;
-    uint8_t *respbuf = NULL;
-    unsigned resplen;
-
-    struct derutils_node tmpnode;
-
-    if (refreshflag)
-    {
-        refreshflag = 0xFF;
+        };
     }
-
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    else
     {
-        goto err;
-    }
-
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
-    {
-        goto err;
-    }
-
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
-    {
-        goto err;
-    }
-
-    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
-    {
-        goto err;
-    }
-
-    fret = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
-
-    goto exit;
-
-err:
-    fret = -1;
-exit:
-    free(respbuf);
-    respbuf = NULL;
-    return fret;
-}
-
-static int es10c_enable_disable_profile_aid(struct euicc_ctx *ctx, uint16_t op_tag, const char *aid, char refreshflag)
-{
-    uint8_t asn1aid[16];
-
-    if (euicc_hexutil_hex2bin(asn1aid, sizeof(asn1aid), aid) < 0)
-    {
-        return -1;
-    }
-
-    return es10c_enable_disable_profile(ctx, op_tag, 0x4F, asn1aid, sizeof(asn1aid), refreshflag);
-}
-
-static int es10c_enable_disable_profile_iccid(struct euicc_ctx *ctx, uint16_t op_tag, const char *iccid, char refreshflag)
-{
-    uint8_t asn1iccid[10];
-
-    if (euicc_hexutil_gsmbcd2bin(asn1iccid, sizeof(asn1iccid), iccid) < 0)
-    {
-        return -1;
-    }
-
-    return es10c_enable_disable_profile(ctx, op_tag, 0x5A, asn1iccid, sizeof(asn1iccid), refreshflag);
-}
-
-int es10c_enable_profile_aid(struct euicc_ctx *ctx, const char *aid, char refreshflag)
-{
-    return es10c_enable_disable_profile_aid(ctx, 0xBF31, aid, refreshflag);
-}
-
-int es10c_enable_profile_iccid(struct euicc_ctx *ctx, const char *iccid, char refreshflag)
-{
-    return es10c_enable_disable_profile_iccid(ctx, 0xBF31, iccid, refreshflag);
-}
-
-int es10c_disable_profile_aid(struct euicc_ctx *ctx, const char *aid, char refreshflag)
-{
-    return es10c_enable_disable_profile_aid(ctx, 0xBF32, aid, refreshflag);
-}
-
-int es10c_disable_profile_iccid(struct euicc_ctx *ctx, const char *iccid, char refreshflag)
-{
-    return es10c_enable_disable_profile_iccid(ctx, 0xBF32, iccid, refreshflag);
-}
-
-static int es10c_delete_profile(struct euicc_ctx *ctx, uint8_t id_tag, const uint8_t *id, uint8_t id_len)
-{
-    int fret = 0;
-    struct derutils_node n_request = {
-        .tag = 0xBF33, // DeleteProfileRequest
-        .pack = {
-            .child = &(struct derutils_node){
-                .tag = id_tag,
-                .value = id,
-                .length = id_len,
+        n_request = (struct derutils_node){
+            .tag = op_tag,
+            .pack = {
+                .child = &(struct derutils_node){
+                    .tag = id_tag,
+                    .value = id,
+                    .length = id_len,
+                },
             },
-        },
-    };
-    uint32_t reqlen;
-    uint8_t *respbuf = NULL;
-    unsigned resplen;
-
-    struct derutils_node tmpnode;
+        };
+    }
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
@@ -376,31 +321,38 @@ exit:
     return fret;
 }
 
-int es10c_delete_profile_aid(struct euicc_ctx *ctx, const char *aid)
+int es10c_EnableProfile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag)
 {
-    uint8_t asn1aid[16];
-
-    if (euicc_hexutil_hex2bin(asn1aid, sizeof(asn1aid), aid) < 0)
+    if (refreshFlag)
     {
-        return -1;
+        refreshFlag = 0b11111111;
     }
-
-    return es10c_delete_profile(ctx, 0x4F, asn1aid, sizeof(asn1aid));
+    else
+    {
+        refreshFlag = 0b10000000;
+    }
+    return es10c_enable_disable_delete_profile(ctx, 0xBF31, id, refreshFlag);
 }
 
-int es10c_delete_profile_iccid(struct euicc_ctx *ctx, const char *iccid)
+int es10c_DisableProfile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag)
 {
-    uint8_t asn1iccid[10];
-
-    if (euicc_hexutil_gsmbcd2bin(asn1iccid, sizeof(asn1iccid), iccid) < 0)
+    if (refreshFlag)
     {
-        return -1;
+        refreshFlag = 0b11111111;
     }
-
-    return es10c_delete_profile(ctx, 0x5A, asn1iccid, sizeof(asn1iccid));
+    else
+    {
+        refreshFlag = 0b10000000;
+    }
+    return es10c_enable_disable_delete_profile(ctx, 0xBF32, id, refreshFlag);
 }
 
-int es10c_euicc_memory_reset(struct euicc_ctx *ctx)
+int es10c_DeleteProfile(struct euicc_ctx *ctx, const char *id)
+{
+    return es10c_enable_disable_delete_profile(ctx, 0xBF33, id, 0);
+}
+
+int es10c_eUICCMemoryReset(struct euicc_ctx *ctx)
 {
     int fret = 0;
     uint8_t resetOptions[2];
@@ -458,7 +410,7 @@ exit:
     return fret;
 }
 
-int es10c_get_eid(struct euicc_ctx *ctx, char **eid)
+int es10c_GetEID(struct euicc_ctx *ctx, char **eid)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -518,7 +470,7 @@ exit:
     return fret;
 }
 
-int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *nickname)
+int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *nickname)
 {
     int fret = 0;
     uint8_t asn1iccid[10];

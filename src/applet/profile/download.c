@@ -24,12 +24,12 @@ static int applet_main(int argc, char **argv)
     char *b64_euicc_info_1 = NULL;
     struct es9p_initiate_authentication_resp es9p_initiate_authentication_resp;
 
-    struct es10b_authenticate_server_param es10b_authenticate_server_param;
+    struct es10b_AuthenticateServer_param es10b_AuthenticateServer_param;
     char *b64_authenticate_server_response = NULL;
 
     struct es9p_authenticate_client_resp es9p_authenticate_client_resp;
 
-    struct es10b_prepare_download_param es10b_prepare_download_param;
+    struct es10b_PrepareDownload_param es10b_PrepareDownload_param;
     char *b64_prepare_download_response = NULL;
 
     struct es9p_get_bound_profile_package_resp es9p_get_bound_profile_package_resp;
@@ -67,10 +67,10 @@ static int applet_main(int argc, char **argv)
 
     if (smdp == NULL)
     {
-        jprint_progress("es10a_get_euicc_configured_addresses");
-        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses))
+        jprint_progress("es10a_GetEuiccConfiguredAddresses");
+        if (es10a_GetEuiccConfiguredAddresses(&euicc_ctx, &configured_addresses))
         {
-            jprint_error("es10a_get_euicc_configured_addresses", NULL);
+            jprint_error("es10a_GetEuiccConfiguredAddresses", NULL);
             return -1;
         }
         else
@@ -85,17 +85,17 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
-    jprint_progress("es10b_get_euicc_challenge");
-    if (es10b_get_euicc_challenge(&euicc_ctx, &b64_euicc_challenge))
+    jprint_progress("es10b_GetEUICCChallenge");
+    if (es10b_GetEUICCChallenge(&euicc_ctx, &b64_euicc_challenge))
     {
-        jprint_error("es10b_get_euicc_challenge", NULL);
+        jprint_error("es10b_GetEUICCChallenge", NULL);
         return -1;
     }
 
-    jprint_progress("es10b_get_euicc_info");
-    if (es10b_get_euicc_info(&euicc_ctx, &b64_euicc_info_1))
+    jprint_progress("es10b_GetEUICCInfo");
+    if (es10b_GetEUICCInfo(&euicc_ctx, &b64_euicc_info_1))
     {
-        jprint_error("es10b_get_euicc_info", NULL);
+        jprint_error("es10b_GetEUICCInfo", NULL);
         return -1;
     }
 
@@ -107,18 +107,18 @@ static int applet_main(int argc, char **argv)
     }
 
     transaction_id = strdup(es9p_initiate_authentication_resp.transaction_id);
-    es10b_authenticate_server_param.b64_serverSigned1 = es9p_initiate_authentication_resp.b64_server_signed_1;
-    es10b_authenticate_server_param.b64_serverSignature1 = es9p_initiate_authentication_resp.b64_server_signature_1;
-    es10b_authenticate_server_param.b64_euiccCiPKIdToBeUsed = es9p_initiate_authentication_resp.b64_euicc_ci_pkid_to_be_used;
-    es10b_authenticate_server_param.b64_serverCertificate = es9p_initiate_authentication_resp.b64_server_certificate;
-    es10b_authenticate_server_param.matchingId = matchingId;
-    es10b_authenticate_server_param.imei = imei;
-    es10b_authenticate_server_param.tac = NULL;
+    es10b_AuthenticateServer_param.b64_serverSigned1 = es9p_initiate_authentication_resp.b64_server_signed_1;
+    es10b_AuthenticateServer_param.b64_serverSignature1 = es9p_initiate_authentication_resp.b64_server_signature_1;
+    es10b_AuthenticateServer_param.b64_euiccCiPKIdToBeUsed = es9p_initiate_authentication_resp.b64_euicc_ci_pkid_to_be_used;
+    es10b_AuthenticateServer_param.b64_serverCertificate = es9p_initiate_authentication_resp.b64_server_certificate;
+    es10b_AuthenticateServer_param.matchingId = matchingId;
+    es10b_AuthenticateServer_param.imei = imei;
+    es10b_AuthenticateServer_param.tac = NULL;
 
-    jprint_progress("es10b_authenticate_server");
-    if (es10b_authenticate_server(&euicc_ctx, &b64_authenticate_server_response, &es10b_authenticate_server_param))
+    jprint_progress("es10b_AuthenticateServer");
+    if (es10b_AuthenticateServer(&euicc_ctx, &b64_authenticate_server_response, &es10b_AuthenticateServer_param))
     {
-        jprint_error("es10b_authenticate_server", NULL);
+        jprint_error("es10b_AuthenticateServer", NULL);
         return -1;
     }
 
@@ -129,22 +129,22 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
-    es10b_prepare_download_param.b64_smdpSigned2 = es9p_authenticate_client_resp.b64_smdp_signed_2;
-    es10b_prepare_download_param.b64_smdpSignature2 = es9p_authenticate_client_resp.b64_smdp_signature_2;
-    es10b_prepare_download_param.b64_smdpCertificate = es9p_authenticate_client_resp.b64_smdp_certificate;
+    es10b_PrepareDownload_param.b64_smdpSigned2 = es9p_authenticate_client_resp.b64_smdp_signed_2;
+    es10b_PrepareDownload_param.b64_smdpSignature2 = es9p_authenticate_client_resp.b64_smdp_signature_2;
+    es10b_PrepareDownload_param.b64_smdpCertificate = es9p_authenticate_client_resp.b64_smdp_certificate;
     if (confirmation_code)
     {
-        es10b_prepare_download_param.str_confirmationCode = confirmation_code;
+        es10b_PrepareDownload_param.str_confirmationCode = confirmation_code;
     }
     else
     {
-        es10b_prepare_download_param.str_confirmationCode = NULL;
+        es10b_PrepareDownload_param.str_confirmationCode = NULL;
     }
 
-    jprint_progress("es10b_prepare_download");
-    if (es10b_prepare_download(&euicc_ctx, &b64_prepare_download_response, &es10b_prepare_download_param))
+    jprint_progress("es10b_PrepareDownload");
+    if (es10b_PrepareDownload(&euicc_ctx, &b64_prepare_download_response, &es10b_PrepareDownload_param))
     {
-        jprint_error("es10b_prepare_download", NULL);
+        jprint_error("es10b_PrepareDownload", NULL);
         return -1;
     }
 

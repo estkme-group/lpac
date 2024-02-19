@@ -15,13 +15,13 @@ static int applet_main(int argc, char **argv)
     cJSON *jeuiccinfo2 = NULL;
     cJSON *jdata = NULL;
 
-    if (es10c_get_eid(&euicc_ctx, &eid))
+    if (es10c_GetEID(&euicc_ctx, &eid))
     {
-        jprint_error("es10c_get_eid", NULL);
+        jprint_error("es10c_GetEID", NULL);
         return -1;
     }
 
-    if (es10a_get_euicc_configured_addresses(&euicc_ctx, &addresses) == 0)
+    if (es10a_GetEuiccConfiguredAddresses(&euicc_ctx, &addresses) == 0)
     {
         jaddresses = cJSON_CreateObject();
     }

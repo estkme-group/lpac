@@ -16,7 +16,7 @@
 #include "asn1c/asn1/BoundProfilePackage.h"
 #include "asn1c/asn1/ProfileInstallationResult.h"
 
-int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es10b_prepare_download_param *param)
+int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_response, struct es10b_PrepareDownload_param *param)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -470,7 +470,7 @@ exit:
     return fret;
 }
 
-int es10b_get_euicc_challenge(struct euicc_ctx *ctx, char **b64_payload)
+int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_payload)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -525,7 +525,7 @@ exit:
     return fret;
 }
 
-int es10b_get_euicc_info(struct euicc_ctx *ctx, char **b64_payload)
+int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_payload)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -575,7 +575,7 @@ exit:
     return fret;
 }
 
-int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas)
+int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -706,7 +706,7 @@ exit:
     return fret;
 }
 
-int es10b_retrieve_notification(struct euicc_ctx *ctx, struct es10b_notification *notification, unsigned long seqNumber)
+int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_notification *notification, unsigned long seqNumber)
 {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
@@ -823,7 +823,7 @@ exit:
     return fret;
 }
 
-int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber)
+int es10b_RemoveNotificationFromList(struct euicc_ctx *ctx, unsigned long seqNumber)
 {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
@@ -884,7 +884,7 @@ exit:
     return fret;
 }
 
-int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct es10b_authenticate_server_param *param)
+int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_response, struct es10b_AuthenticateServer_param *param)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;

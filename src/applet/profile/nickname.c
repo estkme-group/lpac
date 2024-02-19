@@ -28,7 +28,7 @@ static int applet_main(int argc, char **argv)
         new_name = "";
     }
 
-    if ((ret = es10c_set_nickname(&euicc_ctx, iccid, new_name)))
+    if ((ret = es10c_SetNickname(&euicc_ctx, iccid, new_name)))
     {
         const char *reason;
         switch (ret)
@@ -40,7 +40,7 @@ static int applet_main(int argc, char **argv)
             reason = "unknown";
             break;
         }
-        jprint_error("es10c_set_nickname", reason);
+        jprint_error("es10c_SetNickname", reason);
         return -1;
     }
 
