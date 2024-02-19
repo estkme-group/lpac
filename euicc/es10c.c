@@ -226,7 +226,7 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
 
     struct derutils_node tmpnode;
 
-    if (strlen(id) == 32)
+    if (strlen(str_id) == 32)
     {
         if (euicc_hexutil_hex2bin(id, sizeof(id), str_id) < 0)
         {
