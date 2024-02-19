@@ -1,5 +1,4 @@
-#include "es10x.h"
-#include "es10x.private.h"
+#include "euicc.private.h"
 #include "hexutil.h"
 
 #include <inttypes.h>
@@ -169,7 +168,7 @@ int es10x_command(struct euicc_ctx *ctx, uint8_t **resp, unsigned *resp_len, uin
     return 0;
 }
 
-int es10x_init(struct euicc_ctx *ctx)
+int euicc_init(struct euicc_ctx *ctx)
 {
     int ret;
 
@@ -187,7 +186,7 @@ int es10x_init(struct euicc_ctx *ctx)
     return 0;
 }
 
-void es10x_fini(struct euicc_ctx *ctx)
+void euicc_fini(struct euicc_ctx *ctx)
 {
     ctx->interface.apdu->logic_channel_close(ctx, ctx->es10x_logic_channel);
     ctx->interface.apdu->disconnect(ctx);

@@ -1,5 +1,5 @@
+#include "euicc.private.h"
 #include "es10cex.h"
-#include "es10x.private.h"
 
 #include <stdio.h>
 #include <stdlib.h>

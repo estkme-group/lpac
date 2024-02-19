@@ -5,6 +5,8 @@
 #include <string.h>
 #include <main.h>
 
+#include <euicc/es10b.h>
+
 static int applet_main(int argc, char **argv)
 {
     struct es10b_notification_metadata *notifications, *rptr;

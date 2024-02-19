@@ -6,6 +6,10 @@
 #include <string.h>
 #include <main.h>
 
+#include <euicc/es10a.h>
+#include <euicc/es10c.h>
+#include <euicc/es10cex.h>
+
 static int applet_main(int argc, char **argv)
 {
     char *eid = NULL;

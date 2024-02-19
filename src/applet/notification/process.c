@@ -5,10 +5,14 @@
 #include <string.h>
 #include <main.h>
 
+#include <euicc/es10b.h>
+#include <euicc/es9p.h>
+
 static int applet_main(int argc, char **argv)
 {
     unsigned long seqNumber;
     struct es10b_notification notification;
+    struct es9p_ctx es9p_ctx = {0};
 
     if (argc < 2)
     {
@@ -25,8 +29,11 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
+    es9p_ctx.euicc_ctx = &euicc_ctx;
+    es9p_ctx.address = notification.notificationAddress;
+
     jprint_progress("es9p_handle_notification");
-    if (es9p_handle_notification(&euicc_ctx, notification.notificationAddress, notification.b64_payload))
+    if (es9p_handle_notification(&es9p_ctx, notification.b64_payload))
     {
         jprint_error("es9p_handle_notification", NULL);
         return -1;

@@ -28,9 +28,9 @@ struct euicc_ctx euicc_ctx = {0};
 
 void main_init_euicc()
 {
-    if (es10x_init(&euicc_ctx))
+    if (euicc_init(&euicc_ctx))
     {
-        jprint_error("es10x_init", NULL);
+        jprint_error("euicc_init", NULL);
         exit(-1);
     }
     euicc_ctx_inited = 1;
@@ -42,7 +42,7 @@ void main_fini_euicc()
     {
         return;
     }
-    es10x_fini(&euicc_ctx);
+    euicc_fini(&euicc_ctx);
     euicc_ctx_inited = 0;
 }
 

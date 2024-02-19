@@ -1,7 +1,6 @@
 #pragma once
 
 #include <inttypes.h>
-
 #include "interface.h"
 
 struct euicc_ctx
@@ -20,5 +19,5 @@ struct euicc_ctx
     void *userdata;
 };
 
-#include "es9p.h"
-#include "es10x.h"
+int euicc_init(struct euicc_ctx *ctx);
+void euicc_fini(struct euicc_ctx *ctx);

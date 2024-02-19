@@ -1,5 +1,5 @@
+#include "euicc.private.h"
 #include "es10a.h"
-#include "es10x.private.h"
 
 #include "hexutil.h"
 #include "derutils.h"

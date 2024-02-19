@@ -5,6 +5,8 @@
 #include <string.h>
 #include <main.h>
 
+#include <euicc/es10a.h>
+
 static int applet_main(int argc, char **argv)
 {
     const char *smdp;
