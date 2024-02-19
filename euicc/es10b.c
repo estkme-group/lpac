@@ -15,7 +15,6 @@
 
 #include "asn1c/asn1/BoundProfilePackage.h"
 #include "asn1c/asn1/ProfileInstallationResult.h"
-#include "asn1c/asn1/CtxParams1.h"
 
 int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_response, struct es10b_prepare_download_param *param)
 {
@@ -808,105 +807,162 @@ exit:
 int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct es10b_authenticate_server_param *param)
 {
     int fret = 0;
-    uint8_t binimei[8];
-    uint8_t binimei_len;
-    uint8_t *reqbuf = NULL, *reqwptr = NULL;
-    unsigned reqlen;
+    uint8_t *reqbuf = NULL;
+    uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
-    asn_enc_rval_t asn1erval;
-    CtxParams1_t *ctx_params1;
+
+    uint8_t imei[8];
+    int imei_len;
+    uint8_t *server_signed_1 = NULL, *server_signature_1 = NULL, *euicc_ci_pkid_to_be_used = NULL, *server_certificate = NULL;
+    int server_signed_1_len, server_signature_1_len, euicc_ci_pkid_to_be_used_len, server_certificate_len;
+    struct derutils_node n_request, n_server_signed_1, n_server_signature_1, n_euicc_ci_pkid_to_be_used, n_server_certificate, n_ctx_params1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
 
     *b64_response = NULL;
 
-    ctx_params1 = malloc(sizeof(CtxParams1_t));
-    if (!ctx_params1)
-    {
-        goto err;
-    }
-    memset(ctx_params1, 0, sizeof(*ctx_params1));
+    memset(&n_request, 0, sizeof(n_request));
+    memset(&n_server_signed_1, 0, sizeof(n_server_signed_1));
+    memset(&n_server_signature_1, 0, sizeof(n_server_signature_1));
+    memset(&n_euicc_ci_pkid_to_be_used, 0, sizeof(n_euicc_ci_pkid_to_be_used));
+    memset(&n_server_certificate, 0, sizeof(n_server_certificate));
+    memset(&n_ctx_params1, 0, sizeof(n_ctx_params1));
+    memset(&n_matchingId, 0, sizeof(n_matchingId));
+    memset(&n_deviceInfo, 0, sizeof(n_deviceInfo));
+    memset(&n_tac, 0, sizeof(n_tac));
+    memset(&n_deviceCapabilities, 0, sizeof(n_deviceCapabilities));
+    memset(&n_imei, 0, sizeof(n_imei));
 
-    ctx_params1->present = CtxParams1_PR_ctxParamsForCommonAuthentication;
-    if (param->matchingId)
-    {
-        ctx_params1->choice.ctxParamsForCommonAuthentication.matchingId = malloc(sizeof(UTF8String_t));
-        if (!ctx_params1->choice.ctxParamsForCommonAuthentication.matchingId)
-        {
-            goto err;
-        }
-        memset(ctx_params1->choice.ctxParamsForCommonAuthentication.matchingId, 0, sizeof(UTF8String_t));
-        if (OCTET_STRING_fromString(ctx_params1->choice.ctxParamsForCommonAuthentication.matchingId, param->matchingId) < 0)
-        {
-            goto err;
-        }
-    }
     if (param->imei)
     {
-        if ((binimei_len = euicc_hexutil_gsmbcd2bin(binimei, sizeof(binimei), param->imei)) < 0)
+        if ((imei_len = euicc_hexutil_gsmbcd2bin(imei, sizeof(imei), param->imei)) < 0)
         {
             goto err;
         }
-        ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.imei = malloc(sizeof(Octet8_t));
-        if (!ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.imei)
-        {
-            goto err;
-        }
-        memset(ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.imei, 0, sizeof(Octet8_t));
-        if (OCTET_STRING_fromBuf(ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.imei, (const char *)binimei, binimei_len) < 0)
-        {
-            goto err;
-        }
-        param->tac = binimei;
+    }
+    else
+    {
+        memcpy(imei, "\x35\x29\x06\x11", 4);
     }
 
-    if (!param->tac)
-    {
-        param->tac = (const uint8_t *)"\x35\x29\x06\x11";
-    }
-    if (OCTET_STRING_fromBuf(&ctx_params1->choice.ctxParamsForCommonAuthentication.deviceInfo.tac, (const char *)param->tac, 4) < 0)
+    server_signed_1 = malloc(euicc_base64_decode_len(param->b64_server_signed_1));
+    if (!server_signed_1)
     {
         goto err;
     }
 
-    asn1erval = der_encode(&asn_DEF_CtxParams1, ctx_params1, NULL, NULL);
-
-    reqlen = 0;
-    reqlen += 7; // AuthenticateServerRequest Tag + Length (MAX)
-    reqlen += euicc_base64_decode_len(param->b64_server_signed_1);
-    reqlen += euicc_base64_decode_len(param->b64_server_signature_1);
-    reqlen += euicc_base64_decode_len(param->b64_euicc_ci_pkid_to_be_used);
-    reqlen += euicc_base64_decode_len(param->b64_server_certificate);
-    reqlen += asn1erval.encoded;
-
-    reqbuf = malloc(reqlen);
-    if (!reqbuf)
+    server_signature_1 = malloc(euicc_base64_decode_len(param->b64_server_signature_1));
+    if (!server_signature_1)
     {
         goto err;
     }
-    memset(reqbuf, 0, reqlen);
 
-    reqwptr = reqbuf;
-    reqwptr += 7; // Skip Tag + Length
-    reqwptr += euicc_base64_decode(reqwptr, param->b64_server_signed_1);
-    reqwptr += euicc_base64_decode(reqwptr, param->b64_server_signature_1);
-    reqwptr += euicc_base64_decode(reqwptr, param->b64_euicc_ci_pkid_to_be_used);
-    reqwptr += euicc_base64_decode(reqwptr, param->b64_server_certificate);
-    asn1erval = der_encode_to_buffer(&asn_DEF_CtxParams1, ctx_params1, reqwptr, asn1erval.encoded);
-    if (asn1erval.encoded == -1)
+    euicc_ci_pkid_to_be_used = malloc(euicc_base64_decode_len(param->b64_euicc_ci_pkid_to_be_used));
+    if (!euicc_ci_pkid_to_be_used)
     {
         goto err;
     }
-    ASN_STRUCT_FREE(asn_DEF_CtxParams1, ctx_params1);
-    ctx_params1 = NULL;
-    reqlen = reqwptr - reqbuf + asn1erval.encoded; // re-calculated length, for not accounting base64_decode_len
 
-    reqwptr = euicc_derutil_tag_leftpad(reqbuf, reqlen, 7, 0xBF38);
-    reqlen = reqlen - (reqwptr - reqbuf); // re-calculated length, for add tag and length
-
-    if (es10x_command(ctx, &respbuf, &resplen, reqwptr, reqlen) < 0)
+    server_certificate = malloc(euicc_base64_decode_len(param->b64_server_certificate));
+    if (!server_certificate)
     {
         goto err;
     }
+
+    if ((server_signed_1_len = euicc_base64_decode(server_signed_1, param->b64_server_signed_1)) < 0)
+    {
+        goto err;
+    }
+
+    if ((server_signature_1_len = euicc_base64_decode(server_signature_1, param->b64_server_signature_1)) < 0)
+    {
+        goto err;
+    }
+
+    if ((euicc_ci_pkid_to_be_used_len = euicc_base64_decode(euicc_ci_pkid_to_be_used, param->b64_euicc_ci_pkid_to_be_used)) < 0)
+    {
+        goto err;
+    }
+
+    if ((server_certificate_len = euicc_base64_decode(server_certificate, param->b64_server_certificate)) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_server_signed_1, 0x30, server_signed_1, server_signed_1_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_server_signature_1, 0x5F37, server_signature_1, server_signature_1_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_euicc_ci_pkid_to_be_used, 0x04, euicc_ci_pkid_to_be_used, euicc_ci_pkid_to_be_used_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_server_certificate, 0x30, server_certificate, server_certificate_len) < 0)
+    {
+        goto err;
+    }
+
+    n_request.tag = 0xBF38;
+    n_request.pack.child = &n_server_signed_1;
+    n_server_signed_1.pack.next = &n_server_signature_1;
+    n_server_signature_1.pack.next = &n_euicc_ci_pkid_to_be_used;
+    n_euicc_ci_pkid_to_be_used.pack.next = &n_server_certificate;
+    n_server_certificate.pack.next = &n_ctx_params1;
+    n_ctx_params1.tag = 0xA0;
+
+    n_deviceInfo.tag = 0xA1;
+    n_deviceInfo.pack.child = &n_tac;
+    n_tac.tag = 0x80;
+    n_tac.value = imei;
+    n_tac.length = 4;
+    n_tac.pack.next = &n_deviceCapabilities;
+    n_deviceCapabilities.tag = 0xA1;
+    if (param->imei)
+    {
+        n_deviceCapabilities.pack.next = &n_imei;
+        n_imei.tag = 0x82;
+        n_imei.value = imei;
+        n_imei.length = imei_len;
+    }
+
+    if (param->matchingId)
+    {
+        n_ctx_params1.pack.child = &n_matchingId;
+        n_matchingId.tag = 0x80;
+        n_matchingId.value = (const uint8_t *)param->matchingId;
+        n_matchingId.length = strlen(param->matchingId);
+        n_matchingId.pack.next = &n_deviceInfo;
+    }
+    else
+    {
+        n_ctx_params1.pack.child = &n_deviceInfo;
+    }
+
+    if (derutils_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
+    {
+        goto err;
+    }
+
+    free(server_signed_1);
+    server_signed_1 = NULL;
+    free(server_signature_1);
+    server_signature_1 = NULL;
+    free(euicc_ci_pkid_to_be_used);
+    euicc_ci_pkid_to_be_used = NULL;
+    free(server_certificate);
+    server_certificate = NULL;
+
+    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqlen) < 0)
+    {
+        goto err;
+    }
+
     free(reqbuf);
     reqbuf = NULL;
 
@@ -915,15 +971,33 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_response, struct
     {
         goto err;
     }
-    euicc_base64_encode(*b64_response, respbuf, resplen);
+
+    if (euicc_base64_encode(*b64_response, respbuf, resplen) < 0)
+    {
+        goto err;
+    }
+
+    fret = 0;
 
     goto exit;
 
 err:
     fret = -1;
-    free(reqbuf);
+    free(*b64_response);
+    *b64_response = NULL;
 exit:
-    ASN_STRUCT_FREE(asn_DEF_CtxParams1, ctx_params1);
+    free(server_signed_1);
+    server_signed_1 = NULL;
+    free(server_signature_1);
+    server_signature_1 = NULL;
+    free(euicc_ci_pkid_to_be_used);
+    euicc_ci_pkid_to_be_used = NULL;
+    free(server_certificate);
+    server_certificate = NULL;
+    free(reqbuf);
+    reqbuf = NULL;
+    free(respbuf);
+    respbuf = NULL;
     return fret;
 }
 
