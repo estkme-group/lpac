@@ -230,12 +230,11 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
 
     if (strlen(str_id) == 32)
     {
-        if (euicc_hexutil_hex2bin(id, sizeof(id), str_id) < 0)
+        if ((id_len = euicc_hexutil_hex2bin(id, sizeof(id), str_id)) < 0)
         {
             return -1;
         }
         n_profileIdentifierChoice.tag = 0x4F;
-        n_profileIdentifierChoice.length = id_len;
     }
     else
     {
@@ -244,8 +243,8 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
             return -1;
         }
         n_profileIdentifierChoice.tag = 0x5A;
-        n_profileIdentifierChoice.length = id_len;
     }
+    n_profileIdentifierChoice.length = id_len;
     n_profileIdentifierChoice.value = id;
 
     if (0b10000000 & refreshFlag)
