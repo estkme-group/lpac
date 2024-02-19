@@ -218,13 +218,15 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     int fret = 0;
     uint8_t id[16];
     int id_len;
-    uint8_t id_tag;
+    uint16_t id_tag;
     struct derutils_node n_request;
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode;
+    struct derutils_node tmpnode, n_profileIdentifierChoice;
+
+    memset(&n_profileIdentifierChoice, 0, sizeof(n_profileIdentifierChoice));
 
     if (strlen(str_id) == 32)
     {
@@ -232,8 +234,8 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
         {
             return -1;
         }
-        id_len = sizeof(id);
-        id_tag = 0x4F;
+        n_profileIdentifierChoice.tag = 0x4F;
+        n_profileIdentifierChoice.length = id_len;
     }
     else
     {
@@ -241,8 +243,10 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
         {
             return -1;
         }
-        id_tag = 0x5A;
+        n_profileIdentifierChoice.tag = 0x5A;
+        n_profileIdentifierChoice.length = id_len;
     }
+    n_profileIdentifierChoice.value = id;
 
     if (0b10000000 & refreshFlag)
     {
@@ -259,11 +263,7 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
                 .child = &(struct derutils_node){
                     .tag = 0xA0, // profileIdentifier
                     .pack = {
-                        .child = &(struct derutils_node){
-                            .tag = id_tag,
-                            .length = id_len,
-                            .value = id,
-                        },
+                        .child = &n_profileIdentifierChoice,
                         .next = &(struct derutils_node){
                             .tag = 0x81, // refreshFlag
                             .length = 1,
@@ -279,11 +279,7 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
         n_request = (struct derutils_node){
             .tag = op_tag,
             .pack = {
-                .child = &(struct derutils_node){
-                    .tag = id_tag,
-                    .length = id_len,
-                    .value = id,
-                },
+                .child = &n_profileIdentifierChoice,
             },
         };
     }
