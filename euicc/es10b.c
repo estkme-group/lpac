@@ -184,7 +184,7 @@ exit:
     return fret;
 }
 
-int es10b_load_bound_profile_package(struct euicc_ctx *ctx, const char *b64_bpp)
+int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, const char *b64_bpp)
 {
     int fret = 0, ret;
     uint8_t *bpp_buf = NULL;

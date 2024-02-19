@@ -50,7 +50,7 @@ enum es10b_cancel_session_reason
 };
 
 int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_response, struct es10b_PrepareDownload_param *param);
-int es10b_load_bound_profile_package(struct euicc_ctx *ctx, const char *b64_bpp);
+int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, const char *b64_bpp);
 int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_payload);
 int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_payload);
 int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_metadata **metadatas);

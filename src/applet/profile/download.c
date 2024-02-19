@@ -155,10 +155,10 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
-    jprint_progress("es10b_load_bound_profile_package");
-    if (es10b_load_bound_profile_package(&euicc_ctx, es9p_get_bound_profile_package_resp.b64_bpp))
+    jprint_progress("es10b_LoadBoundProfilePackage");
+    if (es10b_LoadBoundProfilePackage(&euicc_ctx, es9p_get_bound_profile_package_resp.b64_bpp))
     {
-        jprint_error("es10b_load_bound_profile_package", NULL);
+        jprint_error("es10b_LoadBoundProfilePackage", NULL);
         return -1;
     }
 
