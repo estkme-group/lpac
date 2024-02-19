@@ -261,13 +261,13 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
                     .pack = {
                         .child = &(struct derutils_node){
                             .tag = id_tag,
-                            .value = id,
                             .length = id_len,
+                            .value = id,
                         },
                         .next = &(struct derutils_node){
                             .tag = 0x81, // refreshFlag
-                            .value = &refreshFlag,
                             .length = 1,
+                            .value = &refreshFlag,
                         },
                     },
                 },
@@ -281,8 +281,8 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
             .pack = {
                 .child = &(struct derutils_node){
                     .tag = id_tag,
-                    .value = id,
                     .length = id_len,
+                    .value = id,
                 },
             },
         };
@@ -361,8 +361,8 @@ int es10c_eUICCMemoryReset(struct euicc_ctx *ctx)
         .pack = {
             .child = &(struct derutils_node){
                 .tag = 0x82, // resetOptions
-                .value = resetOptions,
                 .length = sizeof(resetOptions),
+                .value = resetOptions,
             },
         },
     };
@@ -479,13 +479,13 @@ int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *nick
         .pack = {
             .child = &(struct derutils_node){
                 .tag = 0x5A, // iccid
-                .value = asn1iccid,
                 .length = sizeof(asn1iccid),
+                .value = asn1iccid,
                 .pack = {
                     .next = &(struct derutils_node){
                         .tag = 0x90, // profileNickname
                         .length = strlen(nickname),
-                        .value = nickname,
+                        .value = (const uint8_t *)nickname,
                     },
                 },
             },

@@ -733,8 +733,8 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_notifica
                 .pack = {
                     .child = &(struct derutils_node){
                         .tag = 0x80, // seqNumber
-                        .value = seqNumber_buf,
                         .length = seqNumber_buf_len,
+                        .value = seqNumber_buf,
                     },
                 },
             },
@@ -845,8 +845,8 @@ int es10b_RemoveNotificationFromList(struct euicc_ctx *ctx, unsigned long seqNum
         .pack = {
             .child = &(struct derutils_node){
                 .tag = 0x80, // seqNumber
-                .value = seqNumber_buf,
                 .length = seqNumber_buf_len,
+                .value = seqNumber_buf,
             },
         },
     };

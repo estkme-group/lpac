@@ -82,8 +82,8 @@ int es10a_SetDefaultDpAddress(struct euicc_ctx *ctx, const char *smdp)
         .pack = {
             .child = &(struct derutils_node){
                 .tag = 0x80,
-                .value = smdp,
                 .length = strlen(smdp),
+                .value = (const uint8_t *)smdp,
             },
         },
     };
