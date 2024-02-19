@@ -257,7 +257,6 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
         }
 
         n_request = (struct derutils_node){
-            .tag = op_tag,
             .pack = {
                 .child = &(struct derutils_node){
                     .tag = 0xA0, // profileIdentifier
@@ -276,12 +275,12 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     else
     {
         n_request = (struct derutils_node){
-            .tag = op_tag,
             .pack = {
                 .child = &n_profileIdentifierChoice,
             },
         };
     }
+    n_request.tag = op_tag;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
