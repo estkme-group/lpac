@@ -25,6 +25,8 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
 
     struct es10c_profile_info_list *list_wptr;
 
+    int tmpint;
+
     *profileInfoList = NULL;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
@@ -86,13 +88,12 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
                 euicc_hexutil_bin2hex(p->isdpAid, sizeof(p->isdpAid), tmpnode.value, tmpnode.length);
                 break;
             case 0x9F70:
-                switch (derutils_convert_bin2long(tmpnode.value, tmpnode.length))
+                tmpint = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                switch (tmpint)
                 {
                 case ES10C_PROFILE_STATE_DISABLED:
-                    p->profileState = ES10C_PROFILE_STATE_DISABLED;
-                    break;
                 case ES10C_PROFILE_STATE_ENABLED:
-                    p->profileState = ES10C_PROFILE_STATE_ENABLED;
+                    p->profileState = tmpint;
                     break;
                 default:
                     p->profileState = ES10C_PROFILE_STATE_UNDEFINED;
@@ -124,13 +125,12 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
                 }
                 break;
             case 0x93:
-                switch (derutils_convert_bin2long(tmpnode.value, tmpnode.length))
+                tmpint = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                switch (tmpint)
                 {
                 case ES10C_ICON_TYPE_JPEG:
-                    p->iconType = ES10C_ICON_TYPE_JPEG;
-                    break;
                 case ES10C_ICON_TYPE_PNG:
-                    p->iconType = ES10C_ICON_TYPE_PNG;
+                    p->iconType = tmpint;
                     break;
                 default:
                     p->iconType = ES10C_ICON_TYPE_UNDEFINED;
@@ -145,16 +145,13 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
                 }
                 break;
             case 0x95:
-                switch (derutils_convert_bin2long(tmpnode.value, tmpnode.length))
+                tmpint = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                switch (tmpint)
                 {
                 case ES10C_PROFILE_CLASS_TEST:
-                    p->profileClass =ES10C_PROFILE_CLASS_TEST;
-                    break;
                 case ES10C_PROFILE_CLASS_PROVISIONING:
-                    p->profileClass =ES10C_PROFILE_CLASS_PROVISIONING;
-                    break;
                 case ES10C_PROFILE_CLASS_OPERATIONAL:
-                    p->profileClass = ES10C_PROFILE_CLASS_OPERATIONAL;
+                    p->profileClass = tmpint;
                     break;
                 default:
                     p->profileClass = ES10C_PROFILE_CLASS_UNDEFINED;

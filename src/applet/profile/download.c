@@ -9,6 +9,7 @@
 #include <euicc/es10a.h>
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
+#include <euicc/tostr.h>
 
 static int applet_main(int argc, char **argv)
 {
@@ -34,6 +35,7 @@ static int applet_main(int argc, char **argv)
     char *b64_prepare_download_response = NULL;
 
     char *b64_BoundProfilePackage = NULL;
+    struct es10b_load_bound_profile_package_result es10b_LoadBoundProfilePackage_result = {0};
 
     opt = getopt(argc, argv, opt_string);
     while (opt != -1)
@@ -151,9 +153,11 @@ static int applet_main(int argc, char **argv)
     }
 
     jprint_progress("es10b_LoadBoundProfilePackage");
-    if (es10b_LoadBoundProfilePackage(&euicc_ctx, b64_BoundProfilePackage))
+    if (es10b_LoadBoundProfilePackage(&euicc_ctx, &es10b_LoadBoundProfilePackage_result, b64_BoundProfilePackage))
     {
-        jprint_error("es10b_LoadBoundProfilePackage", NULL);
+        char buffer[256];
+        snprintf(buffer, sizeof(buffer), "%s,%s", bppcommandid2str(es10b_LoadBoundProfilePackage_result.bppCommandId), errorreason2str(es10b_LoadBoundProfilePackage_result.errorReason));
+        jprint_error("es10b_LoadBoundProfilePackage", buffer);
         return -1;
     }
 

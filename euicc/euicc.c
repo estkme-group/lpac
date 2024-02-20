@@ -65,7 +65,7 @@ static int es10x_transmit_iter(struct euicc_ctx *ctx, struct apdu_request *req, 
     } while (1);
 }
 
-int es10x_command_buildrequest(struct euicc_ctx *ctx, struct apdu_request **request, uint8_t p1, uint8_t p2, uint8_t *der_req, unsigned req_len)
+int es10x_command_buildrequest(struct euicc_ctx *ctx, struct apdu_request **request, uint8_t p1, uint8_t p2, const uint8_t *der_req, unsigned req_len)
 {
     int ret;
 
@@ -78,21 +78,21 @@ int es10x_command_buildrequest(struct euicc_ctx *ctx, struct apdu_request **requ
     return ret;
 }
 
-static int es10x_command_buildrequest_continue(struct euicc_ctx *ctx, uint8_t reqseq, struct apdu_request **request, uint8_t *der_req, unsigned req_len)
+static int es10x_command_buildrequest_continue(struct euicc_ctx *ctx, uint8_t reqseq, struct apdu_request **request, const uint8_t *der_req, unsigned req_len)
 {
     return es10x_command_buildrequest(ctx, request, 0x11, reqseq, der_req, req_len);
 }
 
-static int es10x_command_buildrequest_last(struct euicc_ctx *ctx, uint8_t reqseq, struct apdu_request **request, uint8_t *der_req, unsigned req_len)
+static int es10x_command_buildrequest_last(struct euicc_ctx *ctx, uint8_t reqseq, struct apdu_request **request, const uint8_t *der_req, unsigned req_len)
 {
     return es10x_command_buildrequest(ctx, request, 0x91, reqseq, der_req, req_len);
 }
 
-int es10x_command_iter(struct euicc_ctx *ctx, uint8_t *der_req, unsigned req_len, int (*callback)(struct apdu_response *response, void *userdata), void *userdata)
+int es10x_command_iter(struct euicc_ctx *ctx, const uint8_t *der_req, unsigned req_len, int (*callback)(struct apdu_response *response, void *userdata), void *userdata)
 {
     int ret, reqseq;
     struct apdu_request *req;
-    uint8_t *req_ptr;
+    const uint8_t *req_ptr;
 
     reqseq = 0;
     req_ptr = der_req;
@@ -147,7 +147,7 @@ static int iter_es10x_command(struct apdu_response *response, void *userdata)
     return 0;
 }
 
-int es10x_command(struct euicc_ctx *ctx, uint8_t **resp, unsigned *resp_len, uint8_t *der_req, unsigned req_len)
+int es10x_command(struct euicc_ctx *ctx, uint8_t **resp, unsigned *resp_len, const uint8_t *der_req, unsigned req_len)
 {
     int ret = 0;
     struct userdata_es10x_command ud;

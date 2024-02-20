@@ -274,9 +274,9 @@ int es9p_AuthenticateClient(struct es9p_ctx *ctx, struct es10b_prepare_download_
 {
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
     const char *idata[] = {ctx->transactionId, b64_AuthenticateServerResponse, NULL};
-    const char *okey[] = {"smdpSigned2", "smdpSignature2", "smdpCertificate", "profileMetadata", NULL};
-    const char oobj[] = {0, 0, 0};
-    void **optr[] = {(void **)&resp->b64_smdpSigned2, (void **)&resp->b64_smdpSignature2, (void **)&resp->b64_smdpSignature2, (void **)&resp->b64_profileMetadata, NULL};
+    const char *okey[] = {"profileMetadata", "smdpSigned2", "smdpSignature2", "smdpCertificate", NULL};
+    const char oobj[] = {0, 0, 0, 0};
+    void **optr[] = {(void **)&resp->b64_profileMetadata, (void **)&resp->b64_smdpSigned2, (void **)&resp->b64_smdpSignature2, (void **)&resp->b64_smdpCertificate, NULL};
 
     return es9p_trans_json(ctx, ctx->address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr);
 }

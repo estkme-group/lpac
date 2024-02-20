@@ -12,6 +12,44 @@ enum es10b_profile_management_operation
     ES10B_PROFILE_MANAGEMENT_OPERATION_UNDEFINED = 0xFF,
 };
 
+enum es10b_bpp_command_id
+{
+    ES10B_BPP_COMMAND_ID_INITIALISE_SECURE_CHANNEL = 0,
+    ES10B_BPP_COMMAND_ID_CONFIGURE_ISDP = 1,
+    ES10B_BPP_COMMAND_ID_STORE_METADATA = 2,
+    ES10B_BPP_COMMAND_ID_STORE_METADATA2 = 3,
+    ES10B_BPP_COMMAND_ID_REPLACE_SESSION_KEYS = 4,
+    ES10B_BPP_COMMAND_ID_LOAD_PROFILE_ELEMENTS = 5,
+    ES10B_BPP_COMMAND_ID_UNDEFINED = 0xFF,
+};
+
+enum es10b_error_reason
+{
+    ES10B_ERROR_REASON_INCORRECT_INPUT_VALUES = 1,
+    ES10B_ERROR_REASON_INVALID_SIGNATURE = 2,
+    ES10B_ERROR_REASON_INVALID_TRANSACTION_ID = 3,
+    ES10B_ERROR_REASON_UNSUPPORTED_CRT_VALUES = 4,
+    ES10B_ERROR_REASON_UNSUPPORTED_REMOTE_OPERATION_TYPE = 5,
+    ES10B_ERROR_REASON_UNSUPPORTED_PROFILE_CLASS = 6,
+    ES10B_ERROR_REASON_SCP03T_STRUCTURE_ERROR = 7,
+    ES10B_ERROR_REASON_SCP03T_SECURITY_ERROR = 8,
+    ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_ALREADY_EXISTS_ON_EUICC = 9,
+    ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INSUFFICIENT_MEMORY_FOR_PROFILE = 10,
+    ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INTERRUPTION = 11,
+    ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_PE_PROCESSING_ERROR = 12,
+    ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_MISMATCH = 13,
+    ES10B_ERROR_REASON_TEST_PROFILE_INSTALL_FAILED_DUE_TO_INVALID_NAA_KEY = 14,
+    ES10B_ERROR_REASON_PPR_NOT_ALLOWED = 15,
+    ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_UNKNOWN_ERROR = 127,
+    ES10B_ERROR_REASON_UNDEFINED = 0xFF,
+};
+
+struct es10b_load_bound_profile_package_result
+{
+    enum es10b_bpp_command_id bppCommandId;
+    enum es10b_error_reason errorReason;
+};
+
 struct es10b_prepare_download_param
 {
     const char *b64_profileMetadata;
@@ -64,7 +102,7 @@ struct es10b_cancel_session_param
 };
 
 int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param);
-int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, const char *b64_BoundProfilePackage);
+int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage);
 int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_euiccChallenge);
 int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_EUICCInfo1);
 int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList);

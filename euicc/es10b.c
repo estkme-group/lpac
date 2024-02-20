@@ -13,9 +13,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "asn1c/asn1/BoundProfilePackage.h"
-#include "asn1c/asn1/ProfileInstallationResult.h"
-
 int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param)
 {
     int fret = 0;
@@ -103,7 +100,7 @@ int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadRespo
 
     if (derutils_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length))
     {
-        if (!param->confirmationCode || strlen(param->confirmationCode) == 0)
+        if ((!param->confirmationCode) || (strlen(param->confirmationCode) == 0))
         {
             goto err;
         }
@@ -184,274 +181,237 @@ exit:
     return fret;
 }
 
-int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, const char *b64_BoundProfilePackage)
+static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const uint8_t *reqbuf, int reqbuf_len)
 {
-    int fret = 0, ret;
-    uint8_t *bpp_buf = NULL;
-    int bpp_len;
-    uint8_t prefix_len;
-    asn_dec_rval_t asn1drval_bpp;
-    BoundProfilePackage_t *bpp_asn1 = NULL;
-    asn_enc_rval_t asn1erval;
-    uint8_t *reqbuf = NULL;
-    int reqlen;
-    uint8_t *ptrtmp;
-    struct
-    {
-        uint8_t *buf;
-        int len;
-    } apdus[64];
-    int apdus_count = 0;
-    ProfileInstallationResult_t *asn1resp = NULL;
+    int fret = 0;
+    uint8_t *respbuf = NULL;
+    unsigned resplen;
 
-    bpp_buf = malloc(euicc_base64_decode_len(b64_BoundProfilePackage));
-    if (!bpp_buf)
-    {
-        goto err;
-    }
-    if ((bpp_len = euicc_base64_decode(bpp_buf, b64_BoundProfilePackage)) < 0)
+    result->bppCommandId = ES10B_BPP_COMMAND_ID_UNDEFINED;
+    result->errorReason = ES10B_ERROR_REASON_UNDEFINED;
+
+    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqbuf_len) < 0)
     {
         goto err;
     }
 
-    asn1drval_bpp = ber_decode(NULL, &asn_DEF_BoundProfilePackage, (void **)&bpp_asn1, bpp_buf, bpp_len);
-    if (asn1drval_bpp.code != RC_OK)
+    if (resplen > 0)
     {
-        goto err;
-    }
+        struct derutils_node tmpnode, n_finalResult;
 
-    ret = euicc_derutil_tag_find(&ptrtmp, bpp_buf, bpp_len, NULL, 1);
-    if (ret < 0)
-    {
-        goto err;
-    }
-    prefix_len = ptrtmp - bpp_buf;
-
-    asn1erval = der_encode(&asn_DEF_InitialiseSecureChannelRequest, (void **)&bpp_asn1->initialiseSecureChannelRequest, NULL, NULL);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-    reqlen = asn1erval.encoded + prefix_len;
-    reqbuf = malloc(reqlen);
-    if (!reqlen)
-    {
-        goto err;
-    }
-    memcpy(reqbuf, bpp_buf, prefix_len);
-    asn1erval = der_encode_to_buffer(&asn_DEF_InitialiseSecureChannelRequest, &bpp_asn1->initialiseSecureChannelRequest, reqbuf + prefix_len, reqlen - prefix_len);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-    reqlen = asn1erval.encoded + prefix_len;
-
-    apdus[apdus_count].buf = reqbuf;
-    apdus[apdus_count].len = reqlen;
-    apdus_count++;
-    reqbuf = NULL;
-
-    asn1erval = der_encode(&asn_DEF_SeqBoundProfilePackageTLV87, &bpp_asn1->firstSequenceOf87, NULL, NULL);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-    reqlen = asn1erval.encoded;
-    reqbuf = malloc(reqlen);
-    if (!reqlen)
-    {
-        goto err;
-    }
-    asn1erval = der_encode_to_buffer(&asn_DEF_SeqBoundProfilePackageTLV87, &bpp_asn1->firstSequenceOf87, reqbuf, reqlen);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-    reqlen = asn1erval.encoded;
-
-    apdus[apdus_count].buf = reqbuf;
-    apdus[apdus_count].len = reqlen;
-    apdus_count++;
-    reqbuf = NULL;
-
-    asn1erval = der_encode(&asn_DEF_SeqBoundProfilePackageTLV88, &bpp_asn1->sequenceOf88, NULL, NULL);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-    reqlen = asn1erval.encoded;
-    reqbuf = malloc(reqlen);
-    if (!reqlen)
-    {
-        goto err;
-    }
-    asn1erval = der_encode_to_buffer(&asn_DEF_SeqBoundProfilePackageTLV88, &bpp_asn1->sequenceOf88, reqbuf, reqlen);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-    reqlen = asn1erval.encoded;
-
-    ret = euicc_derutil_tag_find(&ptrtmp, reqbuf, reqlen, NULL, 1);
-    if (ret < 0)
-    {
-        goto err;
-    }
-    reqlen = ptrtmp - reqbuf;
-
-    apdus[apdus_count].buf = reqbuf;
-    apdus[apdus_count].len = reqlen;
-    apdus_count++;
-    reqbuf = NULL;
-
-    for (int i = 0; i < bpp_asn1->sequenceOf88.list.count; i++)
-    {
-        asn1erval = der_encode(&asn_DEF_BoundProfilePackageTLV88, bpp_asn1->sequenceOf88.list.array[i], NULL, NULL);
-        if (asn1erval.encoded == -1)
+        if (derutils_unpack_find_tag(&tmpnode, 0xBF37, respbuf, resplen) < 0) // ProfileInstallationResult
         {
             goto err;
         }
-        reqlen = asn1erval.encoded;
-        reqbuf = malloc(reqlen);
-        if (!reqlen)
+
+        if (derutils_unpack_find_tag(&tmpnode, 0xBF27, tmpnode.value, tmpnode.length) < 0) // ProfileInstallationResultData
         {
             goto err;
         }
-        asn1erval = der_encode_to_buffer(&asn_DEF_BoundProfilePackageTLV88, bpp_asn1->sequenceOf88.list.array[i], reqbuf, reqlen);
-        if (asn1erval.encoded == -1)
+
+        if (derutils_unpack_find_tag(&tmpnode, 0xA2, tmpnode.value, tmpnode.length) < 0) // finalResult
         {
             goto err;
         }
-        reqlen = asn1erval.encoded;
 
-        apdus[apdus_count].buf = reqbuf;
-        apdus[apdus_count].len = reqlen;
-        apdus_count++;
-        reqbuf = NULL;
-    }
-
-    if (bpp_asn1->secondSequenceOf87)
-    {
-        asn1erval = der_encode(&asn_DEF_SeqSecondBoundProfilePackageTLV87, bpp_asn1->secondSequenceOf87, NULL, NULL);
-        if (asn1erval.encoded == -1)
+        if (derutils_unpack_first(&n_finalResult, tmpnode.value, tmpnode.length) < 0)
         {
             goto err;
         }
-        reqlen = asn1erval.encoded;
-        reqbuf = malloc(reqlen);
-        if (!reqlen)
+
+        switch (n_finalResult.tag)
         {
-            goto err;
-        }
-        asn1erval = der_encode_to_buffer(&asn_DEF_SeqSecondBoundProfilePackageTLV87, bpp_asn1->secondSequenceOf87, reqbuf, reqlen);
-        if (asn1erval.encoded == -1)
-        {
-            goto err;
-        }
-        reqlen = asn1erval.encoded;
-
-        apdus[apdus_count].buf = reqbuf;
-        apdus[apdus_count].len = reqlen;
-        apdus_count++;
-        reqbuf = NULL;
-    }
-
-    asn1erval = der_encode(&asn_DEF_SeqBoundProfilePackageTLV86, &bpp_asn1->sequenceOf86, NULL, NULL);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-    reqlen = asn1erval.encoded;
-    reqbuf = malloc(reqlen);
-    if (!reqlen)
-    {
-        goto err;
-    }
-    asn1erval = der_encode_to_buffer(&asn_DEF_SeqBoundProfilePackageTLV86, &bpp_asn1->sequenceOf86, reqbuf, reqlen);
-    if (asn1erval.encoded == -1)
-    {
-        goto err;
-    }
-    reqlen = asn1erval.encoded;
-
-    ret = euicc_derutil_tag_find(&ptrtmp, reqbuf, reqlen, NULL, 1);
-    if (ret < 0)
-    {
-        goto err;
-    }
-    reqlen = ptrtmp - reqbuf;
-
-    apdus[apdus_count].buf = reqbuf;
-    apdus[apdus_count].len = reqlen;
-    apdus_count++;
-    reqbuf = NULL;
-
-    for (int i = 0; i < bpp_asn1->sequenceOf86.list.count; i++)
-    {
-        asn1erval = der_encode(&asn_DEF_BoundProfilePackageTLV86, bpp_asn1->sequenceOf86.list.array[i], NULL, NULL);
-        if (asn1erval.encoded == -1)
-        {
-            goto err;
-        }
-        reqlen = asn1erval.encoded;
-        reqbuf = malloc(reqlen);
-        if (!reqlen)
-        {
-            goto err;
-        }
-        asn1erval = der_encode_to_buffer(&asn_DEF_BoundProfilePackageTLV86, bpp_asn1->sequenceOf86.list.array[i], reqbuf, reqlen);
-        if (asn1erval.encoded == -1)
-        {
-            goto err;
-        }
-        reqlen = asn1erval.encoded;
-
-        apdus[apdus_count].buf = reqbuf;
-        apdus[apdus_count].len = reqlen;
-        apdus_count++;
-        reqbuf = NULL;
-    }
-
-    // for (int i = 0; i < apdus_count; i++)
-    // {
-    //     printf("APDU[%d]: ", i);
-    //     for (int j = 0; j < apdus[i].len; j++)
-    //     {
-    //         printf("%02X", apdus[i].buf[j]);
-    //     }
-    //     printf("\n");
-    // }
-
-    for (int i = 0; i < apdus_count; i++)
-    {
-        uint8_t *respbuf = NULL;
-        unsigned resplen = 0;
-        asn_dec_rval_t asn1drval;
-
-        ret = es10x_command(ctx, &respbuf, &resplen, apdus[i].buf, apdus[i].len);
-        if (ret < 0)
-        {
-            goto err;
-        }
-        if (resplen > 0)
-        {
-            asn1drval = ber_decode(NULL, &asn_DEF_ProfileInstallationResult, (void **)&asn1resp, respbuf, resplen);
-            free(respbuf);
-            respbuf = NULL;
-            resplen = 0;
-            if (asn1drval.code != RC_OK)
-            {
-                goto err;
-            }
-            if (asn1resp->profileInstallationResultData.finalResult.present != ProfileInstallationResultData__finalResult_PR_successResult)
-            {
-                goto err;
-            }
+        case 0xA0: // SuccessResult
             break;
+
+        case 0xA1: // ErrorResult
+
+            if (derutils_unpack_find_tag(&tmpnode, 0x80, n_finalResult.value, n_finalResult.length) == 0) // bppCommandId
+            {
+                int bppCommandId;
+
+                bppCommandId = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+
+                switch (bppCommandId)
+                {
+                case ES10B_BPP_COMMAND_ID_INITIALISE_SECURE_CHANNEL:
+                case ES10B_BPP_COMMAND_ID_CONFIGURE_ISDP:
+                case ES10B_BPP_COMMAND_ID_STORE_METADATA:
+                case ES10B_BPP_COMMAND_ID_STORE_METADATA2:
+                case ES10B_BPP_COMMAND_ID_REPLACE_SESSION_KEYS:
+                case ES10B_BPP_COMMAND_ID_LOAD_PROFILE_ELEMENTS:
+                    result->bppCommandId = bppCommandId;
+                    break;
+                default:
+                    result->bppCommandId = ES10B_BPP_COMMAND_ID_UNDEFINED;
+                    break;
+                }
+            }
+
+            if (derutils_unpack_find_tag(&tmpnode, 0x81, n_finalResult.value, n_finalResult.length) == 0) // errorReason
+            {
+                int errorReason;
+
+                errorReason = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+
+                switch (errorReason)
+                {
+                case ES10B_ERROR_REASON_INCORRECT_INPUT_VALUES:
+                case ES10B_ERROR_REASON_INVALID_SIGNATURE:
+                case ES10B_ERROR_REASON_INVALID_TRANSACTION_ID:
+                case ES10B_ERROR_REASON_UNSUPPORTED_CRT_VALUES:
+                case ES10B_ERROR_REASON_UNSUPPORTED_REMOTE_OPERATION_TYPE:
+                case ES10B_ERROR_REASON_UNSUPPORTED_PROFILE_CLASS:
+                case ES10B_ERROR_REASON_SCP03T_STRUCTURE_ERROR:
+                case ES10B_ERROR_REASON_SCP03T_SECURITY_ERROR:
+                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_ALREADY_EXISTS_ON_EUICC:
+                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INSUFFICIENT_MEMORY_FOR_PROFILE:
+                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INTERRUPTION:
+                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_PE_PROCESSING_ERROR:
+                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_MISMATCH:
+                case ES10B_ERROR_REASON_TEST_PROFILE_INSTALL_FAILED_DUE_TO_INVALID_NAA_KEY:
+                case ES10B_ERROR_REASON_PPR_NOT_ALLOWED:
+                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_UNKNOWN_ERROR:
+                    result->errorReason = errorReason;
+                    break;
+                default:
+                    result->errorReason = ES10B_ERROR_REASON_UNDEFINED;
+                    break;
+                }
+            }
+            goto err;
+        default:
+            goto err;
         }
-        free(respbuf);
-        respbuf = NULL;
-        resplen = 0;
+    }
+
+    fret = 0;
+    goto exit;
+
+err:
+    fret = -1;
+exit:
+    free(respbuf);
+    respbuf = NULL;
+    return fret;
+}
+
+int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage)
+{
+    int fret = 0;
+
+    uint8_t *bpp = NULL;
+    int bpp_len;
+
+    const uint8_t *reqbuf;
+    int reqbuf_len;
+
+    struct derutils_node tmpnode, tmpchildnode, n_BoundProfilePackage;
+
+    bpp = malloc(euicc_base64_decode_len(b64_BoundProfilePackage));
+    if (!bpp)
+    {
+        goto err;
+    }
+    if ((bpp_len = euicc_base64_decode(bpp, b64_BoundProfilePackage)) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&n_BoundProfilePackage, 0xBF36, bpp, bpp_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&tmpnode, 0xBF23, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
+    {
+        goto err;
+    }
+
+    reqbuf = n_BoundProfilePackage.self.ptr;
+    reqbuf_len = tmpnode.self.ptr - n_BoundProfilePackage.self.ptr + tmpnode.self.length;
+
+    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&tmpnode, 0xA0, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
+    {
+        goto err;
+    }
+
+    reqbuf = tmpnode.self.ptr;
+    reqbuf_len = tmpnode.self.length;
+
+    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
+    {
+        goto err;
+    }
+
+    if (derutils_unpack_find_tag(&tmpnode, 0xA1, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
+    {
+        goto err;
+    }
+
+    reqbuf = tmpnode.self.ptr;
+    reqbuf_len = tmpnode.value - tmpnode.self.ptr;
+
+    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
+    {
+        goto err;
+    }
+
+    tmpchildnode.self.ptr = tmpnode.value;
+    tmpchildnode.self.length = 0;
+
+    while (derutils_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0)
+    {
+        reqbuf = tmpchildnode.self.ptr;
+        reqbuf_len = tmpchildnode.self.length;
+
+        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
+        {
+            goto err;
+        }
+    }
+
+    if (derutils_unpack_find_tag(&tmpnode, 0xA2, n_BoundProfilePackage.value, n_BoundProfilePackage.length) == 0)
+    {
+        reqbuf = tmpnode.self.ptr;
+        reqbuf_len = tmpnode.self.length;
+
+        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
+        {
+            goto err;
+        }
+    }
+
+    if (derutils_unpack_find_tag(&tmpnode, 0xA3, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
+    {
+        goto err;
+    }
+
+    reqbuf = tmpnode.self.ptr;
+    reqbuf_len = tmpnode.value - tmpnode.self.ptr;
+
+    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
+    {
+        goto err;
+    }
+
+    tmpchildnode.self.ptr = tmpnode.value;
+    tmpchildnode.self.length = 0;
+
+    while (derutils_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0)
+    {
+        reqbuf = tmpchildnode.self.ptr;
+        reqbuf_len = tmpchildnode.self.length;
+
+        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
+        {
+            goto err;
+        }
     }
 
     goto exit;
@@ -459,14 +419,8 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, const char *b64_BoundPr
 err:
     fret = -1;
 exit:
-    free(bpp_buf);
-    free(reqbuf);
-    for (int i = 0; i < apdus_count; i++)
-    {
-        free(apdus[i].buf);
-    }
-    ASN_STRUCT_FREE(asn_DEF_BoundProfilePackage, bpp_asn1);
-    ASN_STRUCT_FREE(asn_DEF_ProfileInstallationResult, asn1resp);
+    free(bpp);
+    bpp = NULL;
     return fret;
 }
 
@@ -648,16 +602,10 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
                     switch (tmpnode.value[1])
                     {
                     case ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL:
-                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL;
-                        break;
                     case ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE:
-                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE;
-                        break;
                     case ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE:
-                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE;
-                        break;
                     case ES10B_PROFILE_MANAGEMENT_OPERATION_DELETE:
-                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_DELETE;
+                        p->profileManagementOperation = tmpnode.value[1];
                         break;
                     default:
                         p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_UNDEFINED;
