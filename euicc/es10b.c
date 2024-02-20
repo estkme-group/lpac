@@ -1,9 +1,8 @@
 #include "euicc.private.h"
 #include "es10b.h"
 
-#include "derutils.h"
-#include "hexutil.h"
 #include "derutil.h"
+#include "hexutil.h"
 #include "base64.h"
 #include "sha256.h"
 
@@ -69,27 +68,27 @@ int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadRespo
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_smdpSigned2, 0x30, smdpSigned2, smdpSigned2_len) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_smdpSigned2, 0x30, smdpSigned2, smdpSigned2_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_smdpSignature2, 0x5F37, smdpSignature2, smdpSignature2_len) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_smdpSignature2, 0x5F37, smdpSignature2, smdpSignature2_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_smdpCertificate, 0x30, smdpCertificate, smdpCertificate_len) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_smdpCertificate, 0x30, smdpCertificate, smdpCertificate_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_transactionId, 0x80, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_transactionId, 0x80, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_ccRequiredFlag, 0x01, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_ccRequiredFlag, 0x01, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
     {
         goto err;
     }
@@ -98,7 +97,7 @@ int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadRespo
     n_request.pack.child = &n_smdpSigned2;
     n_smdpSigned2.pack.next = &n_smdpSignature2;
 
-    if (derutils_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length))
+    if (euicc_derutil_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length))
     {
         if ((!param->confirmationCode) || (strlen(param->confirmationCode) == 0))
         {
@@ -128,7 +127,7 @@ int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadRespo
         n_smdpSignature2.pack.next = &n_smdpCertificate;
     }
 
-    if (derutils_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
+    if (euicc_derutil_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
     {
         goto err;
     }
@@ -199,22 +198,22 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
     {
         struct derutils_node tmpnode, n_finalResult;
 
-        if (derutils_unpack_find_tag(&tmpnode, 0xBF37, respbuf, resplen) < 0) // ProfileInstallationResult
+        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF37, respbuf, resplen) < 0) // ProfileInstallationResult
         {
             goto err;
         }
 
-        if (derutils_unpack_find_tag(&tmpnode, 0xBF27, tmpnode.value, tmpnode.length) < 0) // ProfileInstallationResultData
+        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, tmpnode.value, tmpnode.length) < 0) // ProfileInstallationResultData
         {
             goto err;
         }
 
-        if (derutils_unpack_find_tag(&tmpnode, 0xA2, tmpnode.value, tmpnode.length) < 0) // finalResult
+        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA2, tmpnode.value, tmpnode.length) < 0) // finalResult
         {
             goto err;
         }
 
-        if (derutils_unpack_first(&n_finalResult, tmpnode.value, tmpnode.length) < 0)
+        if (euicc_derutil_unpack_first(&n_finalResult, tmpnode.value, tmpnode.length) < 0)
         {
             goto err;
         }
@@ -226,11 +225,11 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
 
         case 0xA1: // ErrorResult
 
-            if (derutils_unpack_find_tag(&tmpnode, 0x80, n_finalResult.value, n_finalResult.length) == 0) // bppCommandId
+            if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, n_finalResult.value, n_finalResult.length) == 0) // bppCommandId
             {
                 int bppCommandId;
 
-                bppCommandId = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                bppCommandId = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
 
                 switch (bppCommandId)
                 {
@@ -248,11 +247,11 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
                 }
             }
 
-            if (derutils_unpack_find_tag(&tmpnode, 0x81, n_finalResult.value, n_finalResult.length) == 0) // errorReason
+            if (euicc_derutil_unpack_find_tag(&tmpnode, 0x81, n_finalResult.value, n_finalResult.length) == 0) // errorReason
             {
                 int errorReason;
 
-                errorReason = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                errorReason = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
 
                 switch (errorReason)
                 {
@@ -318,12 +317,12 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_BoundProfilePackage, 0xBF36, bpp, bpp_len) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_BoundProfilePackage, 0xBF36, bpp, bpp_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0xBF23, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF23, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
     {
         goto err;
     }
@@ -336,7 +335,7 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0xA0, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
     {
         goto err;
     }
@@ -349,7 +348,7 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0xA1, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA1, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
     {
         goto err;
     }
@@ -365,7 +364,7 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound
     tmpchildnode.self.ptr = tmpnode.value;
     tmpchildnode.self.length = 0;
 
-    while (derutils_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0)
+    while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0)
     {
         reqbuf = tmpchildnode.self.ptr;
         reqbuf_len = tmpchildnode.self.length;
@@ -376,7 +375,7 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound
         }
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0xA2, n_BoundProfilePackage.value, n_BoundProfilePackage.length) == 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA2, n_BoundProfilePackage.value, n_BoundProfilePackage.length) == 0)
     {
         reqbuf = tmpnode.self.ptr;
         reqbuf_len = tmpnode.self.length;
@@ -387,7 +386,7 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound
         }
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0xA3, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA3, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
     {
         goto err;
     }
@@ -403,7 +402,7 @@ int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound
     tmpchildnode.self.ptr = tmpnode.value;
     tmpchildnode.self.length = 0;
 
-    while (derutils_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0)
+    while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0)
     {
         reqbuf = tmpchildnode.self.ptr;
         reqbuf_len = tmpchildnode.self.length;
@@ -437,7 +436,7 @@ int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_euiccChallenge)
     struct derutils_node tmpnode;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -447,12 +446,12 @@ int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_euiccChallenge)
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length))
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length))
     {
         goto err;
     }
@@ -492,7 +491,7 @@ int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_EUICCInfo1)
     struct derutils_node tmpnode;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -502,7 +501,7 @@ int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_EUICCInfo1)
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
     {
         goto err;
     }
@@ -546,7 +545,7 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
     *notificationMetadataList = NULL;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -556,12 +555,12 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_notificationMetadataList, 0xA0, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_notificationMetadataList, 0xA0, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
@@ -569,7 +568,7 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
     n_NotificationMetadata.self.ptr = n_notificationMetadataList.value;
     n_NotificationMetadata.self.length = 0;
 
-    while (derutils_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value, n_notificationMetadataList.length) == 0)
+    while (euicc_derutil_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value, n_notificationMetadataList.length) == 0)
     {
         struct es10b_notification_metadata_list *p;
 
@@ -589,12 +588,12 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_meta
         tmpnode.self.ptr = n_NotificationMetadata.value;
         tmpnode.self.length = 0;
         p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_NULL;
-        while (derutils_unpack_next(&tmpnode, &tmpnode, n_NotificationMetadata.value, n_NotificationMetadata.length) == 0)
+        while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_NotificationMetadata.value, n_NotificationMetadata.length) == 0)
         {
             switch (tmpnode.tag)
             {
             case 0x80:
-                p->seqNumber = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                p->seqNumber = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
                 break;
             case 0x81:
                 if (tmpnode.length >= 2)
@@ -672,7 +671,7 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_pending_
 
     memset(PendingNotification, 0, sizeof(struct es10b_pending_notification));
 
-    if (derutils_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
+    if (euicc_derutil_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
     {
         goto err;
     }
@@ -694,7 +693,7 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_pending_
     };
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -704,17 +703,17 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_pending_
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0xA0, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_alias_tags(&n_PendingNotification, (uint16_t[]){0xBF37, 0x30}, 2, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_alias_tags(&n_PendingNotification, (uint16_t[]){0xBF37, 0x30}, 2, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
@@ -722,24 +721,24 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_pending_
     switch (n_PendingNotification.tag)
     {
     case 0xBF37: // profileInstallationResult
-        if (derutils_unpack_find_tag(&tmpnode, 0xBF27, n_PendingNotification.value, n_PendingNotification.length) < 0)
+        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, n_PendingNotification.value, n_PendingNotification.length) < 0)
         {
             goto err;
         }
-        if (derutils_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) < 0)
+        if (euicc_derutil_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) < 0)
         {
             goto err;
         }
         break;
     case 0x30: // otherSignedNotification
-        if (derutils_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, n_PendingNotification.value, n_PendingNotification.length) < 0)
+        if (euicc_derutil_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, n_PendingNotification.value, n_PendingNotification.length) < 0)
         {
             goto err;
         }
         break;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x0C, n_NotificationMetadata.value, n_NotificationMetadata.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x0C, n_NotificationMetadata.value, n_NotificationMetadata.length) < 0)
     {
         goto err;
     }
@@ -787,7 +786,7 @@ int es10b_RemoveNotificationFromList(struct euicc_ctx *ctx, unsigned long seqNum
 
     struct derutils_node tmpnode;
 
-    if (derutils_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
+    if (euicc_derutil_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
     {
         goto err;
     }
@@ -804,7 +803,7 @@ int es10b_RemoveNotificationFromList(struct euicc_ctx *ctx, unsigned long seqNum
     };
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -814,17 +813,17 @@ int es10b_RemoveNotificationFromList(struct euicc_ctx *ctx, unsigned long seqNum
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    fret = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+    fret = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
 
     goto exit;
 
@@ -920,22 +919,22 @@ int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_AuthenticateServe
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_serverSigned1, 0x30, serverSigned1, serverSigned1_len) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_serverSigned1, 0x30, serverSigned1, serverSigned1_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_serverSignature1, 0x5F37, serverSignature1, serverSignature1_len) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_serverSignature1, 0x5F37, serverSignature1, serverSignature1_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_euiccCiPKIdToBeUsed, 0x04, euiccCiPKIdToBeUsed, euiccCiPKIdToBeUsed_len) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_euiccCiPKIdToBeUsed, 0x04, euiccCiPKIdToBeUsed, euiccCiPKIdToBeUsed_len) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_serverCertificate, 0x30, serverCertificate, serverCertificate_len) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_serverCertificate, 0x30, serverCertificate, serverCertificate_len) < 0)
     {
         goto err;
     }
@@ -976,7 +975,7 @@ int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_AuthenticateServe
         n_CtxParams1.pack.child = &n_deviceInfo;
     }
 
-    if (derutils_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
+    if (euicc_derutil_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
     {
         goto err;
     }

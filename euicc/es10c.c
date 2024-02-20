@@ -1,7 +1,7 @@
 #include "euicc.private.h"
 #include "es10c.h"
 
-#include "derutils.h"
+#include "derutil.h"
 #include "hexutil.h"
 #include "base64.h"
 
@@ -30,7 +30,7 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
     *profileInfoList = NULL;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -40,12 +40,12 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_profileInfoListOk, 0xA0, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&n_profileInfoListOk, 0xA0, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
@@ -53,7 +53,7 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
     n_ProfileInfo.self.ptr = n_profileInfoListOk.value;
     n_ProfileInfo.self.length = 0;
 
-    while (derutils_unpack_next(&n_ProfileInfo, &n_ProfileInfo, n_profileInfoListOk.value, n_profileInfoListOk.length) == 0)
+    while (euicc_derutil_unpack_next(&n_ProfileInfo, &n_ProfileInfo, n_profileInfoListOk.value, n_profileInfoListOk.length) == 0)
     {
         struct es10c_profile_info_list *p;
 
@@ -77,7 +77,7 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
         p->profileClass = ES10C_PROFILE_CLASS_NULL;
         p->iconType = ES10C_ICON_TYPE_NULL;
 
-        while (derutils_unpack_next(&tmpnode, &tmpnode, n_ProfileInfo.value, n_ProfileInfo.length) == 0)
+        while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_ProfileInfo.value, n_ProfileInfo.length) == 0)
         {
             switch (tmpnode.tag)
             {
@@ -88,7 +88,7 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
                 euicc_hexutil_bin2hex(p->isdpAid, sizeof(p->isdpAid), tmpnode.value, tmpnode.length);
                 break;
             case 0x9F70:
-                tmpint = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                tmpint = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
                 switch (tmpint)
                 {
                 case ES10C_PROFILE_STATE_DISABLED:
@@ -125,7 +125,7 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
                 }
                 break;
             case 0x93:
-                tmpint = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                tmpint = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
                 switch (tmpint)
                 {
                 case ES10C_ICON_TYPE_JPEG:
@@ -145,7 +145,7 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list 
                 }
                 break;
             case 0x95:
-                tmpint = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+                tmpint = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
                 switch (tmpint)
                 {
                 case ES10C_PROFILE_CLASS_TEST:
@@ -265,7 +265,7 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     n_request.tag = op_tag;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -275,17 +275,17 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    fret = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+    fret = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
 
     goto exit;
 
@@ -348,13 +348,13 @@ int es10c_eUICCMemoryReset(struct euicc_ctx *ctx)
 
     struct derutils_node tmpnode;
 
-    if (derutils_convert_bits2bin(resetOptions, sizeof(resetOptions), (const uint32_t[]){0, 1, 2}, 3) < 0)
+    if (euicc_derutil_convert_bits2bin(resetOptions, sizeof(resetOptions), (const uint32_t[]){0, 1, 2}, 3) < 0)
     {
         goto err;
     }
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -364,17 +364,17 @@ int es10c_eUICCMemoryReset(struct euicc_ctx *ctx)
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    fret = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+    fret = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
 
     goto exit;
 
@@ -406,7 +406,7 @@ int es10c_GetEID(struct euicc_ctx *ctx, char **eidValue)
     struct derutils_node tmpnode;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -416,12 +416,12 @@ int es10c_GetEID(struct euicc_ctx *ctx, char **eidValue)
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x5A, tmpnode.value, tmpnode.length))
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x5A, tmpnode.value, tmpnode.length))
     {
         goto err;
     }
@@ -479,7 +479,7 @@ int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *prof
     }
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -489,17 +489,17 @@ int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *prof
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    fret = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+    fret = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
 
     goto exit;
 

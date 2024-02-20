@@ -2,7 +2,7 @@
 #include "es10a.h"
 
 #include "hexutil.h"
-#include "derutils.h"
+#include "derutil.h"
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -25,7 +25,7 @@ int es10a_GetEuiccConfiguredAddresses(struct euicc_ctx *ctx, struct es10a_euicc_
     memset(address, 0, sizeof(*address));
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -35,12 +35,12 @@ int es10a_GetEuiccConfiguredAddresses(struct euicc_ctx *ctx, struct es10a_euicc_
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&n_Response, n_request.tag, respbuf, resplen))
+    if (euicc_derutil_unpack_find_tag(&n_Response, n_request.tag, respbuf, resplen))
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x80, n_Response.value, n_Response.length) == 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, n_Response.value, n_Response.length) == 0)
     {
         address->defaultDpAddress = malloc(tmpnode.length + 1);
         if (address->defaultDpAddress)
@@ -50,7 +50,7 @@ int es10a_GetEuiccConfiguredAddresses(struct euicc_ctx *ctx, struct es10a_euicc_
         }
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x81, n_Response.value, n_Response.length) == 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x81, n_Response.value, n_Response.length) == 0)
     {
         address->rootDsAddress = malloc(tmpnode.length + 1);
         if (address->rootDsAddress)
@@ -94,7 +94,7 @@ int es10a_SetDefaultDpAddress(struct euicc_ctx *ctx, const char *smdp)
     struct derutils_node tmpnode;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (derutils_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
@@ -104,17 +104,17 @@ int es10a_SetDefaultDpAddress(struct euicc_ctx *ctx, const char *smdp)
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
     {
         goto err;
     }
 
-    if (derutils_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
     {
         goto err;
     }
 
-    fret = derutils_convert_bin2long(tmpnode.value, tmpnode.length);
+    fret = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
 
     goto exit;
 

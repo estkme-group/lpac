@@ -119,9 +119,9 @@ static int applet_main(int argc, char **argv)
 
             cJSON_AddItemToObject(jeuiccinfo2, "certificationDataObject", jcertificationDataObject);
         }
+        es10c_ex_euiccinfo2_free(euiccinfo2);
     }
     cJSON_AddItemToObject(jdata, "EUICCInfo2", jeuiccinfo2);
-    es10c_ex_euiccinfo2_free(euiccinfo2);
 
     jprint_success(jdata);
 

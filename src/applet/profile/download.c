@@ -156,7 +156,7 @@ static int applet_main(int argc, char **argv)
     if (es10b_LoadBoundProfilePackage(&euicc_ctx, &es10b_LoadBoundProfilePackage_result, b64_BoundProfilePackage))
     {
         char buffer[256];
-        snprintf(buffer, sizeof(buffer), "%s,%s", bppcommandid2str(es10b_LoadBoundProfilePackage_result.bppCommandId), errorreason2str(es10b_LoadBoundProfilePackage_result.errorReason));
+        snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(es10b_LoadBoundProfilePackage_result.bppCommandId), euicc_errorreason2str(es10b_LoadBoundProfilePackage_result.errorReason));
         jprint_error("es10b_LoadBoundProfilePackage", buffer);
         return -1;
     }

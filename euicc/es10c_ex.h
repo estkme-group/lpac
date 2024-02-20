@@ -4,9 +4,9 @@
 
 struct es10c_ex_euiccinfo2
 {
-    char profileVersion[16];
-    char svn[16];
-    char euiccFirmwareVer[16];
+    char *profileVersion;
+    char *svn;
+    char *euiccFirmwareVer;
     struct
     {
         unsigned int installedApplication;
@@ -14,15 +14,15 @@ struct es10c_ex_euiccinfo2
         unsigned int freeVolatileMemory;
     } extCardResource;
     const char **uiccCapability;
-    char javacardVersion[16];
-    char globalplatformVersion[16];
+    char *javacardVersion;
+    char *globalplatformVersion;
     const char **rspCapability;
     char **euiccCiPKIdListForVerification;
     char **euiccCiPKIdListForSigning;
     const char *euiccCategory;
     const char **forbiddenProfilePolicyRules;
-    char ppVersion[16];
-    char sasAcreditationNumber[65];
+    char *ppVersion;
+    char *sasAcreditationNumber;
     struct
     {
         char *platformLabel;
