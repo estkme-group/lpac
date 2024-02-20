@@ -37,6 +37,7 @@ static int applet_main(int argc, char **argv)
 
     jdata = cJSON_CreateObject();
     cJSON_AddStringOrNullToObject(jdata, "eidValue", eid);
+    free(eid);
 
     if (jaddresses)
     {
@@ -44,6 +45,7 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringOrNullToObject(jaddresses, "rootDsAddress", addresses.rootDsAddress);
     }
     cJSON_AddItemToObject(jdata, "EuiccConfiguredAddresses", jaddresses);
+    es10a_euicc_configured_addresses_free(&addresses);
 
     if (jeuiccinfo2)
     {
@@ -119,11 +121,9 @@ static int applet_main(int argc, char **argv)
         }
     }
     cJSON_AddItemToObject(jdata, "EUICCInfo2", jeuiccinfo2);
+    es10c_ex_euiccinfo2_free(euiccinfo2);
 
     jprint_success(jdata);
-
-    free(eid);
-    es10c_ex_euiccinfo2_free(euiccinfo2);
 
     return 0;
 }
