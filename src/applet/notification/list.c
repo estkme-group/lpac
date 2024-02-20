@@ -6,10 +6,11 @@
 #include <main.h>
 
 #include <euicc/es10b.h>
+#include <euicc/tostr.h>
 
 static int applet_main(int argc, char **argv)
 {
-    struct es10b_NotificationMetadataList *notifications, *rptr;
+    struct es10b_notification_metadata_list *notifications, *rptr;
     cJSON *jdata = NULL;
 
     if (es10b_ListNotification(&euicc_ctx, &notifications))
@@ -26,7 +27,7 @@ static int applet_main(int argc, char **argv)
 
         jnotification = cJSON_CreateObject();
         cJSON_AddNumberToObject(jnotification, "seqNumber", rptr->seqNumber);
-        cJSON_AddStringOrNullToObject(jnotification, "profileManagementOperation", rptr->profileManagementOperation);
+        cJSON_AddStringOrNullToObject(jnotification, "profileManagementOperation", profilemanagementoperation2str(rptr->profileManagementOperation));
         cJSON_AddStringOrNullToObject(jnotification, "notificationAddress", rptr->notificationAddress);
         cJSON_AddStringOrNullToObject(jnotification, "iccid", rptr->iccid);
         cJSON_AddItemToArray(jdata, jnotification);

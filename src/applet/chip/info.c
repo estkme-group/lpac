@@ -8,13 +8,13 @@
 
 #include <euicc/es10a.h>
 #include <euicc/es10c.h>
-#include <euicc/es10cex.h>
+#include <euicc/es10c_ex.h>
 
 static int applet_main(int argc, char **argv)
 {
     char *eid = NULL;
-    struct es10a_EuiccConfiguredAddresses addresses;
-    struct es10cex_euiccinfo2 *euiccinfo2 = NULL;
+    struct es10a_euicc_configured_addresses addresses;
+    struct es10c_ex_euiccinfo2 *euiccinfo2 = NULL;
     cJSON *jaddresses = NULL;
     cJSON *jeuiccinfo2 = NULL;
     cJSON *jdata = NULL;
@@ -30,7 +30,7 @@ static int applet_main(int argc, char **argv)
         jaddresses = cJSON_CreateObject();
     }
 
-    if (es10cex_get_euiccinfo2(&euicc_ctx, &euiccinfo2) == 0)
+    if (es10c_ex_get_euiccinfo2(&euicc_ctx, &euiccinfo2) == 0)
     {
         jeuiccinfo2 = cJSON_CreateObject();
     }
@@ -123,7 +123,7 @@ static int applet_main(int argc, char **argv)
     jprint_success(jdata);
 
     free(eid);
-    es10cex_free_euiccinfo2(euiccinfo2);
+    es10c_ex_euiccinfo2_free(euiccinfo2);
 
     return 0;
 }

@@ -16,7 +16,7 @@
 #include "asn1c/asn1/BoundProfilePackage.h"
 #include "asn1c/asn1/ProfileInstallationResult.h"
 
-int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_PrepareDownload_param *param)
+int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -575,7 +575,7 @@ exit:
     return fret;
 }
 
-int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_NotificationMetadataList **notificationMetadataList)
+int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -587,7 +587,7 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_NotificationMetad
 
     struct derutils_node tmpnode, n_notificationMetadataList, n_NotificationMetadata;
 
-    struct es10b_NotificationMetadataList *metadatas_wptr;
+    struct es10b_notification_metadata_list *list_wptr;
 
     *notificationMetadataList = NULL;
 
@@ -617,14 +617,14 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_NotificationMetad
 
     while (derutils_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value, n_notificationMetadataList.length) == 0)
     {
-        struct es10b_NotificationMetadataList *p;
+        struct es10b_notification_metadata_list *p;
 
         if (n_NotificationMetadata.tag != 0xBF2F)
         {
             continue;
         }
 
-        p = malloc(sizeof(struct es10b_NotificationMetadataList));
+        p = malloc(sizeof(struct es10b_notification_metadata_list));
         if (!p)
         {
             goto err;
@@ -634,6 +634,7 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_NotificationMetad
 
         tmpnode.self.ptr = n_NotificationMetadata.value;
         tmpnode.self.length = 0;
+        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_NULL;
         while (derutils_unpack_next(&tmpnode, &tmpnode, n_NotificationMetadata.value, n_NotificationMetadata.length) == 0)
         {
             switch (tmpnode.tag)
@@ -646,17 +647,20 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_NotificationMetad
                 {
                     switch (tmpnode.value[1])
                     {
-                    case 0x80:
-                        p->profileManagementOperation = "install";
+                    case ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL:
+                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL;
                         break;
-                    case 0x40:
-                        p->profileManagementOperation = "enable";
+                    case ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE:
+                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE;
                         break;
-                    case 0x20:
-                        p->profileManagementOperation = "disable";
+                    case ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE:
+                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE;
                         break;
-                    case 0x10:
-                        p->profileManagementOperation = "delete";
+                    case ES10B_PROFILE_MANAGEMENT_OPERATION_DELETE:
+                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_DELETE;
+                        break;
+                    default:
+                        p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_UNDEFINED;
                         break;
                     }
                 }
@@ -689,10 +693,10 @@ int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_NotificationMetad
         }
         else
         {
-            metadatas_wptr->next = p;
+            list_wptr->next = p;
         }
 
-        metadatas_wptr = p;
+        list_wptr = p;
     }
 
     goto exit;
@@ -706,7 +710,7 @@ exit:
     return fret;
 }
 
-int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_PendingNotification *PendingNotification, unsigned long seqNumber)
+int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification, unsigned long seqNumber)
 {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
@@ -718,7 +722,7 @@ int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_PendingN
 
     struct derutils_node tmpnode, n_PendingNotification, n_NotificationMetadata;
 
-    memset(PendingNotification, 0, sizeof(struct es10b_PendingNotification));
+    memset(PendingNotification, 0, sizeof(struct es10b_pending_notification));
 
     if (derutils_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
     {
@@ -884,7 +888,7 @@ exit:
     return fret;
 }
 
-int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_AuthenticateServerResponse, struct es10b_AuthenticateServer_param *param)
+int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -1081,16 +1085,16 @@ exit:
     return fret;
 }
 
-int es10b_CancelSession(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_CancelSession_param *param)
+int es10b_CancelSession(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param)
 {
     return -1;
 }
 
-void es10b_notification_metadata_free_all(struct es10b_NotificationMetadataList *notificationMetadataList)
+void es10b_notification_metadata_free_all(struct es10b_notification_metadata_list *notificationMetadataList)
 {
     while (notificationMetadataList)
     {
-        struct es10b_NotificationMetadataList *next = notificationMetadataList->next;
+        struct es10b_notification_metadata_list *next = notificationMetadataList->next;
         free(notificationMetadataList->notificationAddress);
         free(notificationMetadataList->iccid);
         free(notificationMetadataList);
@@ -1098,9 +1102,9 @@ void es10b_notification_metadata_free_all(struct es10b_NotificationMetadataList 
     }
 }
 
-void es10b_notification_free(struct es10b_PendingNotification *PendingNotification)
+void es10b_notification_free(struct es10b_pending_notification *PendingNotification)
 {
     free(PendingNotification->notificationAddress);
     free(PendingNotification->b64_PendingNotification);
-    memset(PendingNotification, 0, sizeof(struct es10b_PendingNotification));
+    memset(PendingNotification, 0, sizeof(struct es10b_pending_notification));
 }

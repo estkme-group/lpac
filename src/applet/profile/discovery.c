@@ -22,10 +22,10 @@ static int applet_main(int argc, char **argv)
     char *b64_euicc_challenge = NULL;
     char *b64_euicc_info_1 = NULL;
 
-    struct es10b_AuthenticateServer_param es10b_AuthenticateServer_param;
+    struct es10b_authenticate_server_param es10b_AuthenticateServer_param;
     char *b64_authenticate_server_response = NULL;
 
-    struct es11_AuthenticateClient_resp es11_AuthenticateClient_resp;
+    struct es11_authenticate_client_resp es11_AuthenticateClient_resp;
 
     opt = getopt(argc, argv, opt_string);
     while (opt != -1)

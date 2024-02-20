@@ -2,7 +2,7 @@
 
 #include "euicc.h"
 
-struct es10cex_euiccinfo2
+struct es10c_ex_euiccinfo2
 {
     char profileVersion[16];
     char svn[16];
@@ -30,5 +30,5 @@ struct es10cex_euiccinfo2
     } certificationDataObject;
 };
 
-int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 **info);
-void es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info);
+int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **euiccinfo2);
+void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2);

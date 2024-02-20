@@ -6,10 +6,11 @@
 #include <main.h>
 
 #include <euicc/es10c.h>
+#include <euicc/tostr.h>
 
 static int applet_main(int argc, char **argv)
 {
-    struct es10c_ProfileInfoList *profiles, *rptr;
+    struct es10c_profile_info_list *profiles, *rptr;
     cJSON *jdata = NULL;
 
     if (es10c_GetProfilesInfo(&euicc_ctx, &profiles))
@@ -28,13 +29,13 @@ static int applet_main(int argc, char **argv)
         jprofile = cJSON_CreateObject();
         cJSON_AddStringOrNullToObject(jprofile, "iccid", rptr->iccid);
         cJSON_AddStringOrNullToObject(jprofile, "isdpAid", rptr->isdpAid);
-        cJSON_AddStringOrNullToObject(jprofile, "profileState", rptr->profileState);
+        cJSON_AddStringOrNullToObject(jprofile, "profileState", profilestate2str(rptr->profileState));
         cJSON_AddStringOrNullToObject(jprofile, "profileNickname", rptr->profileNickname);
         cJSON_AddStringOrNullToObject(jprofile, "serviceProviderName", rptr->serviceProviderName);
         cJSON_AddStringOrNullToObject(jprofile, "profileName", rptr->profileName);
-        cJSON_AddStringOrNullToObject(jprofile, "iconType", rptr->iconType);
+        cJSON_AddStringOrNullToObject(jprofile, "iconType", icontype2str(rptr->iconType));
         cJSON_AddStringOrNullToObject(jprofile, "icon", rptr->icon);
-        cJSON_AddStringOrNullToObject(jprofile, "profileClass", rptr->profileClass);
+        cJSON_AddStringOrNullToObject(jprofile, "profileClass", profileclass2str(rptr->profileClass));
         cJSON_AddItemToArray(jdata, jprofile);
 
         rptr = rptr->next;

@@ -11,7 +11,7 @@
 static int applet_main(int argc, char **argv)
 {
     unsigned long seqNumber;
-    struct es10b_PendingNotification notification;
+    struct es10b_pending_notification notification;
     struct es9p_ctx es9p_ctx = {0};
 
     if (argc < 2)

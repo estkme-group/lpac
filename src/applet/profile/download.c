@@ -20,17 +20,17 @@ static int applet_main(int argc, char **argv)
     char *imei = NULL;
     char *confirmation_code = NULL;
 
-    struct es10a_EuiccConfiguredAddresses configured_addresses;
+    struct es10a_euicc_configured_addresses configured_addresses;
 
     struct es9p_ctx es9p_ctx = {0};
 
     char *b64_euicc_challenge = NULL;
     char *b64_euicc_info_1 = NULL;
 
-    struct es10b_AuthenticateServer_param es10b_AuthenticateServer_param = {0};
+    struct es10b_authenticate_server_param es10b_AuthenticateServer_param = {0};
     char *b64_authenticate_server_response = NULL;
 
-    struct es10b_PrepareDownload_param es10b_PrepareDownload_param = {0};
+    struct es10b_prepare_download_param es10b_PrepareDownload_param = {0};
     char *b64_prepare_download_response = NULL;
 
     char *b64_BoundProfilePackage = NULL;

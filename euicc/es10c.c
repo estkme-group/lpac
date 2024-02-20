@@ -11,27 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 
-enum es10c_profile_info_state
-{
-    ES10C_PROFILE_INFO_STATE_DISABLED = 0,
-    ES10C_PROFILE_INFO_STATE_ENABLED = 1,
-};
-
-enum es10c_profile_info_class
-{
-    ES10C_PROFILE_INFO_CLASS_TEST = 0,
-    ES10C_PROFILE_INFO_CLASS_PROVISIONING = 1,
-    ES10C_PROFILE_INFO_CLASS_OPERATIONAL = 2,
-};
-
-enum es10c_icon_type
-{
-    ES10C_ICON_TYPE_INVALID = -1,
-    ES10C_ICON_TYPE_JPEG = 0,
-    ES10C_ICON_TYPE_PNG = 1,
-};
-
-int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **profileInfoList)
+int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -43,7 +23,7 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **
 
     struct derutils_node tmpnode, n_profileInfoListOk, n_ProfileInfo;
 
-    struct es10c_ProfileInfoList *profiles_wptr;
+    struct es10c_profile_info_list *list_wptr;
 
     *profileInfoList = NULL;
 
@@ -73,14 +53,14 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **
 
     while (derutils_unpack_next(&n_ProfileInfo, &n_ProfileInfo, n_profileInfoListOk.value, n_profileInfoListOk.length) == 0)
     {
-        struct es10c_ProfileInfoList *p;
+        struct es10c_profile_info_list *p;
 
         if (n_ProfileInfo.tag != 0xE3)
         {
             continue;
         }
 
-        p = malloc(sizeof(struct es10c_ProfileInfoList));
+        p = malloc(sizeof(struct es10c_profile_info_list));
         if (!p)
         {
             goto err;
@@ -90,6 +70,11 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **
 
         tmpnode.self.ptr = n_ProfileInfo.value;
         tmpnode.self.length = 0;
+
+        p->profileState = ES10C_PROFILE_STATE_NULL;
+        p->profileClass = ES10C_PROFILE_CLASS_NULL;
+        p->iconType = ES10C_ICON_TYPE_NULL;
+
         while (derutils_unpack_next(&tmpnode, &tmpnode, n_ProfileInfo.value, n_ProfileInfo.length) == 0)
         {
             switch (tmpnode.tag)
@@ -103,14 +88,14 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **
             case 0x9F70:
                 switch (derutils_convert_bin2long(tmpnode.value, tmpnode.length))
                 {
-                case ES10C_PROFILE_INFO_STATE_DISABLED:
-                    p->profileState = "disabled";
+                case ES10C_PROFILE_STATE_DISABLED:
+                    p->profileState = ES10C_PROFILE_STATE_DISABLED;
                     break;
-                case ES10C_PROFILE_INFO_STATE_ENABLED:
-                    p->profileState = "enabled";
+                case ES10C_PROFILE_STATE_ENABLED:
+                    p->profileState = ES10C_PROFILE_STATE_ENABLED;
                     break;
                 default:
-                    p->profileState = "unknown";
+                    p->profileState = ES10C_PROFILE_STATE_UNDEFINED;
                     break;
                 }
                 break;
@@ -142,13 +127,13 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **
                 switch (derutils_convert_bin2long(tmpnode.value, tmpnode.length))
                 {
                 case ES10C_ICON_TYPE_JPEG:
-                    p->iconType = "jpeg";
+                    p->iconType = ES10C_ICON_TYPE_JPEG;
                     break;
                 case ES10C_ICON_TYPE_PNG:
-                    p->iconType = "png";
+                    p->iconType = ES10C_ICON_TYPE_PNG;
                     break;
                 default:
-                    p->iconType = "unknown";
+                    p->iconType = ES10C_ICON_TYPE_UNDEFINED;
                     break;
                 }
                 break;
@@ -162,17 +147,17 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **
             case 0x95:
                 switch (derutils_convert_bin2long(tmpnode.value, tmpnode.length))
                 {
-                case ES10C_PROFILE_INFO_CLASS_TEST:
-                    p->profileClass = "test";
+                case ES10C_PROFILE_CLASS_TEST:
+                    p->profileClass =ES10C_PROFILE_CLASS_TEST;
                     break;
-                case ES10C_PROFILE_INFO_CLASS_PROVISIONING:
-                    p->profileClass = "provisioning";
+                case ES10C_PROFILE_CLASS_PROVISIONING:
+                    p->profileClass =ES10C_PROFILE_CLASS_PROVISIONING;
                     break;
-                case ES10C_PROFILE_INFO_CLASS_OPERATIONAL:
-                    p->profileClass = "operational";
+                case ES10C_PROFILE_CLASS_OPERATIONAL:
+                    p->profileClass = ES10C_PROFILE_CLASS_OPERATIONAL;
                     break;
                 default:
-                    p->profileClass = "unknown";
+                    p->profileClass = ES10C_PROFILE_CLASS_UNDEFINED;
                     break;
                 }
                 break;
@@ -196,10 +181,10 @@ int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_ProfileInfoList **
         }
         else
         {
-            profiles_wptr->next = p;
+            list_wptr->next = p;
         }
 
-        profiles_wptr = p;
+        list_wptr = p;
     }
 
     goto exit;
@@ -529,11 +514,11 @@ exit:
     return fret;
 }
 
-void es10c_profile_info_free_all(struct es10c_ProfileInfoList *profileInfoList)
+void es10c_profile_info_free_all(struct es10c_profile_info_list *profileInfoList)
 {
     while (profileInfoList)
     {
-        struct es10c_ProfileInfoList *next = profileInfoList->next;
+        struct es10c_profile_info_list *next = profileInfoList->next;
         free(profileInfoList->profileNickname);
         free(profileInfoList->serviceProviderName);
         free(profileInfoList->profileName);

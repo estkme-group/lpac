@@ -1,5 +1,5 @@
 #include "euicc.private.h"
-#include "es10cex.h"
+#include "es10c_ex.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,10 +89,10 @@ static int _read_bitwise_cap(const char ***output, uint8_t *flags, int flags_len
     return 0;
 }
 
-int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 **allocedinfo)
+int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **euiccinfo2)
 {
     int fret = 0;
-    struct es10cex_euiccinfo2 *info;
+    struct es10c_ex_euiccinfo2 *info;
     uint8_t *respbuf = NULL;
     unsigned resplen;
     asn_enc_rval_t asn1erval;
@@ -100,12 +100,12 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 **al
     GetEuiccInfo2Request_t *asn1req = NULL;
     EUICCInfo2_t *asn1resp = NULL;
 
-    *allocedinfo = calloc(1, sizeof(struct es10cex_euiccinfo2));
-    if (*allocedinfo == NULL)
+    *euiccinfo2 = calloc(1, sizeof(struct es10c_ex_euiccinfo2));
+    if (*euiccinfo2 == NULL)
     {
         goto err;
     }
-    info = *allocedinfo;
+    info = *euiccinfo2;
 
     asn1req = malloc(sizeof(GetEuiccInfo2Request_t));
     if (!asn1req)
@@ -286,7 +286,7 @@ int es10cex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10cex_euiccinfo2 **al
     goto exit;
 err:
     fret = -1;
-    free(*allocedinfo);
+    free(*euiccinfo2);
 exit:
     free(respbuf);
     ASN_STRUCT_FREE(asn_DEF_GetEuiccInfo2Request, asn1req);
@@ -295,50 +295,31 @@ exit:
     return fret;
 }
 
-void es10cex_free_euiccinfo2(struct es10cex_euiccinfo2 *info)
+void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2)
 {
-    if (info->euiccCiPKIdListForVerification)
+    if (euiccinfo2->euiccCiPKIdListForVerification)
     {
-        for (int i = 0; info->euiccCiPKIdListForVerification[i] != NULL; i++)
+        for (int i = 0; euiccinfo2->euiccCiPKIdListForVerification[i] != NULL; i++)
         {
-            free(info->euiccCiPKIdListForVerification[i]);
+            free(euiccinfo2->euiccCiPKIdListForVerification[i]);
         }
-        free(info->euiccCiPKIdListForVerification);
+        free(euiccinfo2->euiccCiPKIdListForVerification);
     }
 
-    if (info->euiccCiPKIdListForSigning)
+    if (euiccinfo2->euiccCiPKIdListForSigning)
     {
-        for (int i = 0; info->euiccCiPKIdListForSigning[i] != NULL; i++)
+        for (int i = 0; euiccinfo2->euiccCiPKIdListForSigning[i] != NULL; i++)
         {
-            free(info->euiccCiPKIdListForSigning[i]);
+            free(euiccinfo2->euiccCiPKIdListForSigning[i]);
         }
-        free(info->euiccCiPKIdListForSigning);
+        free(euiccinfo2->euiccCiPKIdListForSigning);
     }
 
-    if (info->uiccCapability)
-    {
-        free(info->uiccCapability);
-    }
+    free(euiccinfo2->uiccCapability);
+    free(euiccinfo2->rspCapability);
+    free(euiccinfo2->forbiddenProfilePolicyRules);
+    free(euiccinfo2->certificationDataObject.discoveryBaseURL);
+    free(euiccinfo2->certificationDataObject.platformLabel);
 
-    if (info->rspCapability)
-    {
-        free(info->rspCapability);
-    }
-
-    if (info->forbiddenProfilePolicyRules)
-    {
-        free(info->forbiddenProfilePolicyRules);
-    }
-
-    if (info->certificationDataObject.discoveryBaseURL)
-    {
-        free(info->certificationDataObject.discoveryBaseURL);
-    }
-
-    if (info->certificationDataObject.platformLabel)
-    {
-        free(info->certificationDataObject.platformLabel);
-    }
-
-    free(info);
+    free(euiccinfo2);
 }
