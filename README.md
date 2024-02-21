@@ -55,25 +55,9 @@ make
 </details>
 
 <details>
-<summary>Windows</summary>
-
-Due to a [bug in asn1c](https://github.com/vlm/asn1c/issues/196), the MinGW version of lpac cannot send notification successfully. Building with Cygwin seems to avoid it.
+<summary>Windows(x86_64)</summary>
 
 Windows need prebuilt libcurl.dll, you can replace the download link to newest curl version.
-
-- Build on Windows(Cygwin)
-
-With `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed
-
-```bash
-git clone --depth=1 https://github.com/estkme-group/lpac
-cd lpac && mkdir build && cd build
-cmake .. && make
-# Download libcurl
-wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
-```
-To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folder to distribute.
-`cygwin1.dll` is located in `C:\cygwin64\bin\cygwin1.dll` (Default Cygwin installation location)
 
 - Build on Linux(MINGW)
 
@@ -96,6 +80,55 @@ cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake .. && ninja
 # Download libcurl
 wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
 ```
+
+- Build on Windows(Cygwin)
+
+With `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed
+
+```bash
+git clone --depth=1 https://github.com/estkme-group/lpac
+cd lpac && mkdir build && cd build
+cmake .. && make
+# Download libcurl
+wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+```
+To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folder to distribute.
+`cygwin1.dll` is located in `C:\cygwin64\bin\cygwin1.dll` (Default Cygwin installation location)
+
+</details>
+
+<details>
+<summary>Windows on ARM</summary>
+
+- Cross compile on Windows/Linux host(arm64,x86_64 and more architecture) with zig
+
+Install [zig](https://ziglang.org/download/)
+
+```bash
+git clone --depth=1 https://github.com/estkme-group/lpac
+cd lpac && mkdir build-woa-zig && cd build-woa-zig && cmake .. -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake && ninja
+# Download libcurl
+wget https://curl.se/windows/dl-8.6.0_1/curl-8.6.0_1-win64a-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.6.0_1-win64a-mingw/bin/libcurl-arm64.dll output/libcurl.dll
+```
+
+- Cross compile on Linux x86_64 host(GNU toolchain)
+
+```bash
+git clone --depth=1 https://github.com/estkme-group/lpac
+cd lpac && mkdir woa-gnu-cross-toolchain && cd woa-gnu-cross-toolchain
+wget https://github.com/Windows-on-ARM-Experiments/mingw-woarm64-build/releases/download/2024-02-08/aarch64-w64-mingw32-msvcrt-toolchain.tar.gz && tar xf aarch64-w64-mingw32-msvcrt-toolchain.tar.gz
+cd ../ && mkdir build-woa-mingw && cd build-woa-mingw && cmake .. -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake -DTOOLCHAIN_BIN_PATH=<path-to-cross-toolchain-bin> && ninja
+wget https://curl.se/windows/dl-8.6.0_1/curl-8.6.0_1-win64a-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.6.0_1-win64a-mingw/bin/libcurl-arm64.dll output/libcurl.dll
+```
+
+- Build on Windows(MSYS2)
+
+It is possible to build on **WoA devices** with [MSYS2 ARM64 Support](https://www.msys2.org/wiki/arm64/)
+
+You may need to install `mingw-w64-clang-aarch64-cmake`, `mingw-w64-clang-aarch64-ninja`,`mingw-w64-clang-aarch64-clang` and modify `cmake/linux-mingw64.cmake`(replace toolchain).
+
+Download prebuilt curl dll is also needed. Refer to the previous compilation steps.
+
 </details>
 
 # Usage
