@@ -418,7 +418,7 @@ void *dlopen( const char *file, int mode )
              * Behavior and doesn't provide expected search paths.
              * See also: https://github.com/dlfcn-win32/dlfcn-win32/issues/104
              */
-            hModule = LoadLibraryExA( lpFileName, NULL, NULL );
+            hModule = LoadLibraryExA( lpFileName, NULL, 0 );
 
             if( !hModule )
             {
