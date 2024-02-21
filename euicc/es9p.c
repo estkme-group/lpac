@@ -248,7 +248,7 @@ exit:
     return fret;
 }
 
-int es9p_InitiateAuthentication(struct es9p_ctx *ctx, struct es10b_authenticate_server_param *resp, const char *b64_euiccChallenge, const char *b64_EUICCInfo1)
+int es9p_initiate_authentication(struct es9p_ctx *ctx, struct es10b_authenticate_server_param *resp, const char *b64_euiccChallenge, const char *b64_EUICCInfo1)
 {
     const char *ikey[] = {"smdpAddress", "euiccChallenge", "euiccInfo1", NULL};
     const char *idata[] = {ctx->address, b64_euiccChallenge, b64_EUICCInfo1, NULL};
@@ -259,7 +259,7 @@ int es9p_InitiateAuthentication(struct es9p_ctx *ctx, struct es10b_authenticate_
     return es9p_trans_json(ctx, ctx->address, "/gsma/rsp2/es9plus/initiateAuthentication", ikey, idata, okey, oobj, optr);
 }
 
-int es9p_GetBoundProfilePackage(struct es9p_ctx *ctx, char **b64_BoundProfilePackage, const char *b64_PrepareDownloadResponse)
+int es9p_get_bound_profile_package(struct es9p_ctx *ctx, char **b64_BoundProfilePackage, const char *b64_PrepareDownloadResponse)
 {
     const char *ikey[] = {"transactionId", "prepareDownloadResponse", NULL};
     const char *idata[] = {ctx->transactionId, b64_PrepareDownloadResponse, NULL};
@@ -270,7 +270,7 @@ int es9p_GetBoundProfilePackage(struct es9p_ctx *ctx, char **b64_BoundProfilePac
     return es9p_trans_json(ctx, ctx->address, "/gsma/rsp2/es9plus/getBoundProfilePackage", ikey, idata, okey, oobj, optr);
 }
 
-int es9p_AuthenticateClient(struct es9p_ctx *ctx, struct es10b_prepare_download_param *resp, const char *b64_AuthenticateServerResponse)
+int es9p_authenticate_client(struct es9p_ctx *ctx, struct es10b_prepare_download_param *resp, const char *b64_AuthenticateServerResponse)
 {
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
     const char *idata[] = {ctx->transactionId, b64_AuthenticateServerResponse, NULL};
@@ -281,7 +281,7 @@ int es9p_AuthenticateClient(struct es9p_ctx *ctx, struct es10b_prepare_download_
     return es9p_trans_json(ctx, ctx->address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr);
 }
 
-int es9p_HandleNotification(struct es9p_ctx *ctx, const char *b64_PendingNotification)
+int es9p_handle_notification(struct es9p_ctx *ctx, const char *b64_PendingNotification)
 {
     const char *ikey[] = {"pendingNotification", NULL};
     const char *idata[] = {b64_PendingNotification, NULL};
@@ -289,7 +289,7 @@ int es9p_HandleNotification(struct es9p_ctx *ctx, const char *b64_PendingNotific
     return es9p_trans_json(ctx, ctx->address, "/gsma/rsp2/es9plus/handleNotification", ikey, idata, NULL, NULL, NULL);
 }
 
-int es9p_CancelSession(struct es9p_ctx *ctx, const char *b64_CancelSessionResponse)
+int es9p_cancel_session(struct es9p_ctx *ctx, const char *b64_CancelSessionResponse)
 {
     const char *ikey[] = {"transactionId", "cancelSessionResponse", NULL};
     const char *idata[] = {ctx->transactionId, b64_CancelSessionResponse, NULL};
@@ -297,7 +297,7 @@ int es9p_CancelSession(struct es9p_ctx *ctx, const char *b64_CancelSessionRespon
     return es9p_trans_json(ctx, ctx->address, "/gsma/rsp2/es9plus/cancelSession", ikey, idata, NULL, NULL, NULL);
 }
 
-int es11_AuthenticateClient(struct es9p_ctx *ctx, struct es11_authenticate_client_resp *resp, const char *b64_AuthenticateServerResponse)
+int es11_authenticate_client(struct es9p_ctx *ctx, struct es11_authenticate_client_resp *resp, const char *b64_AuthenticateServerResponse)
 {
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
     const char *idata[] = {ctx->transactionId, b64_AuthenticateServerResponse, NULL};

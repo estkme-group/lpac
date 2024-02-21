@@ -22,20 +22,20 @@ static int applet_main(int argc, char **argv)
 
     seqNumber = atol(argv[1]);
 
-    jprint_progress("es10b_RetrieveNotificationsList");
-    if (es10b_RetrieveNotificationsList(&euicc_ctx, &notification, seqNumber))
+    jprint_progress("es10b_retrieve_notifications_list");
+    if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber))
     {
-        jprint_error("es10b_RetrieveNotificationsList", NULL);
+        jprint_error("es10b_retrieve_notifications_list", NULL);
         return -1;
     }
 
     es9p_ctx.euicc_ctx = &euicc_ctx;
     es9p_ctx.address = notification.notificationAddress;
 
-    jprint_progress("es9p_HandleNotification");
-    if (es9p_HandleNotification(&es9p_ctx, notification.b64_PendingNotification))
+    jprint_progress("es9p_handle_notification");
+    if (es9p_handle_notification(&es9p_ctx, notification.b64_PendingNotification))
     {
-        jprint_error("es9p_HandleNotification", NULL);
+        jprint_error("es9p_handle_notification", NULL);
         return -1;
     }
 

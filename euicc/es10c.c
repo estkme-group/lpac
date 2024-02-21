@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 
-int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList)
+int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -297,7 +297,7 @@ exit:
     return fret;
 }
 
-int es10c_EnableProfile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag)
+int es10c_enable_profile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag)
 {
     if (refreshFlag)
     {
@@ -310,7 +310,7 @@ int es10c_EnableProfile(struct euicc_ctx *ctx, const char *id, unsigned char ref
     return es10c_enable_disable_delete_profile(ctx, 0xBF31, id, refreshFlag);
 }
 
-int es10c_DisableProfile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag)
+int es10c_disable_profile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag)
 {
     if (refreshFlag)
     {
@@ -323,12 +323,12 @@ int es10c_DisableProfile(struct euicc_ctx *ctx, const char *id, unsigned char re
     return es10c_enable_disable_delete_profile(ctx, 0xBF32, id, refreshFlag);
 }
 
-int es10c_DeleteProfile(struct euicc_ctx *ctx, const char *id)
+int es10c_delete_profile(struct euicc_ctx *ctx, const char *id)
 {
     return es10c_enable_disable_delete_profile(ctx, 0xBF33, id, 0);
 }
 
-int es10c_eUICCMemoryReset(struct euicc_ctx *ctx)
+int es10c_euicc_memory_reset(struct euicc_ctx *ctx)
 {
     int fret = 0;
     uint8_t resetOptions[2];
@@ -386,7 +386,7 @@ exit:
     return fret;
 }
 
-int es10c_GetEID(struct euicc_ctx *ctx, char **eidValue)
+int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -446,7 +446,7 @@ exit:
     return fret;
 }
 
-int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *profileNickname)
+int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *profileNickname)
 {
     int fret = 0;
     uint8_t asn1iccid[10];

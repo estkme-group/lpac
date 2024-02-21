@@ -13,9 +13,9 @@ static int applet_main(int argc, char **argv)
     struct es10c_profile_info_list *profiles, *rptr;
     cJSON *jdata = NULL;
 
-    if (es10c_GetProfilesInfo(&euicc_ctx, &profiles))
+    if (es10c_get_profiles_info(&euicc_ctx, &profiles))
     {
-        jprint_error("es10c_GetProfilesInfo", NULL);
+        jprint_error("es10c_get_profiles_info", NULL);
         return -1;
     }
 

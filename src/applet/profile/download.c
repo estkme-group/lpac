@@ -70,10 +70,10 @@ static int applet_main(int argc, char **argv)
 
     if (smdp == NULL)
     {
-        jprint_progress("es10a_GetEuiccConfiguredAddresses");
-        if (es10a_GetEuiccConfiguredAddresses(&euicc_ctx, &configured_addresses))
+        jprint_progress("es10a_get_euicc_configured_addresses");
+        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses))
         {
-            jprint_error("es10a_GetEuiccConfiguredAddresses", NULL);
+            jprint_error("es10a_get_euicc_configured_addresses", NULL);
             return -1;
         }
         else
@@ -91,41 +91,41 @@ static int applet_main(int argc, char **argv)
     es9p_ctx.euicc_ctx = &euicc_ctx;
     es9p_ctx.address = smdp;
 
-    jprint_progress("es10b_GetEUICCChallenge");
-    if (es10b_GetEUICCChallenge(&euicc_ctx, &b64_euicc_challenge))
+    jprint_progress("es10b_get_euicc_challenge");
+    if (es10b_get_euicc_challenge(&euicc_ctx, &b64_euicc_challenge))
     {
-        jprint_error("es10b_GetEUICCChallenge", NULL);
+        jprint_error("es10b_get_euicc_challenge", NULL);
         return -1;
     }
 
-    jprint_progress("es10b_GetEUICCInfo");
-    if (es10b_GetEUICCInfo(&euicc_ctx, &b64_euicc_info_1))
+    jprint_progress("es10b_get_euicc_info");
+    if (es10b_get_euicc_info(&euicc_ctx, &b64_euicc_info_1))
     {
-        jprint_error("es10b_GetEUICCInfo", NULL);
+        jprint_error("es10b_get_euicc_info", NULL);
         return -1;
     }
 
-    jprint_progress("es9p_InitiateAuthentication");
-    if (es9p_InitiateAuthentication(&es9p_ctx, &es10b_AuthenticateServer_param, b64_euicc_challenge, b64_euicc_info_1))
+    jprint_progress("es9p_initiate_authentication");
+    if (es9p_initiate_authentication(&es9p_ctx, &es10b_AuthenticateServer_param, b64_euicc_challenge, b64_euicc_info_1))
     {
-        jprint_error("es9p_InitiateAuthentication", es9p_ctx.statusCodeData.message);
+        jprint_error("es9p_initiate_authentication", es9p_ctx.statusCodeData.message);
         return -1;
     }
 
     es10b_AuthenticateServer_param.matchingId = matchingId;
     es10b_AuthenticateServer_param.imei = imei;
 
-    jprint_progress("es10b_AuthenticateServer");
-    if (es10b_AuthenticateServer(&euicc_ctx, &b64_authenticate_server_response, &es10b_AuthenticateServer_param))
+    jprint_progress("es10b_authenticate_server");
+    if (es10b_authenticate_server(&euicc_ctx, &b64_authenticate_server_response, &es10b_AuthenticateServer_param))
     {
-        jprint_error("es10b_AuthenticateServer", NULL);
+        jprint_error("es10b_authenticate_server", NULL);
         return -1;
     }
 
-    jprint_progress("es9p_AuthenticateClient");
-    if (es9p_AuthenticateClient(&es9p_ctx, &es10b_PrepareDownload_param, b64_authenticate_server_response))
+    jprint_progress("es9p_authenticate_client");
+    if (es9p_authenticate_client(&es9p_ctx, &es10b_PrepareDownload_param, b64_authenticate_server_response))
     {
-        jprint_error("es9p_AuthenticateClient", es9p_ctx.statusCodeData.message);
+        jprint_error("es9p_authenticate_client", es9p_ctx.statusCodeData.message);
         return -1;
     }
 
@@ -138,26 +138,26 @@ static int applet_main(int argc, char **argv)
         es10b_PrepareDownload_param.confirmationCode = NULL;
     }
 
-    jprint_progress("es10b_PrepareDownload");
-    if (es10b_PrepareDownload(&euicc_ctx, &b64_prepare_download_response, &es10b_PrepareDownload_param))
+    jprint_progress("es10b_prepare_download");
+    if (es10b_prepare_download(&euicc_ctx, &b64_prepare_download_response, &es10b_PrepareDownload_param))
     {
-        jprint_error("es10b_PrepareDownload", NULL);
+        jprint_error("es10b_prepare_download", NULL);
         return -1;
     }
 
-    jprint_progress("es9p_GetBoundProfilePackage");
-    if (es9p_GetBoundProfilePackage(&es9p_ctx, &b64_BoundProfilePackage, b64_prepare_download_response))
+    jprint_progress("es9p_get_bound_profile_package");
+    if (es9p_get_bound_profile_package(&es9p_ctx, &b64_BoundProfilePackage, b64_prepare_download_response))
     {
-        jprint_error("es9p_GetBoundProfilePackage", es9p_ctx.statusCodeData.message);
+        jprint_error("es9p_get_bound_profile_package", es9p_ctx.statusCodeData.message);
         return -1;
     }
 
-    jprint_progress("es10b_LoadBoundProfilePackage");
-    if (es10b_LoadBoundProfilePackage(&euicc_ctx, &es10b_LoadBoundProfilePackage_result, b64_BoundProfilePackage))
+    jprint_progress("es10b_load_bound_profile_package");
+    if (es10b_load_bound_profile_package(&euicc_ctx, &es10b_LoadBoundProfilePackage_result, b64_BoundProfilePackage))
     {
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(es10b_LoadBoundProfilePackage_result.bppCommandId), euicc_errorreason2str(es10b_LoadBoundProfilePackage_result.errorReason));
-        jprint_error("es10b_LoadBoundProfilePackage", buffer);
+        jprint_error("es10b_load_bound_profile_package", buffer);
         return -1;
     }
 

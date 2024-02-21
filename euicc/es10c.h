@@ -58,12 +58,12 @@ struct es10c_profile_info_list
     struct es10c_profile_info_list *next;
 };
 
-int es10c_GetProfilesInfo(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList);
-int es10c_EnableProfile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag);
-int es10c_DisableProfile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag);
-int es10c_DeleteProfile(struct euicc_ctx *ctx, const char *id);
-int es10c_eUICCMemoryReset(struct euicc_ctx *ctx);
-int es10c_GetEID(struct euicc_ctx *ctx, char **eidValue);
-int es10c_SetNickname(struct euicc_ctx *ctx, const char *iccid, const char *profileNickname);
+int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList);
+int es10c_enable_profile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag);
+int es10c_disable_profile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag);
+int es10c_delete_profile(struct euicc_ctx *ctx, const char *id);
+int es10c_euicc_memory_reset(struct euicc_ctx *ctx);
+int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue);
+int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *profileNickname);
 
 void es10c_profile_info_free_all(struct es10c_profile_info_list *profileInfoList);

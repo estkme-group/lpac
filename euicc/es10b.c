@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <string.h>
 
-int es10b_PrepareDownload(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param)
+int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -222,59 +222,57 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
         {
         case 0xA0: // SuccessResult
             break;
-
         case 0xA1: // ErrorResult
-
-            if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, n_finalResult.value, n_finalResult.length) == 0) // bppCommandId
+            tmpnode.self.ptr = n_finalResult.value;
+            tmpnode.self.length = 0;
+            while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_finalResult.value, n_finalResult.length) == 0)
             {
-                int bppCommandId;
-
-                bppCommandId = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
-
-                switch (bppCommandId)
+                int tmpint;
+                switch (tmpnode.tag)
                 {
-                case ES10B_BPP_COMMAND_ID_INITIALISE_SECURE_CHANNEL:
-                case ES10B_BPP_COMMAND_ID_CONFIGURE_ISDP:
-                case ES10B_BPP_COMMAND_ID_STORE_METADATA:
-                case ES10B_BPP_COMMAND_ID_STORE_METADATA2:
-                case ES10B_BPP_COMMAND_ID_REPLACE_SESSION_KEYS:
-                case ES10B_BPP_COMMAND_ID_LOAD_PROFILE_ELEMENTS:
-                    result->bppCommandId = bppCommandId;
+                case 0x80:
+                    tmpint = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
+                    switch (tmpint)
+                    {
+                    case ES10B_BPP_COMMAND_ID_INITIALISE_SECURE_CHANNEL:
+                    case ES10B_BPP_COMMAND_ID_CONFIGURE_ISDP:
+                    case ES10B_BPP_COMMAND_ID_STORE_METADATA:
+                    case ES10B_BPP_COMMAND_ID_STORE_METADATA2:
+                    case ES10B_BPP_COMMAND_ID_REPLACE_SESSION_KEYS:
+                    case ES10B_BPP_COMMAND_ID_LOAD_PROFILE_ELEMENTS:
+                        result->bppCommandId = tmpint;
+                        break;
+                    default:
+                        result->bppCommandId = ES10B_BPP_COMMAND_ID_UNDEFINED;
+                        break;
+                    }
                     break;
-                default:
-                    result->bppCommandId = ES10B_BPP_COMMAND_ID_UNDEFINED;
-                    break;
-                }
-            }
-
-            if (euicc_derutil_unpack_find_tag(&tmpnode, 0x81, n_finalResult.value, n_finalResult.length) == 0) // errorReason
-            {
-                int errorReason;
-
-                errorReason = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
-
-                switch (errorReason)
-                {
-                case ES10B_ERROR_REASON_INCORRECT_INPUT_VALUES:
-                case ES10B_ERROR_REASON_INVALID_SIGNATURE:
-                case ES10B_ERROR_REASON_INVALID_TRANSACTION_ID:
-                case ES10B_ERROR_REASON_UNSUPPORTED_CRT_VALUES:
-                case ES10B_ERROR_REASON_UNSUPPORTED_REMOTE_OPERATION_TYPE:
-                case ES10B_ERROR_REASON_UNSUPPORTED_PROFILE_CLASS:
-                case ES10B_ERROR_REASON_SCP03T_STRUCTURE_ERROR:
-                case ES10B_ERROR_REASON_SCP03T_SECURITY_ERROR:
-                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_ALREADY_EXISTS_ON_EUICC:
-                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INSUFFICIENT_MEMORY_FOR_PROFILE:
-                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INTERRUPTION:
-                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_PE_PROCESSING_ERROR:
-                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_MISMATCH:
-                case ES10B_ERROR_REASON_TEST_PROFILE_INSTALL_FAILED_DUE_TO_INVALID_NAA_KEY:
-                case ES10B_ERROR_REASON_PPR_NOT_ALLOWED:
-                case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_UNKNOWN_ERROR:
-                    result->errorReason = errorReason;
-                    break;
-                default:
-                    result->errorReason = ES10B_ERROR_REASON_UNDEFINED;
+                case 0x81:
+                    tmpint = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
+                    switch (tmpint)
+                    {
+                    case ES10B_ERROR_REASON_INCORRECT_INPUT_VALUES:
+                    case ES10B_ERROR_REASON_INVALID_SIGNATURE:
+                    case ES10B_ERROR_REASON_INVALID_TRANSACTION_ID:
+                    case ES10B_ERROR_REASON_UNSUPPORTED_CRT_VALUES:
+                    case ES10B_ERROR_REASON_UNSUPPORTED_REMOTE_OPERATION_TYPE:
+                    case ES10B_ERROR_REASON_UNSUPPORTED_PROFILE_CLASS:
+                    case ES10B_ERROR_REASON_SCP03T_STRUCTURE_ERROR:
+                    case ES10B_ERROR_REASON_SCP03T_SECURITY_ERROR:
+                    case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_ALREADY_EXISTS_ON_EUICC:
+                    case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INSUFFICIENT_MEMORY_FOR_PROFILE:
+                    case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INTERRUPTION:
+                    case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_PE_PROCESSING_ERROR:
+                    case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_MISMATCH:
+                    case ES10B_ERROR_REASON_TEST_PROFILE_INSTALL_FAILED_DUE_TO_INVALID_NAA_KEY:
+                    case ES10B_ERROR_REASON_PPR_NOT_ALLOWED:
+                    case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_UNKNOWN_ERROR:
+                        result->errorReason = tmpint;
+                        break;
+                    default:
+                        result->errorReason = ES10B_ERROR_REASON_UNDEFINED;
+                        break;
+                    }
                     break;
                 }
             }
@@ -295,7 +293,7 @@ exit:
     return fret;
 }
 
-int es10b_LoadBoundProfilePackage(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage)
+int es10b_load_bound_profile_package(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage)
 {
     int fret = 0;
 
@@ -423,7 +421,7 @@ exit:
     return fret;
 }
 
-int es10b_GetEUICCChallenge(struct euicc_ctx *ctx, char **b64_euiccChallenge)
+int es10b_get_euicc_challenge(struct euicc_ctx *ctx, char **b64_euiccChallenge)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -478,7 +476,7 @@ exit:
     return fret;
 }
 
-int es10b_GetEUICCInfo(struct euicc_ctx *ctx, char **b64_EUICCInfo1)
+int es10b_get_euicc_info(struct euicc_ctx *ctx, char **b64_EUICCInfo1)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -528,7 +526,7 @@ exit:
     return fret;
 }
 
-int es10b_ListNotification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList)
+int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -657,7 +655,7 @@ exit:
     return fret;
 }
 
-int es10b_RetrieveNotificationsList(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification, unsigned long seqNumber)
+int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification, unsigned long seqNumber)
 {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
@@ -774,7 +772,7 @@ exit:
     return fret;
 }
 
-int es10b_RemoveNotificationFromList(struct euicc_ctx *ctx, unsigned long seqNumber)
+int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber)
 {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
@@ -835,7 +833,7 @@ exit:
     return fret;
 }
 
-int es10b_AuthenticateServer(struct euicc_ctx *ctx, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param)
+int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -1032,7 +1030,7 @@ exit:
     return fret;
 }
 
-int es10b_CancelSession(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param)
+int es10b_cancel_session(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param)
 {
     return -1;
 }

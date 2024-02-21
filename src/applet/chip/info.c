@@ -14,18 +14,18 @@ static int applet_main(int argc, char **argv)
 {
     char *eid = NULL;
     struct es10a_euicc_configured_addresses addresses;
-    struct es10c_ex_euiccinfo2 *euiccinfo2 = NULL;
+    struct es10c_ex_euiccinfo2 euiccinfo2;
     cJSON *jaddresses = NULL;
     cJSON *jeuiccinfo2 = NULL;
     cJSON *jdata = NULL;
 
-    if (es10c_GetEID(&euicc_ctx, &eid))
+    if (es10c_get_eid(&euicc_ctx, &eid))
     {
-        jprint_error("es10c_GetEID", NULL);
+        jprint_error("es10c_get_eid", NULL);
         return -1;
     }
 
-    if (es10a_GetEuiccConfiguredAddresses(&euicc_ctx, &addresses) == 0)
+    if (es10a_get_euicc_configured_addresses(&euicc_ctx, &addresses) == 0)
     {
         jaddresses = cJSON_CreateObject();
     }
@@ -49,77 +49,77 @@ static int applet_main(int argc, char **argv)
 
     if (jeuiccinfo2)
     {
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "profileVersion", euiccinfo2->profileVersion);
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "svn", euiccinfo2->svn);
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "euiccFirmwareVer", euiccinfo2->euiccFirmwareVer);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "profileVersion", euiccinfo2.profileVersion);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "svn", euiccinfo2.svn);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "euiccFirmwareVer", euiccinfo2.euiccFirmwareVer);
         {
             cJSON *jextCardResource = cJSON_CreateObject();
 
-            cJSON_AddNumberToObject(jextCardResource, "installedApplication", euiccinfo2->extCardResource.installedApplication);
-            cJSON_AddNumberToObject(jextCardResource, "freeNonVolatileMemory", euiccinfo2->extCardResource.freeNonVolatileMemory);
-            cJSON_AddNumberToObject(jextCardResource, "freeVolatileMemory", euiccinfo2->extCardResource.freeVolatileMemory);
+            cJSON_AddNumberToObject(jextCardResource, "installedApplication", euiccinfo2.extCardResource.installedApplication);
+            cJSON_AddNumberToObject(jextCardResource, "freeNonVolatileMemory", euiccinfo2.extCardResource.freeNonVolatileMemory);
+            cJSON_AddNumberToObject(jextCardResource, "freeVolatileMemory", euiccinfo2.extCardResource.freeVolatileMemory);
 
             cJSON_AddItemToObject(jeuiccinfo2, "extCardResource", jextCardResource);
         }
-        if (euiccinfo2->uiccCapability)
+        if (euiccinfo2.uiccCapability)
         {
             cJSON *juiccCapability = cJSON_CreateArray();
-            for (int i = 0; euiccinfo2->uiccCapability[i] != NULL; i++)
+            for (int i = 0; euiccinfo2.uiccCapability[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(juiccCapability, cJSON_CreateString(euiccinfo2->uiccCapability[i]));
+                cJSON_AddItemToArray(juiccCapability, cJSON_CreateString(euiccinfo2.uiccCapability[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "uiccCapability", juiccCapability);
         }
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "javacardVersion", euiccinfo2->javacardVersion);
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "globalplatformVersion", euiccinfo2->globalplatformVersion);
-        if (euiccinfo2->rspCapability)
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "javacardVersion", euiccinfo2.javacardVersion);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "globalplatformVersion", euiccinfo2.globalplatformVersion);
+        if (euiccinfo2.rspCapability)
         {
             cJSON *jrspCapability = cJSON_CreateArray();
-            for (int i = 0; euiccinfo2->rspCapability[i] != NULL; i++)
+            for (int i = 0; euiccinfo2.rspCapability[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(jrspCapability, cJSON_CreateString(euiccinfo2->rspCapability[i]));
+                cJSON_AddItemToArray(jrspCapability, cJSON_CreateString(euiccinfo2.rspCapability[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "rspCapability", jrspCapability);
         }
-        if (euiccinfo2->euiccCiPKIdListForVerification)
+        if (euiccinfo2.euiccCiPKIdListForVerification)
         {
             cJSON *verification_keys = cJSON_CreateArray();
-            for (int i = 0; euiccinfo2->euiccCiPKIdListForVerification[i] != NULL; i++)
+            for (int i = 0; euiccinfo2.euiccCiPKIdListForVerification[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(verification_keys, cJSON_CreateString(euiccinfo2->euiccCiPKIdListForVerification[i]));
+                cJSON_AddItemToArray(verification_keys, cJSON_CreateString(euiccinfo2.euiccCiPKIdListForVerification[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "euiccCiPKIdListForVerification", verification_keys);
         }
-        if (euiccinfo2->euiccCiPKIdListForSigning)
+        if (euiccinfo2.euiccCiPKIdListForSigning)
         {
             cJSON *signing_keys = cJSON_CreateArray();
-            for (int i = 0; euiccinfo2->euiccCiPKIdListForSigning[i] != NULL; i++)
+            for (int i = 0; euiccinfo2.euiccCiPKIdListForSigning[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(signing_keys, cJSON_CreateString(euiccinfo2->euiccCiPKIdListForSigning[i]));
+                cJSON_AddItemToArray(signing_keys, cJSON_CreateString(euiccinfo2.euiccCiPKIdListForSigning[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "euiccCiPKIdListForSigning", signing_keys);
         }
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "euiccCategory", euiccinfo2->euiccCategory);
-        if (euiccinfo2->forbiddenProfilePolicyRules)
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "euiccCategory", euiccinfo2.euiccCategory);
+        if (euiccinfo2.forbiddenProfilePolicyRules)
         {
             cJSON *jforbiddenProfilePolicyRules = cJSON_CreateArray();
-            for (int i = 0; euiccinfo2->forbiddenProfilePolicyRules[i] != NULL; i++)
+            for (int i = 0; euiccinfo2.forbiddenProfilePolicyRules[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(jforbiddenProfilePolicyRules, cJSON_CreateString(euiccinfo2->forbiddenProfilePolicyRules[i]));
+                cJSON_AddItemToArray(jforbiddenProfilePolicyRules, cJSON_CreateString(euiccinfo2.forbiddenProfilePolicyRules[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "forbiddenProfilePolicyRules", jforbiddenProfilePolicyRules);
         }
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "ppVersion", euiccinfo2->ppVersion);
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "sasAcreditationNumber", euiccinfo2->sasAcreditationNumber);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "ppVersion", euiccinfo2.ppVersion);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "sasAcreditationNumber", euiccinfo2.sasAcreditationNumber);
         {
             cJSON *jcertificationDataObject = cJSON_CreateObject();
 
-            cJSON_AddStringOrNullToObject(jcertificationDataObject, "platformLabel", euiccinfo2->certificationDataObject.platformLabel);
-            cJSON_AddStringOrNullToObject(jcertificationDataObject, "discoveryBaseURL", euiccinfo2->certificationDataObject.discoveryBaseURL);
+            cJSON_AddStringOrNullToObject(jcertificationDataObject, "platformLabel", euiccinfo2.certificationDataObject.platformLabel);
+            cJSON_AddStringOrNullToObject(jcertificationDataObject, "discoveryBaseURL", euiccinfo2.certificationDataObject.discoveryBaseURL);
 
             cJSON_AddItemToObject(jeuiccinfo2, "certificationDataObject", jcertificationDataObject);
         }
-        es10c_ex_euiccinfo2_free(euiccinfo2);
+        es10c_ex_euiccinfo2_free(&euiccinfo2);
     }
     cJSON_AddItemToObject(jdata, "EUICCInfo2", jeuiccinfo2);
 

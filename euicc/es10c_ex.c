@@ -18,7 +18,7 @@ static int _versiontype2str(char **out, const uint8_t *buffer, uint8_t buffer_le
     return asprintf(out, "%d.%d.%d", buffer[0], buffer[1], buffer[2]);
 }
 
-int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **euiccinfo2)
+int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *euiccinfo2)
 {
     int fret = 0;
     struct derutils_node n_request = {
@@ -30,7 +30,7 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
 
     struct derutils_node tmpnode, tmpchidnode, n_EUICCInfo2;
 
-    *euiccinfo2 = NULL;
+    memset(euiccinfo2, 0, sizeof(struct es10c_ex_euiccinfo2));
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request) < 0)
@@ -48,13 +48,6 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
         goto err;
     }
 
-    *euiccinfo2 = malloc(sizeof(struct es10c_ex_euiccinfo2));
-    if (!*euiccinfo2)
-    {
-        goto err;
-    }
-    memset(*euiccinfo2, 0, sizeof(struct es10c_ex_euiccinfo2));
-
     tmpnode.self.ptr = n_EUICCInfo2.value;
     tmpnode.self.length = 0;
     while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_EUICCInfo2.value, n_EUICCInfo2.length) == 0)
@@ -62,13 +55,13 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
         switch (tmpnode.tag)
         {
         case 0x81: // profileVersion
-            _versiontype2str(&(*euiccinfo2)->profileVersion, tmpnode.value, tmpnode.length);
+            _versiontype2str(&euiccinfo2->profileVersion, tmpnode.value, tmpnode.length);
             break;
         case 0x82: // svn
-            _versiontype2str(&(*euiccinfo2)->svn, tmpnode.value, tmpnode.length);
+            _versiontype2str(&euiccinfo2->svn, tmpnode.value, tmpnode.length);
             break;
         case 0x83: // euiccFirmwareVer
-            _versiontype2str(&(*euiccinfo2)->euiccFirmwareVer, tmpnode.value, tmpnode.length);
+            _versiontype2str(&euiccinfo2->euiccFirmwareVer, tmpnode.value, tmpnode.length);
             break;
         case 0x84: // extCardResource
             tmpchidnode.self.ptr = tmpnode.value;
@@ -78,13 +71,13 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
                 switch (tmpchidnode.tag)
                 {
                 case 0x81:
-                    (*euiccinfo2)->extCardResource.installedApplication = euicc_derutil_convert_bin2long(tmpchidnode.value, tmpchidnode.length);
+                    euiccinfo2->extCardResource.installedApplication = euicc_derutil_convert_bin2long(tmpchidnode.value, tmpchidnode.length);
                     break;
                 case 0x82:
-                    (*euiccinfo2)->extCardResource.freeNonVolatileMemory = euicc_derutil_convert_bin2long(tmpchidnode.value, tmpchidnode.length);
+                    euiccinfo2->extCardResource.freeNonVolatileMemory = euicc_derutil_convert_bin2long(tmpchidnode.value, tmpchidnode.length);
                     break;
                 case 0x83:
-                    (*euiccinfo2)->extCardResource.freeVolatileMemory = euicc_derutil_convert_bin2long(tmpchidnode.value, tmpchidnode.length);
+                    euiccinfo2->extCardResource.freeVolatileMemory = euicc_derutil_convert_bin2long(tmpchidnode.value, tmpchidnode.length);
                     break;
                 }
             }
@@ -93,23 +86,23 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
         {
             static const char *desc[] = {"contactlessSupport", "usimSupport", "isimSupport", "csimSupport", "akaMilenage", "akaCave", "akaTuak128", "akaTuak256", "rfu1", "rfu2", "gbaAuthenUsim", "gbaAuthenISim", "mbmsAuthenUsim", "eapClient", "javacard", "multos", "multipleUsimSupport", "multipleIsimSupport", "multipleCsimSupport"};
 
-            if (euicc_derutil_convert_bin2bits_str(&(*euiccinfo2)->uiccCapability, tmpnode.value, tmpnode.length, desc))
+            if (euicc_derutil_convert_bin2bits_str(&euiccinfo2->uiccCapability, tmpnode.value, tmpnode.length, desc))
             {
                 goto err;
             }
         }
         break;
         case 0x86: // javacardVersion
-            _versiontype2str(&(*euiccinfo2)->javacardVersion, tmpnode.value, tmpnode.length);
+            _versiontype2str(&euiccinfo2->javacardVersion, tmpnode.value, tmpnode.length);
             break;
         case 0x87: // globalplatformVersion
-            _versiontype2str(&(*euiccinfo2)->globalplatformVersion, tmpnode.value, tmpnode.length);
+            _versiontype2str(&euiccinfo2->globalplatformVersion, tmpnode.value, tmpnode.length);
             break;
         case 0x88: // rspCapability
         {
             static const char *desc[] = {"additionalProfile", "crlSupport", "rpmSupport", "testProfileSupport"};
 
-            if (euicc_derutil_convert_bin2bits_str(&(*euiccinfo2)->rspCapability, tmpnode.value, tmpnode.length, desc))
+            if (euicc_derutil_convert_bin2bits_str(&euiccinfo2->rspCapability, tmpnode.value, tmpnode.length, desc))
             {
                 goto err;
             }
@@ -127,25 +120,25 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
                 count++;
             }
 
-            (*euiccinfo2)->euiccCiPKIdListForVerification = malloc((count + 1) * sizeof(char *));
-            if (!(*euiccinfo2)->euiccCiPKIdListForVerification)
+            euiccinfo2->euiccCiPKIdListForVerification = malloc((count + 1) * sizeof(char *));
+            if (!euiccinfo2->euiccCiPKIdListForVerification)
             {
                 goto err;
             }
-            memset((*euiccinfo2)->euiccCiPKIdListForVerification, 0, (count + 1) * sizeof(char *));
+            memset(euiccinfo2->euiccCiPKIdListForVerification, 0, (count + 1) * sizeof(char *));
 
             tmpchidnode.self.ptr = tmpnode.value;
             tmpchidnode.self.length = 0;
             count = 0;
             while (euicc_derutil_unpack_next(&tmpchidnode, &tmpchidnode, tmpnode.value, tmpnode.length) == 0)
             {
-                (*euiccinfo2)->euiccCiPKIdListForVerification[count] = malloc((tmpchidnode.length * 2 + 1) * sizeof(char));
-                if (!(*euiccinfo2)->euiccCiPKIdListForVerification[count])
+                euiccinfo2->euiccCiPKIdListForVerification[count] = malloc((tmpchidnode.length * 2 + 1) * sizeof(char));
+                if (!euiccinfo2->euiccCiPKIdListForVerification[count])
                 {
                     goto err;
                 }
 
-                euicc_hexutil_bin2hex((*euiccinfo2)->euiccCiPKIdListForVerification[count], tmpchidnode.length * 2 + 1,
+                euicc_hexutil_bin2hex(euiccinfo2->euiccCiPKIdListForVerification[count], tmpchidnode.length * 2 + 1,
                                       tmpchidnode.value, tmpchidnode.length);
                 count++;
             }
@@ -163,25 +156,25 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
                 count++;
             }
 
-            (*euiccinfo2)->euiccCiPKIdListForSigning = malloc((count + 1) * sizeof(char *));
-            if (!(*euiccinfo2)->euiccCiPKIdListForSigning)
+            euiccinfo2->euiccCiPKIdListForSigning = malloc((count + 1) * sizeof(char *));
+            if (!euiccinfo2->euiccCiPKIdListForSigning)
             {
                 goto err;
             }
-            memset((*euiccinfo2)->euiccCiPKIdListForSigning, 0, (count + 1) * sizeof(char *));
+            memset(euiccinfo2->euiccCiPKIdListForSigning, 0, (count + 1) * sizeof(char *));
 
             tmpchidnode.self.ptr = tmpnode.value;
             tmpchidnode.self.length = 0;
             count = 0;
             while (euicc_derutil_unpack_next(&tmpchidnode, &tmpchidnode, tmpnode.value, tmpnode.length) == 0)
             {
-                (*euiccinfo2)->euiccCiPKIdListForSigning[count] = malloc((tmpchidnode.length * 2 + 1) * sizeof(char));
-                if (!(*euiccinfo2)->euiccCiPKIdListForSigning[count])
+                euiccinfo2->euiccCiPKIdListForSigning[count] = malloc((tmpchidnode.length * 2 + 1) * sizeof(char));
+                if (!euiccinfo2->euiccCiPKIdListForSigning[count])
                 {
                     goto err;
                 }
 
-                euicc_hexutil_bin2hex((*euiccinfo2)->euiccCiPKIdListForSigning[count], tmpchidnode.length * 2 + 1,
+                euicc_hexutil_bin2hex(euiccinfo2->euiccCiPKIdListForSigning[count], tmpchidnode.length * 2 + 1,
                                       tmpchidnode.value, tmpchidnode.length);
                 count++;
             }
@@ -192,17 +185,17 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
             switch (euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length))
             {
             case 1:
-                (*euiccinfo2)->euiccCategory = "basicEuicc";
+                euiccinfo2->euiccCategory = "basicEuicc";
                 break;
             case 2:
-                (*euiccinfo2)->euiccCategory = "mediumEuicc";
+                euiccinfo2->euiccCategory = "mediumEuicc";
                 break;
             case 3:
-                (*euiccinfo2)->euiccCategory = "contactlessEuicc";
+                euiccinfo2->euiccCategory = "contactlessEuicc";
                 break;
             case 0:
             default:
-                (*euiccinfo2)->euiccCategory = "other";
+                euiccinfo2->euiccCategory = "other";
                 break;
             }
         }
@@ -210,23 +203,23 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
         {
             static const char *desc[] = {"pprUpdateControl", "ppr1", "ppr2", "ppr3"};
 
-            if (euicc_derutil_convert_bin2bits_str(&(*euiccinfo2)->forbiddenProfilePolicyRules, tmpnode.value, tmpnode.length, desc))
+            if (euicc_derutil_convert_bin2bits_str(&euiccinfo2->forbiddenProfilePolicyRules, tmpnode.value, tmpnode.length, desc))
             {
                 goto err;
             }
         }
         break;
         case 0x04: // ppVersion
-            _versiontype2str(&(*euiccinfo2)->ppVersion, tmpnode.value, tmpnode.length);
+            _versiontype2str(&euiccinfo2->ppVersion, tmpnode.value, tmpnode.length);
             break;
         case 0x0C: // sasAcreditationNumber
-            (*euiccinfo2)->sasAcreditationNumber = malloc(tmpnode.length + 1);
-            if (!(*euiccinfo2)->sasAcreditationNumber)
+            euiccinfo2->sasAcreditationNumber = malloc(tmpnode.length + 1);
+            if (!euiccinfo2->sasAcreditationNumber)
             {
                 goto err;
             }
-            memcpy((*euiccinfo2)->sasAcreditationNumber, tmpnode.value, tmpnode.length);
-            (*euiccinfo2)->sasAcreditationNumber[tmpnode.length] = 0;
+            memcpy(euiccinfo2->sasAcreditationNumber, tmpnode.value, tmpnode.length);
+            euiccinfo2->sasAcreditationNumber[tmpnode.length] = 0;
             break;
         case 0xAC: // certificationDataObject
             tmpchidnode.self.ptr = tmpnode.value;
@@ -236,22 +229,22 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
                 switch (tmpchidnode.tag)
                 {
                 case 0x80:
-                    (*euiccinfo2)->certificationDataObject.platformLabel = malloc(tmpchidnode.length + 1);
-                    if (!(*euiccinfo2)->certificationDataObject.platformLabel)
+                    euiccinfo2->certificationDataObject.platformLabel = malloc(tmpchidnode.length + 1);
+                    if (!euiccinfo2->certificationDataObject.platformLabel)
                     {
                         goto err;
                     }
-                    memcpy((*euiccinfo2)->certificationDataObject.platformLabel, tmpchidnode.value, tmpchidnode.length);
-                    (*euiccinfo2)->certificationDataObject.platformLabel[tmpchidnode.length] = 0;
+                    memcpy(euiccinfo2->certificationDataObject.platformLabel, tmpchidnode.value, tmpchidnode.length);
+                    euiccinfo2->certificationDataObject.platformLabel[tmpchidnode.length] = 0;
                     break;
                 case 0x81:
-                    (*euiccinfo2)->certificationDataObject.discoveryBaseURL = malloc(tmpchidnode.length + 1);
-                    if (!(*euiccinfo2)->certificationDataObject.discoveryBaseURL)
+                    euiccinfo2->certificationDataObject.discoveryBaseURL = malloc(tmpchidnode.length + 1);
+                    if (!euiccinfo2->certificationDataObject.discoveryBaseURL)
                     {
                         goto err;
                     }
-                    memcpy((*euiccinfo2)->certificationDataObject.discoveryBaseURL, tmpchidnode.value, tmpchidnode.length);
-                    (*euiccinfo2)->certificationDataObject.discoveryBaseURL[tmpchidnode.length] = 0;
+                    memcpy(euiccinfo2->certificationDataObject.discoveryBaseURL, tmpchidnode.value, tmpchidnode.length);
+                    euiccinfo2->certificationDataObject.discoveryBaseURL[tmpchidnode.length] = 0;
                     break;
                 }
             }
@@ -264,7 +257,7 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 **
 
 err:
     fret = -1;
-    es10c_ex_euiccinfo2_free(*euiccinfo2);
+    es10c_ex_euiccinfo2_free(euiccinfo2);
 exit:
     free(respbuf);
     respbuf = NULL;
@@ -278,6 +271,13 @@ void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2)
         return;
     }
 
+    free(euiccinfo2->profileVersion);
+    free(euiccinfo2->svn);
+    free(euiccinfo2->euiccFirmwareVer);
+    free(euiccinfo2->uiccCapability);
+    free(euiccinfo2->javacardVersion);
+    free(euiccinfo2->globalplatformVersion);
+    free(euiccinfo2->rspCapability);
     if (euiccinfo2->euiccCiPKIdListForVerification)
     {
         for (int i = 0; euiccinfo2->euiccCiPKIdListForVerification[i] != NULL; i++)
@@ -286,7 +286,6 @@ void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2)
         }
         free(euiccinfo2->euiccCiPKIdListForVerification);
     }
-
     if (euiccinfo2->euiccCiPKIdListForSigning)
     {
         for (int i = 0; euiccinfo2->euiccCiPKIdListForSigning[i] != NULL; i++)
@@ -295,12 +294,9 @@ void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2)
         }
         free(euiccinfo2->euiccCiPKIdListForSigning);
     }
-
-    free(euiccinfo2->uiccCapability);
-    free(euiccinfo2->rspCapability);
     free(euiccinfo2->forbiddenProfilePolicyRules);
+    free(euiccinfo2->ppVersion);
+    free(euiccinfo2->sasAcreditationNumber);
     free(euiccinfo2->certificationDataObject.discoveryBaseURL);
     free(euiccinfo2->certificationDataObject.platformLabel);
-
-    free(euiccinfo2);
 }

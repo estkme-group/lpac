@@ -13,9 +13,9 @@ static int applet_main(int argc, char **argv)
     struct es10b_notification_metadata_list *notifications, *rptr;
     cJSON *jdata = NULL;
 
-    if (es10b_ListNotification(&euicc_ctx, &notifications))
+    if (es10b_list_notification(&euicc_ctx, &notifications))
     {
-        jprint_error("es10b_ListNotification", NULL);
+        jprint_error("es10b_list_notification", NULL);
         return -1;
     }
 

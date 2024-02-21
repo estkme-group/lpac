@@ -24,7 +24,7 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
-    if ((ret = es10c_eUICCMemoryReset(&euicc_ctx)))
+    if ((ret = es10c_euicc_memory_reset(&euicc_ctx)))
     {
         const char *reason;
         switch (ret)
@@ -36,7 +36,7 @@ static int applet_main(int argc, char **argv)
             reason = "unknown";
             break;
         }
-        jprint_error("es10c_eUICCMemoryReset", reason);
+        jprint_error("es10c_euicc_memory_reset", reason);
         return -1;
     }
 

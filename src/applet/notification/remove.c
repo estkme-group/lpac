@@ -20,7 +20,7 @@ static int applet_main(int argc, char **argv)
 
     seqNumber = atol(argv[1]);
 
-    if ((ret = es10b_RemoveNotificationFromList(&euicc_ctx, seqNumber)))
+    if ((ret = es10b_remove_notification_from_list(&euicc_ctx, seqNumber)))
     {
         const char *reason;
         switch (ret)
@@ -32,7 +32,7 @@ static int applet_main(int argc, char **argv)
             reason = "unknown";
             break;
         }
-        jprint_error("es10b_RemoveNotificationFromList", reason);
+        jprint_error("es10b_remove_notification_from_list", reason);
         return -1;
     }
 

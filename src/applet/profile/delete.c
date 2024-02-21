@@ -20,7 +20,7 @@ static int applet_main(int argc, char **argv)
 
     param = argv[1];
 
-    ret = es10c_DeleteProfile(&euicc_ctx, param);
+    ret = es10c_delete_profile(&euicc_ctx, param);
 
     if (ret)
     {

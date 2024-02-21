@@ -28,7 +28,7 @@ static int applet_main(int argc, char **argv)
         refreshflag = atoi(argv[2]);
     }
 
-    ret = es10c_EnableProfile(&euicc_ctx, param, refreshflag);
+    ret = es10c_enable_profile(&euicc_ctx, param, refreshflag);
 
     if (ret)
     {

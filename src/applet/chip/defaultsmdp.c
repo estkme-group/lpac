@@ -19,9 +19,9 @@ static int applet_main(int argc, char **argv)
 
     smdp = argv[1];
 
-    if (es10a_SetDefaultDpAddress(&euicc_ctx, smdp))
+    if (es10a_set_default_dp_address(&euicc_ctx, smdp))
     {
-        jprint_error("es10a_SetDefaultDpAddress", NULL);
+        jprint_error("es10a_set_default_dp_address", NULL);
         return -1;
     }
 
