@@ -362,7 +362,7 @@ int euicc_derutil_convert_bin2bits_str(const char ***output, const uint8_t *buff
 {
     int max_cap_len = 0;
     int flags_reg;
-    int flags_count;
+    int flags_count = 0;
     const char **wptr;
     char unused;
 
