@@ -9,9 +9,9 @@
 static FILE *fuart;
 static int logic_channel = 0;
 
-static int hexutil_hex2bin(unsigned char *output, unsigned output_len, const char *str, unsigned str_len)
+static int hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len)
 {
-    int length;
+    uint32_t length;
 
     if (!str || !output || str_len % 2 != 0)
     {
@@ -24,7 +24,7 @@ static int hexutil_hex2bin(unsigned char *output, unsigned output_len, const cha
         return -1;
     }
 
-    for (int i = 0; i < length; ++i)
+    for (uint32_t i = 0; i < length; ++i)
     {
         char high = str[2 * i];
         char low = str[2 * i + 1];
@@ -162,7 +162,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     }
 
     fprintf(fuart, "AT+CGLA=%d,%u,\"", logic_channel, tx_len * 2);
-    for (int i = 0; i < tx_len; i++)
+    for (uint32_t i = 0; i < tx_len; i++)
     {
         fprintf(fuart, "%02X", (uint8_t)(tx[i] & 0xFF));
     }

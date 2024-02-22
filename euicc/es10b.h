@@ -87,8 +87,8 @@ struct es10b_authenticate_server_param
 
 struct es10b_cancel_session_param
 {
-    const unsigned char *transactionId;
-    unsigned char transactionIdLen;
+    const uint8_t *transactionId;
+    uint8_t transactionIdLen;
     enum es10b_cancel_session_reason
     {
         ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION = 0,

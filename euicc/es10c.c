@@ -14,14 +14,14 @@
 int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList)
 {
     int fret = 0;
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF2D, // ProfileInfoListRequest
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode, n_profileInfoListOk, n_ProfileInfo;
+    struct euicc_derutil_node tmpnode, n_profileInfoListOk, n_ProfileInfo;
 
     struct es10c_profile_info_list *list_wptr;
 
@@ -163,7 +163,7 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
             case 0xB8:
             case 0x99:
                 fprintf(stderr, "\n[PLEASE REPORT][TODO][TAG %02X]: ", tmpnode.tag);
-                for (int i = 0; i < tmpnode.self.length; i++)
+                for (uint32_t i = 0; i < tmpnode.self.length; i++)
                 {
                     fprintf(stderr, "%02X ", tmpnode.self.ptr[i]);
                 }
@@ -200,13 +200,12 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     int fret = 0;
     uint8_t id[16];
     int id_len;
-    uint16_t id_tag;
-    struct derutils_node n_request;
+    struct euicc_derutil_node n_request;
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode, n_profileIdentifierChoice;
+    struct euicc_derutil_node tmpnode, n_profileIdentifierChoice;
 
     memset(&n_profileIdentifierChoice, 0, sizeof(n_profileIdentifierChoice));
 
@@ -229,22 +228,22 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     n_profileIdentifierChoice.length = id_len;
     n_profileIdentifierChoice.value = id;
 
-    if (0b10000000 & refreshFlag)
+    if (refreshFlag & 0x80)
     {
-        refreshFlag &= 0b01111111;
+        refreshFlag &= 0x7F;
 
         if (refreshFlag)
         {
             refreshFlag = 0xFF;
         }
 
-        n_request = (struct derutils_node){
+        n_request = (struct euicc_derutil_node){
             .pack = {
-                .child = &(struct derutils_node){
+                .child = &(struct euicc_derutil_node){
                     .tag = 0xA0, // profileIdentifier
                     .pack = {
                         .child = &n_profileIdentifierChoice,
-                        .next = &(struct derutils_node){
+                        .next = &(struct euicc_derutil_node){
                             .tag = 0x81, // refreshFlag
                             .length = 1,
                             .value = &refreshFlag,
@@ -256,7 +255,7 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     }
     else
     {
-        n_request = (struct derutils_node){
+        n_request = (struct euicc_derutil_node){
             .pack = {
                 .child = &n_profileIdentifierChoice,
             },
@@ -297,28 +296,28 @@ exit:
     return fret;
 }
 
-int es10c_enable_profile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag)
+int es10c_enable_profile(struct euicc_ctx *ctx, const char *id, uint8_t refreshFlag)
 {
     if (refreshFlag)
     {
-        refreshFlag = 0b11111111;
+        refreshFlag = 0xFF;
     }
     else
     {
-        refreshFlag = 0b10000000;
+        refreshFlag = 0x80;
     }
     return es10c_enable_disable_delete_profile(ctx, 0xBF31, id, refreshFlag);
 }
 
-int es10c_disable_profile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag)
+int es10c_disable_profile(struct euicc_ctx *ctx, const char *id, uint8_t refreshFlag)
 {
     if (refreshFlag)
     {
-        refreshFlag = 0b11111111;
+        refreshFlag = 0xFF;
     }
     else
     {
-        refreshFlag = 0b10000000;
+        refreshFlag = 0x80;
     }
     return es10c_enable_disable_delete_profile(ctx, 0xBF32, id, refreshFlag);
 }
@@ -332,10 +331,10 @@ int es10c_euicc_memory_reset(struct euicc_ctx *ctx)
 {
     int fret = 0;
     uint8_t resetOptions[2];
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF34, // EuiccMemoryResetRequest
         .pack = {
-            .child = &(struct derutils_node){
+            .child = &(struct euicc_derutil_node){
                 .tag = 0x82, // resetOptions
                 .length = sizeof(resetOptions),
                 .value = resetOptions,
@@ -346,7 +345,7 @@ int es10c_euicc_memory_reset(struct euicc_ctx *ctx)
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode;
+    struct euicc_derutil_node tmpnode;
 
     if (euicc_derutil_convert_bits2bin(resetOptions, sizeof(resetOptions), (const uint32_t[]){0, 1, 2}, 3) < 0)
     {
@@ -389,10 +388,10 @@ exit:
 int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue)
 {
     int fret = 0;
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF3E, // GetEuiccDataRequest
         .pack = {
-            .child = &(struct derutils_node){
+            .child = &(struct euicc_derutil_node){
                 .tag = 0x5C, // tagList
                 .length = 1,
                 .value = (uint8_t[]){0x5A},
@@ -403,7 +402,7 @@ int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue)
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode;
+    struct euicc_derutil_node tmpnode;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
@@ -450,15 +449,15 @@ int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *pro
 {
     int fret = 0;
     uint8_t asn1iccid[10];
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF29, // SetNicknameRequest
         .pack = {
-            .child = &(struct derutils_node){
+            .child = &(struct euicc_derutil_node){
                 .tag = 0x5A, // iccid
                 .length = sizeof(asn1iccid),
                 .value = asn1iccid,
                 .pack = {
-                    .next = &(struct derutils_node){
+                    .next = &(struct euicc_derutil_node){
                         .tag = 0x90, // profileNickname
                         .length = strlen(profileNickname),
                         .value = (const uint8_t *)profileNickname,
@@ -471,7 +470,7 @@ int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *pro
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode;
+    struct euicc_derutil_node tmpnode;
 
     if (euicc_hexutil_gsmbcd2bin(asn1iccid, sizeof(asn1iccid), iccid) < 0)
     {

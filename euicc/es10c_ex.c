@@ -21,14 +21,14 @@ static int _versiontype2str(char **out, const uint8_t *buffer, uint8_t buffer_le
 int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *euiccinfo2)
 {
     int fret = 0;
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF22, // GetEuiccInfo2Request
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode, tmpchidnode, n_EUICCInfo2;
+    struct euicc_derutil_node tmpnode, tmpchidnode, n_EUICCInfo2;
 
     memset(euiccinfo2, 0, sizeof(struct es10c_ex_euiccinfo2));
 
@@ -199,6 +199,7 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *e
                 break;
             }
         }
+        break;
         case 0x99: // forbiddenProfilePolicyRules
         {
             static const char *desc[] = {"pprUpdateControl", "ppr1", "ppr2", "ppr3"};

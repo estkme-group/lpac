@@ -9,9 +9,9 @@ struct es10c_ex_euiccinfo2
     char *euiccFirmwareVer;
     struct
     {
-        unsigned int installedApplication;
-        unsigned int freeNonVolatileMemory;
-        unsigned int freeVolatileMemory;
+        uint32_t installedApplication;
+        uint32_t freeNonVolatileMemory;
+        uint32_t freeVolatileMemory;
     } extCardResource;
     const char **uiccCapability;
     char *javacardVersion;

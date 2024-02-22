@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int euicc_hexutil_bin2hex(char *output, unsigned output_len, const unsigned char *bin, int bin_len)
+int euicc_hexutil_bin2hex(char *output, uint32_t output_len, const uint8_t *bin, uint32_t bin_len)
 {
     const char hexDigits[] = "0123456789abcdef";
 
@@ -18,7 +18,7 @@ int euicc_hexutil_bin2hex(char *output, unsigned output_len, const unsigned char
         return -1;
     }
 
-    for (int i = 0; i < bin_len; ++i)
+    for (uint32_t i = 0; i < bin_len; ++i)
     {
         char byte = bin[i];
         output[2 * i] = hexDigits[(byte >> 4) & 0x0F];
@@ -29,14 +29,14 @@ int euicc_hexutil_bin2hex(char *output, unsigned output_len, const unsigned char
     return 0;
 }
 
-int euicc_hexutil_hex2bin(unsigned char *output, unsigned output_len, const char *str)
+int euicc_hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *str)
 {
     return euicc_hexutil_hex2bin_r(output, output_len, str, strlen(str));
 }
 
-int euicc_hexutil_hex2bin_r(unsigned char *output, unsigned output_len, const char *str, unsigned str_len)
+int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len)
 {
-    int length;
+    uint32_t length;
 
     if (!str || !output || str_len % 2 != 0)
     {
@@ -49,7 +49,7 @@ int euicc_hexutil_hex2bin_r(unsigned char *output, unsigned output_len, const ch
         return -1;
     }
 
-    for (int i = 0; i < length; ++i)
+    for (uint32_t i = 0; i < length; ++i)
     {
         char high = str[2 * i];
         char low = str[2 * i + 1];
@@ -94,10 +94,10 @@ int euicc_hexutil_hex2bin_r(unsigned char *output, unsigned output_len, const ch
     return length;
 }
 
-int euicc_hexutil_gsmbcd2bin(unsigned char *output, unsigned output_len, const char *str)
+int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *str)
 {
-    unsigned str_length;
-    unsigned idx = 0;
+    uint32_t str_length;
+    uint32_t idx = 0;
 
     str_length = strlen(str);
 
@@ -106,7 +106,7 @@ int euicc_hexutil_gsmbcd2bin(unsigned char *output, unsigned output_len, const c
         return -1;
     }
 
-    for (unsigned i = 0; i < str_length; i += 2)
+    for (uint32_t i = 0; i < str_length; i += 2)
     {
         char high_nibble = (i + 1 < str_length) ? str[i + 1] : 'F';
         char low_nibble = str[i];
@@ -135,7 +135,7 @@ int euicc_hexutil_gsmbcd2bin(unsigned char *output, unsigned output_len, const c
     return idx;
 }
 
-int euicc_hexutil_bin2gsmbcd(char *output, unsigned output_len, const unsigned char *binData, int length)
+int euicc_hexutil_bin2gsmbcd(char *output, uint32_t output_len, const uint8_t *binData, uint32_t length)
 {
     int j = 0;
 
@@ -145,7 +145,7 @@ int euicc_hexutil_bin2gsmbcd(char *output, unsigned output_len, const unsigned c
     }
 
     length = strlen(output);
-    for (int i = 0; i < length - 1; i += 2)
+    for (uint32_t i = 0; i < length - 1; i += 2)
     {
         char temp = output[i];
         output[j++] = output[i + 1];

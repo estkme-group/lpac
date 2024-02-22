@@ -8,7 +8,7 @@
 
 #include <euicc/interface.h>
 
-static int hexutil_bin2hex(char *output, unsigned output_len, const unsigned char *bin, int bin_len)
+static int hexutil_bin2hex(char *output, uint32_t output_len, const uint8_t *bin, uint32_t bin_len)
 {
     const char hexDigits[] = "0123456789abcdef";
 
@@ -17,12 +17,12 @@ static int hexutil_bin2hex(char *output, unsigned output_len, const unsigned cha
         return -1;
     }
 
-    if (output_len < 2 * bin_len + 1)
+    if (output_len < (2 * bin_len + 1))
     {
         return -1;
     }
 
-    for (int i = 0; i < bin_len; ++i)
+    for (uint32_t i = 0; i < bin_len; ++i)
     {
         char byte = bin[i];
         output[2 * i] = hexDigits[(byte >> 4) & 0x0F];
@@ -33,9 +33,9 @@ static int hexutil_bin2hex(char *output, unsigned output_len, const unsigned cha
     return 0;
 }
 
-static int hexutil_hex2bin(unsigned char *output, unsigned output_len, const char *str, unsigned str_len)
+static int hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len)
 {
-    int length;
+    uint32_t length;
 
     if (!str || !output || str_len % 2 != 0)
     {
@@ -48,7 +48,7 @@ static int hexutil_hex2bin(unsigned char *output, unsigned output_len, const cha
         return -1;
     }
 
-    for (int i = 0; i < length; ++i)
+    for (uint32_t i = 0; i < length; ++i)
     {
         char high = str[2 * i];
         char low = str[2 * i + 1];
@@ -96,7 +96,7 @@ static int hexutil_hex2bin(unsigned char *output, unsigned output_len, const cha
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)
 {
-    unsigned int len = 0;
+    uint32_t len = 0;
     char buffer[2];
     char *obuf_new = NULL;
 
@@ -109,7 +109,7 @@ static int afgets(char **obuf, FILE *fp)
 
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
     {
-        unsigned int fgets_len = strlen(buffer);
+        uint32_t fgets_len = strlen(buffer);
 
         len += fgets_len + 1;
         obuf_new = realloc(*obuf, len);

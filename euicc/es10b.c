@@ -25,7 +25,7 @@ int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_PrepareDownloadResp
 
     uint8_t *smdpSigned2 = NULL, *smdpSignature2 = NULL, *smdpCertificate = NULL;
     int smdpSigned2_len, smdpSignature2_len, smdpCertificate_len;
-    struct derutils_node n_request, n_smdpSigned2, n_smdpSignature2, n_smdpCertificate, n_hashCc, n_transactionId, n_ccRequiredFlag;
+    struct euicc_derutil_node n_request, n_smdpSigned2, n_smdpSignature2, n_smdpCertificate, n_hashCc, n_transactionId, n_ccRequiredFlag;
 
     *b64_PrepareDownloadResponse = NULL;
 
@@ -196,7 +196,7 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
 
     if (resplen > 0)
     {
-        struct derutils_node tmpnode, n_finalResult;
+        struct euicc_derutil_node tmpnode, n_finalResult;
 
         if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF37, respbuf, resplen) < 0) // ProfileInstallationResult
         {
@@ -303,7 +303,7 @@ int es10b_load_bound_profile_package(struct euicc_ctx *ctx, struct es10b_load_bo
     const uint8_t *reqbuf;
     int reqbuf_len;
 
-    struct derutils_node tmpnode, tmpchildnode, n_BoundProfilePackage;
+    struct euicc_derutil_node tmpnode, tmpchildnode, n_BoundProfilePackage;
 
     bpp = malloc(euicc_base64_decode_len(b64_BoundProfilePackage));
     if (!bpp)
@@ -424,14 +424,14 @@ exit:
 int es10b_get_euicc_challenge(struct euicc_ctx *ctx, char **b64_euiccChallenge)
 {
     int fret = 0;
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF2E, // GetEuiccDataRequest
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode;
+    struct euicc_derutil_node tmpnode;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
@@ -479,14 +479,14 @@ exit:
 int es10b_get_euicc_info(struct euicc_ctx *ctx, char **b64_EUICCInfo1)
 {
     int fret = 0;
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF20, // GetEuiccInfo1Request
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode;
+    struct euicc_derutil_node tmpnode;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
@@ -529,14 +529,14 @@ exit:
 int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList)
 {
     int fret = 0;
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF28, // ListNotificationRequest
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode, n_notificationMetadataList, n_NotificationMetadata;
+    struct euicc_derutil_node tmpnode, n_notificationMetadataList, n_NotificationMetadata;
 
     struct es10b_notification_metadata_list *list_wptr;
 
@@ -660,12 +660,12 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
     uint32_t seqNumber_buf_len = sizeof(seqNumber_buf);
-    struct derutils_node n_request;
+    struct euicc_derutil_node n_request;
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode, n_PendingNotification, n_NotificationMetadata;
+    struct euicc_derutil_node tmpnode, n_PendingNotification, n_NotificationMetadata;
 
     memset(PendingNotification, 0, sizeof(struct es10b_pending_notification));
 
@@ -674,13 +674,13 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
         goto err;
     }
 
-    n_request = (struct derutils_node){
+    n_request = (struct euicc_derutil_node){
         .tag = 0xBF2B, // RetrieveNotificationsListRequest
         .pack = {
-            .child = &(struct derutils_node){
+            .child = &(struct euicc_derutil_node){
                 .tag = 0xA0, // searchCriteria
                 .pack = {
-                    .child = &(struct derutils_node){
+                    .child = &(struct euicc_derutil_node){
                         .tag = 0x80, // seqNumber
                         .length = seqNumber_buf_len,
                         .value = seqNumber_buf,
@@ -777,22 +777,22 @@ int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seq
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
     uint32_t seqNumber_buf_len = sizeof(seqNumber_buf);
-    struct derutils_node n_request;
+    struct euicc_derutil_node n_request;
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode;
+    struct euicc_derutil_node tmpnode;
 
     if (euicc_derutil_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
     {
         goto err;
     }
 
-    n_request = (struct derutils_node){
+    n_request = (struct euicc_derutil_node){
         .tag = 0xBF30, // NotificationSentRequest
         .pack = {
-            .child = &(struct derutils_node){
+            .child = &(struct euicc_derutil_node){
                 .tag = 0x80, // seqNumber
                 .length = seqNumber_buf_len,
                 .value = seqNumber_buf,
@@ -842,10 +842,9 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_AuthenticateServ
     unsigned resplen;
 
     uint8_t imei[8];
-    int imei_len;
     uint8_t *serverSigned1 = NULL, *serverSignature1 = NULL, *euiccCiPKIdToBeUsed = NULL, *serverCertificate = NULL;
     int serverSigned1_len, serverSignature1_len, euiccCiPKIdToBeUsed_len, serverCertificate_len;
-    struct derutils_node n_request, n_serverSigned1, n_serverSignature1, n_euiccCiPKIdToBeUsed, n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
+    struct euicc_derutil_node n_request, n_serverSigned1, n_serverSignature1, n_euiccCiPKIdToBeUsed, n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
 
     *b64_AuthenticateServerResponse = NULL;
 
@@ -860,18 +859,6 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_AuthenticateServ
     memset(&n_tac, 0, sizeof(n_tac));
     memset(&n_deviceCapabilities, 0, sizeof(n_deviceCapabilities));
     memset(&n_imei, 0, sizeof(n_imei));
-
-    if (param->imei)
-    {
-        if ((imei_len = euicc_hexutil_gsmbcd2bin(imei, sizeof(imei), param->imei)) < 0)
-        {
-            goto err;
-        }
-    }
-    else
-    {
-        memcpy(imei, "\x35\x29\x06\x11", 4);
-    }
 
     serverSigned1 = malloc(euicc_base64_decode_len(param->b64_serverSigned1));
     if (!serverSigned1)
@@ -954,10 +941,22 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_AuthenticateServ
     n_deviceCapabilities.tag = 0xA1;
     if (param->imei)
     {
+        int imei_len;
+
+        imei_len = euicc_hexutil_gsmbcd2bin(imei, sizeof(imei), param->imei);
+        if (imei_len < 0)
+        {
+            goto err;
+        }
+
         n_deviceCapabilities.pack.next = &n_imei;
         n_imei.tag = 0x82;
         n_imei.value = imei;
         n_imei.length = imei_len;
+    }
+    else
+    {
+        memcpy(imei, (uint8_t[]){0x35, 0x29, 0x06, 0x11}, 4);
     }
 
     if (param->matchingId)

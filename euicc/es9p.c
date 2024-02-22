@@ -13,7 +13,7 @@ static const char *lpa_header[] = {
     NULL,
 };
 
-static int es9p_trans_ex(struct es9p_ctx *ctx, const char *url, const char *url_postfix, unsigned int *rcode, char **str_rx, const char *str_tx)
+static int es9p_trans_ex(struct es9p_ctx *ctx, const char *url, const char *url_postfix, uint32_t *rcode, char **str_rx, const char *str_tx)
 {
     int fret = 0;
     uint32_t rcode_mearged;
@@ -83,7 +83,7 @@ static int es9p_trans_json(struct es9p_ctx *ctx, const char *smdp, const char *a
     int fret = 0;
     cJSON *sjroot = NULL;
     char *sbuf = NULL;
-    unsigned int rcode;
+    uint32_t rcode;
     char *rbuf = NULL;
     cJSON *rjroot = NULL, *rjheader = NULL, *rjfunctionExecutionStatus = NULL;
 

@@ -13,14 +13,14 @@
 int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, struct es10a_euicc_configured_addresses *address)
 {
     int fret = 0;
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF3C, // EuiccConfiguredAddressesRequest
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode, n_Response;
+    struct euicc_derutil_node tmpnode, n_Response;
 
     memset(address, 0, sizeof(*address));
 
@@ -77,10 +77,10 @@ exit:
 int es10a_set_default_dp_address(struct euicc_ctx *ctx, const char *smdp)
 {
     int fret = 0;
-    struct derutils_node n_request = {
+    struct euicc_derutil_node n_request = {
         .tag = 0xBF3F, // SetDefaultDpAddressRequest
         .pack = {
-            .child = &(struct derutils_node){
+            .child = &(struct euicc_derutil_node){
                 .tag = 0x80,
                 .length = strlen(smdp),
                 .value = (const uint8_t *)smdp,
@@ -91,7 +91,7 @@ int es10a_set_default_dp_address(struct euicc_ctx *ctx, const char *smdp)
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct derutils_node tmpnode;
+    struct euicc_derutil_node tmpnode;
 
     reqlen = sizeof(ctx->apdu_request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))

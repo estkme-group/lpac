@@ -7,6 +7,8 @@ project (lpac
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+# add_compile_options(-Wall -Wextra -Wpedantic)
+
 if (APPLE)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 endif()

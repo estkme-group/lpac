@@ -13,6 +13,7 @@ const char *euicc_profilestate2str(enum es10c_profile_state value)
     case ES10C_PROFILE_STATE_UNDEFINED:
         return "unknown";
     }
+    return "(no_str_available)";
 }
 
 const char *euicc_profileclass2str(enum es10c_profile_class value)
@@ -30,6 +31,7 @@ const char *euicc_profileclass2str(enum es10c_profile_class value)
     case ES10C_PROFILE_CLASS_UNDEFINED:
         return "unknown";
     }
+    return "(no_str_available)";
 }
 
 const char *euicc_icontype2str(enum es10c_icon_type value)
@@ -45,6 +47,7 @@ const char *euicc_icontype2str(enum es10c_icon_type value)
     case ES10C_ICON_TYPE_UNDEFINED:
         return "unknown";
     }
+    return "(no_str_available)";
 }
 
 const char *euicc_profilemanagementoperation2str(enum es10b_profile_management_operation value)
@@ -64,6 +67,7 @@ const char *euicc_profilemanagementoperation2str(enum es10b_profile_management_o
     case ES10B_PROFILE_MANAGEMENT_OPERATION_UNDEFINED:
         return "unknown";
     }
+    return "(no_str_available)";
 }
 
 const char *euicc_bppcommandid2str(enum es10b_bpp_command_id value)
@@ -85,6 +89,7 @@ const char *euicc_bppcommandid2str(enum es10b_bpp_command_id value)
     case ES10B_BPP_COMMAND_ID_UNDEFINED:
         return "unknown";
     }
+    return "(no_str_available)";
 }
 
 const char *euicc_errorreason2str(enum es10b_error_reason value)
@@ -126,4 +131,5 @@ const char *euicc_errorreason2str(enum es10b_error_reason value)
     case ES10B_ERROR_REASON_UNDEFINED:
         return "unknown";
     }
+    return "(no_str_available)";
 }

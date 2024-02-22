@@ -59,8 +59,8 @@ struct es10c_profile_info_list
 };
 
 int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList);
-int es10c_enable_profile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag);
-int es10c_disable_profile(struct euicc_ctx *ctx, const char *id, unsigned char refreshFlag);
+int es10c_enable_profile(struct euicc_ctx *ctx, const char *id, uint8_t refreshFlag);
+int es10c_disable_profile(struct euicc_ctx *ctx, const char *id, uint8_t refreshFlag);
 int es10c_delete_profile(struct euicc_ctx *ctx, const char *id);
 int es10c_euicc_memory_reset(struct euicc_ctx *ctx);
 int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue);

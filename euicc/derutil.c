@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int euicc_derutil_unpack_first(struct derutils_node *result, const uint8_t *buffer, uint32_t buffer_len)
+int euicc_derutil_unpack_first(struct euicc_derutil_node *result, const uint8_t *buffer, uint32_t buffer_len)
 {
     const uint8_t *cptr;
     uint32_t rlen;
@@ -11,7 +11,7 @@ int euicc_derutil_unpack_first(struct derutils_node *result, const uint8_t *buff
     cptr = buffer;
     rlen = buffer_len;
 
-    memset(result, 0x00, sizeof(struct derutils_node));
+    memset(result, 0x00, sizeof(struct euicc_derutil_node));
 
     if (rlen < 1)
     {
@@ -22,7 +22,7 @@ int euicc_derutil_unpack_first(struct derutils_node *result, const uint8_t *buff
     cptr++;
     rlen--;
 
-    if ((result->tag & 0b11111) == 0b11111)
+    if ((result->tag & 0x1F) == 0x1F)
     {
         if (rlen < 1)
         {
@@ -72,7 +72,7 @@ int euicc_derutil_unpack_first(struct derutils_node *result, const uint8_t *buff
     return 0;
 }
 
-int euicc_derutil_unpack_next(struct derutils_node *result, struct derutils_node *prev, const uint8_t *buffer, uint32_t buffer_len)
+int euicc_derutil_unpack_next(struct euicc_derutil_node *result, struct euicc_derutil_node *prev, const uint8_t *buffer, uint32_t buffer_len)
 {
     const uint8_t *cptr;
     uint32_t rlen;
@@ -83,14 +83,14 @@ int euicc_derutil_unpack_next(struct derutils_node *result, struct derutils_node
     return euicc_derutil_unpack_first(result, cptr, rlen);
 }
 
-int euicc_derutil_unpack_find_alias_tags(struct derutils_node *result, const uint16_t *tags, uint32_t tags_count, const uint8_t *buffer, uint32_t buffer_len)
+int euicc_derutil_unpack_find_alias_tags(struct euicc_derutil_node *result, const uint16_t *tags, uint32_t tags_count, const uint8_t *buffer, uint32_t buffer_len)
 {
     result->self.ptr = buffer;
     result->self.length = 0;
 
     while (euicc_derutil_unpack_next(result, result, buffer, buffer_len) == 0)
     {
-        for (int i = 0; i < tags_count; i++)
+        for (uint32_t i = 0; i < tags_count; i++)
         {
             if (result->tag == tags[i])
             {
@@ -102,12 +102,12 @@ int euicc_derutil_unpack_find_alias_tags(struct derutils_node *result, const uin
     return -1;
 }
 
-int euicc_derutil_unpack_find_tag(struct derutils_node *result, uint16_t tag, const uint8_t *buffer, uint32_t buffer_len)
+int euicc_derutil_unpack_find_tag(struct euicc_derutil_node *result, uint16_t tag, const uint8_t *buffer, uint32_t buffer_len)
 {
     return euicc_derutil_unpack_find_alias_tags(result, &tag, 1, buffer, buffer_len);
 }
 
-static void euicc_derutil_pack_sizeof_single_node(struct derutils_node *node)
+static void euicc_derutil_pack_sizeof_single_node(struct euicc_derutil_node *node)
 {
     node->self.length = 0;
 
@@ -139,7 +139,7 @@ static void euicc_derutil_pack_sizeof_single_node(struct derutils_node *node)
     node->self.length += node->length;
 }
 
-static int euicc_derutil_pack_iterate_size_and_relative_offset(struct derutils_node *node, struct derutils_node *parent, uint32_t relative_offset)
+static int euicc_derutil_pack_iterate_size_and_relative_offset(struct euicc_derutil_node *node, struct euicc_derutil_node *parent, uint32_t relative_offset)
 {
     uint32_t full_size = 0;
 
@@ -168,7 +168,7 @@ static int euicc_derutil_pack_iterate_size_and_relative_offset(struct derutils_n
     return full_size;
 }
 
-static void euicc_derutil_pack_iterate_ptrs(struct derutils_node *node, uint8_t *wptr)
+static void euicc_derutil_pack_iterate_ptrs(struct euicc_derutil_node *node, uint8_t *wptr)
 {
     while (node)
     {
@@ -184,7 +184,7 @@ static void euicc_derutil_pack_iterate_ptrs(struct derutils_node *node, uint8_t 
     }
 }
 
-static void euicc_derutil_pack_copydata_single_node(struct derutils_node *node)
+static void euicc_derutil_pack_copydata_single_node(struct euicc_derutil_node *node)
 {
     uint8_t *buffer = (uint8_t *)(node->self.ptr);
 
@@ -229,7 +229,7 @@ static void euicc_derutil_pack_copydata_single_node(struct derutils_node *node)
     }
 }
 
-static void euicc_derutil_pack_iterate_copydata(struct derutils_node *node)
+static void euicc_derutil_pack_iterate_copydata(struct euicc_derutil_node *node)
 {
     while (node)
     {
@@ -244,13 +244,13 @@ static void euicc_derutil_pack_iterate_copydata(struct derutils_node *node)
     }
 }
 
-static void euicc_derutil_pack_finish(struct derutils_node *node, uint8_t *buffer)
+static void euicc_derutil_pack_finish(struct euicc_derutil_node *node, uint8_t *buffer)
 {
     euicc_derutil_pack_iterate_ptrs(node, buffer);
     euicc_derutil_pack_iterate_copydata(node);
 }
 
-int euicc_derutil_pack(uint8_t *buffer, uint32_t *buffer_len, struct derutils_node *node)
+int euicc_derutil_pack(uint8_t *buffer, uint32_t *buffer_len, struct euicc_derutil_node *node)
 {
     uint32_t required_size = 0;
     required_size = euicc_derutil_pack_iterate_size_and_relative_offset(node, NULL, 0);
@@ -263,7 +263,7 @@ int euicc_derutil_pack(uint8_t *buffer, uint32_t *buffer_len, struct derutils_no
     return 0;
 }
 
-int euicc_derutil_pack_alloc(uint8_t **buffer, uint32_t *buffer_len, struct derutils_node *node)
+int euicc_derutil_pack_alloc(uint8_t **buffer, uint32_t *buffer_len, struct euicc_derutil_node *node)
 {
     uint32_t required_size = 0;
     required_size = euicc_derutil_pack_iterate_size_and_relative_offset(node, NULL, 0);
@@ -317,7 +317,7 @@ int euicc_derutil_convert_long2bin(uint8_t *buffer, uint32_t *buffer_len, long v
 static uint32_t euicc_derutil_convert_bits2bin_sizeof(const uint32_t *bits, uint32_t bits_count)
 {
     uint32_t max_bit = 0;
-    for (int i = 0; i < bits_count; i++)
+    for (uint32_t i = 0; i < bits_count; i++)
     {
         if (bits[i] > max_bit)
         {
@@ -339,7 +339,7 @@ int euicc_derutil_convert_bits2bin(uint8_t *buffer, uint32_t buffer_len, const u
 
     buffer[0] = 0x00;
 
-    for (int i = 0; i < bits_count; i++)
+    for (uint32_t i = 0; i < bits_count; i++)
     {
         buffer[(bits[i] / 8) + 1] |= 1 << (7 - (bits[i] % 8));
     }
@@ -393,7 +393,7 @@ int euicc_derutil_convert_bin2bits_str(const char ***output, const uint8_t *buff
         }
         for (int i = 0; (i < 8) && ((j * 8 + i) < max_cap_len); i++)
         {
-            if (flags_reg & (0b10000000))
+            if (flags_reg & 0x80)
             {
                 flags_count++;
             }
@@ -421,7 +421,7 @@ int euicc_derutil_convert_bin2bits_str(const char ***output, const uint8_t *buff
 
         for (int i = 0; (i < 8) && ((j * 8 + i) < max_cap_len); i++)
         {
-            if (flags_reg & 0b10000000)
+            if (flags_reg & 0x80)
             {
                 *(wptr++) = desc[j * 8 + i];
             }
