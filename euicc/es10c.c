@@ -23,7 +23,7 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
 
     struct euicc_derutil_node tmpnode, n_profileInfoListOk, n_ProfileInfo;
 
-    struct es10c_profile_info_list *list_wptr;
+    struct es10c_profile_info_list *list_wptr = NULL;
 
     int tmpint;
 
@@ -394,7 +394,7 @@ int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue)
             .child = &(struct euicc_derutil_node){
                 .tag = 0x5C, // tagList
                 .length = 1,
-                .value = (uint8_t[]){0x5A},
+                .value = (const uint8_t[]){0x5A},
             },
         },
     };
