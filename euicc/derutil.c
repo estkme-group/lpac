@@ -111,6 +111,12 @@ static void euicc_derutil_pack_sizeof_single_node(struct euicc_derutil_node *nod
 {
     node->self.length = 0;
 
+    if (node->pack.headless)
+    {
+        node->self.length = node->length;
+        return;
+    }
+
     if (node->tag >> 8)
     {
         node->self.length += 2;
@@ -187,6 +193,12 @@ static void euicc_derutil_pack_iterate_ptrs(struct euicc_derutil_node *node, uin
 static void euicc_derutil_pack_copydata_single_node(struct euicc_derutil_node *node)
 {
     uint8_t *buffer = (uint8_t *)(node->self.ptr);
+
+    if (node->pack.headless)
+    {
+        memcpy(buffer, node->value, node->length);
+        return;
+    }
 
     if (node->tag >> 8)
     {

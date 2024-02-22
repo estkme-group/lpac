@@ -12,6 +12,7 @@ struct euicc_derutil_node
     } self;
     struct
     {
+        uint8_t headless;
         uint32_t relative_offset;
         struct euicc_derutil_node *child;
         struct euicc_derutil_node *next;
