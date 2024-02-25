@@ -28,13 +28,13 @@ static int le(struct apdu_request *apdu, uint8_t cla, uint8_t ins, uint8_t p1, u
 
 int euicc_apdu_lc(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla, uint8_t ins, uint8_t p1, uint8_t p2, uint8_t datalen)
 {
-    *apdu = (struct apdu_request *)&ctx->apdu_request_buffer;
+    *apdu = (struct apdu_request *)&ctx->apdu._internal.request_buffer;
     return lc(*apdu, cla, ins, p1, p2, datalen);
 }
 
 int euicc_apdu_le(struct euicc_ctx *ctx, struct apdu_request **apdu, uint8_t cla, uint8_t ins, uint8_t p1, uint8_t p2, uint8_t requestlen)
 {
-    *apdu = (struct apdu_request *)&ctx->apdu_request_buffer;
+    *apdu = (struct apdu_request *)&ctx->apdu._internal.request_buffer;
     return le(*apdu, cla, ins, p1, p2, requestlen);
 }
 
@@ -56,7 +56,7 @@ static void euicc_apdu_response_print(const struct apdu_response *resp)
 
 int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, const struct apdu_request *request, uint32_t request_len)
 {
-    struct euicc_apdu_interface *in = ctx->interface.apdu;
+    struct euicc_apdu_interface *in = ctx->apdu.interface;
 
     memset(response, 0x00, sizeof(*response));
 

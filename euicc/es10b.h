@@ -44,6 +44,17 @@ enum es10b_error_reason
     ES10B_ERROR_REASON_UNDEFINED = 0xFF,
 };
 
+enum es10b_cancel_session_reason
+{
+    ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION = 0,
+    ES10B_CANCEL_SESSION_REASON_POSTPONED = 1,
+    ES10B_CANCEL_SESSION_REASON_TIMEOUT = 2,
+    ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED = 3,
+    ES10B_CANCEL_SESSION_REASON_METADATAMISMATCH = 4,
+    ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR = 5,
+    ES10B_CANCEL_SESSION_REASON_UNDEFINED = 127
+} reason;
+
 struct es10b_load_bound_profile_package_result
 {
     enum es10b_bpp_command_id bppCommandId;
@@ -52,10 +63,14 @@ struct es10b_load_bound_profile_package_result
 
 struct es10b_prepare_download_param
 {
-    const char *b64_profileMetadata;
-    const char *b64_smdpSigned2;
-    const char *b64_smdpSignature2;
-    const char *b64_smdpCertificate;
+    char *b64_profileMetadata;
+    char *b64_smdpSigned2;
+    char *b64_smdpSignature2;
+    char *b64_smdpCertificate;
+};
+
+struct es10b_prepare_download_param_user
+{
     const char *confirmationCode;
 };
 
@@ -77,10 +92,14 @@ struct es10b_pending_notification
 
 struct es10b_authenticate_server_param
 {
-    const char *b64_serverSigned1;
-    const char *b64_serverSignature1;
-    const char *b64_euiccCiPKIdToBeUsed;
-    const char *b64_serverCertificate;
+    char *b64_serverSigned1;
+    char *b64_serverSignature1;
+    char *b64_euiccCiPKIdToBeUsed;
+    char *b64_serverCertificate;
+};
+
+struct es10b_authenticate_server_param_user
+{
     const char *matchingId;
     const char *imei;
 };
@@ -89,27 +108,27 @@ struct es10b_cancel_session_param
 {
     const uint8_t *transactionId;
     uint8_t transactionIdLen;
-    enum es10b_cancel_session_reason
-    {
-        ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION = 0,
-        ES10B_CANCEL_SESSION_REASON_POSTPONED = 1,
-        ES10B_CANCEL_SESSION_REASON_TIMEOUT = 2,
-        ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED = 3,
-        ES10B_CANCEL_SESSION_REASON_METADATAMISMATCH = 4,
-        ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR = 5,
-        ES10B_CANCEL_SESSION_REASON_UNDEFINED = 127
-    } reason;
 };
 
-int es10b_prepare_download(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param);
-int es10b_load_bound_profile_package(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage);
-int es10b_get_euicc_challenge(struct euicc_ctx *ctx, char **b64_euiccChallenge);
-int es10b_get_euicc_info(struct euicc_ctx *ctx, char **b64_EUICCInfo1);
+int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param, struct es10b_prepare_download_param_user *param_user);
+int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage);
+int es10b_get_euicc_challenge_r(struct euicc_ctx *ctx, char **b64_euiccChallenge);
+int es10b_get_euicc_info_r(struct euicc_ctx *ctx, char **b64_EUICCInfo1);
+int es10b_authenticate_server_r(struct euicc_ctx *ctx, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param, struct es10b_authenticate_server_param_user *param_user);
+int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param);
+
+void es10b_prepare_download_param_free(struct es10b_prepare_download_param *param);
+void es10b_authenticate_server_param_free(struct es10b_authenticate_server_param *param);
+
+int es10b_prepare_download(struct euicc_ctx *ctx, const char *confirmationCode);
+int es10b_load_bound_profile_package(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result);
+int es10b_get_euicc_challenge_and_info(struct euicc_ctx *ctx);
+int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, const char *imei);
+int es10b_cancel_session(struct euicc_ctx *ctx);
+
 int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList);
 int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification, unsigned long seqNumber);
 int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber);
-int es10b_authenticate_server(struct euicc_ctx *ctx, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param);
-int es10b_cancel_session(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param);
 
-void es10b_notification_metadata_free_all(struct es10b_notification_metadata_list *notificationMetadataList);
-void es10b_notification_free(struct es10b_pending_notification *PendingNotification);
+void es10b_notification_metadata_list_free_all(struct es10b_notification_metadata_list *notificationMetadataList);
+void es10b_pending_notification_free(struct es10b_pending_notification *PendingNotification);

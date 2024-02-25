@@ -57,8 +57,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    euicc_ctx.interface.apdu = &dlsym_apdu_interface;
-    euicc_ctx.interface.http = &dlsym_http_interface;
+    euicc_ctx.apdu.interface = &dlsym_apdu_interface;
+    euicc_ctx.http.interface = &dlsym_http_interface;
 
     ret = applet_entry(argc, argv, applets);
 

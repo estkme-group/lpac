@@ -14,7 +14,7 @@
 
 static int es10x_transmit(struct euicc_ctx *ctx, struct apdu_response *response, struct apdu_request *req, unsigned req_len)
 {
-    req->cla = (req->cla & 0xF0) | (ctx->es10x_logic_channel & 0x0F);
+    req->cla = (req->cla & 0xF0) | (ctx->apdu._internal.logic_channel & 0x0F);
     return euicc_apdu_transmit(ctx, response, req, req_len);
 }
 
@@ -172,23 +172,48 @@ int euicc_init(struct euicc_ctx *ctx)
 {
     int ret;
 
-    ret = ctx->interface.apdu->connect(ctx);
+    ret = ctx->apdu.interface->connect(ctx);
     if (ret < 0)
     {
         return -1;
     }
 
-    if ((ctx->es10x_logic_channel = ctx->interface.apdu->logic_channel_open(ctx, (const uint8_t *)ISD_R_AID, sizeof(ISD_R_AID) - 1)) < 0)
+    ret = ctx->apdu.interface->logic_channel_open(ctx, (const uint8_t *)ISD_R_AID, sizeof(ISD_R_AID) - 1);
+    if (ret < 0)
     {
         return -1;
     }
+
+    ctx->apdu._internal.logic_channel = ret;
 
     return 0;
 }
 
 void euicc_fini(struct euicc_ctx *ctx)
 {
-    ctx->interface.apdu->logic_channel_close(ctx, ctx->es10x_logic_channel);
-    ctx->interface.apdu->disconnect(ctx);
-    ctx->es10x_logic_channel = 0;
+    ctx->apdu.interface->logic_channel_close(ctx, ctx->apdu._internal.logic_channel);
+    ctx->apdu.interface->disconnect(ctx);
+    ctx->apdu._internal.logic_channel = 0;
+}
+
+void euicc_http_cleanup(struct euicc_ctx *ctx)
+{
+    free(ctx->http._internal.transaction_id);
+    ctx->http._internal.transaction_id = NULL;
+    free(ctx->http._internal.b64_euicc_challenge);
+    ctx->http._internal.b64_euicc_challenge = NULL;
+    free(ctx->http._internal.b64_euicc_info_1);
+    ctx->http._internal.b64_euicc_info_1 = NULL;
+    es10b_authenticate_server_param_free(ctx->http._internal.authenticate_server_param);
+    free(ctx->http._internal.authenticate_server_param);
+    ctx->http._internal.authenticate_server_param = NULL;
+    free(ctx->http._internal.b64_authenticate_server_response);
+    ctx->http._internal.b64_authenticate_server_response = NULL;
+    es10b_prepare_download_param_free(ctx->http._internal.prepare_download_param);
+    free(ctx->http._internal.prepare_download_param);
+    ctx->http._internal.prepare_download_param = NULL;
+    free(ctx->http._internal.b64_prepare_download_response);
+    ctx->http._internal.b64_prepare_download_response = NULL;
+    free(ctx->http._internal.b64_bound_profile_package);
+    ctx->http._internal.b64_bound_profile_package = NULL;
 }

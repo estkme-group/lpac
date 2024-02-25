@@ -34,7 +34,7 @@ static int applet_main(int argc, char **argv)
 
         rptr = rptr->next;
     }
-    es10b_notification_metadata_free_all(notifications);
+    es10b_notification_metadata_list_free_all(notifications);
 
     jprint_success(jdata);
 

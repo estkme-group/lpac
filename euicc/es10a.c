@@ -24,13 +24,13 @@ int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, struct es10a_eui
 
     memset(address, 0, sizeof(*address));
 
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
@@ -93,13 +93,13 @@ int es10a_set_default_dp_address(struct euicc_ctx *ctx, const char *smdp)
 
     struct euicc_derutil_node tmpnode;
 
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
@@ -128,7 +128,11 @@ exit:
 
 void es10a_euicc_configured_addresses_free(struct es10a_euicc_configured_addresses *address)
 {
+    if (!address)
+    {
+        return;
+    }
     free(address->defaultDpAddress);
     free(address->rootDsAddress);
-    memset(address, 0, sizeof(struct es10a_euicc_configured_addresses));
+    memset(address, 0x00, sizeof(struct es10a_euicc_configured_addresses));
 }

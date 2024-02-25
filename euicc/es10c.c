@@ -29,13 +29,13 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
 
     *profileInfoList = NULL;
 
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
@@ -263,13 +263,13 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     }
     n_request.tag = op_tag;
 
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
@@ -352,13 +352,13 @@ int es10c_euicc_memory_reset(struct euicc_ctx *ctx)
         goto err;
     }
 
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
@@ -404,13 +404,13 @@ int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue)
 
     struct euicc_derutil_node tmpnode;
 
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
@@ -477,13 +477,13 @@ int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *pro
         goto err;
     }
 
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request))
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
     {
         goto err;
     }

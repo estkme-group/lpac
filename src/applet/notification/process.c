@@ -12,7 +12,6 @@ static int applet_main(int argc, char **argv)
 {
     unsigned long seqNumber;
     struct es10b_pending_notification notification;
-    struct es9p_ctx es9p_ctx = {0};
 
     if (argc < 2)
     {
@@ -29,17 +28,16 @@ static int applet_main(int argc, char **argv)
         return -1;
     }
 
-    es9p_ctx.euicc_ctx = &euicc_ctx;
-    es9p_ctx.address = notification.notificationAddress;
+    euicc_ctx.http.server_address = notification.notificationAddress;
 
     jprint_progress("es9p_handle_notification");
-    if (es9p_handle_notification(&es9p_ctx, notification.b64_PendingNotification))
+    if (es9p_handle_notification(&euicc_ctx, notification.b64_PendingNotification))
     {
         jprint_error("es9p_handle_notification", NULL);
         return -1;
     }
 
-    es10b_notification_free(&notification);
+    es10b_pending_notification_free(&notification);
 
     jprint_success(NULL);
 

@@ -32,13 +32,13 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *e
 
     memset(euiccinfo2, 0, sizeof(struct es10c_ex_euiccinfo2));
 
-    reqlen = sizeof(ctx->apdu_request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu_request_buffer.body, &reqlen, &n_request) < 0)
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request) < 0)
     {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu_request_buffer.body, reqlen) < 0)
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
     {
         goto err;
     }
