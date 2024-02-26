@@ -8,7 +8,7 @@ struct euicc_ctx
 {
     struct
     {
-        struct euicc_apdu_interface *interface;
+        const struct euicc_apdu_interface *interface;
         struct
         {
             int logic_channel;
@@ -21,7 +21,7 @@ struct euicc_ctx
     } apdu;
     struct
     {
-        struct euicc_http_interface *interface;
+        const struct euicc_http_interface *interface;
         const char *server_address;
         struct
         {

@@ -56,7 +56,7 @@ static void euicc_apdu_response_print(const struct apdu_response *resp)
 
 int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, const struct apdu_request *request, uint32_t request_len)
 {
-    struct euicc_apdu_interface *in = ctx->apdu.interface;
+    const struct euicc_apdu_interface *in = ctx->apdu.interface;
 
     memset(response, 0x00, sizeof(*response));
 
