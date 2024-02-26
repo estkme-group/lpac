@@ -53,7 +53,7 @@ enum es10b_cancel_session_reason
     ES10B_CANCEL_SESSION_REASON_METADATAMISMATCH = 4,
     ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR = 5,
     ES10B_CANCEL_SESSION_REASON_UNDEFINED = 127
-} reason;
+};
 
 struct es10b_load_bound_profile_package_result
 {
