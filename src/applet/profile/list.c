@@ -40,7 +40,7 @@ static int applet_main(int argc, char **argv)
 
         rptr = rptr->next;
     }
-    es10c_profile_info_free_all(profiles);
+    es10c_profile_info_list_free_all(profiles);
 
     jprint_success(jdata);
 

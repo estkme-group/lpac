@@ -188,7 +188,7 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
 
 err:
     fret = -1;
-    es10c_profile_info_free_all(*profileInfoList);
+    es10c_profile_info_list_free_all(*profileInfoList);
 exit:
     free(respbuf);
     respbuf = NULL;
@@ -510,7 +510,7 @@ exit:
     return fret;
 }
 
-void es10c_profile_info_free_all(struct es10c_profile_info_list *profileInfoList)
+void es10c_profile_info_list_free_all(struct es10c_profile_info_list *profileInfoList)
 {
     while (profileInfoList)
     {

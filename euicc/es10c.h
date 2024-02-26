@@ -66,4 +66,4 @@ int es10c_euicc_memory_reset(struct euicc_ctx *ctx);
 int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue);
 int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *profileNickname);
 
-void es10c_profile_info_free_all(struct es10c_profile_info_list *profileInfoList);
+void es10c_profile_info_list_free_all(struct es10c_profile_info_list *profileInfoList);
