@@ -300,4 +300,6 @@ void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2)
     free(euiccinfo2->sasAcreditationNumber);
     free(euiccinfo2->certificationDataObject.discoveryBaseURL);
     free(euiccinfo2->certificationDataObject.platformLabel);
+
+    memset(euiccinfo2, 0, sizeof(struct es10c_ex_euiccinfo2));
 }
