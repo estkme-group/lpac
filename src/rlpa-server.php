@@ -89,6 +89,7 @@ class RLPAClient
     {
         $stdout = fgets($this->process_stdout);
         if (strlen($stdout) == 0) {
+            throw new Exception();
         }
 
         $request = json_decode($stdout, true);
