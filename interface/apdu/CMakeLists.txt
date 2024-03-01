@@ -1,3 +1,6 @@
+option(LPAC_APDU_INTERFACE_PCSC "Build PCSC backend (requires PCSC libraries)" ON)
+option(LPAC_APDU_INTERFACE_GBINDER "Build GBinder backend for libhybris devices (requires gbinder headers)" OFF)
+
 if(LPAC_APDU_INTERFACE_PCSC)
     add_library(apduinterface_pcsc SHARED pcsc.c)
     target_link_libraries(apduinterface_pcsc euicc cjson-static)
