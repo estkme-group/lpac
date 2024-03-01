@@ -33,6 +33,18 @@ if(UNIX)
     install(TARGETS apduinterface_stdio LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/lpac")
 endif()
 
+if(LPAC_APDU_INTERFACE_GBINDER)
+    add_library(apduinterface_gbinder_hidl SHARED gbinder_hidl.c)
+    target_link_libraries(apduinterface_gbinder_hidl euicc)
+    set_target_properties(apduinterface_gbinder_hidl PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
+    set_target_properties(apduinterface_gbinder_hidl PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output")
+    install(TARGETS apduinterface_gbinder_hidl LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/lpac")
+
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GBINDER REQUIRED IMPORTED_TARGET libgbinder)
+    target_link_libraries(apduinterface_gbinder_hidl PkgConfig::GBINDER)
+endif()
+
 if(CYGWIN)
     if(LPAC_APDU_INTERFACE_PCSC)
         add_custom_command(TARGET apduinterface_pcsc POST_BUILD
