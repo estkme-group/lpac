@@ -200,14 +200,17 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     int fret = 0;
     uint8_t id[16];
     int id_len;
-    struct euicc_derutil_node n_request;
+    struct euicc_derutil_node n_request, n_choicer, n_profileIdentifierChoice, n_refreshFlag;
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct euicc_derutil_node tmpnode, n_profileIdentifierChoice;
+    struct euicc_derutil_node tmpnode;
 
+    memset(&n_request, 0, sizeof(n_request));
+    memset(&n_choicer, 0, sizeof(n_choicer));
     memset(&n_profileIdentifierChoice, 0, sizeof(n_profileIdentifierChoice));
+    memset(&n_refreshFlag, 0, sizeof(n_refreshFlag));
 
     if (strlen(str_id) == 32)
     {
@@ -237,29 +240,19 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
             refreshFlag = 0xFF;
         }
 
-        n_request = (struct euicc_derutil_node){
-            .pack = {
-                .child = &(struct euicc_derutil_node){
-                    .tag = 0xA0, // profileIdentifier
-                    .pack = {
-                        .child = &n_profileIdentifierChoice,
-                        .next = &(struct euicc_derutil_node){
-                            .tag = 0x81, // refreshFlag
-                            .length = 1,
-                            .value = &refreshFlag,
-                        },
-                    },
-                },
-            },
-        };
+        n_refreshFlag.tag = 0x81;
+        n_refreshFlag.length = 1;
+        n_refreshFlag.value = &refreshFlag;
+
+        n_choicer.tag = 0xA0;
+        n_choicer.pack.child = &n_profileIdentifierChoice;
+        n_choicer.pack.next = &n_refreshFlag;
+
+        n_request.pack.child = &n_choicer;
     }
     else
     {
-        n_request = (struct euicc_derutil_node){
-            .pack = {
-                .child = &n_profileIdentifierChoice,
-            },
-        };
+        n_request.pack.child = &n_profileIdentifierChoice;
     }
     n_request.tag = op_tag;
 
@@ -330,14 +323,13 @@ int es10c_delete_profile(struct euicc_ctx *ctx, const char *id)
 int es10c_euicc_memory_reset(struct euicc_ctx *ctx)
 {
     int fret = 0;
-    uint8_t resetOptions[2];
     struct euicc_derutil_node n_request = {
         .tag = 0xBF34, // EuiccMemoryResetRequest
         .pack = {
             .child = &(struct euicc_derutil_node){
                 .tag = 0x82, // resetOptions
-                .length = sizeof(resetOptions),
-                .value = resetOptions,
+                .length = 2,
+                .value = (const uint8_t[]){0x05, 0xE0},
             },
         },
     };
@@ -346,11 +338,6 @@ int es10c_euicc_memory_reset(struct euicc_ctx *ctx)
     unsigned resplen;
 
     struct euicc_derutil_node tmpnode;
-
-    if (euicc_derutil_convert_bits2bin(resetOptions, sizeof(resetOptions), (const uint32_t[]){0, 1, 2}, 3) < 0)
-    {
-        goto err;
-    }
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
@@ -449,33 +436,33 @@ int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *pro
 {
     int fret = 0;
     uint8_t asn1iccid[10];
-    struct euicc_derutil_node n_request = {
-        .tag = 0xBF29, // SetNicknameRequest
-        .pack = {
-            .child = &(struct euicc_derutil_node){
-                .tag = 0x5A, // iccid
-                .length = sizeof(asn1iccid),
-                .value = asn1iccid,
-                .pack = {
-                    .next = &(struct euicc_derutil_node){
-                        .tag = 0x90, // profileNickname
-                        .length = strlen(profileNickname),
-                        .value = (const uint8_t *)profileNickname,
-                    },
-                },
-            },
-        },
-    };
+    struct euicc_derutil_node n_request, n_iccid, n_profileNickname;
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
     struct euicc_derutil_node tmpnode;
 
+    memset(&n_request, 0, sizeof(n_request));
+    memset(&n_iccid, 0, sizeof(n_iccid));
+    memset(&n_profileNickname, 0, sizeof(n_profileNickname));
+
     if (euicc_hexutil_gsmbcd2bin(asn1iccid, sizeof(asn1iccid), iccid) < 0)
     {
         goto err;
     }
+
+    n_request.tag = 0xBF29;
+    n_request.pack.child = &n_iccid;
+
+    n_iccid.tag = 0x5A;
+    n_iccid.length = sizeof(asn1iccid);
+    n_iccid.value = asn1iccid;
+    n_iccid.pack.next = &n_profileNickname;
+
+    n_profileNickname.tag = 0x90;
+    n_profileNickname.length = strlen(profileNickname);
+    n_profileNickname.value = (const uint8_t *)profileNickname;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
