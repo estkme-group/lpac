@@ -38,6 +38,10 @@ make
 
 then execute `./output/lpac` to use.
 
+- Droidian
+
+Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, you will need `libgbinder-dev`, `glib2.0-dev`, and you will have to set `-DLPAC_APDU_INTERFACE_GBINDER=ON` when invoking `cmake`.
+
 </details>
 
 <details>
@@ -141,6 +145,8 @@ APDU Backends:
 - `libapduinterface_at`: use AT commands interface used by LTE module
 - `libapduinterface_pcsc`: use PC/SC Smart Card API
 - `libapduinterface_stdio`: use standard input/output
+- GBinder-based backends for `libhybris` (Halium) distributions:
+  - `libapduinterface_gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
 
 Using `libapduinterface_at` need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need add yourself into `dialout` group.
 
