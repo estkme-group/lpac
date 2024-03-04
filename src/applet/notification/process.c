@@ -11,15 +11,22 @@
 static int applet_main(int argc, char **argv)
 {
     unsigned long seqNumber;
+    int autoremove;
     struct es10b_pending_notification notification;
 
     if (argc < 2)
     {
-        printf("Usage: %s <seqNumber>\n", argv[0]);
+        printf("Usage: %s <seqNumber> [autoremove]\n", argv[0]);
+        printf("\t[autoremove]: optional\n");
         return -1;
     }
 
     seqNumber = atol(argv[1]);
+    autoremove = 0;
+    if (argc > 2)
+    {
+        autoremove = atoi(argv[2]);
+    }
 
     jprint_progress("es10b_retrieve_notifications_list");
     if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber))
@@ -38,6 +45,16 @@ static int applet_main(int argc, char **argv)
     }
 
     es10b_pending_notification_free(&notification);
+
+    if (autoremove)
+    {
+        jprint_progress("es10b_delete_notification");
+        if (es10b_delete_notification(&euicc_ctx, seqNumber))
+        {
+            jprint_error("es10b_delete_notification", NULL);
+            return -1;
+        }
+    }
 
     jprint_success(NULL);
 
