@@ -1,8 +1,130 @@
 <?php
 
+class ShellMode extends RLPAWorkMode
+{
+    private function lpacPrompt()
+    {
+        while (fread(STDIN, 128));
+        echo "lpac> ";
+    }
+
+    public function start($data)
+    {
+        $this->lpacPrompt();
+    }
+
+    public function onStdin($data)
+    {
+        $cmd = trim($data);
+        if ($cmd == "exit") {
+            throw new Exception();
+        }
+        $this->client->processOpenLpac($cmd);
+    }
+
+    public function onProcessFinished($data)
+    {
+        if ($data === null) {
+            throw new Exception();
+        }
+
+        print_r($data);
+        $this->lpacPrompt();
+    }
+
+    public function finished()
+    {
+        return false;
+    }
+
+    static public function requireStdin()
+    {
+        return true;
+    }
+}
+
+class ProcessNotificationMode extends RLPAWorkMode
+{
+    private $state = 0;
+    private $notifications = [];
+    private $failed_count = 0;
+
+    public function start($data)
+    {
+        $this->state = 0;
+        $this->client->processOpenLpac("notification list");
+    }
+
+    private function processOneNotification()
+    {
+        $notification = array_shift($this->notifications);
+        if ($notification == null) {
+            if ($this->failed_count) {
+                $this->client->messageBox("{$this->failed_count} notifications failed to process, please retry.");
+            } else {
+                $this->client->messageBox("All notifications processed successfully.");
+            }
+            $this->state = 2;
+            return;
+        }
+
+        echo "Processing: seqNumber: {$notification['seqNumber']}, profileManagementOperation: {$notification['profileManagementOperation']}" . PHP_EOL;
+
+        switch ($notification['profileManagementOperation']) {
+            case 'install':
+            case 'enable':
+            case 'disable':
+                $this->client->processOpenLpac("notification process {$notification['seqNumber']} 1");
+                break;
+            case 'delete':
+                $this->client->processOpenLpac("notification process {$notification['seqNumber']} 0");
+                break;
+            default:
+                throw new Exception();
+        }
+    }
+
+    public function onProcessFinished($data)
+    {
+        if ($data === null) {
+            throw new Exception();
+        }
+
+        switch ($this->state) {
+            case 0:
+                if ($data['code'] !== 0) {
+                    throw new Exception();
+                }
+                $this->notifications = $data['data'] ?? [];
+                $this->state = 1;
+                $this->processOneNotification();
+                break;
+            case 1:
+                if ($data['code'] == 0) {
+                    echo "Process success" . PHP_EOL;
+                } else {
+                    echo "Process failed" . PHP_EOL;
+                    $this->failed_count++;
+                }
+                $this->processOneNotification();
+                break;
+        }
+    }
+
+    public function finished()
+    {
+        return ($this->state == 2);
+    }
+
+    static public function requireStdin()
+    {
+        return false;
+    }
+}
+
 class RLPAClient
 {
-    private static $have_shell_mode = false;
+    private static $stdin_lock = false;
 
     private $name;
     private $shutdown;
@@ -14,10 +136,13 @@ class RLPAClient
     private $process_stdout;
     private $process_stderr;
 
+    /** @var RLPAWorkMode */
     private $workmode;
 
     public function __construct($socket)
     {
+        $this->name = stream_socket_get_name($socket, true);
+
         $this->shutdown = false;
         $this->socket = $socket;
         $this->packet = new RLPAPacket();
@@ -27,54 +152,73 @@ class RLPAClient
         $this->process_stdout = null;
         $this->process_stderr = null;
 
-        $this->workmode = self::WORKMODE_NONE;
+        $this->workmode = null;
 
-        stream_set_blocking($this->socket, false);
-        $this->name = stream_socket_get_name($this->socket, true);
-        $motd = (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Welcome, {$this->name}"))->pack();
-        fwrite($this->socket, $motd);
+        stream_set_blocking($socket, false);
+        fwrite($socket, (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Welcome, {$this->name}"))->pack());
+    }
+
+    public function messageBox($msg)
+    {
+        fwrite($this->socket, (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, $msg))->pack());
     }
 
     private function processPacket()
     {
+        $work_class = null;
+
+        if ($this->packet->tag === RLPAPacket::TAG_APDU) {
+            if (!$this->process_stdin) {
+                return;
+            }
+            fwrite($this->process_stdin, json_encode(['type' => 'apdu', 'payload' => ['ecode' => 0, 'data' => bin2hex($this->packet->value)]]) . PHP_EOL);
+            return;
+        }
+
+        if ($this->workmode) {
+            return;
+        }
+
         switch ($this->packet->tag) {
-            case RLPAPacket::TAG_APDU:
-                if ($this->process_stdin) {
-                    fwrite($this->process_stdin, json_encode(['type' => 'apdu', 'payload' => ['ecode' => 0, 'data' => bin2hex($this->packet->value)]]) . PHP_EOL);
-                }
-                break;
             case RLPAPacket::TAG_MANAGEMNT:
-                if (self::$have_shell_mode) {
-                    $hint = (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Already have one shell mode client"))->pack();
-                    fwrite($this->socket, $hint);
-                    throw new Exception();
-                }
-                self::$have_shell_mode = true;
-                $this->workmode = self::WORKMODE_SHELL;
-                stream_set_blocking(STDIN, false);
-                while (fread(STDIN, 128));
-                echo "lpac> ";
+                $work_class = ShellMode::class;
+                break;
+            case RLPAPacket::TAG_PROCESS_NOTIFICATION:
+                $work_class = ProcessNotificationMode::class;
                 break;
             default:
-                $hint = (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Unimplemented command."))->pack();
-                fwrite($this->socket, $hint);
+                fwrite($this->socket, (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Unimplemented command."))->pack());
                 throw new Exception();
                 break;
         }
+
+        if ($work_class === null) {
+            throw new Exception();
+        }
+
+        if ($work_class::requireStdin()) {
+            if (self::$stdin_lock) {
+                fwrite($this->socket, (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Already have one shell mode client"))->pack());
+                throw new Exception();
+            }
+            stream_set_blocking(STDIN, false);
+        }
+
+        $this->workmode = new $work_class($this);
+        $this->workmode->start($this->packet->value);
     }
 
     public function onSocketRecv()
     {
+        if ($this->workmode && $this->workmode->finished()) {
+            throw new Exception();
+        }
+
         if ($this->shutdown) {
             return;
         }
 
-        try {
-            $this->packet->recv($this->socket);
-        } catch (\Exception $e) {
-            $this->close();
-            throw $e;
-        }
+        $this->packet->recv($this->socket);
 
         if (!$this->packet->isFinished()) {
             return;
@@ -87,9 +231,18 @@ class RLPAClient
 
     public function onProcessStdout()
     {
+        if ($this->workmode && $this->workmode->finished()) {
+            throw new Exception();
+        }
+
         $stdout = fgets($this->process_stdout);
         if (strlen($stdout) == 0) {
-            throw new Exception();
+            $this->processClose();
+            $this->workmode->onProcessFinished(null);
+            if ($this->workmode->finished()) {
+                throw new Exception();
+            }
+            return;
         }
 
         $request = json_decode($stdout, true);
@@ -107,25 +260,30 @@ class RLPAClient
                         fwrite($this->process_stdin, json_encode(['type' => 'apdu', 'payload' => ['ecode' => 0]]) . PHP_EOL);
                         break;
                     case 'transmit':
-                        $packet = (new RLPAPacket(RLPAPacket::TAG_APDU, hex2bin($request['payload']['param'])))->pack();
-                        fwrite($this->socket, $packet);
+                        fwrite($this->socket, (new RLPAPacket(RLPAPacket::TAG_APDU, hex2bin($request['payload']['param'])))->pack());
                         break;
                 }
                 break;
             case 'lpa':
-                print_r($request);
                 $this->processClose();
-                while (fread(STDIN, 128));
-                echo "lpac> ";
+                $this->workmode->onProcessFinished($request['payload']);
+                if ($this->workmode->finished()) {
+                    throw new Exception();
+                }
                 break;
             default:
-                print_r($request);
+                // print_r($request);
                 break;
         }
     }
 
     public function onProcessStderr()
     {
+        if (!$this->process_stderr) {
+            return;
+        }
+
+        echo fgets($this->process_stderr);
     }
 
     public function onStdin()
@@ -134,12 +292,12 @@ class RLPAClient
             while (fread(STDIN, 128));
             return;
         }
-        $cmd = fgets(STDIN);
-        $cmd = trim($cmd);
-        if ($cmd == "exit") {
-            throw new Exception();
+        if ($this->workmode::requireStdin()) {
+            $this->workmode->onStdin(fgets(STDIN));
+            if ($this->workmode->finished()) {
+                throw new Exception();
+            }
         }
-        $this->processOpenLpac($cmd);
     }
 
     public function getSelectable()
@@ -162,7 +320,7 @@ class RLPAClient
             $selectable[] = [$this->process_stderr, [$this, 'onProcessStderr']];
         }
 
-        if ($this->workmode == self::WORKMODE_SHELL) {
+        if ($this->workmode && $this->workmode::requireStdin()) {
             $selectable[] = [STDIN, [$this, 'onStdin']];
         }
 
@@ -186,10 +344,8 @@ class RLPAClient
 
         $this->processClose();
 
-        switch ($this->workmode) {
-            case self::WORKMODE_SHELL:
-                self::$have_shell_mode = false;
-                break;
+        if ($this->workmode && $this->workmode::requireStdin()) {
+            self::$stdin_lock = false;
         }
     }
 
@@ -198,9 +354,9 @@ class RLPAClient
         return $this->name;
     }
 
-    private function processOpenLpac($cmd)
+    public function processOpenLpac($cmd)
     {
-        $this->process = proc_open("./lpac {$cmd}", [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes, ".", ["APDU_INTERFACE" => "./libapduinterface_stdio.so"]);
+        $this->process = proc_open("./lpac {$cmd}", [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes, ".", ['APDU_INTERFACE' => './libapduinterface_stdio.so']);
         $this->process_stdin = $pipes[0];
         $this->process_stdout = $pipes[1];
         $this->process_stderr = $pipes[2];
@@ -252,9 +408,6 @@ class RLPAClient
             }
         }
     }
-
-    const WORKMODE_NONE = 0;
-    const WORKMODE_SHELL = 1;
 }
 
 class RLPAPacket
@@ -335,10 +488,44 @@ class RLPAPacket
 
     const TAG_MESSAGEBOX = 0x00;
     const TAG_MANAGEMNT = 0x01;
+    const TAG_DOWNLOAD_PROFILE = 0x02;
+    const TAG_PROCESS_NOTIFICATION = 0x03;
 
     const TAG_CLOSE = 0xFE;
     const TAG_APDU = 0xFF;
 }
+
+abstract class RLPAWorkMode
+{
+    protected $client;
+
+    public function __construct(RLPAClient $client)
+    {
+        $this->client = $client;
+    }
+
+    public function start($data)
+    {
+    }
+
+    public function onStdin($data)
+    {
+    }
+
+    public function onProcessFinished($data)
+    {
+    }
+
+    public function finished()
+    {
+        return true;
+    }
+
+    static public function requireStdin()
+    {
+        return false;
+    }
+};
 
 gc_enable();
 $g_clients = [];
@@ -363,7 +550,7 @@ while (1) {
             }
             $client = new RLPAClient($accepted);
             $g_clients[$client->getName()] = $client;
-            echo "Accepted {$client->getName()}" . PHP_EOL;
+            echo PHP_EOL . "Accepted {$client->getName()}" . PHP_EOL;
             continue;
         }
         try {
@@ -374,7 +561,7 @@ while (1) {
             $name = $instance->getName();
             unset($instance);
             unset($g_clients[$name]);
-            echo "Disconnected {$name}" . PHP_EOL;
+            echo PHP_EOL . "Disconnected {$name}" . PHP_EOL;
         }
     }
 }
