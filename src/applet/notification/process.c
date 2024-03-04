@@ -48,10 +48,10 @@ static int applet_main(int argc, char **argv)
 
     if (autoremove)
     {
-        jprint_progress("es10b_delete_notification");
-        if (es10b_delete_notification(&euicc_ctx, seqNumber))
+        jprint_progress("es10b_remove_notification_from_list");
+        if (es10b_remove_notification_from_list(&euicc_ctx, seqNumber))
         {
-            jprint_error("es10b_delete_notification", NULL);
+            jprint_error("es10b_remove_notification_from_list", NULL);
             return -1;
         }
     }
