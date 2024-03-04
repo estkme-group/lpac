@@ -316,9 +316,9 @@ int euicc_derutil_convert_long2bin(uint8_t *buffer, uint32_t *buffer_len, long v
         return -1;
     }
 
-    for (int i = required_len - 1; i >= 0; i--)
+    for (int i = 0; i < required_len; i++)
     {
-        buffer[i] = (value >> (i * 8)) & 0xFF;
+        buffer[i] = (value >> ((required_len - i - 1) * 8)) & 0xFF;
     }
 
     *buffer_len = required_len;
