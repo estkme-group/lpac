@@ -18,7 +18,7 @@ static int applet_main(int argc, char **argv)
     {
         printf("Usage: %s <seqNumber> [-r]\n", argv[0]);
         printf("Options:\n");
-        printf("\t-r\tAutomatically remove processed notifications:\n");
+        printf("\t-r\tAutomatically remove processed notifications\n");
         return -1;
     }
 
