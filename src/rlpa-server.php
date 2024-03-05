@@ -122,6 +122,67 @@ class ProcessNotificationMode extends RLPAWorkMode
     }
 }
 
+class DownloadProfileMode extends RLPAWorkMode
+{
+    private $state = 0;
+
+    public function start($data)
+    {
+        $this->state = 0;
+        $data = ltrim($data, "LPA:");
+        $data = explode(chr(0x02), $data); // GSM-8bit will convert $ to \x02
+
+        print_r($data);
+
+        if ($data[0] != "1") {
+            $this->client->messageBox("Invalid format: version mismatch");
+            throw new Exception();
+        }
+
+        if (!isset($data[1])) {
+            $this->client->messageBox("Invalid format: missing SM-DP+");
+            throw new Exception();
+        }
+
+        $cmd = 'profile download -s ' . escapeshellarg($data[1]);
+        if (isset($data[2])) {
+            $cmd .= ' -m ' . escapeshellarg($data[2]);
+        }
+
+        $this->client->processOpenLpac($cmd);
+    }
+
+    public function onProcessFinished($data)
+    {
+        if ($data === null) {
+            throw new Exception();
+        }
+
+        if ($data['code'] == 0) {
+            echo 'Download success' . PHP_EOL;
+            $this->client->messageBox('Download success');
+        } else {
+            print_r($data);
+            echo 'Download failed' . PHP_EOL;
+            $this->client->messageBox('Download failed');
+            $this->client->messageBox($data['message']);
+            $this->client->messageBox($data['data']);
+        }
+
+        $this->state = 1;
+    }
+
+    public function finished()
+    {
+        return ($this->state == 1);
+    }
+
+    static public function requireStdin()
+    {
+        return false;
+    }
+}
+
 class RLPAClient
 {
     private static $stdin_lock = false;
@@ -155,7 +216,7 @@ class RLPAClient
         $this->workmode = null;
 
         stream_set_blocking($socket, false);
-        fwrite($socket, (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Welcome, {$this->name}"))->pack());
+        $this->messageBox("Welcome, {$this->name}");
     }
 
     public function messageBox($msg)
@@ -186,8 +247,11 @@ class RLPAClient
             case RLPAPacket::TAG_PROCESS_NOTIFICATION:
                 $work_class = ProcessNotificationMode::class;
                 break;
+            case RLPAPacket::TAG_DOWNLOAD_PROFILE:
+                $work_class = DownloadProfileMode::class;
+                break;
             default:
-                fwrite($this->socket, (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Unimplemented command."))->pack());
+                $this->messageBox("Unimplemented command.");
                 throw new Exception();
                 break;
         }
@@ -198,7 +262,7 @@ class RLPAClient
 
         if ($work_class::requireStdin()) {
             if (self::$stdin_lock) {
-                fwrite($this->socket, (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, "Already have one shell mode client"))->pack());
+                $this->messageBox("Already have one shell mode client");
                 throw new Exception();
             }
             stream_set_blocking(STDIN, false);
