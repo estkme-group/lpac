@@ -25,7 +25,7 @@ static int applet_main(int argc, char **argv)
     seqNumber = atol(argv[1]);
     autoremove = 0;
     if (argc > 2)
-    {   
+    {
         autoremove = strcmp(argv[2], "-r") == 0;
     }
 
