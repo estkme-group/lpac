@@ -16,16 +16,17 @@ static int applet_main(int argc, char **argv)
 
     if (argc < 2)
     {
-        printf("Usage: %s <seqNumber> [autoremove]\n", argv[0]);
-        printf("\t[autoremove]: optional\n");
+        printf("Usage: %s <seqNumber> [-r]\n", argv[0]);
+        printf("Options:\n");
+        printf("\t-r\tAutomatically remove processed notifications:\n");
         return -1;
     }
 
     seqNumber = atol(argv[1]);
     autoremove = 0;
     if (argc > 2)
-    {
-        autoremove = atoi(argv[2]);
+    {   
+        autoremove = strcmp(argv[2], "-r") == 0;
     }
 
     jprint_progress("es10b_retrieve_notifications_list");
