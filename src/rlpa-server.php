@@ -219,9 +219,26 @@ class RLPAClient
         $this->messageBox("Welcome, {$this->name}");
     }
 
+    private function sendRLPAPacket($tag, $value = "")
+    {
+        if ($this->socket) {
+            fwrite($this->socket, (new RLPAPacket($tag, $value))->pack());
+        }
+    }
+
     public function messageBox($msg)
     {
-        fwrite($this->socket, (new RLPAPacket(RLPAPacket::TAG_MESSAGEBOX, $msg))->pack());
+        $this->sendRLPAPacket(RLPAPacket::TAG_MESSAGEBOX, $msg);
+    }
+
+    public function lockAPDU()
+    {
+        $this->sendRLPAPacket(RLPAPacket::TAG_APDU_LOCK);
+    }
+
+    public function unlockAPDU()
+    {
+        $this->sendRLPAPacket(RLPAPacket::TAG_APDU_UNLOCK);
     }
 
     private function processPacket()
@@ -399,6 +416,8 @@ class RLPAClient
 
         $this->shutdown = true;
 
+        $this->unlockAPDU();
+
         if ($this->socket) {
             $disconnect = (new RLPAPacket(RLPAPacket::TAG_CLOSE))->pack();
             fwrite($this->socket, $disconnect);
@@ -420,6 +439,7 @@ class RLPAClient
 
     public function processOpenLpac($cmd)
     {
+        $this->lockAPDU();
         $this->process = proc_open("./lpac {$cmd}", [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes, ".", ['APDU_INTERFACE' => './libapduinterface_stdio.so']);
         $this->process_stdin = $pipes[0];
         $this->process_stdout = $pipes[1];
@@ -446,6 +466,7 @@ class RLPAClient
             proc_close($this->process);
             $this->process = null;
         }
+        $this->unlockAPDU();
     }
 
     public static function resource2id($resource)
@@ -555,8 +576,11 @@ class RLPAPacket
     const TAG_DOWNLOAD_PROFILE = 0x02;
     const TAG_PROCESS_NOTIFICATION = 0x03;
 
-    const TAG_CLOSE = 0xFE;
-    const TAG_APDU = 0xFF;
+    const TAG_REBOOT = 0xFB;
+    const TAG_CLOSE = 0xFC;
+    const TAG_APDU_LOCK = 0xFD;
+    const TAG_APDU = 0xFE;
+    const TAG_APDU_UNLOCK = 0xFF;
 }
 
 abstract class RLPAWorkMode
