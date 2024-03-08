@@ -11,23 +11,42 @@
 static int applet_main(int argc, char **argv)
 {
     unsigned long seqNumber;
-    int autoremove;
+    char* seqNumberStr = NULL;
+    int autoremove = 0;
     struct es10b_pending_notification notification;
 
-    if (argc < 2)
-    {
-        printf("Usage: %s <seqNumber> [-r]\n", argv[0]);
-        printf("Options:\n");
-        printf("\t-r\tAutomatically remove processed notifications\n");
+    static const char *opt_string = "rh";
+
+    int opt;
+
+    char helpText[256];
+    snprintf(helpText, 256, "Usage: %s [-r] seq-number\n\t -r\tAutomatically remove processed notifications\n", argv[0]);
+
+    while (optind < argc) {
+        if ((opt = getopt(argc, argv, opt_string)) != -1) {
+            switch(opt) {
+                case 'r':
+                    autoremove = 1;
+                    break;
+                case 'h':
+                    printf("%s", helpText);
+                    return -1;
+                    break;
+            }
+        } else {
+            // allow optional arguments after positional arguments 
+            seqNumberStr = strdup(argv[optind]);
+            optind++;
+        }
+    }
+
+    if (seqNumberStr == NULL) {
+        jprint_error("Sequence number must be specified", NULL);
+        printf("%s", helpText);
         return -1;
     }
 
-    seqNumber = atol(argv[1]);
-    autoremove = 0;
-    if (argc > 2)
-    {
-        autoremove = strcmp(argv[2], "-r") == 0;
-    }
+    seqNumber = atoi(seqNumberStr);
 
     jprint_progress("es10b_retrieve_notifications_list");
     if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber))
