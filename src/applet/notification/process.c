@@ -8,45 +8,46 @@
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
 
+static void _help(const char *applet_name)
+{
+    printf("Usage: %s [seqNumber] [-r]\r\n", applet_name);
+    printf("\t -r\tAutomatically remove processed notifications\r\n");
+}
+
 static int applet_main(int argc, char **argv)
 {
     unsigned long seqNumber;
-    char* seqNumberStr = NULL;
+    char *str_seqNumber = NULL;
     int autoremove = 0;
     struct es10b_pending_notification notification;
 
-    static const char *opt_string = "rh";
-
-    int opt;
-
-    char helpText[256];
-    snprintf(helpText, 256, "Usage: %s [-r] seq-number\n\t -r\tAutomatically remove processed notifications\n", argv[0]);
-
-    while (optind < argc) {
-        if ((opt = getopt(argc, argv, opt_string)) != -1) {
-            switch(opt) {
-                case 'r':
-                    autoremove = 1;
-                    break;
-                case 'h':
-                    printf("%s", helpText);
-                    return -1;
-                    break;
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-h") == 0)
+        {
+            _help(argv[0]);
+            return -1;
+        }
+        else if (strcmp(argv[i], "-r") == 0)
+        {
+            autoremove = 1;
+        }
+        else
+        {
+            if (i && !str_seqNumber)
+            {
+                str_seqNumber = argv[i];
             }
-        } else {
-            // allow optional arguments after positional arguments 
-            seqNumberStr = strdup(argv[optind]);
-            optind++;
         }
     }
 
-    if (seqNumberStr == NULL) {
-        jprint_error("Sequence number must be specified", NULL);
-        printf("%s", helpText);
+    if (str_seqNumber == NULL)
+    {
+        _help(argv[0]);
         return -1;
     }
 
-    seqNumber = atoi(seqNumberStr);
+    seqNumber = atol(str_seqNumber);
 
     jprint_progress("es10b_retrieve_notifications_list");
     if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber))

@@ -11,12 +11,13 @@
 #include <euicc/es9p.h>
 #include <euicc/tostr.h>
 
+static const char *opt_string = "s:m:i:c:h?";
+
 static int applet_main(int argc, char **argv)
 {
     int fret;
 
     int opt;
-    static const char *opt_string = "s:m:i:c:h?";
 
     char *smdp = NULL;
     char *matchingId = NULL;
