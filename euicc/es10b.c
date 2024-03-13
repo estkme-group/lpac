@@ -1019,7 +1019,7 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
     uint32_t seqNumber_buf_len = sizeof(seqNumber_buf);
-    struct euicc_derutil_node n_request;
+    struct euicc_derutil_node n_request, n_searchCriteria, n_seqNumber;
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
@@ -1033,21 +1033,19 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
         goto err;
     }
 
-    n_request = (struct euicc_derutil_node){
-        .tag = 0xBF2B, // RetrieveNotificationsListRequest
-        .pack = {
-            .child = &(struct euicc_derutil_node){
-                .tag = 0xA0, // searchCriteria
-                .pack = {
-                    .child = &(struct euicc_derutil_node){
-                        .tag = 0x80, // seqNumber
-                        .length = seqNumber_buf_len,
-                        .value = seqNumber_buf,
-                    },
-                },
-            },
-        },
-    };
+    memset(&n_request, 0, sizeof(n_request));
+    memset(&n_searchCriteria, 0, sizeof(n_searchCriteria));
+    memset(&n_seqNumber, 0, sizeof(n_seqNumber));
+
+    n_request.tag = 0xBF2B; // RetrieveNotificationsListRequest
+    n_request.pack.child = &n_searchCriteria;
+
+    n_searchCriteria.tag = 0xA0; // searchCriteria
+    n_searchCriteria.pack.child = &n_seqNumber;
+
+    n_seqNumber.tag = 0x80; // seqNumber
+    n_seqNumber.length = seqNumber_buf_len;
+    n_seqNumber.value = seqNumber_buf;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
@@ -1136,7 +1134,7 @@ int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seq
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
     uint32_t seqNumber_buf_len = sizeof(seqNumber_buf);
-    struct euicc_derutil_node n_request;
+    struct euicc_derutil_node n_request, n_seqNumber;
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;
@@ -1148,16 +1146,15 @@ int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seq
         goto err;
     }
 
-    n_request = (struct euicc_derutil_node){
-        .tag = 0xBF30, // NotificationSentRequest
-        .pack = {
-            .child = &(struct euicc_derutil_node){
-                .tag = 0x80, // seqNumber
-                .length = seqNumber_buf_len,
-                .value = seqNumber_buf,
-            },
-        },
-    };
+    memset(&n_request, 0, sizeof(n_request));
+    memset(&n_seqNumber, 0, sizeof(n_seqNumber));
+
+    n_request.tag = 0xBF30; // NotificationSentRequest
+    n_request.pack.child = &n_seqNumber;
+
+    n_seqNumber.tag = 0x80; // seqNumber
+    n_seqNumber.length = seqNumber_buf_len;
+    n_seqNumber.value = seqNumber_buf;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))

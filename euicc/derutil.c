@@ -301,13 +301,17 @@ long euicc_derutil_convert_bin2long(const uint8_t *buffer, uint32_t buffer_len)
 
 int euicc_derutil_convert_long2bin(uint8_t *buffer, uint32_t *buffer_len, long value)
 {
-    uint8_t required_len;
+    uint8_t required_len = 1;
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 1; i < sizeof(value); i++)
     {
-        if (value >> (i * 8))
+        if ((value >> (i * 8)))
         {
-            required_len = i + 1;
+            required_len++;
+        }
+        else
+        {
+            break;
         }
     }
 
