@@ -74,10 +74,10 @@ class ProcessNotificationMode extends RLPAWorkMode
             case 'install':
             case 'enable':
             case 'disable':
-                $this->client->processOpenLpac("notification process {$notification['seqNumber']} 1");
+                $this->client->processOpenLpac("notification process {$notification['seqNumber']} -r");
                 break;
             case 'delete':
-                $this->client->processOpenLpac("notification process {$notification['seqNumber']} 0");
+                $this->client->processOpenLpac("notification process {$notification['seqNumber']}");
                 break;
             default:
                 throw new Exception();
