@@ -14,7 +14,7 @@ struct es10c_ex_euiccinfo2
         uint32_t freeVolatileMemory;
     } extCardResource;
     const char **uiccCapability;
-    char *javacardVersion;
+    char *ts102241Version;
     char *globalplatformVersion;
     const char **rspCapability;
     char **euiccCiPKIdListForVerification;

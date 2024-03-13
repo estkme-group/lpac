@@ -242,7 +242,7 @@ lpac chip <subcommand> [parameters]
           "multipleUsimSupport",
           "multipleIsimSupport"
         ],
-        "javacardVersion": "9.2.0",
+        "ts102241Version": "9.2.0",
         "globalplatformVersion": "2.3.0",
         "rspCapability": [
           "additionalProfile",
@@ -270,6 +270,10 @@ lpac chip <subcommand> [parameters]
   }
 }
 ```
+
+\* Starting from SGP.22 v2.1, `javacardVersion` is renamed to `ts102241Version` \
+\*\* SGP.22 has been a typo, `sasAcreditationNumber` should be `sasAccreditationNumber`
+
 </details>
 
 #### profile

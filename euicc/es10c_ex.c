@@ -92,8 +92,8 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *e
             }
         }
         break;
-        case 0x86: // javacardVersion
-            _versiontype2str(&euiccinfo2->javacardVersion, tmpnode.value, tmpnode.length);
+        case 0x86: // ts102241Version
+            _versiontype2str(&euiccinfo2->ts102241Version, tmpnode.value, tmpnode.length);
             break;
         case 0x87: // globalplatformVersion
             _versiontype2str(&euiccinfo2->globalplatformVersion, tmpnode.value, tmpnode.length);
@@ -276,7 +276,7 @@ void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2)
     free(euiccinfo2->svn);
     free(euiccinfo2->euiccFirmwareVer);
     free(euiccinfo2->uiccCapability);
-    free(euiccinfo2->javacardVersion);
+    free(euiccinfo2->ts102241Version);
     free(euiccinfo2->globalplatformVersion);
     free(euiccinfo2->rspCapability);
     if (euiccinfo2->euiccCiPKIdListForVerification)

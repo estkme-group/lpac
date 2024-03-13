@@ -12,3 +12,7 @@ _deps
 build
 .vscode*
 .DS_Store
+
+# for clion ignores
+.idea
+cmake-build-*
