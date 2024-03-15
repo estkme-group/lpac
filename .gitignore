@@ -13,5 +13,10 @@ build
 .vscode*
 .DS_Store
 
+# for package files
 lpac-*.deb
 lpac-*.zip
+
+# for clion ignores
+.idea
+cmake-build-*
