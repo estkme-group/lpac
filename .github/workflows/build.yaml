@@ -18,7 +18,7 @@ jobs:
       - name: Setup Toolchain
         run: ./scripts/setup-linux.sh
       - name: Build for Linux
-        run: ./scripts/build.sh build
+        run: ./scripts/build.sh linux
       - name: Build for Debian
         run: ./scripts/build.sh debian
       - name: Build for Windows with MinGW
