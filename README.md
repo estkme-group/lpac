@@ -1,9 +1,9 @@
 # lpac
 
-
 lpac is a cross platform local profile agent program.
 
 Features:
+
 - Support Activate Code and Confirm Code
 - Support custom IMEI sent to server
 - Support Profile Discovery (SM-DS)
@@ -12,7 +12,7 @@ Features:
 - Lookup eUICC chip info
 - etc
 
-Download: 
+Download:
 [Github Release](https://github.com/estkme-group/lpac/releases/latest)
 
 lpac is dynamic-linked, Release is built by Github action, if you can't run it you need to compile by yourself
@@ -20,8 +20,9 @@ lpac is dynamic-linked, Release is built by Github action, if you can't run it y
 ## GUI Frontend
 
 - [EasyLPAC](https://github.com/creamlike1024/EasyLPAC)
+- [{Open,Easy}EUICC](https://gitea.angry.im/PeterCxy/OpenEUICC) ([Mirror](https://github.com/estkme-group/openeuicc))
 
-# Compile
+## Compile
 
 <details>
 <summary>Linux</summary>
@@ -31,9 +32,8 @@ lpac is dynamic-linked, Release is built by Github action, if you can't run it y
 ```bash
 sudo apt install build-essential cmake git g++ libpcsclite-dev libcurl4-openssl-dev
 git clone --depth=1 https://github.com/estkme-group/lpac
-cd lpac && mkdir build && cd build 
-cmake ..
-make
+cd lpac
+./scripts/build.sh build
 ```
 
 then execute `./output/lpac` to use.
@@ -51,9 +51,8 @@ Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, y
 
 ```bash
 git clone --depth=1 https://github.com/estkme-group/lpac
-cd lpac && mkdir build && cd build 
-cmake .. 
-make
+cd lpac
+./scripts/build.sh macos
 ```
 
 </details>
@@ -68,10 +67,8 @@ Windows need prebuilt libcurl.dll, you can replace the download link to newest c
 ```bash
 sudo apt install build-essential cmake git g++ libpcsclite-dev libcurl4-openssl-dev gcc-mingw-w64 g++-mingw-w64
 git clone --depth=1 https://github.com/estkme-group/lpac
-cd lpac && mkdir build && cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake .. && make
-# Download libcurl
-wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+cd lpac
+./scripts/build.sh mingw
 ```
 
 - Build on Windows(MSYS2)
@@ -79,10 +76,8 @@ wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip
 ```bash
 pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc
 git clone --depth=1 https://github.com/estkme-group/lpac
-cd lpac && mkdir build && cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake .. && ninja
-# Download libcurl
-wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+cd lpac
+./scripts/build.sh mingw
 ```
 
 - Build on Windows(Cygwin)
@@ -91,11 +86,10 @@ With `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed
 
 ```bash
 git clone --depth=1 https://github.com/estkme-group/lpac
-cd lpac && mkdir build && cd build
-cmake .. && make
-# Download libcurl
-wget https://curl.se/windows/dl-8.4.0_6/curl-8.4.0_6-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.4.0_6-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
+cd lpac
+./scripts/build.sh mingw
 ```
+
 To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folder to distribute.
 `cygwin1.dll` is located in `C:\cygwin64\bin\cygwin1.dll` (Default Cygwin installation location)
 
@@ -110,19 +104,16 @@ Install [zig](https://ziglang.org/download/)
 
 ```bash
 git clone --depth=1 https://github.com/estkme-group/lpac
-cd lpac && mkdir build-woa-zig && cd build-woa-zig && cmake .. -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake && ninja
-# Download libcurl
-wget https://curl.se/windows/dl-8.6.0_1/curl-8.6.0_1-win64a-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.6.0_1-win64a-mingw/bin/libcurl-arm64.dll output/libcurl.dll
+cd lpac
+./scripts/build.sh woa-zig
 ```
 
 - Cross compile on Linux x86_64 host(GNU toolchain)
 
 ```bash
 git clone --depth=1 https://github.com/estkme-group/lpac
-cd lpac && mkdir woa-gnu-cross-toolchain && cd woa-gnu-cross-toolchain
-wget https://github.com/Windows-on-ARM-Experiments/mingw-woarm64-build/releases/download/2024-02-08/aarch64-w64-mingw32-msvcrt-toolchain.tar.gz && tar xf aarch64-w64-mingw32-msvcrt-toolchain.tar.gz
-cd ../ && mkdir build-woa-mingw && cd build-woa-mingw && cmake .. -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake -DTOOLCHAIN_BIN_PATH=<path-to-cross-toolchain-bin> && ninja
-wget https://curl.se/windows/dl-8.6.0_1/curl-8.6.0_1-win64a-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.6.0_1-win64a-mingw/bin/libcurl-arm64.dll output/libcurl.dll
+cd lpac
+./scripts/build.sh woa-mingw
 ```
 
 - Build on Windows(MSYS2)
@@ -135,13 +126,14 @@ Download prebuilt curl dll is also needed. Refer to the previous compilation ste
 
 </details>
 
-# Usage
+## Usage
 
 In Linux, you need install `pcscd`, `pcsclite` and `libcurl`.
 
 APDU and HTTP interfaces of lpac has serval backends, you need specify `$APDU_INTERFACE` and `$HTTP_INTERFACE` environment variable to interface library path. If not specified, it will use `libapduinterface_pcsc` and `libhttpinterface_curl`.
 
 APDU Backends:
+
 - `libapduinterface_at`: use AT commands interface used by LTE module
 - `libapduinterface_pcsc`: use PC/SC Smart Card API
 - `libapduinterface_stdio`: use standard input/output
@@ -151,13 +143,15 @@ APDU Backends:
 Using `libapduinterface_at` need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need add yourself into `dialout` group.
 
 HTTP Backends:
+
 - `libhttpinterface_curl`: use libcurl
 - `libhttpinterface_stdio`: use standard input/ouput
 
 ## CLI
 
 ### Command format
-```
+
+```plain
 lpac <subcommand> [subcommand] [parameters]
   subcommand:
     chip          View and manage information about your eUICC card itself
@@ -171,13 +165,14 @@ lpac <subcommand> [subcommand] [parameters]
 ### Return value
 
 The return contents of lpac instructions are all in json format, and the returns of all instructions comply with the following format.
-```json
+
+```jsonc
 {
    "type": "lpa",
    "payload": {
       "code": 0,
       "message": "success",
-      "data": {[]}
+      "data": {/* .... */}
    }
 }
 ```
@@ -193,7 +188,7 @@ The return contents of lpac instructions are all in json format, and the returns
 
 View the EID, default SM-DP+ server and SM-DS server of eUICC. euicc_info2 is also supported.
 
-```
+```plain
 lpac chip <subcommand> [parameters]
   subcommand:
     info         View information about your eUICC card itself
@@ -270,12 +265,14 @@ lpac chip <subcommand> [parameters]
   }
 }
 ```
+
 </details>
 
 #### profile
 
 Profile management, you can list, set alias (nickname), enable, disable, delete, download and discovery Profiles.
-```
+
+```plain
 lpac profile <subcommand> [parameters]
   subcommand:
     list      enumerates your eUICC Profile
@@ -299,11 +296,11 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 > This function will only delete the Profile and issue a Notification, but it will not be sent automatically. You need to send it manually.
 
 ##### Download requires connection to SM-DP+ server and the following additional parameters:
+
 - `-s`: SM-DP+ server, optional, if not provided, it will try to read the defaultsmdp attribute.
 - `-m`: Matching ID, activation code. optional.
 - `-c`: Confirmation Code, optional.
 - `-i`: The IMEI of the device to which Profile is to be downloaded, optional.
-
 
 <details>
 
@@ -318,6 +315,7 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 ##### Discovery requires connecting to the SM-DS server to query registered profile
 
 The following parameters can be used to customize the IMEI and SM-DS server:
+
 - `-s`: SM-DS server. If not provided, it will be gsma official server "lpa.ds.gsma.com"
 - `-i`: IMEI of the device to which Profile is to be downloaded, optional
 
@@ -340,7 +338,7 @@ The following parameters can be used to customize the IMEI and SM-DS server:
         "serviceProviderName": "Vodafone IE",
         "profileName": "Vodafone IE eSIM",
         "iconType": "png",
-        "icon": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAMFBMVEUAAADgp6booKDoeXfrZ2Xn0tLsUE3sOjbtLCjtHhnvoaDpwsLvdHH1y8r57u7///9RHT9XAAAADHRSTlMASX2gyyX3/////lKi+t6IAAACOUlEQVR42pWX27KsIAxE5SLpIOD//+0ua86ZNtSI0A++9SJprm6Pcj7Ej0LwblvT7mMSAKrXB4Ck6Pdpu49yOeWri6SQfMzZExRCQSEl19ZaLfEdcSRV49aUazsv5Ysc3bj3YOyiKPX8qH7qUoTx8DD23M5/yor/NcXHND1s9aWd9N+48pBE6Iav51e1a8xP+FOjvwnkLqh/9Rfa2cCI4K0/n3exABKOLn88jm8TYJK7mX9R0z/N7KAnxDsgqoGfVkXlh+4xHDaA1gG4vO4C2ERSG2CnWkQxasLf/WADVKsF2gOA42cBlT5bhuKhhGMwAwbRFwE4TsGoAK7ojqDhswZgE5gnIDFCTsGQAFiCW+iAq9r2sCfTQTvHKtrPg4NQ4C6aKgFp37wB5PNNyabgtoC3CEZbU73NEO+ABtNDWAcIOgAsYC0E7QAyASgjAFYBEi1A8wxgFGJZBwQDSNMhEmDntS2uA8+lzBBW9qPbnMhSD0W7zbQlW0Jd6UAjDxSWsLSXeKQxhYUzDY6HKi/uNn8gJR7rFOS9AXbAi4VSaXN+yM6rzRDQHvz4cbUxRgqoP/IrDzcbU7BvxM6eRcVKg30hWamW2owdg1cSt6RBSMk515pzgmL0xGGOVrh8EKW7T5BygCxJ0z54aE74cdC7RuBDdUBYHJ8EXfZbHaJz+dHfE+KojcEvDxWgL3bx21BHhA7sCBx+hMDD6PHYZuRCggLWrEgc/VW7C1FEAf57Bw4+DfHh+/f/PPYfW1Z8RhpATXMAAAAASUVORK5CYII=",
+        "icon": "iVBO...",
         "profileClass": "operational"
       },
       {
@@ -351,7 +349,7 @@ The following parameters can be used to customize the IMEI and SM-DS server:
         "serviceProviderName": "T-Mobile",
         "profileName": "CONVSIM5G_Adaptive",
         "iconType": "png",
-        "icon": "iVBORw0KGgoAAAANSUhEUgAAADkAAABABAMAAABSG8K/AAAAMFBMVEXcAVrgir3VTpvXKYvXA33NGH7uAY7qAXztAYrvzebkcbL7/f3jq8/EGXHaMpThAW+lJAaXAAAACXBIWXMAAA7EAAAOxAGVKw4bAAACIklEQVR4nL3UMWsUQRQA4O1UtEhtKrGSFCrXCEIsRM9OEX/AFeHt6w6i3GxnCPr2VZ69WFgJgmDOHEfYmAVbCysLsVSIlaRyQZFz5s3s7szcJoWKrzh25pvZe/NmdhI+JEDHIPkXSoDUpaQk5kpVfaXuq75tj1gUz7yw8Ux+T7vWc+YNrcMnRVeUKDro1sehvr1iHp7efmebr5xKY/dCNTZa5gcXF3TnVsZWEfKPsS4BoNN7vLEc6tZ3ZLCqh/EPL2f9+J6ASZY20zUitRxoH8AtfIamjj99nYyYAl33tSQK5w59PS/b49T8Ca9oJbMLelyfI4WT+n3g9BhGev1EsV3r1iieS5utTnBBrxbTWt8sqO6c2pwfmvQixUHxGkSvdWi6VuxloumH/XRhbv75jjlXgKhPK3h1Ng0E0zlIdLeGPMu8SmbmfDsFkzGGu6AJyc5VMjZQZqWcfuv1Vle/tJqf7en4aquxKUdw2ig9kI6JXdEjaWy3OpaOvUM095SOVL5rlbDOSv0ftVnNGkWn7OVcNjnXand/PaoVk1+r9CDRUbVz80Q67LkCG61KD+INURvotMT2fgtuwr/WWaAATVbjeq7tOFoh1GHx55qKQocikf4YC7l+ICM5742m+sDnp4zuHifz6XAwVw+tVmRvljLgWLP5r3OCxc7LeZVhoPip8ONSqHA50P1IbyZ+xG9G8AIxUva2BsyV6q8X2I+FWnXrb4Q67QSVBN1hAAAAAElFTkSuQmCC",
+        "icon": "iVBO...",
         "profileClass": "operational"
       },
       {
@@ -396,7 +394,8 @@ The following parameters can be used to customize the IMEI and SM-DS server:
 #### notification
 
 Used for the management of Notifications, which are sent by telecom operators during Profile operations. You can enumerate (list), send (process), and remove (remove) Notifications.
-```
+
+```plain
 lpac notification <subcommand> [parameters]
   subcommand:
     list     Enumerates your eUICC pending Notification list
@@ -405,6 +404,7 @@ lpac notification <subcommand> [parameters]
     remove   Remove Notification
              Example: lpac notification remove <sequence ID>
 ```
+
 > [!NOTE]
 > Downstream developers or end users should process Notification as soon as possible when they exist to comply with GSMA specifications. lpac will not automatically delete the Notification after sending it, and you need to delete it manually.
 
@@ -458,6 +458,7 @@ Now there is only one command: `lpac driver apdu list` to get card reader list.
 <summary>Q: Any subcommand of lpac will get error message like "SCardListReaders() failed:" and 8-digits error code, such as 80100069, 80100066, 8010002E, 8010000F and so on.</summary>
 
 A:
+
 - 80100069 means your UICC is not plugged correctly
 - 80100066 means your card has no response, please clean the pin and plug in again
 - 8010002E means communication error
@@ -476,12 +477,13 @@ A: The verification of SM-DP+ servers of telecom operators is diverse. Please ch
 ## Thanks
 
 <a href="https://github.com/estkme-group/lpac/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=estkme-group/lpac"  alt=""/>
+  <img src="https://contrib.rocks/image?repo=estkme-group/lpac" alt="" />
 </a>
 
 ---
 
 ## License
+
 - lpac (/src): AGPL-3.0
 - libeuicc (/euicc): LGPL-v2
 - interfaces (/interface): MIT
