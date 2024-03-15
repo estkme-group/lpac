@@ -1,99 +1,67 @@
 name: Release
-on:
-  push:
-    tags:
-      - "v*"
-  workflow_dispatch:
 
-permissions:
-  contents: write
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: [v*]
+  pull_request:
+    branches: [main]
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest,  macos-14]
-
-    runs-on: ${{ matrix.os }}
+  build-linux:
+    name: Build on Linux
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup toolchain
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpcsclite-dev libcurl4-openssl-dev gcc make cmake gcc-mingw-w64 g++-mingw-w64 unzip ninja-build
-          sudo snap install zig --classic --beta
-
-      - name: Build for Linux(X86_64)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          mkdir build && cd build && cmake .. -GNinja && ninja
-          chmod +x output/lpac
-          zip -r -j lpac-linux-x86_64.zip output/*
-
+      - name: Setup Toolchain
+        run: ./scripts/setup-linux.sh
+      - name: Build for Linux
+        run: ./scripts/build.sh build
       - name: Build for Debian
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          mkdir build-deb && cd build-deb && cmake .. -GNinja -DCPACK_GENERATOR=DEB && ninja package
-
-      - name: Build for Windows(X86_64 MinGW)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          mkdir build-mingw && cd build-mingw && cmake -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake .. && ninja
-          wget --no-verbose https://curl.se/windows/dl-8.6.0_1/curl-8.6.0_1-win64-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.6.0_1-win64-mingw/bin/libcurl-x64.dll output/libcurl.dll
-          zip -r -j lpac-windows-x86_64-mingw.zip output/*
-
-      - name: Build for WoA(GNU Toolchain)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          mkdir woa-gnu-cross-toolchain && cd woa-gnu-cross-toolchain
-          wget --no-verbose https://github.com/Windows-on-ARM-Experiments/mingw-woarm64-build/releases/download/2024-02-08/aarch64-w64-mingw32-msvcrt-toolchain.tar.gz && tar xf aarch64-w64-mingw32-msvcrt-toolchain.tar.gz
-          cd ../ && mkdir build-woa-mingw && cd build-woa-mingw && cmake .. -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake -DTOOLCHAIN_BIN_PATH=$GITHUB_WORKSPACE/woa-gnu-cross-toolchain/bin && ninja
-          wget https://curl.se/windows/dl-8.6.0_1/curl-8.6.0_1-win64a-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.6.0_1-win64a-mingw/bin/libcurl-arm64.dll output/libcurl.dll
-          zip -r -j lpac-windows-arm64-mingw.zip output/*
-
-      - name: Build for WoA(zig)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          mkdir build-woa-zig && cd build-woa-zig && cmake .. -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake && ninja
-          wget --no-verbose https://curl.se/windows/dl-8.6.0_1/curl-8.6.0_1-win64a-mingw.zip -O curl.zip && unzip curl.zip && mv curl-8.6.0_1-win64a-mingw/bin/libcurl-arm64.dll output/libcurl.dll
-          zip -r -j lpac-windows-arm64-zig.zip output/*
-
-      - name: Build for macOS
-        if: runner.os == 'macOS'
-        run: |
-          mkdir build && cd build && cmake .. && make -j$(sysctl -n hw.ncpu)
-          chmod +x output/lpac
-          zip -r -j lpac-macos-universal.zip output/*
-        shell: bash
-
-      - name: Upload Artifact
+        run: ./scripts/build.sh debian
+      - name: Build for Windows with MinGW
+        run: ./scripts/build.sh mingw
+      - name: Build for Windows on ARM with MinGW
+        run: ./scripts/build.sh woa-mingw
+      - name: Build for Windows on ARM with Zig
+        run: ./scripts/build.sh woa-zig
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifact-${{ matrix.os }}
+          name: artifact-linux
           path: |
-            build-mingw/lpac-windows-x86_64-mingw.zip
-            build-woa-mingw/lpac-windows-arm64-mingw.zip
-            build-woa-zig/lpac-windows-arm64-zig.zip
-            build-deb/lpac-*.deb
-            build/lpac-linux-x86_64.zip
-            build/lpac-macos-universal.zip
-
+            lpac-*.deb
+            lpac-*.zip
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build for macOS
+        run: ./scripts/build.sh macos
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-macos
+          path: lpac-*.zip
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-linux, build-macos]
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifact-*
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
-            build-mingw/lpac-windows-x86_64-mingw.zip
-            build-woa-mingw/lpac-windows-arm64-mingw.zip
-            build-woa-zig/lpac-windows-arm64-zig.zip
-            build-deb/lpac-*.deb
-            build/lpac-linux-x86_64.zip
-            build/lpac-macos-universal.zip
+            lpac-*.deb
+            lpac-*.zip
