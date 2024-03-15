@@ -12,3 +12,6 @@ _deps
 build
 .vscode*
 .DS_Store
+
+lpac-*.deb
+lpac-*.zip
