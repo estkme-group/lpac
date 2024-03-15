@@ -70,7 +70,7 @@ static int applet_main(int argc, char **argv)
             }
             cJSON_AddItemToObject(jeuiccinfo2, "uiccCapability", juiccCapability);
         }
-        cJSON_AddStringOrNullToObject(jeuiccinfo2, "javacardVersion", euiccinfo2.javacardVersion);
+        cJSON_AddStringOrNullToObject(jeuiccinfo2, "ts102241Version", euiccinfo2.ts102241Version);
         cJSON_AddStringOrNullToObject(jeuiccinfo2, "globalplatformVersion", euiccinfo2.globalplatformVersion);
         if (euiccinfo2.rspCapability)
         {

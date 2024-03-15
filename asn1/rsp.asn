@@ -41,7 +41,7 @@ EUICCInfo2 ::= [34] SEQUENCE { -- Tag 'BF22'
     euiccFirmwareVer [3] VersionType,   -- eUICC Firmware version
     extCardResource [4] OCTET STRING,   -- Extended Card Resource Information according to ETSI TS 102 226
     uiccCapability [5] UICCCapability,
-    javacardVersion [6] VersionType OPTIONAL,
+    ts102241Version [6] VersionType OPTIONAL,
     globalplatformVersion [7] VersionType OPTIONAL,
     rspCapability [8] RspCapability,
     euiccCiPKIdListForVerification [9] SEQUENCE OF SubjectKeyIdentifier, -- List of CI Public Key Identifiers supported on the eUICC for signature verification
