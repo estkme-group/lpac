@@ -37,7 +37,7 @@ mkdir build
 cd build || exit 1
 
 case "${1:-}" in
-build)
+linux)
     cmake .. -GNinja
     ninja
     chmod +x output/lpac

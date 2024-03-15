@@ -33,7 +33,7 @@ lpac is dynamic-linked, Release is built by Github action, if you can't run it y
 sudo apt install build-essential cmake git g++ libpcsclite-dev libcurl4-openssl-dev
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac
-./scripts/build.sh build
+./scripts/build.sh linux
 ```
 
 then execute `./output/lpac` to use.
