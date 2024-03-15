@@ -144,6 +144,7 @@ APDU Backends:
 - `stdio`: use standard input/output
 - GBinder-based backends for `libhybris` (Halium) distributions:
   - `gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
+- `qmi_qrtr`: use QMI over QRTR transport (e.g. Qualcomm SoC with on-SoC modem)
 
 Using `at` need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need add yourself into `dialout` group.
 
