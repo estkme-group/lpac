@@ -33,7 +33,7 @@ lpac is dynamic-linked, Release is built by Github action, if you can't run it y
 sudo apt install build-essential cmake git g++ libpcsclite-dev libcurl4-openssl-dev
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac
-./scripts/build.sh linux
+./scripts/build.sh make
 ```
 
 then execute `./output/lpac` to use.
@@ -52,7 +52,7 @@ Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, y
 ```bash
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac
-./scripts/build.sh macos
+./scripts/build.sh make
 ```
 
 </details>
@@ -74,7 +74,7 @@ cd lpac
 - Build on Windows(MSYS2)
 
 ```bash
-pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc
+pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc
 git clone --depth=1 https://github.com/estkme-group/lpac
 cd lpac
 ./scripts/build.sh mingw
@@ -120,7 +120,7 @@ cd lpac
 
 It is possible to build on **WoA devices** with [MSYS2 ARM64 Support](https://www.msys2.org/wiki/arm64/)
 
-You may need to install `mingw-w64-clang-aarch64-cmake`, `mingw-w64-clang-aarch64-ninja`,`mingw-w64-clang-aarch64-clang` and modify `cmake/linux-mingw64.cmake`(replace toolchain).
+You may need to install `mingw-w64-clang-aarch64-cmake`, `mingw-w64-clang-aarch64-clang` and modify `cmake/linux-mingw64.cmake`(replace toolchain).
 
 Download prebuilt curl dll is also needed. Refer to the previous compilation steps.
 
