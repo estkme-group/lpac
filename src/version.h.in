@@ -1,0 +1,4 @@
+#ifndef LPAC_VERSION_H_
+#define LPAC_VERSION_H_
+#define LPAC_VERSION "@LPAC_VERSION@"
+#endif  /* LPAC_VERSION_H_ */

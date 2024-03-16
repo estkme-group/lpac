@@ -14,12 +14,14 @@
 #include "applet/chip.h"
 #include "applet/profile.h"
 #include "applet/notification.h"
+#include "applet/version.h"
 
 static const struct applet_entry *applets[] = {
     &applet_dlsym_interface,
     &applet_chip,
     &applet_profile,
     &applet_notification,
+    &applet_version,
     NULL,
 };
 
