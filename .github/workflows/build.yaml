@@ -9,59 +9,58 @@ on:
     branches: [main]
 
 jobs:
-  build-linux:
-    name: Build on Linux
-    runs-on: ubuntu-latest
+  build:
+    name: Build for ${{ matrix.build.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        build:
+          - {variant: make, name: Linux, artifact: linux-x64}
+          - {variant: debian, name: Debian, artifact: debian-x64}
+          - {variant: mingw, name: Windows with MinGW, artifact: windows-x64}
+          - {variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
+        include:
+          - os: macos-14
+            build: {variant: make, name: macOS, artifact: macos-universal}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Toolchain
-        run: ./scripts/setup-linux.sh
-      - name: Build for Linux
-        run: ./scripts/build.sh linux
-      - name: Build for Debian
-        run: ./scripts/build.sh debian
-      - name: Build for Windows with MinGW
-        run: ./scripts/build.sh mingw
-      - name: Build for Windows on ARM with MinGW
-        run: ./scripts/build.sh woa-mingw
-      - name: Build for Windows on ARM with Zig
-        run: ./scripts/build.sh woa-zig
-      - name: Upload Artifacts
+        run: ./scripts/setup-debian.sh
+        if: runner.os == 'Linux'
+      - name: Build for ${{ matrix.build.name }}
+        run: ./scripts/build.sh ${{ matrix.build.variant }}
+      - name: Upload ${{ matrix.build.name }} to Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: artifact-linux
-          path: |
-            lpac-*.deb
-            lpac-*.zip
-  build-macos:
-    name: Build on macOS
-    runs-on: macos-14
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Build for macOS
-        run: ./scripts/build.sh macos
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifact-macos
-          path: lpac-*.zip
+          name: ${{ matrix.build.artifact }}
+          path: lpac-*.*
   release:
     name: Release
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-linux, build-macos]
+    needs: build
     permissions:
       contents: write
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: artifact-*
+          merge-multiple: true
+          pattern: '*'
+      - name: Run SHA1SUM
+        id: checksum
+        run: |
+          echo 'sha1sum<<EOF' >> $GITHUB_OUTPUT
+          sha1sum * >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: |
-            lpac-*.deb
-            lpac-*.zip
+          body: |
+            ```plain
+            ${{ steps.checksum.outputs.sha1sum }}
+            ```
+          append_body: true
+          files: '*'
