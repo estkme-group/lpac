@@ -13,6 +13,9 @@ build
 .vscode*
 .DS_Store
 
+# version
+/src/version.h
+
 # for package files
 lpac-*.deb
 lpac-*.zip

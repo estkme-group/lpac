@@ -17,6 +17,16 @@ set_target_properties(lpac PROPERTIES
 target_link_libraries(lpac euicc ${DL_LIBRARY})
 target_include_directories(lpac PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
+find_package(Git)
+add_custom_target(version
+    ${CMAKE_COMMAND}
+    -D SRC=${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
+    -D DST=${CMAKE_CURRENT_SOURCE_DIR}/version.h
+    -D GIT_EXECUTABLE=${GIT_EXECUTABLE}
+    -P ${CMAKE_MODULE_PATH}/git-version.cmake
+)
+add_dependencies(lpac version)
+
 if(UNIX)
     install(TARGETS lpac RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
