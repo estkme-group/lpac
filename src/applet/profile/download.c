@@ -44,8 +44,7 @@ static int applet_main(int argc, char **argv)
         case 'c':
             confirmation_code = strdup(optarg);
             break;
-        case 'h':
-        case '?':
+        default:
             printf("Usage: %s [OPTIONS]\r\n", argv[0]);
             printf("\t -s SM-DP+ Domain\r\n");
             printf("\t -m Matching ID\r\n");
@@ -53,7 +52,6 @@ static int applet_main(int argc, char **argv)
             printf("\t -c Confirmation Code (Password)\r\n");
             printf("\t -h This help info\r\n");
             return -1;
-            break;
         }
         opt = getopt(argc, argv, opt_string);
     }
