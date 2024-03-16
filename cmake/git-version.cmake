@@ -4,7 +4,7 @@ if(GIT_EXECUTABLE)
   get_filename_component(SRC_DIR ${SRC} DIRECTORY)
   # Generate a git-describe version string from Git repository tags
   execute_process(
-    COMMAND ${GIT_EXECUTABLE} describe --tags --dirty --match "v*"
+    COMMAND ${GIT_EXECUTABLE} describe --always --tags --dirty --match "v*"
     WORKING_DIRECTORY ${SRC_DIR}
     OUTPUT_VARIABLE GIT_DESCRIBE_VERSION
     RESULT_VARIABLE GIT_DESCRIBE_ERROR_CODE
