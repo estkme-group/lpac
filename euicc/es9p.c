@@ -202,7 +202,7 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
         }
         else
         {
-            sprintf(ctx->http.status.message, "subject-code: %s, reason-code: %s", ctx->http.status.subjectCode, ctx->http.status.reasonCode);
+            snprintf(ctx->http.status.message, 40, "subject-code: %s, reason-code: %s", ctx->http.status.subjectCode, ctx->http.status.reasonCode);
         }
     }
 
