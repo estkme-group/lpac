@@ -200,6 +200,10 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
         {
             strncpy(ctx->http.status.message, cJSON_GetObjectItem(statusCodeData, "message")->valuestring, sizeof(ctx->http.status.message));
         }
+        else
+        {
+            sprintf(ctx->http.status.message, "subject-code: %s, reason-code: %s", ctx->http.status.subjectCode, ctx->http.status.reasonCode);
+        }
     }
 
     for (int i = 0; okey[i] != NULL; i++)
