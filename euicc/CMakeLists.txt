@@ -1,4 +1,26 @@
+option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" OFF)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} LIB_EUICC_SRCS)
-add_library(euicc STATIC ${LIB_EUICC_SRCS})
+if(LPAC_DYNAMIC_LIBEUICC)
+    add_library(euicc SHARED ${LIB_EUICC_SRCS})
+else()
+    add_library(euicc STATIC ${LIB_EUICC_SRCS})
+endif()
 target_link_libraries(euicc cjson-static)
 target_include_directories(euicc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+if(LPAC_DYNAMIC_LIBEUICC)
+    # Install headers
+    file(GLOB ALL_HEADERS "*.h")
+    foreach(header ${ALL_HEADERS})
+        if(${header} MATCHES "^.*\.private\.h$")
+            list(REMOVE_ITEM ALL_HEADERS ${header})
+        endif()
+    endforeach()
+    set_target_properties(euicc PROPERTIES PUBLIC_HEADER "${ALL_HEADERS}")
+    # Install a pkg-config file
+    configure_file(libeuicc.pc.in libeuicc.pc @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeuicc.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+    # Configure libeuicc.so installation
+    set_target_properties(euicc PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+    install(TARGETS euicc LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                          PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/euicc)
+endif()
