@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "driver.private.h"
 
 #include <stdio.h>
 #include <stdlib.h>

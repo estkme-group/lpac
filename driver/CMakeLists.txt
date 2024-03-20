@@ -1,4 +1,5 @@
-option(LPAC_DYNAMIC_DRIVERS "Build lpac/libeuicc driver backends as a dynamic library" OFF)
+include(CMakeDependentOption)
+cmake_dependent_option(LPAC_DYNAMIC_DRIVERS "Build lpac/libeuicc driver backends as a dynamic library" OFF "LPAC_DYNAMIC_LIBEUICC" OFF)
 
 option(LPAC_WITH_APDU_PCSC "Build APDU PCSC Backend (requires PCSC libraries)" ON)
 option(LPAC_WITH_APDU_AT "Build APDU AT Backend" ON)
@@ -53,4 +54,21 @@ if(LPAC_WITH_HTTP_CURL)
     if(WIN32)
         target_link_libraries(euicc-drivers ${DL_LIBRARY})
     endif()
+endif()
+
+if(LPAC_DYNAMIC_DRIVERS)
+    # Install headers
+    file(GLOB ALL_HEADERS "*.h")
+    foreach(header ${ALL_HEADERS})
+        if(${header} MATCHES "^.*\.private\.h$")
+            list(REMOVE_ITEM ALL_HEADERS ${header})
+        endif()
+    endforeach()
+    set_target_properties(euicc-drivers PROPERTIES PUBLIC_HEADER "${ALL_HEADERS}")
+    # Install a pkg-config file
+    configure_file(libeuicc-drivers.pc.in libeuicc-drivers.pc @ONLY)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeuicc-drivers.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+    set_target_properties(euicc-drivers PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+    install(TARGETS euicc-drivers LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                          PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/euicc)
 endif()
