@@ -1,4 +1,6 @@
 // vim: expandtab sw=4 ts=4:
+#include "gbinder_hidl.h"
+
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
@@ -289,7 +291,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     return 0;
 }
 
-EUICC_SHARED_EXPORT int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
+static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = apdu_interface_disconnect;
@@ -307,7 +309,19 @@ EUICC_SHARED_EXPORT int libapduinterface_init(struct euicc_apdu_interface *ifstr
     return 0;
 }
 
-EUICC_SHARED_EXPORT int libapduinterface_main(int argc, char **argv)
+static int libapduinterface_main(int argc, char **argv)
 {
     return 0;
 }
+
+static void libapduinterface_fini(void)
+{
+}
+
+const struct lpac_driver driver_apdu_gbinder_hidl = {
+    .type = DRIVER_APDU,
+    .name = "gbinder_hidl",
+    .init = libapduinterface_init,
+    .main = libapduinterface_main,
+    .fini = libapduinterface_fini,
+};

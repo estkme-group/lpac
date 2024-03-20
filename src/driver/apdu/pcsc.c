@@ -1,21 +1,19 @@
+#include "pcsc.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
-#ifdef __MINGW32__
+#ifdef _WIN32
 #include <winscard.h>
-#elif defined(__CYGWIN__)
-#include "/usr/include/w32api/winscard.h"
-#include "/usr/include/w32api/wtypes.h"
 #else
 #include <PCSC/wintypes.h>
 #include <PCSC/winscard.h>
 #endif
 
-#include <euicc/interface.h>
-
 #include <cjson/cJSON_ex.h>
+#include <euicc/interface.h>
 
 #define INTERFACE_SELECT_ENV "DRIVER_IFID"
 
@@ -392,7 +390,7 @@ static int pcsc_list_iter(int index, const char *reader, void *userdata)
     return 0;
 }
 
-EUICC_SHARED_EXPORT int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
+static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
@@ -410,7 +408,7 @@ EUICC_SHARED_EXPORT int libapduinterface_init(struct euicc_apdu_interface *ifstr
     return 0;
 }
 
-EUICC_SHARED_EXPORT int libapduinterface_main(int argc, char **argv)
+static int libapduinterface_main(int argc, char **argv)
 {
     if (argc < 2)
     {
@@ -454,3 +452,15 @@ EUICC_SHARED_EXPORT int libapduinterface_main(int argc, char **argv)
 
     return 0;
 }
+
+static void libapduinterface_fini(void)
+{
+}
+
+const struct lpac_driver driver_apdu_pcsc = {
+    .type = DRIVER_APDU,
+    .name = "pcsc",
+    .init = (int (*)(void *))libapduinterface_init,
+    .main = libapduinterface_main,
+    .fini = libapduinterface_fini,
+};

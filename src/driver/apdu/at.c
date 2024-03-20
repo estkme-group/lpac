@@ -1,3 +1,5 @@
+#include "at.h"
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
@@ -5,69 +7,10 @@
 #include <unistd.h>
 
 #include <euicc/interface.h>
+#include <euicc/hexutil.h>
 
 static FILE *fuart;
 static int logic_channel = 0;
-
-static int hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len)
-{
-    uint32_t length;
-
-    if (!str || !output || str_len % 2 != 0)
-    {
-        return -1;
-    }
-
-    length = str_len / 2;
-    if (length > output_len)
-    {
-        return -1;
-    }
-
-    for (uint32_t i = 0; i < length; ++i)
-    {
-        char high = str[2 * i];
-        char low = str[2 * i + 1];
-
-        if (high >= '0' && high <= '9')
-        {
-            high -= '0';
-        }
-        else if (high >= 'a' && high <= 'f')
-        {
-            high = high - 'a' + 10;
-        }
-        else if (high >= 'A' && high <= 'F')
-        {
-            high = high - 'A' + 10;
-        }
-        else
-        {
-            return -1;
-        }
-
-        if (low >= '0' && low <= '9')
-        {
-            low -= '0';
-        }
-        else if (low >= 'a' && low <= 'f')
-        {
-            low = low - 'a' + 10;
-        }
-        else if (low >= 'A' && low <= 'F')
-        {
-            low = low - 'A' + 10;
-        }
-        else
-        {
-            return -1;
-        }
-
-        output[i] = (high << 4) + low;
-    }
-
-    return length;
-}
 
 static int at_expect(char **response, const char *expected)
 {
@@ -195,7 +138,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
         goto err;
     }
 
-    ret = hexutil_hex2bin(*rx, *rx_len, hexstr, strlen(hexstr));
+    ret = euicc_hexutil_hex2bin_r(*rx, *rx_len, hexstr, strlen(hexstr));
     if (ret < 0)
     {
         goto err;
@@ -257,7 +200,7 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
     at_expect(NULL, NULL);
 }
 
-int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
+static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
@@ -270,7 +213,19 @@ int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     return 0;
 }
 
-int libapduinterface_main(int argc, char **argv)
+static int libapduinterface_main(int argc, char **argv)
 {
     return 0;
 }
+
+static void libapduinterface_fini(void)
+{
+}
+
+const struct lpac_driver driver_apdu_at = {
+    .type = DRIVER_APDU,
+    .name = "at",
+    .init = (int (*)(void *))libapduinterface_init,
+    .main = libapduinterface_main,
+    .fini = libapduinterface_fini,
+};

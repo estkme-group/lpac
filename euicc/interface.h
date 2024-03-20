@@ -1,12 +1,6 @@
 #pragma once
 #include <inttypes.h>
 
-#ifdef __MINGW32__
-#define EUICC_SHARED_EXPORT __declspec(dllexport) __cdecl
-#else
-#define EUICC_SHARED_EXPORT
-#endif
-
 struct euicc_ctx;
 
 struct euicc_apdu_interface

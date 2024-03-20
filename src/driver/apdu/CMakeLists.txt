@@ -10,7 +10,7 @@ if(LPAC_APDU_INTERFACE_PCSC)
         install(TARGETS apduinterface_pcsc LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/lpac")
     endif()
 
-    if(MINGW OR CYGWIN)
+    if(WIN32)
         target_link_libraries(apduinterface_pcsc winscard)
     elseif(APPLE)
         target_link_libraries(apduinterface_pcsc "-framework PCSC")

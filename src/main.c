@@ -8,8 +8,7 @@
 #include <euicc/interface.h>
 #include <euicc/euicc.h>
 
-#include "dlsym_interface.h"
-
+#include "driver.h"
 #include "applet.h"
 #include "applet/chip.h"
 #include "applet/profile.h"
@@ -17,7 +16,7 @@
 #include "applet/version.h"
 
 static const struct applet_entry *applets[] = {
-    &applet_dlsym_interface,
+    &driver_applet,
     &applet_chip,
     &applet_profile,
     &applet_notification,
@@ -54,17 +53,19 @@ int main(int argc, char **argv)
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
-    if (dlsym_interface_init())
+    if (driver_init())
     {
         return -1;
     }
 
-    euicc_ctx.apdu.interface = &dlsym_apdu_interface;
-    euicc_ctx.http.interface = &dlsym_http_interface;
+    euicc_ctx.apdu.interface = &driver_interface_apdu;
+    euicc_ctx.http.interface = &driver_interface_http;
 
     ret = applet_entry(argc, argv, applets);
 
     main_fini_euicc();
+
+    driver_fini();
 
     return ret;
 }

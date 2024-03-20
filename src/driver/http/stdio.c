@@ -1,3 +1,5 @@
+#include "stdio.h"
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,93 +7,8 @@
 #include <unistd.h>
 
 #include <cjson/cJSON_ex.h>
-
 #include <euicc/interface.h>
-
-static int hexutil_bin2hex(char *output, uint32_t output_len, const uint8_t *bin, uint32_t bin_len)
-{
-    const char hexDigits[] = "0123456789abcdef";
-
-    if (!bin || !output)
-    {
-        return -1;
-    }
-
-    if (output_len < (2 * bin_len + 1))
-    {
-        return -1;
-    }
-
-    for (uint32_t i = 0; i < bin_len; ++i)
-    {
-        char byte = bin[i];
-        output[2 * i] = hexDigits[(byte >> 4) & 0x0F];
-        output[2 * i + 1] = hexDigits[byte & 0x0F];
-    }
-    output[2 * bin_len] = '\0';
-
-    return 0;
-}
-
-static int hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len)
-{
-    uint32_t length;
-
-    if (!str || !output || str_len % 2 != 0)
-    {
-        return -1;
-    }
-
-    length = str_len / 2;
-    if (length > output_len)
-    {
-        return -1;
-    }
-
-    for (uint32_t i = 0; i < length; ++i)
-    {
-        char high = str[2 * i];
-        char low = str[2 * i + 1];
-
-        if (high >= '0' && high <= '9')
-        {
-            high -= '0';
-        }
-        else if (high >= 'a' && high <= 'f')
-        {
-            high = high - 'a' + 10;
-        }
-        else if (high >= 'A' && high <= 'F')
-        {
-            high = high - 'A' + 10;
-        }
-        else
-        {
-            return -1;
-        }
-
-        if (low >= '0' && low <= '9')
-        {
-            low -= '0';
-        }
-        else if (low >= 'a' && low <= 'f')
-        {
-            low = low - 'a' + 10;
-        }
-        else if (low >= 'A' && low <= 'F')
-        {
-            low = low - 'A' + 10;
-        }
-        else
-        {
-            return -1;
-        }
-
-        output[i] = (high << 4) + low;
-    }
-
-    return length;
-}
+#include <euicc/hexutil.h>
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)
@@ -196,7 +113,7 @@ static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len, con
     {
         goto err;
     }
-    if (hexutil_bin2hex(tx_hex, (2 * tx_len) + 1, tx, tx_len) < 0)
+    if (euicc_hexutil_bin2hex(tx_hex, (2 * tx_len) + 1, tx, tx_len) < 0)
     {
         goto err;
     }
@@ -321,7 +238,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     {
         goto err;
     }
-    if (hexutil_hex2bin(*rx, *rx_len, jtmp->valuestring, strlen(jtmp->valuestring)) < 0)
+    if (euicc_hexutil_hex2bin_r(*rx, *rx_len, jtmp->valuestring, strlen(jtmp->valuestring)) < 0)
     {
         goto err;
     }
@@ -341,7 +258,7 @@ exit:
     return fret;
 }
 
-EUICC_SHARED_EXPORT int libhttpinterface_init(struct euicc_http_interface *ifstruct)
+static int libhttpinterface_init(struct euicc_http_interface *ifstruct)
 {
     memset(ifstruct, 0, sizeof(struct euicc_http_interface));
 
@@ -350,7 +267,19 @@ EUICC_SHARED_EXPORT int libhttpinterface_init(struct euicc_http_interface *ifstr
     return 0;
 }
 
-EUICC_SHARED_EXPORT int libhttpinterface_main(int argc, char **argv)
+static int libhttpinterface_main(int argc, char **argv)
 {
     return 0;
 }
+
+static void libhttpinterface_fini(void)
+{
+}
+
+const struct lpac_driver driver_http_stdio = {
+    .type = DRIVER_HTTP,
+    .name = "stdio",
+    .init = (int (*)(void *))libhttpinterface_init,
+    .main = libhttpinterface_main,
+    .fini = libhttpinterface_fini,
+};

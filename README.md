@@ -489,6 +489,5 @@ A: The verification of SM-DP+ servers of telecom operators is diverse. Please ch
 
 - lpac (/src): AGPL-3.0
 - libeuicc (/euicc): LGPL-v2
-- interfaces (/interface): MIT
 
 Copyright (c) 2023-2024 eSTKme Group
