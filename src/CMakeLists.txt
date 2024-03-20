@@ -24,6 +24,10 @@ add_custom_target(version
     -P ${CMAKE_MODULE_PATH}/git-version.cmake
 )
 add_dependencies(lpac version)
+set_target_properties(lpac PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output"
+    BUILD_RPATH "${RPATH_BINARY_PATH}"
+)
 
 if(UNIX)
     install(TARGETS lpac RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
