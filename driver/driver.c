@@ -42,10 +42,10 @@ static const struct lpac_driver *drivers[] = {
 static const struct lpac_driver *_driver_apdu = NULL;
 static const struct lpac_driver *_driver_http = NULL;
 
-struct euicc_apdu_interface driver_interface_apdu;
-struct euicc_http_interface driver_interface_http;
-int (*driver_main_apdu)(int argc, char **argv) = NULL;
-int (*driver_main_http)(int argc, char **argv) = NULL;
+struct euicc_apdu_interface euicc_driver_interface_apdu;
+struct euicc_http_interface euicc_driver_interface_http;
+int (*euicc_driver_main_apdu)(int argc, char **argv) = NULL;
+int (*euicc_driver_main_http)(int argc, char **argv) = NULL;
 
 static const struct lpac_driver *_find_driver(enum lpac_driver_type type, const char *name)
 {
@@ -68,7 +68,7 @@ static const struct lpac_driver *_find_driver(enum lpac_driver_type type, const 
     return NULL;
 }
 
-int driver_init()
+int euicc_driver_init()
 {
     _driver_apdu = _find_driver(DRIVER_APDU, getenv("LPAC_APDU"));
     if (_driver_apdu == NULL)
@@ -84,16 +84,16 @@ int driver_init()
         return -1;
     }
 
-    _driver_apdu->init(&driver_interface_apdu);
-    _driver_http->init(&driver_interface_http);
+    _driver_apdu->init(&euicc_driver_interface_apdu);
+    _driver_http->init(&euicc_driver_interface_http);
 
-    driver_main_apdu = _driver_apdu->main;
-    driver_main_http = _driver_http->main;
+    euicc_driver_main_apdu = _driver_apdu->main;
+    euicc_driver_main_http = _driver_http->main;
 
     return 0;
 }
 
-void driver_fini()
+void euicc_driver_fini()
 {
     if (_driver_apdu != NULL)
     {

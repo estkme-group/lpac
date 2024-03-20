@@ -3,10 +3,10 @@
 #include <inttypes.h>
 #include <euicc/interface.h>
 
-extern struct euicc_apdu_interface driver_interface_apdu;
-extern struct euicc_http_interface driver_interface_http;
-extern int (*driver_main_apdu)(int argc, char **argv);
-extern int (*driver_main_http)(int argc, char **argv);
+extern struct euicc_apdu_interface euicc_driver_interface_apdu;
+extern struct euicc_http_interface euicc_driver_interface_http;
+extern int (*euicc_driver_main_apdu)(int argc, char **argv);
+extern int (*euicc_driver_main_http)(int argc, char **argv);
 
-int driver_init(void);
-void driver_fini(void);
+int euicc_driver_init(void);
+void euicc_driver_fini(void);

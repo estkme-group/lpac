@@ -26,8 +26,8 @@ static struct applet_entry applet_http = {
 
 static int driver_applet_main(int argc, char **argv)
 {
-    applet_apdu.main = driver_main_apdu;
-    applet_http.main = driver_main_http;
+    applet_apdu.main = euicc_driver_main_apdu;
+    applet_http.main = euicc_driver_main_http;
     static const struct applet_entry *applets[] = {
         &applet_apdu,
         &applet_http,
@@ -79,19 +79,19 @@ int main(int argc, char **argv)
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
-    if (driver_init())
+    if (euicc_driver_init())
     {
         return -1;
     }
 
-    euicc_ctx.apdu.interface = &driver_interface_apdu;
-    euicc_ctx.http.interface = &driver_interface_http;
+    euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
+    euicc_ctx.http.interface = &euicc_driver_interface_http;
 
     ret = applet_entry(argc, argv, applets);
 
     main_fini_euicc();
 
-    driver_fini();
+    euicc_driver_fini();
 
     return ret;
 }
