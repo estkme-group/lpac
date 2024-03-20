@@ -7,13 +7,39 @@
 
 #include <euicc/interface.h>
 #include <euicc/euicc.h>
+#include <driver.h>
 
-#include "driver.h"
 #include "applet.h"
 #include "applet/chip.h"
 #include "applet/profile.h"
 #include "applet/notification.h"
 #include "applet/version.h"
+
+static struct applet_entry applet_apdu = {
+    .name = "apdu",
+    .main = NULL,
+};
+static struct applet_entry applet_http = {
+    .name = "http",
+    .main = NULL,
+};
+
+static int driver_applet_main(int argc, char **argv)
+{
+    applet_apdu.main = driver_main_apdu;
+    applet_http.main = driver_main_http;
+    static const struct applet_entry *applets[] = {
+        &applet_apdu,
+        &applet_http,
+        NULL,
+    };
+    return applet_entry(argc, argv, applets);
+}
+
+struct applet_entry driver_applet = {
+    .name = "driver",
+    .main = driver_applet_main,
+};
 
 static const struct applet_entry *applets[] = {
     &driver_applet,
