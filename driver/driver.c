@@ -84,8 +84,17 @@ int euicc_driver_init()
         return -1;
     }
 
-    _driver_apdu->init(&euicc_driver_interface_apdu);
-    _driver_http->init(&euicc_driver_interface_http);
+    if (_driver_apdu->init(&euicc_driver_interface_apdu))
+    {
+        fprintf(stderr, "APDU driver init failed\n");
+        return -1;
+    }
+
+    if (_driver_http->init(&euicc_driver_interface_http))
+    {
+        fprintf(stderr, "HTTP driver init failed\n");
+        return -1;
+    }
 
     euicc_driver_main_apdu = _driver_apdu->main;
     euicc_driver_main_http = _driver_http->main;
