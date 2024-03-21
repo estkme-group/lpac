@@ -87,7 +87,7 @@ static int json_print(cJSON *jpayload)
     }
     cJSON_Delete(jroot);
 
-    fprintf(stdout, "%s\n", jstr);
+    fprintf(stdout, "%s\r\n", jstr);
     fflush(stdout);
 
     free(jstr);

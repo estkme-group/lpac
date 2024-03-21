@@ -26,7 +26,7 @@ void jprint_error(const char *function_name, const char *detail)
     jstr = cJSON_PrintUnformatted(jroot);
     cJSON_Delete(jroot);
 
-    printf("%s\n", jstr);
+    printf("%s\r\n", jstr);
     fflush(stdout);
     free(jstr);
 }
@@ -48,7 +48,7 @@ void jprint_progress(const char *function_name)
     jstr = cJSON_PrintUnformatted(jroot);
     cJSON_Delete(jroot);
 
-    printf("%s\n", jstr);
+    printf("%s\r\n", jstr);
     fflush(stdout);
     free(jstr);
 }
@@ -77,7 +77,7 @@ void jprint_success(cJSON *jdata)
     jstr = cJSON_PrintUnformatted(jroot);
     cJSON_Delete(jroot);
 
-    printf("%s\n", jstr);
+    printf("%s\r\n", jstr);
     fflush(stdout);
     free(jstr);
 }
