@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <constants.h>
 
 #ifdef LPAC_WITH_APDU_GBINDER
 #include "driver/apdu/gbinder_hidl.h"
@@ -70,14 +71,14 @@ static const struct lpac_driver *_find_driver(enum lpac_driver_type type, const 
 
 int euicc_driver_init()
 {
-    _driver_apdu = _find_driver(DRIVER_APDU, getenv("LPAC_APDU"));
+    _driver_apdu = _find_driver(DRIVER_APDU, getenv(ENV_DRIVER_APDU));
     if (_driver_apdu == NULL)
     {
         fprintf(stderr, "No APDU driver found\n");
         return -1;
     }
 
-    _driver_http = _find_driver(DRIVER_HTTP, getenv("LPAC_HTTP"));
+    _driver_http = _find_driver(DRIVER_HTTP, getenv(ENV_DRIVER_HTTP));
     if (_driver_http == NULL)
     {
         fprintf(stderr, "No HTTP driver found\n");

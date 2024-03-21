@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "constants.h"
 
 #include <cjson/cJSON_ex.h>
 
@@ -38,7 +39,7 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     strcat(full_url, url);
     strcat(full_url, url_postfix);
 
-    if (getenv("LIBEUICC_DEBUG_HTTP"))
+    if (getenv(ENV_DEBUG_HTTP))
     {
         fprintf(stderr, "[DEBUG] [HTTP] [TX] url: %s, data: %s\n", full_url, str_tx);
     }
@@ -46,7 +47,7 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     {
         goto err;
     }
-    if (getenv("LIBEUICC_DEBUG_HTTP"))
+    if (getenv(ENV_DEBUG_HTTP))
     {
         fprintf(stderr, "[DEBUG] [HTTP] [RX] rcode: %d, data: %s\n", rcode_mearged, rbuf);
     }

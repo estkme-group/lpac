@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "constants.h"
 
 static int lc(struct apdu_request *apdu, uint8_t cla, uint8_t ins, uint8_t p1, uint8_t p2, uint8_t datalen)
 {
@@ -60,7 +61,7 @@ int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, c
 
     memset(response, 0x00, sizeof(*response));
 
-    if (getenv("LIBEUICC_DEBUG_APDU"))
+    if (getenv(ENV_DEBUG_APDU))
     {
         euicc_apdu_request_print(request, request_len);
     }
@@ -75,7 +76,7 @@ int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, c
     response->sw2 = response->data[response->length - 1];
     response->length -= 2;
 
-    if (getenv("LIBEUICC_DEBUG_APDU"))
+    if (getenv(ENV_DEBUG_APDU))
     {
         euicc_apdu_response_print(response);
     }

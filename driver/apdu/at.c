@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <constants.h>
 
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
@@ -23,7 +24,7 @@ static int at_expect(char **response, const char *expected)
     {
         fgets(buffer, sizeof(buffer), fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
-        if (getenv("AT_DEBUG"))
+        if (getenv(ENV_AT_DEBUG))
             printf("AT_DEBUG: %s\r\n", buffer);
         if (strcmp(buffer, "ERROR") == 0)
         {
@@ -48,9 +49,9 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     logic_channel = 0;
 
-    if (!(device = getenv("AT_DEVICE")))
+    if (!(device = getenv(ENV_AT_DEVICE)))
     {
-        device = "/dev/ttyUSB0";
+        device = DEFAULT_AT_DEVICE;
     }
 
     fuart = fopen(device, "r+");

@@ -1,0 +1,19 @@
+#ifndef LPAC_CONSTANTS_H
+#define LPAC_CONSTANTS_H
+#endif //LPAC_CONSTANTS_H
+
+// PC/SC driver
+#define ENV_PCSC_IFACE_SELECT "DRIVER_IFID"
+
+// AT driver
+#define ENV_AT_DEVICE "AT_DEVICE"
+#define ENV_AT_DEBUG "AT_DEBUG"
+
+#define DEFAULT_AT_DEVICE "/dev/ttyUSB0"
+
+// GBinder driver
+#define ENV_GBINDER_APDU_DEBUG "GBINDER_APDU_DEBUG"
+
+// Driver
+#define ENV_DRIVER_APDU "LPAC_APDU"
+#define ENV_DRIVER_HTTP "LPAC_HTTP"

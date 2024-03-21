@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <constants.h>
 
 #ifdef _WIN32
 #include <winscard.h>
@@ -14,8 +15,6 @@
 
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
-
-#define INTERFACE_SELECT_ENV "DRIVER_IFID"
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -108,9 +107,9 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
     DWORD dwActiveProtocol;
 
     id = 0;
-    if (getenv(INTERFACE_SELECT_ENV))
+    if (getenv(ENV_PCSC_IFACE_SELECT))
     {
-        id = atoi(getenv(INTERFACE_SELECT_ENV));
+        id = atoi(getenv(ENV_PCSC_IFACE_SELECT));
     }
 
     if (id != index)
@@ -427,7 +426,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_ENV))
+        if (!cJSON_AddStringOrNullToObject(payload, "env", ENV_PCSC_IFACE_SELECT))
         {
             return -1;
         }
