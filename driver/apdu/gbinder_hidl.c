@@ -318,7 +318,7 @@ static void libapduinterface_fini(void)
 {
 }
 
-const struct lpac_driver driver_apdu_gbinder_hidl = {
+const struct euicc_driver driver_apdu_gbinder_hidl = {
     .type = DRIVER_APDU,
     .name = "gbinder_hidl",
     .init = libapduinterface_init,

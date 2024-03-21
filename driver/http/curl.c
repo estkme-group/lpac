@@ -196,7 +196,7 @@ static void libhttpinterface_fini(void)
 {
 }
 
-const struct lpac_driver driver_http_curl = {
+const struct euicc_driver driver_http_curl = {
     .type = DRIVER_HTTP,
     .name = "curl",
     .init = (int (*)(void *))libhttpinterface_init,

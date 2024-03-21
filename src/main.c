@@ -15,22 +15,17 @@
 #include "applet/notification.h"
 #include "applet/version.h"
 
-static struct applet_entry applet_apdu = {
-    .name = "apdu",
-    .main = NULL,
-};
-static struct applet_entry applet_http = {
-    .name = "http",
-    .main = NULL,
-};
-
 static int driver_applet_main(int argc, char **argv)
 {
-    applet_apdu.main = euicc_driver_main_apdu;
-    applet_http.main = euicc_driver_main_http;
-    static const struct applet_entry *applets[] = {
-        &applet_apdu,
-        &applet_http,
+    const struct applet_entry *applets[] = {
+        &(struct applet_entry){
+            .name = "apdu",
+            .main = euicc_driver_main_apdu,
+        },
+        &(struct applet_entry){
+            .name = "http",
+            .main = euicc_driver_main_http,
+        },
         NULL,
     };
     return applet_entry(argc, argv, applets);
@@ -79,7 +74,7 @@ int main(int argc, char **argv)
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
-    if (euicc_driver_init())
+    if (euicc_driver_init(getenv("LPAC_APDU"), getenv("LPAC_HTTP")))
     {
         return -1;
     }

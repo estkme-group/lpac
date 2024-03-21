@@ -2,7 +2,6 @@
 #include "driver.private.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #ifdef LPAC_WITH_APDU_GBINDER
@@ -21,7 +20,7 @@
 #include "driver/apdu/stdio.h"
 #include "driver/http/stdio.h"
 
-static const struct lpac_driver *drivers[] = {
+static const struct euicc_driver *drivers[] = {
 #ifdef LPAC_WITH_APDU_GBINDER
     &driver_apdu_gbinder_hidl,
 #endif
@@ -39,19 +38,19 @@ static const struct lpac_driver *drivers[] = {
     NULL,
 };
 
-static const struct lpac_driver *_driver_apdu = NULL;
-static const struct lpac_driver *_driver_http = NULL;
+static const struct euicc_driver *_driver_apdu = NULL;
+static const struct euicc_driver *_driver_http = NULL;
 
 struct euicc_apdu_interface euicc_driver_interface_apdu;
 struct euicc_http_interface euicc_driver_interface_http;
 int (*euicc_driver_main_apdu)(int argc, char **argv) = NULL;
 int (*euicc_driver_main_http)(int argc, char **argv) = NULL;
 
-static const struct lpac_driver *_find_driver(enum lpac_driver_type type, const char *name)
+static const struct euicc_driver *_find_driver(enum euicc_driver_type type, const char *name)
 {
     for (int i = 0; drivers[i] != NULL; i++)
     {
-        const struct lpac_driver *d = drivers[i];
+        const struct euicc_driver *d = drivers[i];
         if (d->type != type)
         {
             continue;
@@ -68,16 +67,16 @@ static const struct lpac_driver *_find_driver(enum lpac_driver_type type, const 
     return NULL;
 }
 
-int euicc_driver_init()
+int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name)
 {
-    _driver_apdu = _find_driver(DRIVER_APDU, getenv("LPAC_APDU"));
+    _driver_apdu = _find_driver(DRIVER_APDU, apdu_driver_name);
     if (_driver_apdu == NULL)
     {
         fprintf(stderr, "No APDU driver found\n");
         return -1;
     }
 
-    _driver_http = _find_driver(DRIVER_HTTP, getenv("LPAC_HTTP"));
+    _driver_http = _find_driver(DRIVER_HTTP, http_driver_name);
     if (_driver_http == NULL)
     {
         fprintf(stderr, "No HTTP driver found\n");

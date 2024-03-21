@@ -276,7 +276,7 @@ static void libhttpinterface_fini(void)
 {
 }
 
-const struct lpac_driver driver_http_stdio = {
+const struct euicc_driver driver_http_stdio = {
     .type = DRIVER_HTTP,
     .name = "stdio",
     .init = (int (*)(void *))libhttpinterface_init,
