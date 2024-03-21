@@ -1,36 +1,37 @@
 #include "driver.h"
+#include "driver.private.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef LPAC_WITH_APDU_GBINDER_HIDL
+#ifdef LPAC_WITH_APDU_GBINDER
 #include "driver/apdu/gbinder_hidl.h"
 #endif
 
-#ifndef LPAC_WITHOUT_APDU_PCSC
+#ifdef LPAC_WITH_APDU_PCSC
 #include "driver/apdu/pcsc.h"
 #endif
-#ifndef LPAC_WITHOUT_APDU_AT
+#ifdef LPAC_WITH_APDU_AT
 #include "driver/apdu/at.h"
 #endif
-#ifndef LPAC_WITHOUT_HTTP_CURL
+#ifdef LPAC_WITH_HTTP_CURL
 #include "driver/http/curl.h"
 #endif
 #include "driver/apdu/stdio.h"
 #include "driver/http/stdio.h"
 
 static const struct lpac_driver *drivers[] = {
-#ifdef LPAC_WITH_APDU_GBINDER_HIDL
+#ifdef LPAC_WITH_APDU_GBINDER
     &driver_apdu_gbinder_hidl,
 #endif
-#ifndef LPAC_WITHOUT_APDU_PCSC
+#ifdef LPAC_WITH_APDU_PCSC
     &driver_apdu_pcsc,
 #endif
-#ifndef LPAC_WITHOUT_APDU_AT
+#ifdef LPAC_WITH_APDU_AT
     &driver_apdu_at,
 #endif
-#ifndef LPAC_WITHOUT_HTTP_CURL
+#ifdef LPAC_WITH_HTTP_CURL
     &driver_http_curl,
 #endif
     &driver_apdu_stdio,
@@ -38,19 +39,13 @@ static const struct lpac_driver *drivers[] = {
     NULL,
 };
 
-struct euicc_apdu_interface driver_interface_apdu;
-struct euicc_http_interface driver_interface_http;
-static struct applet_entry applet_apdu = {
-    .name = "apdu",
-    .main = NULL,
-};
-static struct applet_entry applet_http = {
-    .name = "http",
-    .main = NULL,
-};
-
 static const struct lpac_driver *_driver_apdu = NULL;
 static const struct lpac_driver *_driver_http = NULL;
+
+struct euicc_apdu_interface euicc_driver_interface_apdu;
+struct euicc_http_interface euicc_driver_interface_http;
+int (*euicc_driver_main_apdu)(int argc, char **argv) = NULL;
+int (*euicc_driver_main_http)(int argc, char **argv) = NULL;
 
 static const struct lpac_driver *_find_driver(enum lpac_driver_type type, const char *name)
 {
@@ -73,7 +68,7 @@ static const struct lpac_driver *_find_driver(enum lpac_driver_type type, const 
     return NULL;
 }
 
-int driver_init()
+int euicc_driver_init()
 {
     _driver_apdu = _find_driver(DRIVER_APDU, getenv("LPAC_APDU"));
     if (_driver_apdu == NULL)
@@ -89,16 +84,16 @@ int driver_init()
         return -1;
     }
 
-    _driver_apdu->init(&driver_interface_apdu);
-    _driver_http->init(&driver_interface_http);
+    _driver_apdu->init(&euicc_driver_interface_apdu);
+    _driver_http->init(&euicc_driver_interface_http);
 
-    applet_apdu.main = _driver_apdu->main;
-    applet_http.main = _driver_http->main;
+    euicc_driver_main_apdu = _driver_apdu->main;
+    euicc_driver_main_http = _driver_http->main;
 
     return 0;
 }
 
-void driver_fini()
+void euicc_driver_fini()
 {
     if (_driver_apdu != NULL)
     {
@@ -109,18 +104,3 @@ void driver_fini()
         _driver_http->fini();
     }
 }
-
-static int dlsym_interface_applet_main(int argc, char **argv)
-{
-    static const struct applet_entry *applets[] = {
-        &applet_apdu,
-        &applet_http,
-        NULL,
-    };
-    return applet_entry(argc, argv, applets);
-}
-
-struct applet_entry driver_applet = {
-    .name = "driver",
-    .main = dlsym_interface_applet_main,
-};

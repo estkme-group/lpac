@@ -40,7 +40,7 @@ then execute `./output/lpac` to use.
 
 - Droidian
 
-Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, you will need `libgbinder-dev`, `glib2.0-dev`, and you will have to set `-DLPAC_APDU_INTERFACE_GBINDER=ON` when invoking `cmake`.
+Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, you will need `libgbinder-dev`, `glib2.0-dev`, and you will have to set `-DLPAC_WITH_APDU_GBINDER=ON` when invoking `cmake`.
 
 </details>
 
@@ -487,7 +487,7 @@ A: The verification of SM-DP+ servers of telecom operators is diverse. Please ch
 
 ## License
 
-- lpac (/src): AGPL-3.0
+- lpac (/src, /driver): AGPL-3.0
 - libeuicc (/euicc): LGPL-v2
 
 Copyright (c) 2023-2024 eSTKme Group
