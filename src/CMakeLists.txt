@@ -12,7 +12,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet/notification DIR_LPAC_SR
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet/profile DIR_LPAC_SRCS)
 
 add_executable(lpac ${DIR_LPAC_SRCS})
-target_link_libraries(lpac euicc euicc-drivers)
+target_link_libraries(lpac euicc-drivers)
 target_include_directories(lpac PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 find_package(Git)
