@@ -440,7 +440,7 @@ class RLPAClient
     public function processOpenLpac($cmd)
     {
         $this->lockAPDU();
-        $this->process = proc_open("./lpac {$cmd}", [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes, ".", ['APDU_INTERFACE' => './libapduinterface_stdio.so']);
+        $this->process = proc_open("./lpac {$cmd}", [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], $pipes, ".", ['LPAC_APDU' => 'stdio']);
         $this->process_stdin = $pipes[0];
         $this->process_stdout = $pipes[1];
         $this->process_stderr = $pipes[2];
