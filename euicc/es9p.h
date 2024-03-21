@@ -13,7 +13,8 @@ int es9p_get_bound_profile_package(struct euicc_ctx *ctx);
 int es9p_authenticate_client(struct euicc_ctx *ctx);
 int es9p_cancel_session(struct euicc_ctx *ctx);
 
-int es11_authenticate_client_r(struct euicc_ctx *ctx, char **smdp_list, const char *server_address, const char *transction_id, const char *b64_authenticate_server_response);
-int es11_authenticate_client(struct euicc_ctx *ctx, char **smdp_list);
+int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const char *server_address, const char *transction_id, const char *b64_authenticate_server_response);
+int es11_authenticate_client(struct euicc_ctx *ctx, char ***smdp_list);
 
 int es9p_handle_notification(struct euicc_ctx *ctx, const char *b64_PendingNotification);
+void es11_smdp_list_free_all(char **smdp_list);

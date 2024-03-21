@@ -293,16 +293,68 @@ int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, con
     return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/cancelSession", ikey, idata, NULL, NULL, NULL);
 }
 
-int es11_authenticate_client_r(struct euicc_ctx *ctx, char **smdp_list, const char *server_address, const char *transction_id, const char *b64_authenticate_server_response)
+int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const char *server_address, const char *transction_id, const char *b64_authenticate_server_response)
 {
-    cJSON *eventEntries = NULL;
+    int fret = 0;
+    cJSON *j_eventEntries = NULL;
+    int j_eventEntries_size = 0;
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
     const char *idata[] = {ctx->http._internal.transaction_id, b64_authenticate_server_response, NULL};
     const char *okey[] = {"eventEntries", NULL};
     const char oobj[] = {1};
-    void **optr[] = {(void **)&eventEntries, NULL};
+    void **optr[] = {(void **)&j_eventEntries, NULL};
 
-    return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr);
+    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr))
+    {
+        return -1;
+    }
+
+    if (j_eventEntries == NULL || !cJSON_IsArray(j_eventEntries))
+    {
+        return -1;
+    }
+
+    j_eventEntries_size = cJSON_GetArraySize(j_eventEntries);
+
+    *smdp_list = malloc(sizeof(char *) * (j_eventEntries_size + 1));
+    if (*smdp_list == NULL)
+    {
+        fret = -1;
+        goto err;
+    }
+    memset(*smdp_list, 0, sizeof(char *) * (j_eventEntries_size + 1));
+
+    for (int i = 0; i < j_eventEntries_size; i++)
+    {
+        cJSON *j_event = cJSON_GetArrayItem(j_eventEntries, i);
+        cJSON *j_eventType = cJSON_GetObjectItem(j_event, "rspServerAddress");
+
+        if (j_eventType == NULL || !cJSON_IsString(j_eventType))
+        {
+            fret = -1;
+            goto err;
+        }
+
+        (*smdp_list)[i] = strdup(j_eventType->valuestring);
+    }
+
+    fret = 0;
+    goto exit;
+
+err:
+    if (*smdp_list)
+    {
+        for (int i = 0; i < j_eventEntries_size; i++)
+        {
+            free((*smdp_list)[i]);
+        }
+        free(*smdp_list);
+        *smdp_list = NULL;
+    }
+
+exit:
+    cJSON_Delete(j_eventEntries);
+    return fret;
 }
 
 int es9p_initiate_authentication(struct euicc_ctx *ctx)
@@ -414,9 +466,25 @@ int es9p_cancel_session(struct euicc_ctx *ctx)
     return -1;
 }
 
-int es11_authenticate_client(struct euicc_ctx *ctx, char **smdp_list)
+int es11_authenticate_client(struct euicc_ctx *ctx, char ***smdp_list)
 {
-    return -1;
+    int fret;
+
+    if (ctx->http._internal.b64_authenticate_server_response == NULL)
+    {
+        return -1;
+    }
+
+    fret = es11_authenticate_client_r(ctx, smdp_list, ctx->http.server_address, ctx->http._internal.transaction_id, ctx->http._internal.b64_authenticate_server_response);
+    if (fret < 0)
+    {
+        return fret;
+    }
+
+    free(ctx->http._internal.b64_authenticate_server_response);
+    ctx->http._internal.b64_authenticate_server_response = NULL;
+
+    return fret;
 }
 
 int es9p_handle_notification(struct euicc_ctx *ctx, const char *b64_PendingNotification)
@@ -425,4 +493,16 @@ int es9p_handle_notification(struct euicc_ctx *ctx, const char *b64_PendingNotif
     const char *idata[] = {b64_PendingNotification, NULL};
 
     return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/handleNotification", ikey, idata, NULL, NULL, NULL);
+}
+
+void es11_smdp_list_free_all(char **smdp_list)
+{
+    if (smdp_list)
+    {
+        for (int i = 0; smdp_list[i] != NULL; i++)
+        {
+            free(smdp_list[i]);
+        }
+        free(smdp_list);
+    }
 }
