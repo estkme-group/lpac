@@ -130,22 +130,22 @@ Download prebuilt curl dll is also needed. Refer to the previous compilation ste
 
 In Linux, you need install `pcscd`, `pcsclite` and `libcurl`.
 
-APDU and HTTP interfaces of lpac has serval backends, you need specify `$APDU_INTERFACE` and `$HTTP_INTERFACE` environment variable to interface library path. If not specified, it will use `libapduinterface_pcsc` and `libhttpinterface_curl`.
+APDU and HTTP interfaces of lpac has serval backends, you need specify `$LPAC_APDU` and `$LPAC_HTTP` environment variable to interface library path. If not specified, it will use `pcsc` and `curl`.
 
 APDU Backends:
 
-- `libapduinterface_at`: use AT commands interface used by LTE module
-- `libapduinterface_pcsc`: use PC/SC Smart Card API
-- `libapduinterface_stdio`: use standard input/output
+- `at`: use AT commands interface used by LTE module
+- `pcsc`: use PC/SC Smart Card API
+- `stdio`: use standard input/output
 - GBinder-based backends for `libhybris` (Halium) distributions:
-  - `libapduinterface_gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
+  - `gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
 
-Using `libapduinterface_at` need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need add yourself into `dialout` group.
+Using `at` need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need add yourself into `dialout` group.
 
 HTTP Backends:
 
-- `libhttpinterface_curl`: use libcurl
-- `libhttpinterface_stdio`: use standard input/ouput
+- `curl`: use libcurl
+- `stdio`: use standard input/ouput
 
 ## CLI
 
