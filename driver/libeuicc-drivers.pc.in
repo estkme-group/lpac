@@ -6,6 +6,6 @@ includedir="${prefix}/include"
 Name: libeuicc-drivers
 Description: An "official" collection of drivers (backends) and their loader for use with libeuicc
 Version: @PROJECT_VERSION@
-Requires: libeuicc = @PROJECT_VERSION@
-Cflags: -I${includedir}
+Requires: @LIBEUICC_DRIVERS_REQUIRES@
+Cflags: -I${includedir} @LIBEUICC_DRIVERS_EXTRA_CFLAGS@
 Libs: -L${libdir} -leuicc-drivers
