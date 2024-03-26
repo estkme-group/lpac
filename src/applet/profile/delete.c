@@ -43,7 +43,7 @@ static int applet_main(int argc, char **argv)
             reason = "unknown";
             break;
         }
-        jprint_error("es10c_disable_profile", reason);
+        jprint_error("es10c_delete_profile", reason);
         return -1;
     }
 
