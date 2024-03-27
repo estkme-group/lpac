@@ -47,6 +47,9 @@ if(LPAC_WITH_APDU_AT)
     target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at.c)
 endif()
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_UQMI")
+target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/uqmi.c)
+
 if(LPAC_WITH_APDU_GBINDER)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_GBINDER")
     target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/gbinder_hidl.c)
