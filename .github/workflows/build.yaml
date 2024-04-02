@@ -21,7 +21,7 @@ jobs:
           - {variant: mingw, name: Windows with MinGW, artifact: windows-x64}
           - {variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
         include:
-          - os: macos-14
+          - os: macos-latest
             build: {variant: make, name: macOS, artifact: macos-universal}
     steps:
       - name: Checkout
