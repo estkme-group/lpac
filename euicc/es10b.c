@@ -1363,8 +1363,34 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
     goto exit;
 err:
     fret = -1;
+    es10b_get_rat_list_free_all(*ratList);
 exit:
     free(respbuf);
     respbuf = NULL;
     return fret;
+}
+
+void es10b_get_rat_list_free_all(struct es10b_rat *ratList) {
+    struct es10b_rat *next;
+    while (ratList)
+    {
+        next = ratList->next;
+        free(ratList->pprIds);
+        es10b_operation_id_free_all(ratList->allowedOperators);
+        free(ratList->pprFlags);
+        free(ratList);
+        ratList = next;
+    }
+}
+
+void es10b_operation_id_free_all(const struct es10b_operation_id *operations) {
+    struct es10b_operation_id *next;
+    while (operations)
+    {
+        next = operations->next;
+        free(operations->mcc_mnc);
+        free(operations->gid1);
+        free(operations->gid2);
+        operations = next;
+    }
 }
