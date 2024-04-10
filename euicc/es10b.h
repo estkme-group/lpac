@@ -110,6 +110,24 @@ struct es10b_cancel_session_param
     uint8_t transactionIdLen;
 };
 
+struct es10b_rat
+{
+    const char** pprIds;
+    const struct es10b_operation_id* allowedOperators;
+    const char** pprFlags;
+
+    struct es10b_rat *next;
+};
+
+struct es10b_operation_id
+{
+    char* mcc_mnc;
+    char* gid1;
+    char* gid2;
+
+    struct es10b_operation_id *next;
+};
+
 int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param, struct es10b_prepare_download_param_user *param_user);
 int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage);
 int es10b_get_euicc_challenge_r(struct euicc_ctx *ctx, char **b64_euiccChallenge);
@@ -129,6 +147,8 @@ int es10b_cancel_session(struct euicc_ctx *ctx);
 int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList);
 int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification, unsigned long seqNumber);
 int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber);
+
+int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList);
 
 void es10b_notification_metadata_list_free_all(struct es10b_notification_metadata_list *notificationMetadataList);
 void es10b_pending_notification_free(struct es10b_pending_notification *PendingNotification);
