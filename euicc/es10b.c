@@ -1309,8 +1309,8 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
                                 switch (n_operator.tag)
                                 {
                                     case 0x80: // mcc_mnc
-                                        p->mcc_mnc = malloc((n_operator.length * 2) + 1);
-                                        euicc_hexutil_bin2hex(p->mcc_mnc, sizeof(p->mcc_mnc), n_operator.value, n_operator.length);
+                                        p->plmn = malloc((n_operator.length * 2) + 1);
+                                        euicc_hexutil_bin2hex(p->plmn, sizeof(p->plmn), n_operator.value, n_operator.length);
                                         break;
                                     case 0x81: // gid1
                                         p->gid1 = malloc((n_operator.length * 2) + 1);
@@ -1388,7 +1388,7 @@ void es10b_operation_id_free_all(const struct es10b_operation_id *operations) {
     while (operations)
     {
         next = operations->next;
-        free(operations->mcc_mnc);
+        free(operations->plmn);
         free(operations->gid1);
         free(operations->gid2);
         operations = next;

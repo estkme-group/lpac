@@ -121,7 +121,7 @@ struct es10b_rat
 
 struct es10b_operation_id
 {
-    char* mcc_mnc;
+    char* plmn;
     char* gid1;
     char* gid2;
 

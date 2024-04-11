@@ -71,7 +71,7 @@ static int applet_main(int argc, char **argv)
                 while (rptr)
                 {
                     cJSON *joperator = cJSON_CreateObject();
-                    cJSON_AddStringOrNullToObject(joperator, "mccMnc", rptr->mcc_mnc);
+                    cJSON_AddStringOrNullToObject(joperator, "plmn", rptr->plmn);
                     cJSON_AddStringOrNullToObject(joperator, "gid1", rptr->gid1);
                     cJSON_AddStringOrNullToObject(joperator, "gid2", rptr->gid2);
                     cJSON_AddItemToArray(jAllowedOperators, joperator);
