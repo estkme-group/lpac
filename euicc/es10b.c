@@ -1255,7 +1255,7 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
     n_profile.self.length = 0;
 
     // ProfilePolicyAuthorisationRule
-    while (euicc_derutil_unpack_next(&n_profile, &n_profile, tmpnode.value,tmpnode.length) == 0)
+    while (euicc_derutil_unpack_next(&n_profile, &n_profile, tmpnode.value, tmpnode.length) == 0)
     {
         tmpchildnode.self.ptr = n_profile.value;
         tmpchildnode.self.length = 0;
@@ -1268,83 +1268,86 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
 
         memset(rat, 0, sizeof(*rat));
 
-        while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, n_profile.value,n_profile.length) == 0)
+        while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, n_profile.value, n_profile.length) == 0)
         {
-            switch (tmpchildnode.tag) {
-                case 0x80: // ppr ids
-                    {
-                        static const char *desc[] = {"pprUpdateControl", "ppr1", "ppr2", "ppr3"};
+            switch (tmpchildnode.tag)
+            {
+            case 0x80: // ppr ids
+            {
+                static const char *desc[] = {"pprUpdateControl", "ppr1", "ppr2", "ppr3", NULL};
 
-                        if (euicc_derutil_convert_bin2bits_str(&rat->pprIds, tmpchildnode.value, tmpchildnode.length, desc))
+                if (euicc_derutil_convert_bin2bits_str(&rat->pprIds, tmpchildnode.value, tmpchildnode.length, desc))
+                {
+                    goto err;
+                }
+            }
+            break;
+            case 0xA1: // allowed operators
+            {
+                struct euicc_derutil_node n_allowed_operator, n_operator;
+                struct es10b_operation_id *operations_wptr;
+                struct es10b_operation_id *p;
+
+                n_allowed_operator.self.ptr = tmpchildnode.value;
+                n_allowed_operator.self.length = 0;
+
+                while (euicc_derutil_unpack_next(&n_allowed_operator, &n_allowed_operator, tmpchildnode.value, tmpchildnode.length) == 0)
+                {
+                    p = malloc(sizeof(struct es10b_operation_id));
+                    if (!p)
+                    {
+                        goto err;
+                    }
+                    memset(p, 0, sizeof(*p));
+
+                    n_operator.self.ptr = n_allowed_operator.value;
+                    n_operator.self.length = 0;
+
+                    while (euicc_derutil_unpack_next(&n_operator, &n_operator, n_allowed_operator.value, n_allowed_operator.length) == 0)
+                    {
+                        if (n_operator.length == 0)
                         {
-                            goto err;
+                            continue;
                         }
-                    }
-                    break;
-                case 0xA1: // allowed operators
-                    {
-                        struct euicc_derutil_node n_allowed_operator, n_operator;
-                        struct es10b_operation_id *operations_wptr;
-                        struct es10b_operation_id *p;
-
-                        n_allowed_operator.self.ptr = tmpchildnode.value;
-                        n_allowed_operator.self.length = 0;
-
-                        while (euicc_derutil_unpack_next(&n_allowed_operator, &n_allowed_operator, tmpchildnode.value,tmpchildnode.length) == 0) {
-                            p = malloc(sizeof(struct es10b_operation_id));
-                            if (!p) {
-                                goto err;
-                            }
-                            memset(p, 0, sizeof(*p));
-
-                            n_operator.self.ptr = n_allowed_operator.value;
-                            n_operator.self.length = 0;
-
-                            while (euicc_derutil_unpack_next(&n_operator, &n_operator, n_allowed_operator.value, n_allowed_operator.length) == 0)
-                            {
-                                if (n_operator.length == 0)
-                                {
-                                    continue;
-                                }
-                                switch (n_operator.tag)
-                                {
-                                    case 0x80: // mcc_mnc
-                                        p->plmn = malloc((n_operator.length * 2) + 1);
-                                        euicc_hexutil_bin2hex(p->plmn, sizeof(p->plmn), n_operator.value, n_operator.length);
-                                        break;
-                                    case 0x81: // gid1
-                                        p->gid1 = malloc((n_operator.length * 2) + 1);
-                                        euicc_hexutil_bin2hex(p->gid1, sizeof(p->gid1), n_operator.value, n_operator.length);
-                                        break;
-                                    case 0x82: // gid2
-                                        p->gid2 = malloc((n_operator.length * 2) + 1);
-                                        euicc_hexutil_bin2hex(p->gid2, sizeof(p->gid2), n_operator.value, n_operator.length);
-                                        break;
-                                }
-                            }
-                            if (operations_wptr == NULL)
-                            {
-                                operations_wptr = p;
-                            }
-                            else
-                            {
-                                operations_wptr->next = p;
-                            }
-                        }
-
-                        rat->allowedOperators = operations_wptr;
-                    }
-                    break;
-                case 0x82: // ppr flags
-                    {
-                        static const char *desc[] = {"consentRequired"};
-
-                        if (euicc_derutil_convert_bin2bits_str(&rat->pprFlags, tmpchildnode.value, tmpchildnode.length, desc))
+                        switch (n_operator.tag)
                         {
-                            goto err;
+                        case 0x80: // mcc_mnc
+                            p->plmn = malloc((n_operator.length * 2) + 1);
+                            euicc_hexutil_bin2hex(p->plmn, sizeof(p->plmn), n_operator.value, n_operator.length);
+                            break;
+                        case 0x81: // gid1
+                            p->gid1 = malloc((n_operator.length * 2) + 1);
+                            euicc_hexutil_bin2hex(p->gid1, sizeof(p->gid1), n_operator.value, n_operator.length);
+                            break;
+                        case 0x82: // gid2
+                            p->gid2 = malloc((n_operator.length * 2) + 1);
+                            euicc_hexutil_bin2hex(p->gid2, sizeof(p->gid2), n_operator.value, n_operator.length);
+                            break;
                         }
                     }
-                    break;
+                    if (operations_wptr == NULL)
+                    {
+                        operations_wptr = p;
+                    }
+                    else
+                    {
+                        operations_wptr->next = p;
+                    }
+                }
+
+                rat->allowedOperators = operations_wptr;
+            }
+            break;
+            case 0x82: // ppr flags
+            {
+                static const char *desc[] = {"consentRequired", NULL};
+
+                if (euicc_derutil_convert_bin2bits_str(&rat->pprFlags, tmpchildnode.value, tmpchildnode.length, desc))
+                {
+                    goto err;
+                }
+            }
+            break;
             }
         }
 
@@ -1358,39 +1361,38 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
         }
     }
 
-
     fret = 0;
     goto exit;
 err:
     fret = -1;
-    es10b_get_rat_list_free_all(*ratList);
+    es10b_rat_list_free_all(*ratList);
+    *ratList = NULL;
 exit:
     free(respbuf);
     respbuf = NULL;
     return fret;
 }
 
-void es10b_get_rat_list_free_all(struct es10b_rat *ratList) {
-    struct es10b_rat *next;
+void es10b_rat_list_free_all(struct es10b_rat *ratList)
+{
+    struct es10b_rat *next_rat;
+    struct es10b_operation_id *next_operation_id;
+
     while (ratList)
     {
-        next = ratList->next;
+        next_rat = ratList->next;
         free(ratList->pprIds);
-        es10b_operation_id_free_all(ratList->allowedOperators);
+        while (ratList->allowedOperators)
+        {
+            next_operation_id = ratList->allowedOperators->next;
+            free(ratList->allowedOperators->plmn);
+            free(ratList->allowedOperators->gid1);
+            free(ratList->allowedOperators->gid2);
+            free(ratList->allowedOperators);
+            ratList->allowedOperators = next_operation_id;
+        }
         free(ratList->pprFlags);
         free(ratList);
-        ratList = next;
-    }
-}
-
-void es10b_operation_id_free_all(const struct es10b_operation_id *operations) {
-    struct es10b_operation_id *next;
-    while (operations)
-    {
-        next = operations->next;
-        free(operations->plmn);
-        free(operations->gid1);
-        free(operations->gid2);
-        operations = next;
+        ratList = next_rat;
     }
 }

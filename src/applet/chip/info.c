@@ -51,49 +51,6 @@ static int applet_main(int argc, char **argv)
     cJSON_AddItemToObject(jdata, "EuiccConfiguredAddresses", jaddresses);
     es10a_euicc_configured_addresses_free(&addresses);
 
-    if (jratList)
-    {
-        while (ratList) {
-            struct cJSON *jrat = cJSON_CreateObject();
-            if (ratList->pprIds)
-            {
-                cJSON *jPPR = cJSON_CreateArray();
-                for (int i = 0; ratList->pprIds[i] != NULL; i++)
-                {
-                    cJSON_AddItemToArray(jPPR, cJSON_CreateString(ratList->pprIds[i]));
-                }
-                cJSON_AddItemToObject(jrat, "pprIds", jPPR);
-            }
-            if (ratList->allowedOperators)
-            {
-                cJSON *jAllowedOperators = cJSON_CreateArray();
-                const struct es10b_operation_id *rptr = ratList->allowedOperators;
-                while (rptr)
-                {
-                    cJSON *joperator = cJSON_CreateObject();
-                    cJSON_AddStringOrNullToObject(joperator, "plmn", rptr->plmn);
-                    cJSON_AddStringOrNullToObject(joperator, "gid1", rptr->gid1);
-                    cJSON_AddStringOrNullToObject(joperator, "gid2", rptr->gid2);
-                    cJSON_AddItemToArray(jAllowedOperators, joperator);
-                    rptr = rptr->next;
-                }
-                cJSON_AddItemToObject(jrat, "allowedOperators", jAllowedOperators);
-            }
-            if (ratList->pprFlags)
-            {
-                cJSON *jFlags = cJSON_CreateArray();
-                for (int i = 0; ratList->pprFlags[i] != NULL; i++)
-                {
-                    cJSON_AddItemToArray(jFlags, cJSON_CreateString(ratList->pprFlags[i]));
-                }
-                cJSON_AddItemToObject(jrat, "pprFlags", jFlags);
-            }
-            cJSON_AddItemToArray(jratList, jrat);
-            ratList = ratList->next;
-        }
-        cJSON_AddItemToObject(jdata, "rulesAuthorisationTable", jratList);
-    }
-
     if (jeuiccinfo2)
     {
         cJSON_AddStringOrNullToObject(jeuiccinfo2, "profileVersion", euiccinfo2.profileVersion);
@@ -169,6 +126,50 @@ static int applet_main(int argc, char **argv)
         es10c_ex_euiccinfo2_free(&euiccinfo2);
     }
     cJSON_AddItemToObject(jdata, "EUICCInfo2", jeuiccinfo2);
+
+    if (jratList)
+    {
+        while (ratList) {
+            struct cJSON *jrat = cJSON_CreateObject();
+            if (ratList->pprIds)
+            {
+                cJSON *jPPR = cJSON_CreateArray();
+                for (int i = 0; ratList->pprIds[i] != NULL; i++)
+                {
+                    cJSON_AddItemToArray(jPPR, cJSON_CreateString(ratList->pprIds[i]));
+                }
+                cJSON_AddItemToObject(jrat, "pprIds", jPPR);
+            }
+            if (ratList->allowedOperators)
+            {
+                cJSON *jAllowedOperators = cJSON_CreateArray();
+                const struct es10b_operation_id *rptr = ratList->allowedOperators;
+                while (rptr)
+                {
+                    cJSON *joperator = cJSON_CreateObject();
+                    cJSON_AddStringOrNullToObject(joperator, "plmn", rptr->plmn);
+                    cJSON_AddStringOrNullToObject(joperator, "gid1", rptr->gid1);
+                    cJSON_AddStringOrNullToObject(joperator, "gid2", rptr->gid2);
+                    cJSON_AddItemToArray(jAllowedOperators, joperator);
+                    rptr = rptr->next;
+                }
+                cJSON_AddItemToObject(jrat, "allowedOperators", jAllowedOperators);
+            }
+            if (ratList->pprFlags)
+            {
+                cJSON *jFlags = cJSON_CreateArray();
+                for (int i = 0; ratList->pprFlags[i] != NULL; i++)
+                {
+                    cJSON_AddItemToArray(jFlags, cJSON_CreateString(ratList->pprFlags[i]));
+                }
+                cJSON_AddItemToObject(jrat, "pprFlags", jFlags);
+            }
+            cJSON_AddItemToArray(jratList, jrat);
+            ratList = ratList->next;
+        }
+        cJSON_AddItemToObject(jdata, "rulesAuthorisationTable", jratList);
+        es10b_rat_list_free_all(ratList);
+    }
 
     jprint_success(jdata);
 

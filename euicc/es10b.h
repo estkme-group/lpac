@@ -112,18 +112,18 @@ struct es10b_cancel_session_param
 
 struct es10b_rat
 {
-    const char** pprIds;
-    const struct es10b_operation_id* allowedOperators;
-    const char** pprFlags;
+    const char **pprIds;
+    struct es10b_operation_id *allowedOperators;
+    const char **pprFlags;
 
     struct es10b_rat *next;
 };
 
 struct es10b_operation_id
 {
-    char* plmn;
-    char* gid1;
-    char* gid2;
+    char *plmn;
+    char *gid1;
+    char *gid2;
 
     struct es10b_operation_id *next;
 };
@@ -152,5 +152,4 @@ void es10b_notification_metadata_list_free_all(struct es10b_notification_metadat
 void es10b_pending_notification_free(struct es10b_pending_notification *PendingNotification);
 
 int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList);
-void es10b_get_rat_list_free_all(struct es10b_rat *ratList);
-void es10b_operation_id_free_all(const struct es10b_operation_id *operations);
+void es10b_rat_list_free_all(struct es10b_rat *ratList);

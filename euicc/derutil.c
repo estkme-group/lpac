@@ -313,7 +313,10 @@ int euicc_derutil_convert_long2bin(uint8_t *buffer, uint32_t *buffer_len, long v
         {
             if (value > 0)
             {
-                required_len++;
+                if ((value >> ((i - 1) * 8)) & 0x80)
+                {
+                    required_len++;
+                }
             }
             break;
         }
