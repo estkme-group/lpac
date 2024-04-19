@@ -1285,7 +1285,7 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
             case 0xA1: // allowed operators
             {
                 struct euicc_derutil_node n_allowed_operator, n_operator;
-                struct es10b_operation_id *operations_wptr;
+                struct es10b_operation_id *operations_wptr = NULL;
                 struct es10b_operation_id *p;
 
                 n_allowed_operator.self.ptr = tmpchildnode.value;
