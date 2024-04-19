@@ -14,10 +14,9 @@ static int applet_main(int argc, char **argv)
 {
     char *eid = NULL;
     struct es10a_euicc_configured_addresses addresses;
+    struct es10b_rat *ratList;
     struct es10c_ex_euiccinfo2 euiccinfo2;
-    cJSON *jaddresses = NULL;
-    cJSON *jeuiccinfo2 = NULL;
-    cJSON *jdata = NULL;
+    cJSON *jaddresses = NULL, *jratList = NULL, *jeuiccinfo2 = NULL, *jdata = NULL;
 
     if (es10c_get_eid(&euicc_ctx, &eid))
     {
@@ -28,6 +27,11 @@ static int applet_main(int argc, char **argv)
     if (es10a_get_euicc_configured_addresses(&euicc_ctx, &addresses) == 0)
     {
         jaddresses = cJSON_CreateObject();
+    }
+
+    if (es10b_get_rat(&euicc_ctx, &ratList) == 0)
+    {
+        jratList = cJSON_CreateArray();
     }
 
     if (es10c_ex_get_euiccinfo2(&euicc_ctx, &euiccinfo2) == 0)
@@ -46,6 +50,49 @@ static int applet_main(int argc, char **argv)
     }
     cJSON_AddItemToObject(jdata, "EuiccConfiguredAddresses", jaddresses);
     es10a_euicc_configured_addresses_free(&addresses);
+
+    if (jratList)
+    {
+        while (ratList) {
+            struct cJSON *jrat = cJSON_CreateObject();
+            if (ratList->pprIds)
+            {
+                cJSON *jPPR = cJSON_CreateArray();
+                for (int i = 0; ratList->pprIds[i] != NULL; i++)
+                {
+                    cJSON_AddItemToArray(jPPR, cJSON_CreateString(ratList->pprIds[i]));
+                }
+                cJSON_AddItemToObject(jrat, "pprIds", jPPR);
+            }
+            if (ratList->allowedOperators)
+            {
+                cJSON *jAllowedOperators = cJSON_CreateArray();
+                const struct es10b_operation_id *rptr = ratList->allowedOperators;
+                while (rptr)
+                {
+                    cJSON *joperator = cJSON_CreateObject();
+                    cJSON_AddStringOrNullToObject(joperator, "plmn", rptr->plmn);
+                    cJSON_AddStringOrNullToObject(joperator, "gid1", rptr->gid1);
+                    cJSON_AddStringOrNullToObject(joperator, "gid2", rptr->gid2);
+                    cJSON_AddItemToArray(jAllowedOperators, joperator);
+                    rptr = rptr->next;
+                }
+                cJSON_AddItemToObject(jrat, "allowedOperators", jAllowedOperators);
+            }
+            if (ratList->pprFlags)
+            {
+                cJSON *jFlags = cJSON_CreateArray();
+                for (int i = 0; ratList->pprFlags[i] != NULL; i++)
+                {
+                    cJSON_AddItemToArray(jFlags, cJSON_CreateString(ratList->pprFlags[i]));
+                }
+                cJSON_AddItemToObject(jrat, "pprFlags", jFlags);
+            }
+            cJSON_AddItemToArray(jratList, jrat);
+            ratList = ratList->next;
+        }
+        cJSON_AddItemToObject(jdata, "rulesAuthorisationTable", jratList);
+    }
 
     if (jeuiccinfo2)
     {

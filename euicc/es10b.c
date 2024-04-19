@@ -1207,3 +1207,190 @@ void es10b_pending_notification_free(struct es10b_pending_notification *PendingN
     free(PendingNotification->b64_PendingNotification);
     memset(PendingNotification, 0, sizeof(struct es10b_pending_notification));
 }
+
+int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
+{
+    int fret;
+    struct euicc_derutil_node n_request = {
+        .tag = 0xBF43, // GetRatRequest
+    };
+    uint32_t reqlen;
+    uint8_t *respbuf = NULL;
+    unsigned resplen;
+
+    struct es10b_rat *rat;
+    struct euicc_derutil_node tmpnode, tmpchildnode, n_profile;
+
+    *ratList = NULL;
+
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
+    {
+        goto err;
+    }
+
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
+    {
+        goto err;
+    }
+
+    if (resplen == 0)
+    {
+        goto err;
+    }
+
+    // GetRatResponse
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF43, respbuf, resplen) < 0)
+    {
+        goto err;
+    }
+
+    // RulesAuthorisationTable
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, tmpnode.value, tmpnode.length) < 0)
+    {
+        goto err;
+    }
+
+    n_profile.self.ptr = tmpnode.value;
+    n_profile.self.length = 0;
+
+    // ProfilePolicyAuthorisationRule
+    while (euicc_derutil_unpack_next(&n_profile, &n_profile, tmpnode.value,tmpnode.length) == 0)
+    {
+        tmpchildnode.self.ptr = n_profile.value;
+        tmpchildnode.self.length = 0;
+
+        rat = malloc(sizeof(struct es10b_rat));
+        if (!rat)
+        {
+            goto err;
+        }
+
+        memset(rat, 0, sizeof(*rat));
+
+        while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, n_profile.value,n_profile.length) == 0)
+        {
+            switch (tmpchildnode.tag) {
+                case 0x80: // ppr ids
+                    {
+                        static const char *desc[] = {"pprUpdateControl", "ppr1", "ppr2", "ppr3"};
+
+                        if (euicc_derutil_convert_bin2bits_str(&rat->pprIds, tmpchildnode.value, tmpchildnode.length, desc))
+                        {
+                            goto err;
+                        }
+                    }
+                    break;
+                case 0xA1: // allowed operators
+                    {
+                        struct euicc_derutil_node n_allowed_operator, n_operator;
+                        struct es10b_operation_id *operations_wptr;
+                        struct es10b_operation_id *p;
+
+                        n_allowed_operator.self.ptr = tmpchildnode.value;
+                        n_allowed_operator.self.length = 0;
+
+                        while (euicc_derutil_unpack_next(&n_allowed_operator, &n_allowed_operator, tmpchildnode.value,tmpchildnode.length) == 0) {
+                            p = malloc(sizeof(struct es10b_operation_id));
+                            if (!p) {
+                                goto err;
+                            }
+                            memset(p, 0, sizeof(*p));
+
+                            n_operator.self.ptr = n_allowed_operator.value;
+                            n_operator.self.length = 0;
+
+                            while (euicc_derutil_unpack_next(&n_operator, &n_operator, n_allowed_operator.value, n_allowed_operator.length) == 0)
+                            {
+                                if (n_operator.length == 0)
+                                {
+                                    continue;
+                                }
+                                switch (n_operator.tag)
+                                {
+                                    case 0x80: // mcc_mnc
+                                        p->plmn = malloc((n_operator.length * 2) + 1);
+                                        euicc_hexutil_bin2hex(p->plmn, sizeof(p->plmn), n_operator.value, n_operator.length);
+                                        break;
+                                    case 0x81: // gid1
+                                        p->gid1 = malloc((n_operator.length * 2) + 1);
+                                        euicc_hexutil_bin2hex(p->gid1, sizeof(p->gid1), n_operator.value, n_operator.length);
+                                        break;
+                                    case 0x82: // gid2
+                                        p->gid2 = malloc((n_operator.length * 2) + 1);
+                                        euicc_hexutil_bin2hex(p->gid2, sizeof(p->gid2), n_operator.value, n_operator.length);
+                                        break;
+                                }
+                            }
+                            if (operations_wptr == NULL)
+                            {
+                                operations_wptr = p;
+                            }
+                            else
+                            {
+                                operations_wptr->next = p;
+                            }
+                        }
+
+                        rat->allowedOperators = operations_wptr;
+                    }
+                    break;
+                case 0x82: // ppr flags
+                    {
+                        static const char *desc[] = {"consentRequired"};
+
+                        if (euicc_derutil_convert_bin2bits_str(&rat->pprFlags, tmpchildnode.value, tmpchildnode.length, desc))
+                        {
+                            goto err;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        if (*ratList == NULL)
+        {
+            *ratList = rat;
+        }
+        else
+        {
+            (*ratList)->next = rat;
+        }
+    }
+
+
+    fret = 0;
+    goto exit;
+err:
+    fret = -1;
+    es10b_get_rat_list_free_all(*ratList);
+exit:
+    free(respbuf);
+    respbuf = NULL;
+    return fret;
+}
+
+void es10b_get_rat_list_free_all(struct es10b_rat *ratList) {
+    struct es10b_rat *next;
+    while (ratList)
+    {
+        next = ratList->next;
+        free(ratList->pprIds);
+        es10b_operation_id_free_all(ratList->allowedOperators);
+        free(ratList->pprFlags);
+        free(ratList);
+        ratList = next;
+    }
+}
+
+void es10b_operation_id_free_all(const struct es10b_operation_id *operations) {
+    struct es10b_operation_id *next;
+    while (operations)
+    {
+        next = operations->next;
+        free(operations->plmn);
+        free(operations->gid1);
+        free(operations->gid2);
+        operations = next;
+    }
+}
