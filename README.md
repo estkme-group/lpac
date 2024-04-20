@@ -1,6 +1,6 @@
 # lpac
 
-lpac is a cross platform local profile agent program.
+lpac is a cross-platform local profile agent program.
 
 Features:
 
@@ -12,15 +12,20 @@ Features:
 - Lookup eUICC chip info
 - etc
 
-Download:
-[Github Release](https://github.com/estkme-group/lpac/releases/latest)
+Download: [GitHub Release][latest]
+
+[latest]: https://github.com/estkme-group/lpac/releases/latest
 
 lpac is dynamic-linked, Release is built by Github action, if you can't run it you need to compile by yourself
 
 ## GUI Frontend
 
-- [EasyLPAC](https://github.com/creamlike1024/EasyLPAC)
-- [{Open,Easy}EUICC](https://gitea.angry.im/PeterCxy/OpenEUICC) ([Mirror](https://github.com/estkme-group/openeuicc))
+- [EasyLPAC]
+- [{Open,Easy}EUICC][openeuicc] ([Mirror][openeuicc-mirror])
+
+[easylpac]: https://github.com/creamlike1024/EasyLPAC/releases/latest
+[openeuicc]: https://gitea.angry.im/PeterCxy/OpenEUICC
+[openeuicc-mirror]: https://github.com/estkme-group/openeuicc
 
 ## Compile
 
@@ -462,11 +467,16 @@ Now there is only one command: `lpac driver apdu list` to get card reader list.
 
 A:
 
-- 80100069 means your UICC is not plugged correctly
-- 80100066 means your card has no response, please clean the pin and plug in again
-- 8010002E means communication error
-- 8010000F means the card is not a eUICC, or detect wrong card reader like Yubikey. For latter one, you can use `lpac driver apdu list` to list all reader and use `$DRIVER_IFID` to specify correct card reader
+- [80100069] means your UICC is not plugged correctly
+- [80100066] means your card has no response, please clean the pin and plug in again
+- [8010002E] means communication error
+- [8010000F] means the card is not a eUICC, or detect wrong card reader like Yubikey. For latter one, you can use `lpac driver apdu list` to list all reader and use `$DRIVER_IFID` to specify correct card reader
 - for others, Google is your friend.
+
+[80100069]: https://pcsclite.apdu.fr/api/group__ErrorCodes.html#gaa2efd953946973972b1afc5d0343820c
+[80100066]: https://pcsclite.apdu.fr/api/group__ErrorCodes.html#ga359a9e85e3b7c83c76507a096452b74f
+[8010002E]: https://pcsclite.apdu.fr/api/group__ErrorCodes.html#ga81b59e9319d3fcd0d957d98781b3ebd2
+[8010000F]: https://pcsclite.apdu.fr/api/group__ErrorCodes.html#ga36d821a0458f935ddbe345f10408a988
 
 </details>
 
@@ -479,15 +489,16 @@ A: The verification of SM-DP+ servers of telecom operators is diverse. Please ch
 
 ## Thanks
 
-<a href="https://github.com/estkme-group/lpac/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=estkme-group/lpac" alt="" />
-</a>
+[![Contributors][contrib]][contributors]
+
+[contrib]: https://contrib.rocks/image?repo=estkme-group/lpac
+[contributors]: https://github.com/estkme-group/lpac/graphs/contributors
 
 ---
 
 ## License
 
-- lpac (/src, /driver): AGPL-3.0
-- libeuicc (/euicc): LGPL-v2
+- lpac ([/src](src), [/driver](driver)): AGPL-3.0
+- libeuicc ([/euicc](euicc)): LGPL-v2
 
-Copyright (c) 2023-2024 eSTKme Group
+Copyright &copy; 2023-2024 eSTKme Group
