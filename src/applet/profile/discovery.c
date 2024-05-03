@@ -6,6 +6,7 @@
 #include <getopt.h>
 #include <main.h>
 
+#include <euicc/es10a.h>
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
 
@@ -42,9 +43,22 @@ static int applet_main(int argc, char **argv)
             printf("\t -i IMEI\r\n");
             printf("\t -h This help info\r\n");
             return -1;
+        default:
             break;
         }
         opt = getopt(argc, argv, opt_string);
+    }
+
+    if (smds == NULL)
+    {
+        jprint_progress("es10a_get_euicc_configured_addresses");
+        struct es10a_euicc_configured_addresses addresses;
+        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &addresses))
+        {
+            jprint_error("es10a_get_euicc_configured_addresses", NULL);
+            goto err;
+        }
+        smds = strdup(addresses.rootDsAddress);
     }
 
     if (smds == NULL)
