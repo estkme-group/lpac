@@ -76,8 +76,7 @@ static int applet_main(int argc, char **argv)
         char *token = NULL;
         int index = 0;
 
-        token = strtok(activation_code, "$");
-        while (token != NULL)
+        for (token = strtok(activation_code, "$"); token != NULL; token = strtok(NULL, "$"))
         {
             switch (index)
             {
@@ -108,7 +107,6 @@ static int applet_main(int argc, char **argv)
                 break;
             }
             index++;
-            token = strtok(NULL, "$");
         }
     }
 
