@@ -317,6 +317,9 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 
 ```bash
 ./lpac profile download -s rsp.truphone.com -m "QR-G-5C-1LS-1W1Z9P7"
+
+# LPA qrcode activation code string
+./lpac profile download -a 'LPA:1$rsp.truphone.com$QR-G-5C-1LS-1W1Z9P7'
 ```
 
 </details>
