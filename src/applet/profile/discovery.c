@@ -5,6 +5,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <main.h>
+#include <stdbool.h>
 
 #include "../../utils.h"
 
@@ -66,18 +67,10 @@ static int applet_main(int argc, char **argv)
             goto err;
         }
         smds = strdup(addresses.rootDsAddress);
-        if (!is_valid_fqdn_name(smds))
+        if (!is_valid_fqdn_name(smds) || is_invalid_smds_address(smds))
         {
-            jprint_error("this default sm-ds address is invalid", NULL);
+            jprint_error("es10a_get_euicc_configured_addresses", "this default sm-ds address is invalid");
             goto err;
-        }
-        for (int i = 0; invalid_smds_list[i]; i++)
-        {
-            if (strncmp(smds, invalid_smds_list[i], strlen(smds)) == 0)
-            {
-                jprint_error("this default sm-ds address is invalid", NULL);
-                goto err;
-            }
         }
     }
 
@@ -151,3 +144,15 @@ struct applet_entry applet_profile_discovery = {
     .name = "discovery",
     .main = applet_main,
 };
+
+static bool is_invalid_smds_address(char *address)
+{
+    for (int i = 0; invalid_smds_list[i]; i++)
+    {
+        if (strncmp(address, invalid_smds_list[i], strlen(address)) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
