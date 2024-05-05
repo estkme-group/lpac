@@ -6,11 +6,18 @@
 #include <getopt.h>
 #include <main.h>
 
+#include "../../utils.h"
+
 #include <euicc/es10a.h>
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
 
 static const char *opt_string = "s:i:h?";
+
+static const char *invalid_smds_list[] = {
+    "testrootsmds.gsma.com",    // from SGP.26 v1.2
+    "testrootsmds.example.com", // from SGP.26 v1.5
+};
 
 static int applet_main(int argc, char **argv)
 {
@@ -59,6 +66,19 @@ static int applet_main(int argc, char **argv)
             goto err;
         }
         smds = strdup(addresses.rootDsAddress);
+        if (!is_valid_fqdn_name(smds))
+        {
+            jprint_error("this default sm-ds address is invalid", NULL);
+            goto err;
+        }
+        for (int i = 0; invalid_smds_list[i]; i++)
+        {
+            if (strncmp(smds, invalid_smds_list[i], strlen(smds)) == 0)
+            {
+                jprint_error("this default sm-ds address is invalid", NULL);
+                goto err;
+            }
+        }
     }
 
     if (smds == NULL)
