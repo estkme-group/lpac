@@ -76,6 +76,7 @@ void main_fini_euicc()
     euicc_ctx_inited = 0;
 }
 
+#ifdef WIN32
 char** warg_to_arg(const int wargc, wchar_t **wargv)
 {
     char **argv = malloc(wargc * sizeof(char *));
@@ -100,6 +101,7 @@ char** warg_to_arg(const int wargc, wchar_t **wargv)
     }
     return argv;
 }
+#endif
 
 int main(int argc, char **argv)
 {
