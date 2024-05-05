@@ -20,6 +20,12 @@ static const char *invalid_smds_list[] = {
     "testrootsmds.example.com", // from SGP.26 v1.5
 };
 
+static char *known_smds_list[] = {
+    "lpa.ds.gsma.com",            // GSM Association
+    "lpa.live.esimdiscovery.com", // Google
+    "lpads.vzw.otgeuicc.com",     // Verizon Wireless
+};
+
 static int applet_main(int argc, char **argv)
 {
     int fret;
@@ -30,6 +36,7 @@ static int applet_main(int argc, char **argv)
     char *imei = NULL;
 
     char **smdp_list = NULL;
+    char **smds_list = NULL;
 
     cJSON *jdata = NULL;
 
@@ -59,7 +66,7 @@ static int applet_main(int argc, char **argv)
 
     if (smds == NULL)
     {
-        jprint_progress("es10a_get_euicc_configured_addresses");
+        jprint_progress("es10a_get_euicc_configured_addresses", NULL);
         struct es10a_euicc_configured_addresses addresses;
         if (es10a_get_euicc_configured_addresses(&euicc_ctx, &addresses))
         {
@@ -69,46 +76,18 @@ static int applet_main(int argc, char **argv)
         smds = strdup(addresses.rootDsAddress);
         if (is_invalid_smds_address(smds))
         {
-            jprint_error("es10a_get_euicc_configured_addresses", "this default sm-ds address is invalid");
-            goto err;
+            smds = NULL;
         }
     }
 
-    if (smds == NULL)
+    if (smds != NULL)
     {
-        // smds = "prod.smds.rsp.goog";
-        // smds = "lpa.live.esimdiscovery.com";
-        smds = "lpa.ds.gsma.com";
+        smds_list = malloc(sizeof(char *));
+        smds_list[0] = smds;
     }
-
-    euicc_ctx.http.server_address = smds;
-
-    jprint_progress("es10b_get_euicc_challenge_and_info");
-    if (es10b_get_euicc_challenge_and_info(&euicc_ctx))
+    else
     {
-        jprint_error("es10b_get_euicc_challenge_and_info", NULL);
-        goto err;
-    }
-
-    jprint_progress("es9p_initiate_authentication");
-    if (es9p_initiate_authentication(&euicc_ctx))
-    {
-        jprint_error("es9p_initiate_authentication", euicc_ctx.http.status.message);
-        goto err;
-    }
-
-    jprint_progress("es10b_authenticate_server");
-    if (es10b_authenticate_server(&euicc_ctx, NULL, imei))
-    {
-        jprint_error("es10b_authenticate_server", NULL);
-        goto err;
-    }
-
-    jprint_progress("es11_authenticate_client");
-    if (es11_authenticate_client(&euicc_ctx, &smdp_list))
-    {
-        jprint_error("es11_authenticate_client", NULL);
-        goto err;
+        smds_list = known_smds_list;
     }
 
     jdata = cJSON_CreateArray();
@@ -117,14 +96,42 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
-    for (int i = 0; smdp_list[i] != NULL; i++)
-    {
-        cJSON *jsmdp = cJSON_CreateString(smdp_list[i]);
-        if (jsmdp == NULL)
-        {
+    for (int i = 0; smds_list[i] != NULL; i++) {
+        euicc_ctx.http.server_address = smds_list[i];
+
+        jprint_progress("es10b_get_euicc_challenge_and_info", smds_list[i]);
+        if (es10b_get_euicc_challenge_and_info(&euicc_ctx)) {
+            jprint_error("es10b_get_euicc_challenge_and_info", NULL);
             goto err;
         }
-        cJSON_AddItemToArray(jdata, jsmdp);
+
+        jprint_progress("es9p_initiate_authentication", smds_list[i]);
+        if (es9p_initiate_authentication(&euicc_ctx)) {
+            jprint_error("es9p_initiate_authentication", euicc_ctx.http.status.message);
+            goto err;
+        }
+
+        jprint_progress("es10b_authenticate_server", smds_list[i]);
+        if (es10b_authenticate_server(&euicc_ctx, NULL, imei)) {
+            jprint_error("es10b_authenticate_server", NULL);
+            goto err;
+        }
+
+        jprint_progress("es11_authenticate_client", smds_list[i]);
+        if (es11_authenticate_client(&euicc_ctx, &smdp_list)) {
+            jprint_error("es11_authenticate_client", NULL);
+            goto err;
+        }
+
+        for (int j = 0; smdp_list[j] != NULL; j++)
+        {
+            cJSON *jsmdp = cJSON_CreateString(smdp_list[j]);
+            if (jsmdp == NULL)
+            {
+                goto err;
+            }
+            cJSON_AddItemToArray(jdata, jsmdp);
+        }
     }
 
     jprint_success(jdata);
@@ -136,6 +143,7 @@ err:
     fret = -1;
 exit:
     es11_smdp_list_free_all(smdp_list);
+    es11_smdp_list_free_all(smds_list);
     euicc_http_cleanup(&euicc_ctx);
     return fret;
 }

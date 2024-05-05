@@ -49,7 +49,7 @@ static int applet_main(int argc, char **argv)
 
     seqNumber = atol(str_seqNumber);
 
-    jprint_progress("es10b_retrieve_notifications_list");
+    jprint_progress("es10b_retrieve_notifications_list", NULL);
     if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber))
     {
         jprint_error("es10b_retrieve_notifications_list", NULL);
@@ -58,7 +58,7 @@ static int applet_main(int argc, char **argv)
 
     euicc_ctx.http.server_address = notification.notificationAddress;
 
-    jprint_progress("es9p_handle_notification");
+    jprint_progress("es9p_handle_notification", NULL);
     if (es9p_handle_notification(&euicc_ctx, notification.b64_PendingNotification))
     {
         jprint_error("es9p_handle_notification", NULL);
@@ -69,7 +69,7 @@ static int applet_main(int argc, char **argv)
 
     if (autoremove)
     {
-        jprint_progress("es10b_remove_notification_from_list");
+        jprint_progress("es10b_remove_notification_from_list", NULL);
         if (es10b_remove_notification_from_list(&euicc_ctx, seqNumber))
         {
             jprint_error("es10b_remove_notification_from_list", NULL);

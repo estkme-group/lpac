@@ -112,7 +112,7 @@ static int applet_main(int argc, char **argv)
 
     if (smdp == NULL)
     {
-        jprint_progress("es10a_get_euicc_configured_addresses");
+        jprint_progress("es10a_get_euicc_configured_addresses", NULL);
         if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses))
         {
             jprint_error("es10a_get_euicc_configured_addresses", NULL);
@@ -132,49 +132,49 @@ static int applet_main(int argc, char **argv)
 
     euicc_ctx.http.server_address = smdp;
 
-    jprint_progress("es10b_get_euicc_challenge_and_info");
+    jprint_progress("es10b_get_euicc_challenge_and_info", NULL);
     if (es10b_get_euicc_challenge_and_info(&euicc_ctx))
     {
         jprint_error("es10b_get_euicc_challenge_and_info", NULL);
         goto err;
     }
 
-    jprint_progress("es9p_initiate_authentication");
+    jprint_progress("es9p_initiate_authentication", NULL);
     if (es9p_initiate_authentication(&euicc_ctx))
     {
         jprint_error("es9p_initiate_authentication", euicc_ctx.http.status.message);
         goto err;
     }
 
-    jprint_progress("es10b_authenticate_server");
+    jprint_progress("es10b_authenticate_server", NULL);
     if (es10b_authenticate_server(&euicc_ctx, matchingId, imei))
     {
         jprint_error("es10b_authenticate_server", NULL);
         goto err;
     }
 
-    jprint_progress("es9p_authenticate_client");
+    jprint_progress("es9p_authenticate_client", NULL);
     if (es9p_authenticate_client(&euicc_ctx))
     {
         jprint_error("es9p_authenticate_client", euicc_ctx.http.status.message);
         goto err;
     }
 
-    jprint_progress("es10b_prepare_download");
+    jprint_progress("es10b_prepare_download", NULL);
     if (es10b_prepare_download(&euicc_ctx, confirmation_code))
     {
         jprint_error("es10b_prepare_download", NULL);
         goto err;
     }
 
-    jprint_progress("es9p_get_bound_profile_package");
+    jprint_progress("es9p_get_bound_profile_package", NULL);
     if (es9p_get_bound_profile_package(&euicc_ctx))
     {
         jprint_error("es9p_get_bound_profile_package", euicc_ctx.http.status.message);
         goto err;
     }
 
-    jprint_progress("es10b_load_bound_profile_package");
+    jprint_progress("es10b_load_bound_profile_package", NULL);
     if (es10b_load_bound_profile_package(&euicc_ctx, &download_result))
     {
         char buffer[256];
