@@ -1,10 +1,12 @@
 #include "string.h"
+#include "stdbool.h"
 
-int is_valid_fqdn_name(const char *name)
+bool is_valid_fqdn_name(const char *name)
 {
     int count = 0;
     int allowed;
-    for (unsigned long i = strlen(name); i > 0; i--) {
+    for (unsigned long i = strlen(name); i > 0; i--)
+    {
         if (name[i] == '.')
         {
             count = 0;
@@ -15,13 +17,13 @@ int is_valid_fqdn_name(const char *name)
                   (name[i] >= 'A' && name[i] <= 'Z');
         if (!allowed || count > 63)
         {
-            return 0;
+            return false;
         }
         count++;
     }
     if (count > 63)
     {
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
