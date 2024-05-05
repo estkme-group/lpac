@@ -145,8 +145,12 @@ struct applet_entry applet_profile_discovery = {
     .main = applet_main,
 };
 
-static bool is_invalid_smds_address(char *address)
+static bool is_invalid_smds_address(const char *address)
 {
+    if (!is_valid_fqdn_name(address))
+    {
+        return true;
+    }
     for (int i = 0; invalid_smds_list[i]; i++)
     {
         if (strncmp(address, invalid_smds_list[i], strlen(address)) == 0)
