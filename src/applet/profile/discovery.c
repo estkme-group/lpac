@@ -67,7 +67,7 @@ static int applet_main(int argc, char **argv)
             goto err;
         }
         smds = strdup(addresses.rootDsAddress);
-        if (!is_valid_fqdn_name(smds) || is_invalid_smds_address(smds))
+        if (is_invalid_smds_address(smds))
         {
             jprint_error("es10a_get_euicc_configured_addresses", "this default sm-ds address is invalid");
             goto err;
