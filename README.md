@@ -305,10 +305,11 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 
 ##### Download requires connection to SM-DP+ server and the following additional parameters:
 
-- `-s`: SM-DP+ server, optional, if not provided, it will try to read the defaultsmdp attribute.
+- `-s`: SM-DP+ server, optional, if not provided, it will try to read the default sm-dp+ attribute.
 - `-m`: Matching ID, activation code. optional.
 - `-c`: Confirmation Code, optional.
 - `-i`: The IMEI of the device to which Profile is to be downloaded, optional.
+- `-a`: LPA qrcode activation code string, e.g: `LPA:1$<sm-dp+ domain>$<matching id>`, if provided this option takes precedence over the `-s` and `-m` options, optional.
 
 <details>
 
@@ -316,6 +317,9 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 
 ```bash
 ./lpac profile download -s rsp.truphone.com -m "QR-G-5C-1LS-1W1Z9P7"
+
+# LPA qrcode activation code string
+./lpac profile download -a 'LPA:1$rsp.truphone.com$QR-G-5C-1LS-1W1Z9P7'
 ```
 
 </details>

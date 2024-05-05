@@ -11,7 +11,7 @@
 #include <euicc/es9p.h>
 #include <euicc/tostr.h>
 
-static const char *opt_string = "s:m:i:c:h?";
+static const char *opt_string = "s:m:i:c:a:h?";
 
 static int applet_main(int argc, char **argv)
 {
@@ -23,6 +23,7 @@ static int applet_main(int argc, char **argv)
     char *matchingId = NULL;
     char *imei = NULL;
     char *confirmation_code = NULL;
+    char *activation_code = NULL;
 
     struct es10a_euicc_configured_addresses configured_addresses = {0};
     struct es10b_load_bound_profile_package_result download_result = {0};
@@ -44,6 +45,13 @@ static int applet_main(int argc, char **argv)
         case 'c':
             confirmation_code = strdup(optarg);
             break;
+        case 'a':
+            activation_code = strdup(optarg);
+            if (strncmp(activation_code, "LPA:", 4) == 0)
+            {
+                activation_code += 4; // ignore uri scheme
+            }
+            break;
         case 'h':
         case '?':
             printf("Usage: %s [OPTIONS]\r\n", argv[0]);
@@ -51,11 +59,55 @@ static int applet_main(int argc, char **argv)
             printf("\t -m Matching ID\r\n");
             printf("\t -i IMEI\r\n");
             printf("\t -c Confirmation Code (Password)\r\n");
+            printf("\t -a Activation Code (e.g: 'LPA:***')\r\n");
             printf("\t -h This help info\r\n");
             return -1;
+        default:
             break;
         }
         opt = getopt(argc, argv, opt_string);
+    }
+
+    if (activation_code != NULL)
+    {
+        // SGP.22 v2.2.2; Page 111
+        // Section: 4.1 (Activation Code)
+
+        char *token = NULL;
+        int index = 0;
+
+        for (token = strtok(activation_code, "$"); token != NULL; token = strtok(NULL, "$"))
+        {
+            switch (index)
+            {
+            case 0: // Activation Code Format
+                if (strncmp(token, "1", strlen(token)) != 0)
+                {
+                    jprint_error("invalid activation code format", NULL);
+                    goto err;
+                }
+                break;
+            case 1: // SM-DP+ Address
+                smdp = strdup(token);
+                break;
+            case 2: // AC_Token or Matching ID
+                matchingId = strdup(token);
+                break;
+            case 3: // SM-DP+ OID
+                // ignored; this function is not implemented
+                break;
+            case 4: // Confirmation Code Required Flag
+                if (strncmp(token, "1", strlen(token)) == 0 && confirmation_code == NULL)
+                {
+                    jprint_error("confirmation code required", NULL);
+                    goto err;
+                }
+                break;
+            default:
+                break;
+            }
+            index++;
+        }
     }
 
     if (smdp == NULL)
