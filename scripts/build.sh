@@ -23,7 +23,7 @@ function download {
     URL="$1"
     SAVED_PATH="$(mktemp)"
     SAVED_DIR="$(mktemp -d)"
-    curl --no-verbose "$URL" --output "$SAVED_PATH"
+    curl --slient --show-error --location --no-verbose "$URL" --output "$SAVED_PATH"
     case "$URL" in
     *.zip)
         unzip -q -d "$SAVED_DIR" "$SAVED_PATH"
