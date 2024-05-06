@@ -50,7 +50,7 @@ case "${1:-}" in
 make)
     cmake "$WORKSPACE"
     make -j
-    zip -r -j "$WORKSPACE/lpac-$KERNEL-$MATCHINE.zip" output/*
+    [ -f "$(which zip)" ] && zip -r -j "$WORKSPACE/lpac-$KERNEL-$MATCHINE.zip" output/*
     ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
@@ -62,7 +62,7 @@ mingw)
     make -j
     CURL="$(download "$MINGW_CURL_WIN64_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-x64.dll output/libcurl.dll
-    zip -r -j "$WORKSPACE/lpac-windows-x86_64-mingw.zip" output/*
+    [ -f "$(which zip)" ] && zip -r -j "$WORKSPACE/lpac-windows-x86_64-mingw.zip" output/*
     ;;
 woa-mingw)
     TOOLCHAIN="$(download "$MINGW32_TOOLCHAIN_BLOB")"
@@ -70,19 +70,23 @@ woa-mingw)
     make -j
     CURL="$(download "$MINGW_CURL_WIN64A_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll output/libcurl.dll
-    zip -r -j "$WORKSPACE/lpac-windows-arm64-mingw.zip" output/*
+    [ -f "$(which zip)" ] && zip -r -j "$WORKSPACE/lpac-windows-arm64-mingw.zip" output/*
     ;;
 woa-zig)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
     make -j
     CURL="$(download "$MINGW_CURL_WIN64A_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll output/libcurl.dll
-    zip -r -j "$WORKSPACE/lpac-windows-arm64-zig.zip" output/*
+    [ -f "$(which zip)" ] && zip -r -j "$WORKSPACE/lpac-windows-arm64-zig.zip" output/*
     ;;
 *)
     echo "Usage: $0 {make,debian,mingw,woa-mingw,woa-zig}"
     exit 1
     ;;
 esac
+
+rm -rf "$WORKSPACE/build"
+mkdir "$WORKSPACE/build"
+cp -r "$BUILD"/* "$WORKSPACE/build"
 
 rm -rf "$BUILD"
