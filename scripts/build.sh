@@ -87,6 +87,11 @@ esac
 
 rm -rf "$WORKSPACE/build"
 mkdir "$WORKSPACE/build"
-cp -r "$BUILD"/* "$WORKSPACE/build"
+if [ -d "$BUILD/output" ]; then
+    cp -r "$BUILD/output" "$WORKSPACE/build"
+fi
+if [ -n "$(find "$BUILD" -name 'lpac-*.deb')" ]; then
+    cp -r "$BUILD/lpac-"*".deb" "$WORKSPACE/build"
+fi
 
 rm -rf "$BUILD"
