@@ -162,7 +162,7 @@ static bool is_invalid_smds_address(const char *address)
     {
         return true;
     }
-    for (int i = 0; invalid_smds_list[i]; i++)
+    for (int i = 0; invalid_smds_list[i] != NULL; i++)
     {
         if (strncmp(address, invalid_smds_list[i], strlen(address)) == 0)
         {
@@ -175,7 +175,7 @@ static bool is_invalid_smds_address(const char *address)
 static bool is_valid_fqdn_name(const char *name) {
     int count = 0;
     int allowed;
-    for (unsigned long i = strlen(name); i > 0; i--)
+    for (size_t i = strlen(name); i > 0; i--)
     {
         if (name[i] == '.')
         {
