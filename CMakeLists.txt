@@ -17,7 +17,7 @@ endif()
 if(UNIX)
     include(GNUInstallDirs)
     if(NOT CMAKE_INSTALL_RPATH)
-        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}/lpac")
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}/lpac")
     endif()
 endif()
 
