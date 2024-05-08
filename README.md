@@ -13,9 +13,9 @@ Features:
 - etc
 
 ## Usage
-You can download lpac from [GitHub Release][latest], and read [USAGE](documents/USAGE.md) to use it.
-If you can't run it you need to compile by yourself, see also [DEVELOPERS](documents/DEVELOPERS.md).
-If you have any issue, please read [FAQ](documents/FAQ.md) first.
+You can download lpac from [GitHub Release][latest], and read [USAGE](docs/USAGE.md) to use it.
+If you can't run it you need to compile by yourself, see also [DEVELOPERS](docs/DEVELOPERS.md).
+If you have any issue, please read [FAQ](docs/FAQ.md) first.
 
 [latest]: https://github.com/estkme-group/lpac/releases/latest
 
