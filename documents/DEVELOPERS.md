@@ -1,3 +1,7 @@
+## Standard
+
+lpac is written with C99 and compatible with SGP.22 version 2.2.2.
+
 ## Compile
 
 ### Linux

@@ -1,6 +1,6 @@
 # lpac
 
-lpac is a cross-platform local profile agent program.
+lpac is a cross-platform local profile agent program, compatible with SGP.22 version 2.2.2.
 
 Features:
 
