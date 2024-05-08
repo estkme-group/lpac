@@ -56,28 +56,28 @@ static int applet_main(int argc, char **argv)
 
     euicc_ctx.http.server_address = smds;
 
-    jprint_progress("es10b_get_euicc_challenge_and_info");
+    jprint_progress("es10b_get_euicc_challenge_and_info", smds);
     if (es10b_get_euicc_challenge_and_info(&euicc_ctx))
     {
         jprint_error("es10b_get_euicc_challenge_and_info", NULL);
         goto err;
     }
 
-    jprint_progress("es9p_initiate_authentication");
+    jprint_progress("es9p_initiate_authentication", smds);
     if (es9p_initiate_authentication(&euicc_ctx))
     {
         jprint_error("es9p_initiate_authentication", euicc_ctx.http.status.message);
         goto err;
     }
 
-    jprint_progress("es10b_authenticate_server");
+    jprint_progress("es10b_authenticate_server", smds);
     if (es10b_authenticate_server(&euicc_ctx, NULL, imei))
     {
         jprint_error("es10b_authenticate_server", NULL);
         goto err;
     }
 
-    jprint_progress("es11_authenticate_client");
+    jprint_progress("es11_authenticate_client", smds);
     if (es11_authenticate_client(&euicc_ctx, &smdp_list))
     {
         jprint_error("es11_authenticate_client", NULL);
