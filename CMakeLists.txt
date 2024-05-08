@@ -5,6 +5,8 @@ project (lpac
     HOMEPAGE_URL "https://github.com/estkme-group/lpac"
     DESCRIPTION "C-based eUICC LPA."
     LANGUAGES C)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
