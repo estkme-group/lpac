@@ -13,6 +13,23 @@ static const char *lpa_header[] = {
     NULL,
 };
 
+static void es9p_base64_trim(char *str)
+{
+    char *p = str;
+
+    while (*p)
+    {
+        if (*p == '\n' || *p == '\r' || *p == ' ' || *p == '\t')
+        {
+            memmove(p, p + 1, strlen(p));
+        }
+        else
+        {
+            p++;
+        }
+    }
+}
+
 static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url_postfix, uint32_t *rcode, char **str_rx, const char *str_tx)
 {
     int fret = 0;
@@ -260,7 +277,17 @@ int es9p_initiate_authentication_r(struct euicc_ctx *ctx, char **transaction_id,
     const char oobj[] = {0, 0, 0, 0, 0};
     void **optr[] = {(void **)&ctx->http._internal.transaction_id, (void **)&resp->b64_serverSigned1, (void **)&resp->b64_serverSignature1, (void **)&resp->b64_euiccCiPKIdToBeUsed, (void **)&resp->b64_serverCertificate, NULL};
 
-    return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/initiateAuthentication", ikey, idata, okey, oobj, optr);
+    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/initiateAuthentication", ikey, idata, okey, oobj, optr))
+    {
+        return -1;
+    }
+
+    es9p_base64_trim(resp->b64_serverSigned1);
+    es9p_base64_trim(resp->b64_serverSignature1);
+    es9p_base64_trim(resp->b64_euiccCiPKIdToBeUsed);
+    es9p_base64_trim(resp->b64_serverCertificate);
+
+    return 0;
 }
 
 int es9p_get_bound_profile_package_r(struct euicc_ctx *ctx, char **b64_bound_profile_package, const char *server_address, const char *transaction_id, const char *b64_prepare_download_response)
@@ -271,7 +298,14 @@ int es9p_get_bound_profile_package_r(struct euicc_ctx *ctx, char **b64_bound_pro
     const char oobj[] = {0};
     void **optr[] = {(void **)b64_bound_profile_package, NULL};
 
-    return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/getBoundProfilePackage", ikey, idata, okey, oobj, optr);
+    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/getBoundProfilePackage", ikey, idata, okey, oobj, optr))
+    {
+        return -1;
+    }
+
+    es9p_base64_trim(*b64_bound_profile_package);
+
+    return 0;
 }
 
 int es9p_authenticate_client_r(struct euicc_ctx *ctx, struct es10b_prepare_download_param *resp, const char *server_address, const char *transaction_id, const char *b64_authenticate_server_response)
@@ -282,7 +316,17 @@ int es9p_authenticate_client_r(struct euicc_ctx *ctx, struct es10b_prepare_downl
     const char oobj[] = {0, 0, 0, 0};
     void **optr[] = {(void **)&resp->b64_profileMetadata, (void **)&resp->b64_smdpSigned2, (void **)&resp->b64_smdpSignature2, (void **)&resp->b64_smdpCertificate, NULL};
 
-    return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr);
+    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr))
+    {
+        return -1;
+    }
+
+    es9p_base64_trim(resp->b64_profileMetadata);
+    es9p_base64_trim(resp->b64_smdpSigned2);
+    es9p_base64_trim(resp->b64_smdpSignature2);
+    es9p_base64_trim(resp->b64_smdpCertificate);
+
+    return 0;
 }
 
 int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, const char *transaction_id, const char *b64_cancel_session_response)
@@ -290,7 +334,12 @@ int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, con
     const char *ikey[] = {"transactionId", "cancelSessionResponse", NULL};
     const char *idata[] = {ctx->http._internal.transaction_id, b64_cancel_session_response, NULL};
 
-    return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/cancelSession", ikey, idata, NULL, NULL, NULL);
+    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/cancelSession", ikey, idata, NULL, NULL, NULL))
+    {
+        return -1;
+    }
+
+    return 0;
 }
 
 int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const char *server_address, const char *transaction_id, const char *b64_authenticate_server_response)

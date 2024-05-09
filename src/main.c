@@ -77,7 +77,7 @@ void main_fini_euicc()
 }
 
 #ifdef WIN32
-char** warg_to_arg(const int wargc, wchar_t **wargv)
+static char **warg_to_arg(const int wargc, wchar_t **wargv)
 {
     char **argv = malloc(wargc * sizeof(char *));
     if (argv == NULL)
@@ -105,14 +105,6 @@ char** warg_to_arg(const int wargc, wchar_t **wargv)
 
 int main(int argc, char **argv)
 {
-#ifdef WIN32
-    argv = warg_to_arg(argc, CommandLineToArgvW(GetCommandLineW(), &argc));
-    if (argv == NULL)
-    {
-        return -1;
-    }
-#endif
-
     int ret = 0;
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
@@ -124,6 +116,14 @@ int main(int argc, char **argv)
 
     euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
     euicc_ctx.http.interface = &euicc_driver_interface_http;
+
+#ifdef WIN32
+    argv = warg_to_arg(argc, CommandLineToArgvW(GetCommandLineW(), &argc));
+    if (argv == NULL)
+    {
+        return -1;
+    }
+#endif
 
     ret = applet_entry(argc, argv, applets);
 
