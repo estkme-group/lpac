@@ -263,7 +263,7 @@ int es9p_initiate_authentication_r(struct euicc_ctx *ctx, char **transaction_id,
     return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/initiateAuthentication", ikey, idata, okey, oobj, optr);
 }
 
-int es9p_get_bound_profile_package_r(struct euicc_ctx *ctx, char **b64_bound_profile_package, const char *server_address, const char *transction_id, const char *b64_prepare_download_response)
+int es9p_get_bound_profile_package_r(struct euicc_ctx *ctx, char **b64_bound_profile_package, const char *server_address, const char *transaction_id, const char *b64_prepare_download_response)
 {
     const char *ikey[] = {"transactionId", "prepareDownloadResponse", NULL};
     const char *idata[] = {ctx->http._internal.transaction_id, b64_prepare_download_response, NULL};
@@ -274,7 +274,7 @@ int es9p_get_bound_profile_package_r(struct euicc_ctx *ctx, char **b64_bound_pro
     return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/getBoundProfilePackage", ikey, idata, okey, oobj, optr);
 }
 
-int es9p_authenticate_client_r(struct euicc_ctx *ctx, struct es10b_prepare_download_param *resp, const char *server_address, const char *transction_id, const char *b64_authenticate_server_response)
+int es9p_authenticate_client_r(struct euicc_ctx *ctx, struct es10b_prepare_download_param *resp, const char *server_address, const char *transaction_id, const char *b64_authenticate_server_response)
 {
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
     const char *idata[] = {ctx->http._internal.transaction_id, b64_authenticate_server_response, NULL};
@@ -285,7 +285,7 @@ int es9p_authenticate_client_r(struct euicc_ctx *ctx, struct es10b_prepare_downl
     return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr);
 }
 
-int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, const char *transction_id, const char *b64_cancel_session_response)
+int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, const char *transaction_id, const char *b64_cancel_session_response)
 {
     const char *ikey[] = {"transactionId", "cancelSessionResponse", NULL};
     const char *idata[] = {ctx->http._internal.transaction_id, b64_cancel_session_response, NULL};
@@ -293,7 +293,7 @@ int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, con
     return es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/cancelSession", ikey, idata, NULL, NULL, NULL);
 }
 
-int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const char *server_address, const char *transction_id, const char *b64_authenticate_server_response)
+int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const char *server_address, const char *transaction_id, const char *b64_authenticate_server_response)
 {
     int fret = 0;
     cJSON *j_eventEntries = NULL;
