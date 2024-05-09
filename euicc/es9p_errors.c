@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <string.h>
 #include "es9p_errors.h"
 
