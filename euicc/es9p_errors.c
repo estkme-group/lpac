@@ -1,6 +1,12 @@
 #include <string.h>
 #include "es9p_errors.h"
 
+struct es9p_error {
+    const char *subject_code;
+    const char *reason_code;
+    const char *description;
+};
+
 static const struct es9p_error es9p_errors[] = {
     {"8.1",    "4.8", "eUICC does not have sufficient space for this Profile"},
     {"8.1",    "6.1", "eUICC signature is invalid or serverChallenge is invalid"},
@@ -45,10 +51,10 @@ static const struct es9p_error es9p_errors[] = {
     {"8.9.5",  "3.3", "The Event Record already exist in the SM-DS (EventID duplicated)"},
     {"8.9.5",  "3.9", "No Event identified by the Event ID for the EID exists"},
     {"8.10.1", "3.9", "The RSP session identified by the TransactionID is unknown"},
-    {"8.11.1", "3.9", "Unknown CI Public Key. The CI used by the EUM Certificate is not a trusted root."}
+    {"8.11.1", "3.9", "Unknown CI Public Key. The CI used by the EUM Certificate is not a trusted root."},
 };
 
-const char* es9p_error_message(const char *subject_code, const char *reason_code)
+const char *es9p_error_message(const char *subject_code, const char *reason_code)
 {
     struct es9p_error error;
     for (int i = 0; i < sizeof(es9p_errors) / sizeof(es9p_errors[0]); i++)
