@@ -133,3 +133,24 @@ const char *euicc_errorreason2str(enum es10b_error_reason value)
     }
     return "(no_str_available)";
 }
+
+const char *euicc_cancel_session_reason2str(enum es10b_cancel_session_reason reason)
+{
+    switch (reason) {
+        case ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION:
+            return "end_user_rejection";
+        case ES10B_CANCEL_SESSION_REASON_POSTPONED:
+            return "post_poned";
+        case ES10B_CANCEL_SESSION_REASON_TIMEOUT:
+            return "timeout";
+        case ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED:
+            return "ppr_not_allowed";
+        case ES10B_CANCEL_SESSION_REASON_METADATAMISMATCH:
+            return "metadata_mismatch";
+        case ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR:
+            return "load_bpp_execution_error";
+        case ES10B_CANCEL_SESSION_REASON_UNDEFINED:
+            return "undefined";
+    }
+    return "(no_str_available)";
+}

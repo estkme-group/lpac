@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include <signal.h>
 #include <main.h>
 
 #include <euicc/es10a.h>
@@ -24,6 +25,8 @@ static int applet_main(int argc, char **argv)
     char *imei = NULL;
     char *confirmation_code = NULL;
     char *activation_code = NULL;
+
+    enum es10b_cancel_session_reason cancel_reason = -1;
 
     struct es10a_euicc_configured_addresses configured_addresses = {0};
     struct es10b_load_bound_profile_package_result download_result = {0};
@@ -163,6 +166,7 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es10b_prepare_download", smdp);
     if (es10b_prepare_download(&euicc_ctx, confirmation_code))
     {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         jprint_error("es10b_prepare_download", NULL);
         goto err;
     }
@@ -170,6 +174,7 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es9p_get_bound_profile_package", smdp);
     if (es9p_get_bound_profile_package(&euicc_ctx))
     {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         jprint_error("es9p_get_bound_profile_package", euicc_ctx.http.status.message);
         goto err;
     }
@@ -177,6 +182,7 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es10b_load_bound_profile_package", smdp);
     if (es10b_load_bound_profile_package(&euicc_ctx, &download_result))
     {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR;
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
         jprint_error("es10b_load_bound_profile_package", buffer);
@@ -190,6 +196,19 @@ static int applet_main(int argc, char **argv)
 
 err:
     fret = -1;
+    if (cancel_reason != -1)
+    {
+        jprint_progress("es10b_cancel_session", smdp);
+        if (es10b_cancel_session(&euicc_ctx, cancel_reason))
+        {
+            jprint_error("es10b_cancel_session", euicc_cancel_session_reason2str(cancel_reason));
+        }
+        jprint_progress("es9p_cancel_session", smdp);
+        if (es9p_cancel_session(&euicc_ctx))
+        {
+            jprint_error("es9p_cancel_session", euicc_cancel_session_reason2str(cancel_reason));
+        }
+    }
 exit:
     es10a_euicc_configured_addresses_free(&configured_addresses);
     euicc_http_cleanup(&euicc_ctx);
