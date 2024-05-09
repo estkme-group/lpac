@@ -526,7 +526,7 @@ exit:
     return fret;
 }
 
-int es10b_authenticate_server_r(struct euicc_ctx *ctx, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param, struct es10b_authenticate_server_param_user *param_user)
+int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id, uint32_t *transaction_id_len, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param, struct es10b_authenticate_server_param_user *param_user)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -537,8 +537,10 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, char **b64_AuthenticateSe
     uint8_t imei[8];
     uint8_t *serverSigned1 = NULL, *serverSignature1 = NULL, *euiccCiPKIdToBeUsed = NULL, *serverCertificate = NULL;
     int serverSigned1_len, serverSignature1_len, euiccCiPKIdToBeUsed_len, serverCertificate_len;
-    struct euicc_derutil_node n_request, n_serverSigned1, n_serverSignature1, n_euiccCiPKIdToBeUsed, n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
+    struct euicc_derutil_node n_request, n_serverSigned1, n_transactionId, n_serverSignature1, n_euiccCiPKIdToBeUsed, n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
 
+    *transaction_id = NULL;
+    *transaction_id_len = 0;
     *b64_AuthenticateServerResponse = NULL;
 
     memset(&n_request, 0, sizeof(n_request));
@@ -602,6 +604,11 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, char **b64_AuthenticateSe
         goto err;
     }
 
+    if (euicc_derutil_unpack_find_tag(&n_transactionId, 0x80, n_serverSigned1.value, n_serverSigned1.length) < 0)
+    {
+        goto err;
+    }
+
     if (euicc_derutil_unpack_find_tag(&n_serverSignature1, 0x5F37, serverSignature1, serverSignature1_len) < 0)
     {
         goto err;
@@ -616,6 +623,14 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, char **b64_AuthenticateSe
     {
         goto err;
     }
+
+    *transaction_id_len = n_transactionId.length;
+    *transaction_id = malloc(n_transactionId.length);
+    if (!(*transaction_id))
+    {
+        goto err;
+    }
+    memcpy(*transaction_id, n_transactionId.value, n_transactionId.length);
 
     n_request.tag = 0xBF38;
     n_request.pack.child = &n_serverSigned1;
@@ -704,6 +719,9 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, char **b64_AuthenticateSe
 
 err:
     fret = -1;
+    free(*transaction_id);
+    *transaction_id = NULL;
+    *transaction_id_len = 0;
     free(*b64_AuthenticateServerResponse);
     *b64_AuthenticateServerResponse = NULL;
 exit:
@@ -724,7 +742,72 @@ exit:
 
 int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param)
 {
-    return -1;
+    int fret = 0;
+    struct euicc_derutil_node n_request, n_transactionId, n_reason;
+    uint8_t reason_buf[sizeof(enum es10b_cancel_session_reason)];
+    uint32_t reason_buf_len;
+    uint32_t reqlen;
+    uint8_t *respbuf = NULL;
+    unsigned resplen;
+
+    struct euicc_derutil_node tmpnode;
+
+    if (euicc_derutil_convert_long2bin(reason_buf, &reason_buf_len, param->reason) < 0)
+    {
+        goto err;
+    }
+
+    memset(&n_request, 0, sizeof(n_request));
+    memset(&n_transactionId, 0, sizeof(n_transactionId));
+    memset(&n_reason, 0, sizeof(n_reason));
+
+    n_request.tag = 0xBF41; // CancelSessionRequest
+    n_request.pack.child = &n_transactionId;
+
+    n_transactionId.tag = 0x80;
+    n_transactionId.value = (const uint8_t *)param->transactionId;
+    n_transactionId.length = param->transactionIdLen;
+
+    n_reason.tag = 0x81;
+    n_reason.value = reason_buf;
+    n_reason.length = reason_buf_len;
+
+    reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
+    {
+        goto err;
+    }
+
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
+    {
+        goto err;
+    }
+
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
+    {
+        goto err;
+    }
+
+    *b64_CancelSessionResponse = malloc(euicc_base64_encode_len(tmpnode.self.length));
+    if (!(*b64_CancelSessionResponse))
+    {
+        goto err;
+    }
+    if (euicc_base64_encode(*b64_CancelSessionResponse, tmpnode.self.ptr, tmpnode.self.length) < 0)
+    {
+        goto err;
+    }
+
+    goto exit;
+
+err:
+    fret = -1;
+    free(*b64_CancelSessionResponse);
+    *b64_CancelSessionResponse = NULL;
+exit:
+    free(respbuf);
+    respbuf = NULL;
+    return fret;
 }
 
 void es10b_prepare_download_param_free(struct es10b_prepare_download_param *param)
@@ -866,7 +949,7 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, con
         return -1;
     }
 
-    fret = es10b_authenticate_server_r(ctx, &ctx->http._internal.b64_authenticate_server_response, ctx->http._internal.authenticate_server_param, &param_user);
+    fret = es10b_authenticate_server_r(ctx, &ctx->http._internal.transaction_id_bin, &ctx->http._internal.transaction_id_bin_len, &ctx->http._internal.b64_authenticate_server_response, ctx->http._internal.authenticate_server_param, &param_user);
     if (fret < 0)
     {
         ctx->http._internal.b64_authenticate_server_response = NULL;
@@ -880,9 +963,39 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, con
     return fret;
 }
 
-int es10b_cancel_session(struct euicc_ctx *ctx)
+int es10b_cancel_session(struct euicc_ctx *ctx, enum es10b_cancel_session_reason reason)
 {
-    return -1;
+    int fret;
+
+    struct es10b_cancel_session_param param = {
+        .transactionId = ctx->http._internal.transaction_id_bin,
+        .transactionIdLen = ctx->http._internal.transaction_id_bin_len,
+        .reason = reason,
+    };
+
+    if (ctx->http._internal.transaction_id_bin == NULL)
+    {
+        return -1;
+    }
+
+    if (ctx->http._internal.transaction_id_bin_len = 0)
+    {
+        return -1;
+    }
+
+    if (ctx->http._internal.b64_cancel_session_response)
+    {
+        return -1;
+    }
+
+    fret = es10b_cancel_session_r(ctx, &ctx->http._internal.b64_cancel_session_response, &param);
+
+    if (fret < 0)
+    {
+        ctx->http._internal.b64_cancel_session_response = NULL;
+    }
+
+    return fret;
 }
 
 int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList)

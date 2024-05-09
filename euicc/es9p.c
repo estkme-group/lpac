@@ -275,7 +275,7 @@ int es9p_initiate_authentication_r(struct euicc_ctx *ctx, char **transaction_id,
     const char *idata[] = {ctx->http.server_address, b64_euicc_challenge, b64_euicc_info_1, NULL};
     const char *okey[] = {"transactionId", "serverSigned1", "serverSignature1", "euiccCiPKIdToBeUsed", "serverCertificate", NULL};
     const char oobj[] = {0, 0, 0, 0, 0};
-    void **optr[] = {(void **)&ctx->http._internal.transaction_id, (void **)&resp->b64_serverSigned1, (void **)&resp->b64_serverSignature1, (void **)&resp->b64_euiccCiPKIdToBeUsed, (void **)&resp->b64_serverCertificate, NULL};
+    void **optr[] = {(void **)transaction_id, (void **)&resp->b64_serverSigned1, (void **)&resp->b64_serverSignature1, (void **)&resp->b64_euiccCiPKIdToBeUsed, (void **)&resp->b64_serverCertificate, NULL};
 
     if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/initiateAuthentication", ikey, idata, okey, oobj, optr))
     {
@@ -293,7 +293,7 @@ int es9p_initiate_authentication_r(struct euicc_ctx *ctx, char **transaction_id,
 int es9p_get_bound_profile_package_r(struct euicc_ctx *ctx, char **b64_bound_profile_package, const char *server_address, const char *transaction_id, const char *b64_prepare_download_response)
 {
     const char *ikey[] = {"transactionId", "prepareDownloadResponse", NULL};
-    const char *idata[] = {ctx->http._internal.transaction_id, b64_prepare_download_response, NULL};
+    const char *idata[] = {transaction_id, b64_prepare_download_response, NULL};
     const char *okey[] = {"boundProfilePackage", NULL};
     const char oobj[] = {0};
     void **optr[] = {(void **)b64_bound_profile_package, NULL};
@@ -311,7 +311,7 @@ int es9p_get_bound_profile_package_r(struct euicc_ctx *ctx, char **b64_bound_pro
 int es9p_authenticate_client_r(struct euicc_ctx *ctx, struct es10b_prepare_download_param *resp, const char *server_address, const char *transaction_id, const char *b64_authenticate_server_response)
 {
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
-    const char *idata[] = {ctx->http._internal.transaction_id, b64_authenticate_server_response, NULL};
+    const char *idata[] = {transaction_id, b64_authenticate_server_response, NULL};
     const char *okey[] = {"profileMetadata", "smdpSigned2", "smdpSignature2", "smdpCertificate", NULL};
     const char oobj[] = {0, 0, 0, 0};
     void **optr[] = {(void **)&resp->b64_profileMetadata, (void **)&resp->b64_smdpSigned2, (void **)&resp->b64_smdpSignature2, (void **)&resp->b64_smdpCertificate, NULL};
@@ -332,7 +332,7 @@ int es9p_authenticate_client_r(struct euicc_ctx *ctx, struct es10b_prepare_downl
 int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, const char *transaction_id, const char *b64_cancel_session_response)
 {
     const char *ikey[] = {"transactionId", "cancelSessionResponse", NULL};
-    const char *idata[] = {ctx->http._internal.transaction_id, b64_cancel_session_response, NULL};
+    const char *idata[] = {transaction_id, b64_cancel_session_response, NULL};
 
     if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/cancelSession", ikey, idata, NULL, NULL, NULL))
     {
@@ -348,7 +348,7 @@ int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const c
     cJSON *j_eventEntries = NULL;
     int j_eventEntries_size = 0;
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
-    const char *idata[] = {ctx->http._internal.transaction_id, b64_authenticate_server_response, NULL};
+    const char *idata[] = {transaction_id, b64_authenticate_server_response, NULL};
     const char *okey[] = {"eventEntries", NULL};
     const char oobj[] = {1};
     void **optr[] = {(void **)&j_eventEntries, NULL};
@@ -431,7 +431,7 @@ int es9p_initiate_authentication(struct euicc_ctx *ctx)
         return -1;
     }
 
-    fret = es9p_initiate_authentication_r(ctx, &ctx->http._internal.transaction_id, ctx->http._internal.authenticate_server_param, ctx->http.server_address, ctx->http._internal.b64_euicc_challenge, ctx->http._internal.b64_euicc_info_1);
+    fret = es9p_initiate_authentication_r(ctx, &ctx->http._internal.transaction_id_http, ctx->http._internal.authenticate_server_param, ctx->http.server_address, ctx->http._internal.b64_euicc_challenge, ctx->http._internal.b64_euicc_info_1);
     if (fret < 0)
     {
         free(ctx->http._internal.authenticate_server_param);
@@ -462,7 +462,7 @@ int es9p_get_bound_profile_package(struct euicc_ctx *ctx)
         return -1;
     }
 
-    fret = es9p_get_bound_profile_package_r(ctx, &ctx->http._internal.b64_bound_profile_package, ctx->http.server_address, ctx->http._internal.transaction_id, ctx->http._internal.b64_prepare_download_response);
+    fret = es9p_get_bound_profile_package_r(ctx, &ctx->http._internal.b64_bound_profile_package, ctx->http.server_address, ctx->http._internal.transaction_id_http, ctx->http._internal.b64_prepare_download_response);
     if (fret < 0)
     {
         free(ctx->http._internal.b64_bound_profile_package);
@@ -496,7 +496,7 @@ int es9p_authenticate_client(struct euicc_ctx *ctx)
         return -1;
     }
 
-    fret = es9p_authenticate_client_r(ctx, ctx->http._internal.prepare_download_param, ctx->http.server_address, ctx->http._internal.transaction_id, ctx->http._internal.b64_authenticate_server_response);
+    fret = es9p_authenticate_client_r(ctx, ctx->http._internal.prepare_download_param, ctx->http.server_address, ctx->http._internal.transaction_id_http, ctx->http._internal.b64_authenticate_server_response);
     if (fret < 0)
     {
         free(ctx->http._internal.prepare_download_param);
@@ -512,7 +512,23 @@ int es9p_authenticate_client(struct euicc_ctx *ctx)
 
 int es9p_cancel_session(struct euicc_ctx *ctx)
 {
-    return -1;
+    int fret;
+
+    if (ctx->http._internal.b64_cancel_session_response == NULL)
+    {
+        return -1;
+    }
+
+    fret = es9p_cancel_session_r(ctx, ctx->http.server_address, ctx->http._internal.transaction_id_http, ctx->http._internal.b64_cancel_session_response);
+    if (fret < 0)
+    {
+        return fret;
+    }
+
+    free(ctx->http._internal.b64_cancel_session_response);
+    ctx->http._internal.b64_cancel_session_response = NULL;
+
+    return fret;
 }
 
 int es11_authenticate_client(struct euicc_ctx *ctx, char ***smdp_list)
@@ -524,7 +540,7 @@ int es11_authenticate_client(struct euicc_ctx *ctx, char ***smdp_list)
         return -1;
     }
 
-    fret = es11_authenticate_client_r(ctx, smdp_list, ctx->http.server_address, ctx->http._internal.transaction_id, ctx->http._internal.b64_authenticate_server_response);
+    fret = es11_authenticate_client_r(ctx, smdp_list, ctx->http.server_address, ctx->http._internal.transaction_id_http, ctx->http._internal.b64_authenticate_server_response);
     if (fret < 0)
     {
         return fret;

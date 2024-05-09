@@ -198,22 +198,17 @@ void euicc_fini(struct euicc_ctx *ctx)
 
 void euicc_http_cleanup(struct euicc_ctx *ctx)
 {
-    free(ctx->http._internal.transaction_id);
-    ctx->http._internal.transaction_id = NULL;
+    free(ctx->http._internal.transaction_id_http);
+    free(ctx->http._internal.transaction_id_bin);
     free(ctx->http._internal.b64_euicc_challenge);
-    ctx->http._internal.b64_euicc_challenge = NULL;
     free(ctx->http._internal.b64_euicc_info_1);
-    ctx->http._internal.b64_euicc_info_1 = NULL;
     es10b_authenticate_server_param_free(ctx->http._internal.authenticate_server_param);
     free(ctx->http._internal.authenticate_server_param);
-    ctx->http._internal.authenticate_server_param = NULL;
     free(ctx->http._internal.b64_authenticate_server_response);
-    ctx->http._internal.b64_authenticate_server_response = NULL;
     es10b_prepare_download_param_free(ctx->http._internal.prepare_download_param);
     free(ctx->http._internal.prepare_download_param);
-    ctx->http._internal.prepare_download_param = NULL;
     free(ctx->http._internal.b64_prepare_download_response);
-    ctx->http._internal.b64_prepare_download_response = NULL;
     free(ctx->http._internal.b64_bound_profile_package);
-    ctx->http._internal.b64_bound_profile_package = NULL;
+    free(ctx->http._internal.b64_cancel_session_response);
+    memset(&ctx->http._internal, 0, sizeof(ctx->http._internal));
 }
