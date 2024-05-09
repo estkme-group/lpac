@@ -1,10 +1,12 @@
 #include "download.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
 #include <signal.h>
+#include <stdatomic.h>
 #include <main.h>
 
 #include <euicc/es10a.h>
@@ -13,6 +15,8 @@
 #include <euicc/tostr.h>
 
 static const char *opt_string = "s:m:i:c:a:h?";
+
+static atomic_bool user_canceled = ATOMIC_VAR_INIT(false);
 
 static int applet_main(int argc, char **argv)
 {
@@ -133,6 +137,8 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
+    signal(SIGINT, on_cancel_session);
+
     euicc_ctx.http.server_address = smdp;
 
     jprint_progress("es10b_get_euicc_challenge_and_info", smdp);
@@ -149,6 +155,11 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
+    if (user_canceled) {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+        goto err;
+    }
+
     jprint_progress("es10b_authenticate_server", smdp);
     if (es10b_authenticate_server(&euicc_ctx, matchingId, imei))
     {
@@ -156,10 +167,20 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
+    if (user_canceled) {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+        goto err;
+    }
+
     jprint_progress("es9p_authenticate_client", smdp);
     if (es9p_authenticate_client(&euicc_ctx))
     {
         jprint_error("es9p_authenticate_client", euicc_ctx.http.status.message);
+        goto err;
+    }
+
+    if (user_canceled) {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         goto err;
     }
 
@@ -171,11 +192,21 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
+    if (user_canceled) {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+        goto err;
+    }
+
     jprint_progress("es9p_get_bound_profile_package", smdp);
     if (es9p_get_bound_profile_package(&euicc_ctx))
     {
         cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         jprint_error("es9p_get_bound_profile_package", euicc_ctx.http.status.message);
+        goto err;
+    }
+
+    if (user_canceled) {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         goto err;
     }
 
@@ -198,15 +229,16 @@ err:
     fret = -1;
     if (cancel_reason != -1)
     {
-        jprint_progress("es10b_cancel_session", smdp);
+        const char *detail = euicc_cancel_session_reason2str(cancel_reason);
+        jprint_progress("es10b_cancel_session", detail);
         if (es10b_cancel_session(&euicc_ctx, cancel_reason))
         {
-            jprint_error("es10b_cancel_session", euicc_cancel_session_reason2str(cancel_reason));
+            jprint_error("es10b_cancel_session", detail);
         }
-        jprint_progress("es9p_cancel_session", smdp);
+        jprint_progress("es9p_cancel_session", detail);
         if (es9p_cancel_session(&euicc_ctx))
         {
-            jprint_error("es9p_cancel_session", euicc_cancel_session_reason2str(cancel_reason));
+            jprint_error("es9p_cancel_session", detail);
         }
     }
 exit:
@@ -219,3 +251,8 @@ struct applet_entry applet_profile_download = {
     .name = "download",
     .main = applet_main,
 };
+
+void on_cancel_session(int sig)
+{
+    user_canceled = true;
+}
