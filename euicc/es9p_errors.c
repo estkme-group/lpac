@@ -52,28 +52,13 @@ static const struct es9p_error es9p_errors[] = {
 const char* es9p_error_message(const char *subject_code, const char *reason_code)
 {
     struct es9p_error error;
-    const size_t subject_code_length = strlen(subject_code);
-    const size_t reason_code_length = strlen(reason_code);
     for (int i = 0; i < sizeof(es9p_errors) / sizeof(es9p_errors[0]); i++)
     {
         error = es9p_errors[i];
-        if (strlen(error.subject_code) != subject_code_length)
+        if (strcmp(error.subject_code, subject_code) == 0 && strcmp(error.reason_code, reason_code) == 0)
         {
-            continue;
+            return error.description;
         }
-        if (strlen(error.reason_code) != reason_code_length)
-        {
-            continue;
-        }
-        if (memcmp(error.subject_code, subject_code, subject_code_length) != 0)
-        {
-            continue;
-        }
-        if (memcmp(error.reason_code, reason_code, reason_code_length) != 0)
-        {
-            continue;
-        }
-        return error.description;
     }
     return NULL;
 }
