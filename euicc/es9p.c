@@ -1,4 +1,5 @@
 #include "es9p.h"
+#include "es9p_errors.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -219,7 +220,15 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
         }
         else
         {
-            snprintf(ctx->http.status.message, sizeof(ctx->http.status.message), "subject-code: %s, reason-code: %s", ctx->http.status.subjectCode, ctx->http.status.reasonCode);
+            const char* message = es9p_error_message(ctx->http.status.subjectCode, ctx->http.status.reasonCode);
+            if (message != NULL)
+            {
+                strncpy(ctx->http.status.message, message, sizeof(ctx->http.status.message));
+            }
+            else
+            {
+                snprintf(ctx->http.status.message, sizeof(ctx->http.status.message), "subject-code: %s, reason-code: %s", ctx->http.status.subjectCode, ctx->http.status.reasonCode);
+            }
         }
     }
 
