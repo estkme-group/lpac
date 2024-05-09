@@ -1,3 +1,0 @@
-asn1c -fwide-types -fcompound-names -fincludes-quoted -no-gen-example ../../../asn1/PKIXExplicit88.asn ../../../asn1/PKIXImplicit88.asn ../../../asn1/rsp.asn
-
-find "." -type f \( -name "*.c" -o -name "*.h" \) | while read -r file; do for header in $(find "." -type f -name "*.h"); do header_file=$(basename "$header"); sed -i "/#include <${header_file}>/c\#include \"${header_file}\"" "$file"; done; done
