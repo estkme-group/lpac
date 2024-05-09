@@ -155,8 +155,8 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
-    if (user_canceled) {
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+    if (user_canceled)
+    {
         goto err;
     }
 
@@ -167,8 +167,8 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
-    if (user_canceled) {
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+    if (user_canceled)
+    {
         goto err;
     }
 
@@ -179,8 +179,8 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
-    if (user_canceled) {
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+    if (user_canceled)
+    {
         goto err;
     }
 
@@ -192,8 +192,8 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
-    if (user_canceled) {
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+    if (user_canceled)
+    {
         goto err;
     }
 
@@ -205,8 +205,8 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
-    if (user_canceled) {
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+    if (user_canceled)
+    {
         goto err;
     }
 
@@ -227,6 +227,10 @@ static int applet_main(int argc, char **argv)
 
 err:
     fret = -1;
+    if (user_canceled)
+    {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+    }
     if (cancel_reason != -1)
     {
         const char *detail = euicc_cancel_session_reason2str(cancel_reason);
