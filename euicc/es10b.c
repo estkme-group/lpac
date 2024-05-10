@@ -978,7 +978,7 @@ int es10b_cancel_session(struct euicc_ctx *ctx, enum es10b_cancel_session_reason
         return -1;
     }
 
-    if (ctx->http._internal.transaction_id_bin_len = 0)
+    if (ctx->http._internal.transaction_id_bin_len == 0)
     {
         return -1;
     }
