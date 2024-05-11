@@ -651,7 +651,7 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id,
     {
         int imei_len;
 
-        imei_len = euicc_hexutil_gsmbcd2bin(imei, sizeof(imei), param_user->imei);
+        imei_len = euicc_hexutil_gsmbcd2bin(imei, sizeof(imei), param_user->imei, 0);
         if (imei_len < 0)
         {
             goto err;
