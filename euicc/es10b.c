@@ -1010,8 +1010,6 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
 
     struct euicc_derutil_node tmpnode, n_notificationMetadataList, n_NotificationMetadata;
 
-    struct es10b_notification_metadata_list *list_wptr = NULL;
-
     *notificationMetadataList = NULL;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
@@ -1110,10 +1108,8 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
         }
         else
         {
-            list_wptr->next = p;
+            (*notificationMetadataList)->next = p;
         }
-
-        list_wptr = p;
     }
 
     goto exit;
