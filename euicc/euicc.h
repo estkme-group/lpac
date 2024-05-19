@@ -32,7 +32,9 @@ struct euicc_ctx
         } status;
         struct
         {
-            char *transaction_id;
+            char *transaction_id_http;
+            uint8_t *transaction_id_bin;
+            uint32_t transaction_id_bin_len;
             char *b64_euicc_challenge;
             char *b64_euicc_info_1;
             struct es10b_authenticate_server_param *authenticate_server_param;
@@ -40,6 +42,7 @@ struct euicc_ctx
             struct es10b_prepare_download_param *prepare_download_param;
             char *b64_prepare_download_response;
             char *b64_bound_profile_package;
+            char *b64_cancel_session_response;
         } _internal;
     } http;
     void *userdata;

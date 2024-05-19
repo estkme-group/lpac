@@ -15,6 +15,14 @@
 #include "applet/notification.h"
 #include "applet/version.h"
 
+#ifdef WIN32
+#include <windef.h>
+#include <processthreadsapi.h>
+#include <shellapi.h>
+#include <stringapiset.h>
+#include <processenv.h>
+#endif
+
 static int driver_applet_main(int argc, char **argv)
 {
     const struct applet_entry *applets[] = {
@@ -68,6 +76,33 @@ void main_fini_euicc()
     euicc_ctx_inited = 0;
 }
 
+#ifdef WIN32
+static char **warg_to_arg(const int wargc, wchar_t **wargv)
+{
+    char **argv = malloc(wargc * sizeof(char *));
+    if (argv == NULL)
+    {
+        return NULL;
+    }
+    for (int i = 0; i < wargc; ++i)
+    {
+        const int size = WideCharToMultiByte(CP_UTF8, 0, wargv[i], -1, NULL, 0, NULL, NULL);
+        argv[i] = malloc(size);
+        if (argv[i] == NULL)
+        {
+            for (int j = 0; j < i; ++j)
+            {
+                free(argv[j]);
+            }
+            free(argv);
+            return NULL;
+        }
+        WideCharToMultiByte(CP_UTF8, 0, wargv[i], -1, argv[i], size, NULL, NULL);
+    }
+    return argv;
+}
+#endif
+
 int main(int argc, char **argv)
 {
     int ret = 0;
@@ -81,6 +116,14 @@ int main(int argc, char **argv)
 
     euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
     euicc_ctx.http.interface = &euicc_driver_interface_http;
+
+#ifdef WIN32
+    argv = warg_to_arg(argc, CommandLineToArgvW(GetCommandLineW(), &argc));
+    if (argv == NULL)
+    {
+        return -1;
+    }
+#endif
 
     ret = applet_entry(argc, argv, applets);
 

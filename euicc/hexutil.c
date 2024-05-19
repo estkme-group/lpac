@@ -94,7 +94,7 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *st
     return length;
 }
 
-int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *str)
+int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *str, uint32_t padding_to)
 {
     uint32_t str_length;
     uint32_t idx = 0;
@@ -102,6 +102,11 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *s
     str_length = strlen(str);
 
     if (output_len < (str_length + 1) / 2)
+    {
+        return -1;
+    }
+
+    if (output_len < padding_to)
     {
         return -1;
     }
@@ -132,31 +137,37 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *s
         idx++;
     }
 
+    for (; idx < padding_to; idx++)
+    {
+        output[idx] = 0xFF;
+    }
+
     return idx;
 }
 
 int euicc_hexutil_bin2gsmbcd(char *output, uint32_t output_len, const uint8_t *binData, uint32_t length)
 {
-    int j = 0;
-
     if (euicc_hexutil_bin2hex(output, output_len, binData, length))
     {
         return -1;
     }
 
     length = strlen(output);
-    for (uint32_t i = 0; i < length - 1; i += 2)
+    for (int i = 0; i < length - 1; i += 2)
     {
         char temp = output[i];
-        output[j++] = output[i + 1];
-        output[j++] = temp;
+        output[i] = output[i + 1];
+        output[i + 1] = temp;
     }
 
-    if (j > 0 && output[j - 1] == 'f')
+    for (int i = length - 1; i >= 0; i--)
     {
-        j--;
+        if (output[i] != 'f')
+        {
+            break;
+        }
+        output[i] = '\0';
     }
-    output[j] = '\0';
 
     return 0;
 }

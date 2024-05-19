@@ -50,6 +50,10 @@ case "${1:-}" in
 make)
     cmake "$WORKSPACE"
     make -j
+    cp "$WORKSPACE/src/LICENSE" output/lpac-LICENSE
+    cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
+    cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
+    cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
     zip -r -j "$WORKSPACE/lpac-$KERNEL-$MATCHINE.zip" output/*
     ;;
 debian)
@@ -62,6 +66,11 @@ mingw)
     make -j
     CURL="$(download "$MINGW_CURL_WIN64_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-x64.dll output/libcurl.dll
+    cp "$CURL"/curl-*-mingw/COPYING.txt output/libcurl-LICENSE
+    cp "$WORKSPACE/src/LICENSE" output/lpac-LICENSE
+    cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
+    cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
+    cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
     zip -r -j "$WORKSPACE/lpac-windows-x86_64-mingw.zip" output/*
     ;;
 woa-mingw)
@@ -70,6 +79,11 @@ woa-mingw)
     make -j
     CURL="$(download "$MINGW_CURL_WIN64A_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll output/libcurl.dll
+    cp "$CURL"/curl-*-mingw/COPYING.txt output/libcurl-LICENSE
+    cp "$WORKSPACE/src/LICENSE" output/lpac-LICENSE
+    cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
+    cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
+    cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
     zip -r -j "$WORKSPACE/lpac-windows-arm64-mingw.zip" output/*
     ;;
 woa-zig)
@@ -77,6 +91,11 @@ woa-zig)
     make -j
     CURL="$(download "$MINGW_CURL_WIN64A_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll output/libcurl.dll
+    cp "$CURL"/curl-*-mingw/COPYING.txt output/libcurl-LICENSE
+    cp "$WORKSPACE/src/LICENSE" output/lpac-LICENSE
+    cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
+    cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
+    cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
     zip -r -j "$WORKSPACE/lpac-windows-arm64-zig.zip" output/*
     ;;
 *)

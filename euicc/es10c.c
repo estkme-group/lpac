@@ -222,7 +222,7 @@ static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t o
     }
     else
     {
-        if ((id_len = euicc_hexutil_gsmbcd2bin(id, sizeof(id), str_id)) < 0)
+        if ((id_len = euicc_hexutil_gsmbcd2bin(id, sizeof(id), str_id, 10)) < 0)
         {
             return -1;
         }
@@ -447,7 +447,7 @@ int es10c_set_nickname(struct euicc_ctx *ctx, const char *iccid, const char *pro
     memset(&n_iccid, 0, sizeof(n_iccid));
     memset(&n_profileNickname, 0, sizeof(n_profileNickname));
 
-    if (euicc_hexutil_gsmbcd2bin(asn1iccid, sizeof(asn1iccid), iccid) < 0)
+    if (euicc_hexutil_gsmbcd2bin(asn1iccid, sizeof(asn1iccid), iccid, 10) < 0)
     {
         goto err;
     }
