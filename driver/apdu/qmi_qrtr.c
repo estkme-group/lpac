@@ -13,9 +13,8 @@
 #include <libqrtr-glib.h>
 #include "qmi_qrtr_helpers.h"
 
-#define UIM_SLOT 2 // TODO: Make this runtime-configurable
-
 static int lastChannelId = -1;
+static int uimSlot = -1;
 static GMainContext *context = NULL;
 static QrtrBus *bus = NULL;
 static QmiClientUim *uimClient = NULL;
@@ -99,7 +98,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
 
     QmiMessageUimSendApduInput *input;
     input = qmi_message_uim_send_apdu_input_new ();
-    qmi_message_uim_send_apdu_input_set_slot (input, UIM_SLOT, NULL);
+    qmi_message_uim_send_apdu_input_set_slot (input, uimSlot, NULL);
     qmi_message_uim_send_apdu_input_set_channel_id (input, lastChannelId, NULL);
     qmi_message_uim_send_apdu_input_set_apdu (input, apdu_data, NULL);
 
@@ -143,7 +142,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 
     QmiMessageUimOpenLogicalChannelInput *input;
     input = qmi_message_uim_open_logical_channel_input_new ();
-    qmi_message_uim_open_logical_channel_input_set_slot (input, UIM_SLOT, NULL);
+    qmi_message_uim_open_logical_channel_input_set_slot (input, uimSlot, NULL);
     qmi_message_uim_open_logical_channel_input_set_aid (input, aid_data, NULL);
 
     QmiMessageUimOpenLogicalChannelOutput *output;
@@ -181,7 +180,7 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
 
     QmiMessageUimLogicalChannelInput *input;
     input = qmi_message_uim_logical_channel_input_new ();
-    qmi_message_uim_logical_channel_input_set_slot (input, UIM_SLOT, NULL);
+    qmi_message_uim_logical_channel_input_set_slot (input, uimSlot, NULL);
     qmi_message_uim_logical_channel_input_set_channel_id (input, channel, NULL);
 
     QmiMessageUimLogicalChannelOutput *output;
@@ -236,6 +235,16 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     // Install cleanup routine
     atexit(cleanup);
     signal(SIGINT, sighandler);
+
+    /*
+     * Allow the user to select the SIM card slot via environment variable.
+     * Use the primary SIM slot if not set.
+     */
+    if (getenv("UIM_SLOT")) {
+        uimSlot = atoi(getenv("UIM_SLOT"));
+    } else {
+        uimSlot = 1;
+    }
 
     return 0;
 }
