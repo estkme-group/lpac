@@ -4,7 +4,7 @@ In Linux, you need install `pcscd`, `pcsclite` and `libcurl`.
 
 APDU and HTTP interfaces of lpac has serval backends, you need specify `$LPAC_APDU` and `$LPAC_HTTP` environment variable to interface library path. If not specified, it will use `pcsc` and `curl`. See also [environment variables](ENVVARS.md).
 
-Using `at` APDU backend need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need add yourself into `dialout` group. If your serial port is not `/dev/ttyUSB0`, please use `$AT_DEVICE` to specify which one you want to use.
+Using `at` APDU backend need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need add yourself into `dialout` group. If your serial port is not `/dev/ttyUSB0`, please use `$LPAC_DRIVER_AT_DEVICE` to specify which one you want to use.
 
 ## CLI
 

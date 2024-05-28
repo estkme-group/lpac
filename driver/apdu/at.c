@@ -23,8 +23,8 @@ static int at_expect(char **response, const char *expected)
     {
         fgets(buffer, sizeof(buffer), fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
-        if (getenv("AT_DEBUG"))
-            printf("AT_DEBUG: %s\r\n", buffer);
+        if (getenv("LPAC_DRIVER_AT_DEBUG"))
+            printf("LPAC_DRIVER_AT_DEBUG: %s\r\n", buffer);
         if (strcmp(buffer, "ERROR") == 0)
         {
             return -1;
@@ -48,9 +48,9 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     logic_channel = 0;
 
-    if (!(device = getenv("AT_DEVICE")))
+    if (!(device = getenv("LPAC_DRIVER_AT_DEVICE")))
     {
-        device = "/dev/ttyUSB0";
+        device = "/dev/ttyUSB2";
     }
 
     fuart = fopen(device, "r+");

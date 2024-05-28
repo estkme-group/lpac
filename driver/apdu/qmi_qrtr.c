@@ -255,9 +255,9 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
      * Allow the user to select the SIM card slot via environment variable.
      * Use the primary SIM slot if not set.
      */
-    if (getenv("UIM_SLOT"))
+    if (getenv("LPAC_DRIVER_UIM_SLOT"))
     {
-        uimSlot = atoi(getenv("UIM_SLOT"));
+        uimSlot = atoi(getenv("LPAC_DRIVER_UIM_SLOT"));
     }
     else
     {

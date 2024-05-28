@@ -15,7 +15,7 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 
-#define INTERFACE_SELECT_ENV "DRIVER_IFID"
+#define INTERFACE_SELECT_ENV "LPAC_DRIVER_PCSC_READER"
 
 #define EUICC_INTERFACE_BUFSZ 264
 
