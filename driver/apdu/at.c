@@ -50,7 +50,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     if (!(device = getenv("LPAC_DRIVER_AT_DEVICE")))
     {
-        device = "/dev/ttyUSB2";
+        device = "/dev/ttyUSB0";
     }
 
     fuart = fopen(device, "r+");
