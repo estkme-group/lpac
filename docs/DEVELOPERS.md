@@ -8,7 +8,7 @@ lpac is written with C99 and compatible with [SGP.22 version 2.2.2](https://www.
 
 #### Debian/Ubuntu
 
-- Insall dependencies:
+- Install dependencies:
 ```bash
 sudo apt update
 sudo apt install build-essential cmake git g++ libpcsclite-dev libcurl4-openssl-dev
@@ -30,7 +30,7 @@ git clone https://github.com/estkme-group/lpac
 cd lpac
 cmake . -DCPACK_GENERATOR=DEB
 make -j package
-sudo dpkg -i lpac-2.0.1-Linux.deb
+sudo dpkg -i lpac-X.X.X-Linux.deb
 ```
 
 In both cases the compiled standalone binary can be found at `./output/lpac`.
