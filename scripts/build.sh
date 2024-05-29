@@ -59,7 +59,7 @@ make)
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
     make -j package
-    cp lpac-*.deb "$WORKSPACE"
+    cp lpac_*.deb "$WORKSPACE"
     ;;
 mingw)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake
