@@ -8,16 +8,16 @@ lpac is written with C99 and compatible with [SGP.22 version 2.2.2](https://www.
 
 #### Debian/Ubuntu
 
-- Install dependencies:
+- Install dependencies and download source code:
 ```bash
 sudo apt update
 sudo apt install build-essential cmake git g++ libpcsclite-dev libcurl4-openssl-dev
+git clone https://github.com/estkme-group/lpac
+cd lpac
 ```
 
 - Compile standalone binary only:
 ```bash
-git clone https://github.com/estkme-group/lpac
-cd lpac
 cmake .
 make
 ```
@@ -26,8 +26,6 @@ make
 
 - Compile standalone binary and create & install a debian package:
 ```bash
-git clone https://github.com/estkme-group/lpac
-cd lpac
 cmake . -DCPACK_GENERATOR=DEB
 make -j package
 sudo dpkg -i lpac-X.X.X-Linux.deb
