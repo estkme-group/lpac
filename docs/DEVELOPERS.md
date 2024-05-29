@@ -28,7 +28,7 @@ make
 ```bash
 cmake . -DCPACK_GENERATOR=DEB
 make -j package
-sudo dpkg -i lpac-X.X.X-Linux.deb
+sudo dpkg -i lpac_X.X.X_arm64.deb
 ```
 
 In both cases the compiled standalone binary can be found at `./output/lpac`.
