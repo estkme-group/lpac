@@ -8,9 +8,33 @@ lpac is written with C99 and compatible with [SGP.22 version 2.2.2](https://www.
 
 #### Debian/Ubuntu
 
-With `build-essential` `cmake` `git` `g++` `libpcsclite-dev` `libcurl4-openssl-dev` installed.  
-Run `cmake` and `make`, and then all things will be in `output` directory.  
-If you want to get a Deb package, pass `-DCPACK_GENERATOR=DEB` when invoke `cmake`.
+- Insall dependencies:
+```bash
+sudo apt update
+sudo apt install build-essential cmake git g++ libpcsclite-dev libcurl4-openssl-dev
+```
+
+- Compile standalone binary only:
+```bash
+git clone https://github.com/estkme-group/lpac
+cd lpac
+cmake .
+make
+```
+
+~ or ~
+
+- Compile standalone binary and create & install a debian package:
+```bash
+git clone https://github.com/estkme-group/lpac
+cd lpac
+cmake . -DCPACK_GENERATOR=DEB
+make -j package
+sudo dpkg -i lpac-2.0.1-Linux.deb
+```
+
+In both cases the compiled standalone binary can be found at `./output/lpac`.
+
 
 #### Droidian
 
