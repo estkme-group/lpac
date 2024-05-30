@@ -17,7 +17,7 @@ build
 /src/version.h
 
 # for package files
-lpac-*.deb
+lpac_*.deb
 lpac-*.zip
 
 # for clion ignores
