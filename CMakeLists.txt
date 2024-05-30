@@ -34,7 +34,7 @@ if(CPACK_GENERATOR)
     set(CPACK_PACKAGE_VENDOR "eSTK.me Group")
     
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "eSTK.me Group")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6")
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libcurl, libpcsclite, pcscd")
     
     set(CPACK_RPM_PACKAGE_LICENSE "AGPL-3.0-only AND LGPL-2.0-only")
