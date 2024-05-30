@@ -11,6 +11,7 @@
 * `LPAC_HTTP`: specify which HTTP backend will be used.
   - `curl`: use libcurl
   - `stdio`: use standard input/ouput
+
 * `LPAC_DRIVER_AT_DEVICE`: specify which serial port device will be used by AT APDU backend.
 * `LPAC_DRIVER_UIM_SLOT`: specify which UIM slot will be used by QMI QRTR APDU backend. (default: 1)
 * `LPAC_DRIVER_PCSC_READER`: specify which PC/SC interface will be used by PC/SC APDU backend.
