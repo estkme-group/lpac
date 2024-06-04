@@ -98,8 +98,14 @@ woa-zig)
     cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
     zip -r -j "$WORKSPACE/lpac-windows-arm64-zig.zip" output/*
     ;;
+ios-framework)
+    cmake "$WORKSPACE/framework" -B . -G Xcode -DCMAKE_TOOLCHAIN_FILE=../cmake/ios/ios.toolchain.cmake -DPLATFORM=OS64COMBINED
+    cmake --build . --config Debug
+    cmake --build . --config Release
+    zip -r "$WORKSPACE/lpac-libeuicc-ios-framework.zip" Frameworks
+    ;;
 *)
-    echo "Usage: $0 {make,debian,mingw,woa-mingw,woa-zig}"
+    echo "Usage: $0 {make,debian,mingw,woa-mingw,woa-zig,ios-framework}"
     exit 1
     ;;
 esac

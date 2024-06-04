@@ -23,9 +23,13 @@ jobs:
         include:
           - os: macos-latest
             build: {variant: make, name: macOS, artifact: macos-universal}
+          - os: macos-latest
+            build: {variant: ios-framework, name: iOS Framework, artifact: ios-framework}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+            submodules: recursive
       - name: Setup Toolchain
         run: ./scripts/setup-debian.sh
         if: runner.os == 'Linux'
