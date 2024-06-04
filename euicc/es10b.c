@@ -1331,7 +1331,7 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
-    struct es10b_rat *rat;
+    struct es10b_rat *rat_list_wptr = NULL;
     struct euicc_derutil_node tmpnode, tmpchildnode, n_profile;
 
     *ratList = NULL;
@@ -1370,6 +1370,8 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
     // ProfilePolicyAuthorisationRule
     while (euicc_derutil_unpack_next(&n_profile, &n_profile, tmpnode.value, tmpnode.length) == 0)
     {
+        struct es10b_rat *rat;
+
         tmpchildnode.self.ptr = n_profile.value;
         tmpchildnode.self.length = 0;
 
@@ -1426,15 +1428,15 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
                         {
                         case 0x80: // mcc_mnc
                             p->plmn = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->plmn, sizeof(p->plmn), n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->plmn, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
                             break;
                         case 0x81: // gid1
                             p->gid1 = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->gid1, sizeof(p->gid1), n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->gid1, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
                             break;
                         case 0x82: // gid2
                             p->gid2 = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->gid2, sizeof(p->gid2), n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->gid2, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
                             break;
                         }
                     }
@@ -1470,8 +1472,10 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
         }
         else
         {
-            (*ratList)->next = rat;
+            rat_list_wptr->next = rat;
         }
+
+        rat_list_wptr = rat;
     }
 
     fret = 0;
