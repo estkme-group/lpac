@@ -4,8 +4,8 @@ lpac is a cross-platform local profile agent program, compatible with [SGP.22 ve
 
 Features:
 
-- Support Activate Code and Confirm Code
-- Support custom IMEI sent to server
+- Support Activation Code and Confirmation Code
+- Support Custom IMEI sent to server
 - Support Profile Discovery (SM-DS)
 - Profile management: list, enable, disable, delete and nickname
 - Notification management: list, send and delete
