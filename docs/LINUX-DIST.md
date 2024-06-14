@@ -7,7 +7,7 @@
 ## OpenWrt
 
 > Minimum available release: Snapshot
-> (Before **OpenWrt 23.x** Release)
+> (Before **OpenWrt 24.x** Release)
 
 ```console
 # opkg install lpac
@@ -26,7 +26,9 @@ see <https://github.com/openwrt/packages/blob/master/utils/lpac/Makefile>
 
 see <https://github.com/alpinelinux/aports/blob/master/community/lpac/APKBUILD>
 
-## Archlinux
+## Arch Linux
+
+> Need to enable [archlinuxcn repo](https://github.com/archlinuxcn/repo#readme) first
 
 ```console
 # pacman -S lpac
@@ -38,6 +40,8 @@ see <https://github.com/archlinuxcn/repo/blob/master/archlinuxcn/lpac/PKGBUILD> 
 see <https://github.com/archlinuxcn/repo/blob/master/archlinuxcn/lpac-git/PKGBUILD>
 
 ## Nix OS
+
+> Need to enable [NUR](https://github.com/nix-community/NUR#readme "Nix User Repository") first
 
 ```console
 # nix-env -i lpac
