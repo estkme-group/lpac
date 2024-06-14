@@ -29,6 +29,8 @@ see <https://github.com/alpinelinux/aports/blob/master/community/lpac/APKBUILD>
 ## Arch Linux
 
 > Need to enable [archlinuxcn repo](https://github.com/archlinuxcn/repo#readme) first
+>
+> If you want to use AUR, the package name is [lpac-git](https://aur.archlinux.org/packages/lpac-git)
 
 ```shell
 pacman -S lpac
