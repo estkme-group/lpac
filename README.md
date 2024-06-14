@@ -16,6 +16,7 @@ Features:
 
 You can download lpac from [GitHub Release][latest], and read [USAGE](docs/USAGE.md) to use it.
 If you can't run it you need to compile by yourself, see also [DEVELOPERS](docs/DEVELOPERS.md).
+If you want to known which Linux distributions include lpac, see also [LINUX-DIST](docs/LINUX-DIST.md).
 If you have any issue, please read [FAQ](docs/FAQ.md) first.
 
 [latest]: https://github.com/estkme-group/lpac/releases/latest
