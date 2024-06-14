@@ -1,5 +1,9 @@
 # Linux distributions
 
+> [!CAUTION]
+>
+> **All Linux distribution packages are unofficially maintained.**
+
 ## OpenWrt
 
 > Minimum available release: Snapshot
