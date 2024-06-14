@@ -7,7 +7,7 @@
 ## OpenWrt
 
 > Minimum available release: Snapshot
-> (Before **OpenWrt 24.x** Release)
+> (Added on 2024-05-15)
 
 ```console
 # opkg install lpac
