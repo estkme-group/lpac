@@ -1,16 +1,24 @@
-## Standard
+# Developer Manual
+
+## Coding Standard
 
 lpac is written with C99 and compatible with [SGP.22 version 2.2.2](https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf).
 
-## Compile
+## How to Compile
 
 ### Linux
 
 #### Debian/Ubuntu
 
-With `build-essential` `cmake` `git` `g++` `libpcsclite-dev` `libcurl4-openssl-dev` installed.  
-Run `cmake` and `make`, and then all things will be in `output` directory.  
-If you want to get a Deb package, pass `-DCPACK_GENERATOR=DEB` when invoke `cmake`.
+``` bash
+# clone this repo in the top-level folder
+
+# install dependencies
+./scripts/setup-debian.sh 
+```
+
+Run `cmake` and `make`, compiled output will be in `output` directory.  
+If you want to get a Deb package, run `cmake -DCPACK_GENERATOR=DEB` then `make`.
 
 #### Droidian
 
@@ -19,29 +27,26 @@ Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, y
 ### macOS
 
 Install [Homebrew](https://brew.sh/).  
-Run `cmake` and `make`, and then all things will be in `output` directory.
+Run `cmake` and `make`, compiled output will be in `output` directory.  
 
 ### Windows(x86_64)
 
-Windows need prebuilt libcurl.dll.
+Windows need libcurl.dll to run.  
+Download libcurl from <https://curl.se/download.html> and place it as `libcurl.dll` in `output` directory.  
+
+Install prerequisites, run `cmake` and `make`, compiled output will be in `output` directory.  
 
 #### Build on Linux(MINGW)
 
-With `build-essential` `cmake` `git` `g++` `libpcsclite-dev` `libcurl4-openssl-dev` `gcc-mingw-w64` `g++-mingw-w64` installed.  
-Run `cmake` and `make`, and then all things will be in `output` directory.  
-Download libcurl from https://curl.se/download.html and place it as libcurl.dll in `output` directory.
+Require `build-essential` `cmake` `git` `g++` `libpcsclite-dev` `libcurl4-openssl-dev` `gcc-mingw-w64` `g++-mingw-w64` installed.  
 
 #### Build on Windows(MSYS2)
 
-With `mingw-w64-x86_64-cmake` `mingw-w64-x86_64-gcc` installed.  
-Run `cmake` and `make`, and then all things will be in `output` directory.  
-Download libcurl from https://curl.se/download.html and place it as libcurl.dll in `output` directory.
+Require `mingw-w64-x86_64-cmake` `mingw-w64-x86_64-gcc` installed.  
 
 #### Build on Windows(Cygwin)
 
-With `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed.  
-Run `cmake` and `make`, and then all things will be in `output` directory.  
-Download libcurl from https://curl.se/download.html and place it as libcurl.dll in `output` directory.
+Require `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed.  
 
 To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folder to distribute.  
 `cygwin1.dll` is located in `C:\cygwin64\bin\cygwin1.dll` (Default Cygwin installation location)
@@ -53,20 +58,20 @@ To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folde
 Install [zig](https://ziglang.org/download/)
 
 ```bash
-git clone https://github.com/estkme-group/lpac
-cd lpac
-./scripts/build.sh woa-zig
+# clone this repo in the top-level folder
+
+./scripts/build-ci.sh woa-zig
 ```
 
 #### Cross compile on Linux x86_64 host(GNU toolchain)
 
 ```bash
-git clone https://github.com/estkme-group/lpac
-cd lpac
-./scripts/build.sh woa-mingw
+# clone this repo in the top-level folder
+
+./scripts/build-ci.sh woa-mingw
 ```
 
-#### Build on Windows(MSYS2)
+#### Build on Native Windows on ARM(MSYS2)
 
 It is possible to build on **WoA devices** with [MSYS2 ARM64 Support](https://www.msys2.org/wiki/arm64/)
 
