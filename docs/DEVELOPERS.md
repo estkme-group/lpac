@@ -24,10 +24,14 @@ If you want to get a Deb package, run `cmake -DCPACK_GENERATOR=DEB` then `make`.
 
 Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, you will need `libgbinder-dev`, `glib2.0-dev`, and you will have to pass `-DLPAC_WITH_APDU_GBINDER=ON` when invoking `cmake`.
 
+---
+
 ### macOS
 
 Install [Homebrew](https://brew.sh/).  
 Run `cmake` and `make`, compiled output will be in `output` directory.  
+
+---
 
 ### Windows(x86_64)
 
@@ -51,6 +55,8 @@ Require `gcc-core` `gcc-g++` `make` `cmake` `unzip` `wget` installed.
 To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folder to distribute.  
 `cygwin1.dll` is located in `C:\cygwin64\bin\cygwin1.dll` (Default Cygwin installation location)
 
+---
+
 ### Windows on ARM
 
 #### Cross compile on Windows/Linux host(arm64,x86_64 and more architecture) with zig
@@ -60,7 +66,7 @@ Install [zig](https://ziglang.org/download/)
 ```bash
 # clone this repo in the top-level folder
 
-./scripts/build-ci.sh woa-zig
+./scripts/build-woa.sh woa-zig
 ```
 
 #### Cross compile on Linux x86_64 host(GNU toolchain)
@@ -68,7 +74,7 @@ Install [zig](https://ziglang.org/download/)
 ```bash
 # clone this repo in the top-level folder
 
-./scripts/build-ci.sh woa-mingw
+./scripts/build-woa.sh woa-mingw
 ```
 
 #### Build on Native Windows on ARM(MSYS2)
