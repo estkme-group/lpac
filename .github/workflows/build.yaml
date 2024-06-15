@@ -30,12 +30,12 @@ jobs:
         run: ./scripts/setup-debian.sh
         if: runner.os == 'Linux'
       - name: Build for ${{ matrix.build.name }}
-        run: ./scripts/build.sh ${{ matrix.build.variant }}
+        run: ./scripts/build-ci.sh ${{ matrix.build.variant }}
       - name: Upload ${{ matrix.build.name }} to Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.build.artifact }}
-          path: lpac-*.*
+          path: ${{ github.workspace }}/action/lpac*.*
   release:
     name: Release
     runs-on: ubuntu-latest

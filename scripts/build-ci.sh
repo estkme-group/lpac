@@ -45,6 +45,7 @@ set -x
 
 BUILD="$(mktemp -d)"
 cd "$BUILD" || exit 1
+mkdir "$WORKSPACE"/action
 
 case "${1:-}" in
 make)
@@ -54,12 +55,12 @@ make)
     cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
     cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
     cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
-    zip -r -j "$WORKSPACE/lpac-$KERNEL-$MATCHINE.zip" output/*
+    zip -r -j "$WORKSPACE/action/lpac-$KERNEL-$MATCHINE.zip" output/*
     ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
     make -j package
-    cp lpac_*.deb "$WORKSPACE"
+    cp lpac_*.deb "$WORKSPACE"/action
     ;;
 mingw)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake
@@ -71,7 +72,7 @@ mingw)
     cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
     cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
     cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
-    zip -r -j "$WORKSPACE/lpac-windows-x86_64-mingw.zip" output/*
+    zip -r -j "$WORKSPACE/action/lpac-windows-x86_64-mingw.zip" output/*
     ;;
 woa-mingw)
     TOOLCHAIN="$(download "$MINGW32_TOOLCHAIN_BLOB")"
@@ -84,7 +85,7 @@ woa-mingw)
     cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
     cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
     cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
-    zip -r -j "$WORKSPACE/lpac-windows-arm64-mingw.zip" output/*
+    zip -r -j "$WORKSPACE/action/lpac-windows-arm64-mingw.zip" output/*
     ;;
 woa-zig)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
@@ -96,7 +97,7 @@ woa-zig)
     cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
     cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
     cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
-    zip -r -j "$WORKSPACE/lpac-windows-arm64-zig.zip" output/*
+    zip -r -j "$WORKSPACE/action/lpac-windows-arm64-zig.zip" output/*
     ;;
 *)
     echo "Usage: $0 {make,debian,mingw,woa-mingw,woa-zig}"
