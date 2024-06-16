@@ -45,22 +45,27 @@ set -x
 
 BUILD="$(mktemp -d)"
 cd "$BUILD" || exit 1
-mkdir "$WORKSPACE"/action
+
+ARTIFACT="$WORKSPACE/build"
+
+mkdir "$BUILD/output"
+[ -d "$ARTIFACT" ] || mkdir "$ARTIFACT"
+
+cp "$WORKSPACE/src/LICENSE" "$BUILD/output/lpac-LICENSE"
+cp "$WORKSPACE/euicc/LICENSE" "$BUILD/output/libeuicc-LICENSE"
+cp "$WORKSPACE/cjson/LICENSE" "$BUILD/output/cjson-LICENSE"
+cp "$WORKSPACE/dlfcn-win32/LICENSE" "$BUILD/output/dlfcn-win32-LICENSE"
 
 case "${1:-}" in
 make)
     cmake "$WORKSPACE"
     make -j
-    cp "$WORKSPACE/src/LICENSE" output/lpac-LICENSE
-    cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
-    cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
-    cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
-    zip -r -j "$WORKSPACE/action/lpac-$KERNEL-$MATCHINE.zip" output/*
+    zip -r -j "$ARTIFACT/lpac-$KERNEL-$MATCHINE.zip" output/*
     ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
     make -j package
-    cp lpac_*.deb "$WORKSPACE"/action
+    cp lpac_*.deb "$ARTIFACT"
     ;;
 mingw)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake
@@ -68,11 +73,7 @@ mingw)
     CURL="$(download "$MINGW_CURL_WIN64_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-x64.dll output/libcurl.dll
     cp "$CURL"/curl-*-mingw/COPYING.txt output/libcurl-LICENSE
-    cp "$WORKSPACE/src/LICENSE" output/lpac-LICENSE
-    cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
-    cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
-    cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
-    zip -r -j "$WORKSPACE/action/lpac-windows-x86_64-mingw.zip" output/*
+    zip -r -j "$ARTIFACT/lpac-windows-x86_64-mingw.zip" output/*
     ;;
 woa-mingw)
     TOOLCHAIN="$(download "$MINGW32_TOOLCHAIN_BLOB")"
@@ -81,11 +82,7 @@ woa-mingw)
     CURL="$(download "$MINGW_CURL_WIN64A_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll output/libcurl.dll
     cp "$CURL"/curl-*-mingw/COPYING.txt output/libcurl-LICENSE
-    cp "$WORKSPACE/src/LICENSE" output/lpac-LICENSE
-    cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
-    cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
-    cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
-    zip -r -j "$WORKSPACE/action/lpac-windows-arm64-mingw.zip" output/*
+    zip -r -j "$ARTIFACT/lpac-windows-arm64-mingw.zip" output/*
     ;;
 woa-zig)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
@@ -93,11 +90,7 @@ woa-zig)
     CURL="$(download "$MINGW_CURL_WIN64A_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll output/libcurl.dll
     cp "$CURL"/curl-*-mingw/COPYING.txt output/libcurl-LICENSE
-    cp "$WORKSPACE/src/LICENSE" output/lpac-LICENSE
-    cp "$WORKSPACE/euicc/LICENSE" output/libeuicc-LICENSE
-    cp "$WORKSPACE/cjson/LICENSE" output/cjson-LICENSE
-    cp "$WORKSPACE/dlfcn-win32/LICENSE" output/dlfcn-win32-LICENSE
-    zip -r -j "$WORKSPACE/action/lpac-windows-arm64-zig.zip" output/*
+    zip -r -j "$ARTIFACT/lpac-windows-arm64-zig.zip" output/*
     ;;
 *)
     echo "Usage: $0 {make,debian,mingw,woa-mingw,woa-zig}"

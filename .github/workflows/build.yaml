@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.build.artifact }}
-          path: ${{ github.workspace }}/action/lpac*.*
+          path: ${{ github.workspace }}/build/*.*
   release:
     name: Release
     runs-on: ubuntu-latest
