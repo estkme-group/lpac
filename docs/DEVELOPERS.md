@@ -66,7 +66,7 @@ Install [zig](https://ziglang.org/download/)
 ```bash
 # clone this repo in the top-level folder
 
-./scripts/build-woa.sh woa-zig
+./scripts/build-woa.sh zig
 ```
 
 #### Cross compile on Linux x86_64 host(GNU toolchain)
@@ -74,7 +74,7 @@ Install [zig](https://ziglang.org/download/)
 ```bash
 # clone this repo in the top-level folder
 
-./scripts/build-woa.sh woa-mingw
+./scripts/build-woa.sh mingw
 ```
 
 #### Build on Native Windows on ARM(MSYS2)
