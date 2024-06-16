@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.8)
 
 project (lpac
-    VERSION 2.0.1
+    VERSION 2.0.2
     HOMEPAGE_URL "https://github.com/estkme-group/lpac"
     DESCRIPTION "C-based eUICC LPA."
     LANGUAGES C)
