@@ -21,19 +21,15 @@ If you have any issue, please read [FAQ](docs/FAQ.md) first.
 
 [latest]: https://github.com/estkme-group/lpac/releases/latest
 
-## GUI Frontend
+## Software Ecosystem
 
 - [EasyLPAC] (Windows, Linux and macOS)
 - [{Open,Easy}EUICC][openeuicc] ([Mirror][openeuicc-mirror], Android)
+- [rlpa-server](https://github.com/estkme-group/rlpa-server) for eSTK.me Cloud Enhance function
 
 [easylpac]: https://github.com/creamlike1024/EasyLPAC/releases/latest
 [openeuicc]: https://gitea.angry.im/PeterCxy/OpenEUICC
 [openeuicc-mirror]: https://github.com/estkme-group/openeuicc
-
-## Cloud Enhance
-
-- [rlpa-server.php](src/rlpa-server.php) (Written in PHP)
-- [eSTK.me Cloud Enhance Server](https://github.com/damonto/estkme-cloud) (Written in Golang)
 
 ## Thanks
 
