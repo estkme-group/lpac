@@ -19,7 +19,7 @@ make)
     make -j
     copy-license "$BUILD/output"
     copy-docs "$BUILD/output"
-    zip -r -j "$ARTIFACT/lpac-$KERNEL-$MATCHINE.zip" output/*
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE.zip" "$BUILD/output"
     ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
@@ -32,7 +32,7 @@ mingw)
     copy-license "$BUILD/output"
     copy-curl-win "$BUILD/output"
     copy-docs "$BUILD/output"
-    zip -r -j "$ARTIFACT/lpac-windows-x86_64-mingw.zip" output/*
+    create-bundle "$ARTIFACT/lpac-windows-x86_64-mingw.zip" "$BUILD/output"
     ;;
 woa-mingw)
     TOOLCHAIN="$(download "$MINGW32_TOOLCHAIN_BLOB")"
@@ -42,7 +42,7 @@ woa-mingw)
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
     copy-docs "$BUILD/output"
-    zip -r -j "$ARTIFACT/lpac-windows-arm64-mingw.zip" output/*
+    create-bundle "$ARTIFACT/lpac-windows-arm64-mingw.zip" "$BUILD/output"
     ;;
 woa-zig)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
@@ -50,7 +50,7 @@ woa-zig)
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
     copy-docs "$BUILD/output"
-    zip -r -j "$ARTIFACT/lpac-windows-arm64-zig.zip" output/*
+    create-bundle "$ARTIFACT/lpac-windows-arm64-zig.zip" "$BUILD/output"
     ;;
 *)
     echo "Usage: $0 {make,debian,mingw,woa-mingw,woa-zig}"

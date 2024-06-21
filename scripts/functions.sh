@@ -74,3 +74,11 @@ function copy-docs {
     cp "$WORKSPACE/README.md" "$OUTPUT/README.md"
     cp -r "$WORKSPACE/docs" "$OUTPUT/docs"
 }
+
+function create-bundle {
+    local BUNDLE_FILE="$1"
+    local INPUT_DIR="$2"
+
+    cd "$INPUT_DIR"
+    zip -r "$BUNDLE_FILE" *
+}
