@@ -67,3 +67,10 @@ function copy-curl-win {
     cp "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/libcurl-LICENSE"
     rm -rf "$CURL"
 }
+
+function copy-docs {
+    local OUTPUT="$1"
+
+    cp "$WORKSPACE/README.md" "$OUTPUT/README.md"
+    cp -r "$WORKSPACE/docs" "$OUTPUT/docs"
+}

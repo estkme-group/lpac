@@ -15,12 +15,14 @@ mingw)
     make -j
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
+    copy-docs "$BUILD/output"
     ;;
 zig)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
     make -j
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
+    copy-docs "$BUILD/output"
     ;;
 *)
     echo "Usage: $0 {mingw,zig}"

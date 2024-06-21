@@ -18,12 +18,12 @@ make)
     cmake "$WORKSPACE"
     make -j
     copy-license "$BUILD/output"
+    copy-docs "$BUILD/output"
     zip -r -j "$ARTIFACT/lpac-$KERNEL-$MATCHINE.zip" output/*
     ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
     make -j package
-    copy-license "$BUILD/output"
     cp lpac_*.deb "$ARTIFACT"
     ;;
 mingw)
@@ -31,6 +31,7 @@ mingw)
     make -j
     copy-license "$BUILD/output"
     copy-curl-win "$BUILD/output"
+    copy-docs "$BUILD/output"
     zip -r -j "$ARTIFACT/lpac-windows-x86_64-mingw.zip" output/*
     ;;
 woa-mingw)
@@ -40,6 +41,7 @@ woa-mingw)
     rm -rf "$TOOLCHAIN"
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
+    copy-docs "$BUILD/output"
     zip -r -j "$ARTIFACT/lpac-windows-arm64-mingw.zip" output/*
     ;;
 woa-zig)
@@ -47,6 +49,7 @@ woa-zig)
     make -j
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
+    copy-docs "$BUILD/output"
     zip -r -j "$ARTIFACT/lpac-windows-arm64-zig.zip" output/*
     ;;
 *)
