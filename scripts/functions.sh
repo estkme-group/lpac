@@ -44,10 +44,10 @@ function download {
 function copy-license {
     local OUTPUT="$1"
 
-    cp "$WORKSPACE/src/LICENSE" "$OUTPUT/lpac-LICENSE"
-    cp "$WORKSPACE/euicc/LICENSE" "$OUTPUT/libeuicc-LICENSE"
-    cp "$WORKSPACE/cjson/LICENSE" "$OUTPUT/cjson-LICENSE"
-    cp "$WORKSPACE/dlfcn-win32/LICENSE" "$OUTPUT/dlfcn-win32-LICENSE"
+    cp "$WORKSPACE/src/LICENSE" "$OUTPUT/LICENSE-lpac"
+    cp "$WORKSPACE/euicc/LICENSE" "$OUTPUT/LICENSE-libeuicc"
+    cp "$WORKSPACE/cjson/LICENSE" "$OUTPUT/LICENSE-cjson"
+    cp "$WORKSPACE/dlfcn-win32/LICENSE" "$OUTPUT/LICENSE-dlfcn-win32"
 }
 
 function copy-curl-woa {
@@ -55,7 +55,7 @@ function copy-curl-woa {
 
     CURL="$(download "$MINGW_CURL_WIN64A_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll "$OUTPUT/libcurl.dll"
-    cp "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/libcurl-LICENSE"
+    cp "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/LICENSE-libcurl"
     rm -rf "$CURL"
 }
 
@@ -64,7 +64,7 @@ function copy-curl-win {
 
     CURL="$(download "$MINGW_CURL_WIN64_BLOB")"
     cp "$CURL"/curl-*-mingw/bin/libcurl-x64.dll "$OUTPUT/libcurl.dll"
-    cp "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/libcurl-LICENSE"
+    cp "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/LICENSE-libcurl"
     rm -rf "$CURL"
 }
 
@@ -79,6 +79,7 @@ function create-bundle {
     local BUNDLE_FILE="$1"
     local INPUT_DIR="$2"
 
-    cd "$INPUT_DIR"
+    pushd "$INPUT_DIR"
     zip -r "$BUNDLE_FILE" *
+    popd
 }
