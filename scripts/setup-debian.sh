@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xeuo pipefail
+set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 export DEBIAN_PRIORITY=critical
 
