@@ -18,7 +18,7 @@ make)
     cmake "$WORKSPACE"
     make -j
     copy-license "$BUILD/output"
-    copy-docs "$BUILD/output"
+    copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE.zip" "$BUILD/output"
     ;;
 debian)
@@ -31,7 +31,7 @@ mingw)
     make -j
     copy-license "$BUILD/output"
     copy-curl-win "$BUILD/output"
-    copy-docs "$BUILD/output"
+    copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-windows-x86_64-mingw.zip" "$BUILD/output"
     ;;
 woa-mingw)
@@ -41,7 +41,7 @@ woa-mingw)
     rm -rf "$TOOLCHAIN"
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
-    copy-docs "$BUILD/output"
+    copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-windows-arm64-mingw.zip" "$BUILD/output"
     ;;
 woa-zig)
@@ -49,7 +49,7 @@ woa-zig)
     make -j
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
-    copy-docs "$BUILD/output"
+    copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-windows-arm64-zig.zip" "$BUILD/output"
     ;;
 *)

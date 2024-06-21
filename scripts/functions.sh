@@ -68,11 +68,10 @@ function copy-curl-win {
     rm -rf "$CURL"
 }
 
-function copy-docs {
+function copy-usage {
     local OUTPUT="$1"
 
-    cp "$WORKSPACE/README.md" "$OUTPUT/README.md"
-    cp -r "$WORKSPACE/docs" "$OUTPUT/docs"
+    cp "$WORKSPACE/docs/USAGE.md" "$OUTPUT/README.md"
 }
 
 function create-bundle {
