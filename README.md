@@ -27,6 +27,9 @@ If you have any issue, please read [FAQ](docs/FAQ.md) first.
 - [{Open,Easy}EUICC][openeuicc] ([Mirror][openeuicc-mirror], Android)
 - [eSIM Manager (lpa-gtk)](https://codeberg.org/lucaweiss/lpa-gtk) (Linux Mobile)
 - [rlpa-server](https://github.com/estkme-group/rlpa-server) for eSTK.me Cloud Enhance function
+- [lpac-libmbim-wrapper](https://github.com/stich86/lpac-libmbim-wrapper) (Ported [MBIM](https://learn.microsoft.com/en-us/windows-hardware/drivers/network/mb-interface-model))
+- [lpac-libqmi-wrapper](https://github.com/z3ntu/lpac-libqmi-wrapper) (Ported [QMI](https://osmocom.org/projects/quectel-modems/wiki/QMI))
+- [libeuicc for iOS framework base](https://github.com/spancat/libeuicc-framework)
 
 [easylpac]: https://github.com/creamlike1024/EasyLPAC/releases/latest
 [openeuicc]: https://gitea.angry.im/PeterCxy/OpenEUICC
