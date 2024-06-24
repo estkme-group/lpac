@@ -25,6 +25,7 @@ If you have any issue, please read [FAQ](docs/FAQ.md) first.
 
 - [EasyLPAC] (Windows, Linux and macOS)
 - [{Open,Easy}EUICC][openeuicc] ([Mirror][openeuicc-mirror], Android)
+- [eSIM Manager (lpa-gtk)](https://codeberg.org/lucaweiss/lpa-gtk) (Linux Mobile)
 - [rlpa-server](https://github.com/estkme-group/rlpa-server) for eSTK.me Cloud Enhance function
 
 [easylpac]: https://github.com/creamlike1024/EasyLPAC/releases/latest
