@@ -63,7 +63,8 @@ if(LPAC_WITH_APDU_QMI_QRTR)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI_QRTR")
     target_sources(euicc-drivers PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_qrtr.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_helpers.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_helpers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_common.c)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(QRTR_GLIB REQUIRED IMPORTED_TARGET qrtr-glib)
     pkg_check_modules(QMI_GLIB REQUIRED IMPORTED_TARGET qmi-glib)
