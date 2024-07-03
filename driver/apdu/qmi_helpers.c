@@ -59,6 +59,32 @@ qmi_device_new_from_node_sync(QrtrNode *node,
 }
 #endif
 
+#ifdef LPAC_WITH_APDU_QMI
+QmiDevice *
+qmi_device_new_from_path(GFile *file,
+                         GMainContext *context,
+                         GError **error)
+{
+    g_autoptr(GMainContextPusher) pusher = NULL;
+    g_autoptr(GAsyncResult) result = NULL;
+    g_autofree gchar *id = NULL;
+
+    pusher = g_main_context_pusher_new(context);
+
+    id = g_file_get_path (file);
+    if (id)
+        qmi_device_new(file,
+                       NULL,
+                       async_result_ready,
+                       &result);
+
+    while (result == NULL)
+        g_main_context_iteration(context, TRUE);
+
+    return qmi_device_new_finish(result, error);
+}
+#endif
+
 gboolean
 qmi_device_open_sync(QmiDevice *device,
                      GMainContext *context,

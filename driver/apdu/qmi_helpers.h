@@ -19,6 +19,14 @@ qmi_device_new_from_node_sync(
     GError **error);
 #endif
 
+#ifdef LPAC_WITH_APDU_QMI
+QmiDevice *
+qmi_device_new_from_path(
+    GFile *file,
+    GMainContext *context,
+    GError **error);
+#endif
+
 gboolean
 qmi_device_open_sync(
     QmiDevice *device,
