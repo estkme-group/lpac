@@ -6,6 +6,7 @@
   - `at`: use AT commands interface used by LTE module
   - `pcsc`: use PC/SC Smart Card API
   - `stdio`: use standard input/output
+  - `qmi`: use QMI
   - `qmi_qrtr`: use QMI over QRTR
   - GBinder-based backends for `libhybris` (Halium) distributions:
 	- `gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
@@ -13,7 +14,8 @@
   - `curl`: use libcurl
   - `stdio`: use standard input/ouput
 * `AT_DEVICE`: specify which serial port device will be used by AT APDU backend.
-* `UIM_SLOT`: specify which UIM slot will be used by QMI QRTR APDU backend. (default: 1)
+* `QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
+* `UIM_SLOT`: specify which UIM slot will be used by QMI APDU backends. (default: 1)
 * `DRIVER_IFID`: specify which PC/SC interface will be used by PC/SC APDU backend.
 
 ## Debug
