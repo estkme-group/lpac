@@ -16,6 +16,7 @@ async_result_ready(GObject *source_object,
     *result_out = g_object_ref(res);
 }
 
+#ifdef LPAC_WITH_APDU_QMI_QRTR
 QrtrBus *
 qrtr_bus_new_sync(GMainContext *context,
                   GError **error)
@@ -56,6 +57,7 @@ qmi_device_new_from_node_sync(QrtrNode *node,
 
     return qmi_device_new_from_node_finish(result, error);
 }
+#endif
 
 gboolean
 qmi_device_open_sync(QmiDevice *device,
