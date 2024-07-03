@@ -3,7 +3,7 @@
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
 
-#include "qmi_qrtr_helpers.h"
+#include "qmi_helpers.h"
 
 static void
 async_result_ready(GObject *source_object,
