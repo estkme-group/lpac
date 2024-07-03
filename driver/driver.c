@@ -112,10 +112,10 @@ void euicc_driver_fini()
 {
     if (_driver_apdu != NULL)
     {
-        _driver_apdu->fini();
+        _driver_apdu->fini(&euicc_driver_interface_apdu);
     }
     if (_driver_http != NULL)
     {
-        _driver_http->fini();
+        _driver_http->fini(&euicc_driver_interface_http);
     }
 }

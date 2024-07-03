@@ -12,5 +12,5 @@ struct euicc_driver
     const char *name;
     int (*init)(void *interface);
     int (*main)(int argc, char **argv);
-    void (*fini)(void);
+    void (*fini)(void *interface);
 };
