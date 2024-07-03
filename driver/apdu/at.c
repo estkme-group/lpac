@@ -14,7 +14,7 @@ static int logic_channel = 0;
 
 static int at_expect(char **response, const char *expected)
 {
-    char buffer[1024];
+    char buffer[10240];
 
     if (response)
         *response = NULL;
