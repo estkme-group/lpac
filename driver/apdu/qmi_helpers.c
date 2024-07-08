@@ -96,7 +96,7 @@ qmi_device_open_sync(QmiDevice *device,
     pusher = g_main_context_pusher_new(context);
 
     qmi_device_open(device,
-                    QMI_DEVICE_OPEN_FLAGS_NONE,
+                    QMI_DEVICE_OPEN_FLAGS_PROXY,
                     15,
                     NULL,
                     async_result_ready,
