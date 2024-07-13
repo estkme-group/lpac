@@ -69,6 +69,7 @@ static int open_at_device(const char *device)
         close(fd);
         return -1;
     }
+
     return fd;
 }
 
