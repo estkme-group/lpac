@@ -137,7 +137,6 @@ static int at_expect(char **response, const char *expected)
 {
     uint8_t *buffer = NULL;
     size_t buffer_len = 0;
-    size_t total_len = 0;
 
     if (response)
         *response = NULL;
@@ -150,8 +149,6 @@ static int at_expect(char **response, const char *expected)
             free(buffer);
             return -1;
         }
-        total_len += buffer_len;
-
         char *line = strtok((char *)buffer, "\r\n");
         while (line != NULL)
         {
