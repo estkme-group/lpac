@@ -188,7 +188,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     if (!(device = getenv("AT_DEVICE")))
     {
-        device = "/dev/ttyUSB2";
+        device = "/dev/ttyUSB0";
     }
 
     fd = open_at_device(device);
