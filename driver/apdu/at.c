@@ -103,7 +103,7 @@ static ssize_t read_command_response(uint8_t **buffer, size_t *size)
         ssize_t r = read(fd, *buffer + received, buffer_size - received - 1);
         if (r < 0)
         {
-            perror("failed to read from port");
+            fprintf(stderr, "failed to read from port\n");
             free(*buffer);
             *buffer = NULL;
             return -1;
@@ -119,7 +119,7 @@ static ssize_t read_command_response(uint8_t **buffer, size_t *size)
             uint8_t *new_buffer = realloc(*buffer, buffer_size);
             if (new_buffer == NULL)
             {
-                perror("failed to reallocate memory");
+                fprintf(stderr, "failed to allocate memory\n");
                 free(*buffer);
                 *buffer = NULL;
                 return -1;
