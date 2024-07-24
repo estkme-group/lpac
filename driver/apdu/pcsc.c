@@ -453,7 +453,7 @@ static int libapduinterface_main(int argc, char **argv)
     return 0;
 }
 
-static void libapduinterface_fini(void)
+static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 {
 }
 
@@ -462,5 +462,5 @@ const struct euicc_driver driver_apdu_pcsc = {
     .name = "pcsc",
     .init = (int (*)(void *))libapduinterface_init,
     .main = libapduinterface_main,
-    .fini = libapduinterface_fini,
+    .fini = (void (*)(void *))libapduinterface_fini,
 };

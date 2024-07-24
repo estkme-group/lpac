@@ -8,6 +8,10 @@
 #include "driver/apdu/gbinder_hidl.h"
 #endif
 
+#ifdef LPAC_WITH_APDU_QMI
+#include "driver/apdu/qmi.h"
+#endif
+
 #ifdef LPAC_WITH_APDU_QMI_QRTR
 #include "driver/apdu/qmi_qrtr.h"
 #endif
@@ -27,6 +31,9 @@
 static const struct euicc_driver *drivers[] = {
 #ifdef LPAC_WITH_APDU_GBINDER
     &driver_apdu_gbinder_hidl,
+#endif
+#ifdef LPAC_WITH_APDU_QMI
+    &driver_apdu_qmi,
 #endif
 #ifdef LPAC_WITH_APDU_QMI_QRTR
     &driver_apdu_qmi_qrtr,
@@ -112,10 +119,10 @@ void euicc_driver_fini()
 {
     if (_driver_apdu != NULL)
     {
-        _driver_apdu->fini();
+        _driver_apdu->fini(&euicc_driver_interface_apdu);
     }
     if (_driver_http != NULL)
     {
-        _driver_http->fini();
+        _driver_http->fini(&euicc_driver_interface_http);
     }
 }

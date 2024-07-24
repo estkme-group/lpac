@@ -3,8 +3,10 @@
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
 
-#include <libqrtr-glib.h>
 #include <libqmi-glib.h>
+
+#ifdef LPAC_WITH_APDU_QMI_QRTR
+#include <libqrtr-glib.h>
 
 QrtrBus *qrtr_bus_new_sync(
     GMainContext *context,
@@ -15,6 +17,15 @@ qmi_device_new_from_node_sync(
     QrtrNode *node,
     GMainContext *context,
     GError **error);
+#endif
+
+#ifdef LPAC_WITH_APDU_QMI
+QmiDevice *
+qmi_device_new_from_path(
+    GFile *file,
+    GMainContext *context,
+    GError **error);
+#endif
 
 gboolean
 qmi_device_open_sync(

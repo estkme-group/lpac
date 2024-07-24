@@ -314,7 +314,7 @@ static int libapduinterface_main(int argc, char **argv)
     return 0;
 }
 
-static void libapduinterface_fini(void)
+static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 {
 }
 

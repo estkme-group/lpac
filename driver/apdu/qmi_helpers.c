@@ -3,7 +3,7 @@
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
 
-#include "qmi_qrtr_helpers.h"
+#include "qmi_helpers.h"
 
 static void
 async_result_ready(GObject *source_object,
@@ -16,6 +16,7 @@ async_result_ready(GObject *source_object,
     *result_out = g_object_ref(res);
 }
 
+#ifdef LPAC_WITH_APDU_QMI_QRTR
 QrtrBus *
 qrtr_bus_new_sync(GMainContext *context,
                   GError **error)
@@ -56,6 +57,33 @@ qmi_device_new_from_node_sync(QrtrNode *node,
 
     return qmi_device_new_from_node_finish(result, error);
 }
+#endif
+
+#ifdef LPAC_WITH_APDU_QMI
+QmiDevice *
+qmi_device_new_from_path(GFile *file,
+                         GMainContext *context,
+                         GError **error)
+{
+    g_autoptr(GMainContextPusher) pusher = NULL;
+    g_autoptr(GAsyncResult) result = NULL;
+    g_autofree gchar *id = NULL;
+
+    pusher = g_main_context_pusher_new(context);
+
+    id = g_file_get_path (file);
+    if (id)
+        qmi_device_new(file,
+                       NULL,
+                       async_result_ready,
+                       &result);
+
+    while (result == NULL)
+        g_main_context_iteration(context, TRUE);
+
+    return qmi_device_new_finish(result, error);
+}
+#endif
 
 gboolean
 qmi_device_open_sync(QmiDevice *device,
@@ -68,7 +96,7 @@ qmi_device_open_sync(QmiDevice *device,
     pusher = g_main_context_pusher_new(context);
 
     qmi_device_open(device,
-                    QMI_DEVICE_OPEN_FLAGS_NONE,
+                    QMI_DEVICE_OPEN_FLAGS_PROXY,
                     15,
                     NULL,
                     async_result_ready,

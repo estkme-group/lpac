@@ -4,6 +4,7 @@ cmake_dependent_option(LPAC_DYNAMIC_DRIVERS "Build lpac/libeuicc driver backends
 option(LPAC_WITH_APDU_PCSC "Build APDU PCSC Backend (requires PCSC libraries)" ON)
 option(LPAC_WITH_APDU_AT "Build APDU AT Backend" ON)
 option(LPAC_WITH_APDU_GBINDER "Build APDU Gbinder backend for libhybris devices (requires gbinder headers)" OFF)
+option(LPAC_WITH_APDU_QMI "Build QMI backend for Qualcomm devices (requires libqmi)" OFF)
 option(LPAC_WITH_APDU_QMI_QRTR "Build QMI-over-QRTR backend for Qualcomm devices (requires libqrtr and libqmi headers)" OFF)
 
 option(LPAC_WITH_HTTP_CURL "Build HTTP Curl interface" ON)
@@ -59,9 +60,26 @@ if(LPAC_WITH_APDU_GBINDER)
     endif()
 endif()
 
+if(LPAC_WITH_APDU_QMI)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI")
+    target_sources(euicc-drivers PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_helpers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_common.c)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(QMI_GLIB REQUIRED IMPORTED_TARGET qmi-glib)
+    target_link_libraries(euicc-drivers PkgConfig::QMI_GLIB)
+    if(LPAC_DYNAMIC_DRIVERS)
+        list(APPEND LIBEUICC_DRIVERS_REQUIRES "qmi-glib")
+    endif()
+endif()
+
 if(LPAC_WITH_APDU_QMI_QRTR)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI_QRTR")
-    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_qrtr.c ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_qrtr_helpers.c)
+    target_sources(euicc-drivers PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_qrtr.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_helpers.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_common.c)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(QRTR_GLIB REQUIRED IMPORTED_TARGET qrtr-glib)
     pkg_check_modules(QMI_GLIB REQUIRED IMPORTED_TARGET qmi-glib)
