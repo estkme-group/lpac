@@ -109,7 +109,19 @@ int main(int argc, char **argv)
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
-    if (euicc_driver_init(getenv("LPAC_APDU"), getenv("LPAC_HTTP")))
+    const char *apdu_driver = getenv("LPAC_APDU");
+    if (apdu_driver == NULL)
+    {
+        apdu_driver = "pcsc";
+    }
+
+    const char *http_driver = getenv("LPAC_HTTP");
+    if (http_driver == NULL)
+    {
+        http_driver = "curl";
+    }
+
+    if (euicc_driver_init(apdu_driver, http_driver))
     {
         return -1;
     }

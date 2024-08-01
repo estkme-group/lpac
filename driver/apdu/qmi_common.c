@@ -154,7 +154,7 @@ void qmi_apdu_interface_disconnect(struct euicc_ctx *ctx)
 
 void qmi_cleanup(struct qmi_data *qmi_priv)
 {
-    if (qmi_priv->lastChannelId != -1)
+    if (qmi_priv->lastChannelId > 0)
     {
         fprintf(stderr, "Cleaning up leaked APDU channel %d\n", qmi_priv->lastChannelId);
         qmi_apdu_interface_logic_channel_close(NULL, qmi_priv->lastChannelId);
