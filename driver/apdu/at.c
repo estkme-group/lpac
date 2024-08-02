@@ -11,77 +11,36 @@
 
 static FILE *fuart;
 static int logic_channel = 0;
+static char *buffer;
+static size_t buffer_size = 20480;
 
 static int at_expect(char **response, const char *expected)
 {
-    size_t buffer_size = 1024;
-    size_t data_length = 0;
-    char *buffer = malloc(buffer_size);
-
-    if (!buffer)
-    {
-        fprintf(stderr, "Memory allocation failed\n");
-        return -1;
-    }
+    memset(buffer, 0, buffer_size);
 
     if (response)
-    {
         *response = NULL;
-    }
 
     while (1)
     {
-        if (fgets(buffer + data_length, buffer_size - data_length, fuart) == NULL)
-        {
-            free(buffer);
-            return -1;
-        }
-
-        data_length += strlen(buffer + data_length);
-
-        if (buffer[data_length - 1] != '\n' && !feof(fuart))
-        {
-            size_t new_size = buffer_size * 2;
-            char *new_buffer = realloc(buffer, new_size);
-            if (!new_buffer)
-            {
-                fprintf(stderr, "Memory reallocation failed\n");
-                free(buffer);
-                return -1;
-            }
-            buffer = new_buffer;
-            buffer_size = new_size;
-            continue;
-        }
-
+        fgets(buffer, buffer_size, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
-
         if (getenv("AT_DEBUG"))
-        {
             printf("AT_DEBUG: %s\r\n", buffer);
-        }
-
         if (strcmp(buffer, "ERROR") == 0)
         {
-            free(buffer);
             return -1;
         }
         else if (strcmp(buffer, "OK") == 0)
         {
-            free(buffer);
             return 0;
         }
         else if (expected && strncmp(buffer, expected, strlen(expected)) == 0)
         {
             if (response)
-            {
                 *response = strdup(buffer + strlen(expected));
-            }
         }
-        data_length = 0;
     }
-
-    free(buffer);
     return 0;
 }
 
@@ -253,6 +212,8 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
     ifstruct->transmit = apdu_interface_transmit;
 
+    buffer = malloc(buffer_size);
+
     return 0;
 }
 
@@ -263,6 +224,7 @@ static int libapduinterface_main(int argc, char **argv)
 
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 {
+    free(buffer);
 }
 
 const struct euicc_driver driver_apdu_at = {
