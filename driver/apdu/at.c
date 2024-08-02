@@ -11,7 +11,8 @@
 
 #define AT_BUFFER_SIZE 20480
 static FILE *fuart;
-static int logic_channel = 0;
+
+static long logic_channel = 0;
 static char *buffer;
 
 static int at_expect(char **response, const char *expected)
@@ -74,13 +75,15 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
         fprintf(stderr, "Device missing AT+CCHC support\n");
         return -1;
     }
+    /* AT+CGLA=? might not be available but AT+CGLA= is
+       Sierra wireless MC7455 supports both but EM7590 only the latter
     fprintf(fuart, "AT+CGLA=?\r\n");
     if (at_expect(NULL, NULL))
     {
         fprintf(stderr, "Device missing AT+CGLA support\n");
         return -1;
     }
-
+    */
     return 0;
 }
 
@@ -106,7 +109,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
         return -1;
     }
 
-    fprintf(fuart, "AT+CGLA=%d,%u,\"", logic_channel, tx_len * 2);
+    fprintf(fuart, "AT+CGLA=%lx,%u,\"", logic_channel, tx_len * 2);
     for (uint32_t i = 0; i < tx_len; i++)
     {
         fprintf(fuart, "%02X", (uint8_t)(tx[i] & 0xFF));
@@ -159,7 +162,7 @@ exit:
     return fret;
 }
 
-static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
+static long apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
 {
     char *response;
 
@@ -168,11 +171,13 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
         return logic_channel;
     }
 
+    /* this code is broken, you can't assume there are 4 open channels
     for (int i = 1; i <= 4; i++)
     {
         fprintf(fuart, "AT+CCHC=%d\r\n", i);
         at_expect(NULL, NULL);
-    }
+    }*/
+
     fprintf(fuart, "AT+CCHO=\"");
     for (int i = 0; i < aid_len; i++)
     {
@@ -187,9 +192,13 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     {
         return -1;
     }
-    logic_channel = atoi(response);
 
-    return logic_channel;
+    logic_channel = strtol(response, NULL, 16);
+
+    // always return 0 as the actual logic channel to eUICC is only available to the modem
+    // CLA should always be 0x80 see:
+    // https://github.com/estkme-group/lpac/issues/138
+    return 0;
 }
 
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel)
@@ -198,7 +207,7 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
     {
         return;
     }
-    fprintf(fuart, "AT+CCHC=%d\r\n", logic_channel);
+    fprintf(fuart, "AT+CCHC=%lx\r\n", logic_channel);
     at_expect(NULL, NULL);
 }
 
