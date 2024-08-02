@@ -213,6 +213,11 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     ifstruct->transmit = apdu_interface_transmit;
 
     buffer = malloc(AT_BUFFER_SIZE);
+    if (!buffer)
+    {
+        fprintf(stderr, "Failed to allocate memory\n");
+        return -1;
+    }
 
     return 0;
 }
