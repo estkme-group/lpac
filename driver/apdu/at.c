@@ -12,7 +12,7 @@
 #define AT_BUFFER_SIZE 20480
 static FILE *fuart;
 
-static long logic_channel = 0;
+static uint64_t logic_channel = 0;
 static char *buffer;
 
 static int at_expect(char **response, const char *expected)
