@@ -9,21 +9,21 @@
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
 
+#define AT_BUFFER_SIZE 20480
 static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
-static size_t buffer_size = 20480;
 
 static int at_expect(char **response, const char *expected)
 {
-    memset(buffer, 0, buffer_size);
+    memset(buffer, 0, AT_BUFFER_SIZE);
 
     if (response)
         *response = NULL;
 
     while (1)
     {
-        fgets(buffer, buffer_size, fuart);
+        fgets(buffer, AT_BUFFER_SIZE, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
         if (getenv("AT_DEBUG"))
             printf("AT_DEBUG: %s\r\n", buffer);
@@ -212,7 +212,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
     ifstruct->transmit = apdu_interface_transmit;
 
-    buffer = malloc(buffer_size);
+    buffer = malloc(AT_BUFFER_SIZE);
 
     return 0;
 }
