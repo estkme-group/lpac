@@ -14,31 +14,74 @@ static int logic_channel = 0;
 
 static int at_expect(char **response, const char *expected)
 {
-    char buffer[1024];
+    size_t buffer_size = 1024;
+    size_t data_length = 0;
+    char *buffer = malloc(buffer_size);
+
+    if (!buffer)
+    {
+        fprintf(stderr, "Memory allocation failed\n");
+        return -1;
+    }
 
     if (response)
+    {
         *response = NULL;
+    }
 
     while (1)
     {
-        fgets(buffer, sizeof(buffer), fuart);
+        if (fgets(buffer + data_length, buffer_size - data_length, fuart) == NULL)
+        {
+            free(buffer);
+            return -1;
+        }
+
+        data_length += strlen(buffer + data_length);
+
+        if (buffer[data_length - 1] != '\n' && !feof(fuart))
+        {
+            size_t new_size = buffer_size * 2;
+            char *new_buffer = realloc(buffer, new_size);
+            if (!new_buffer)
+            {
+                fprintf(stderr, "Memory reallocation failed\n");
+                free(buffer);
+                return -1;
+            }
+            buffer = new_buffer;
+            buffer_size = new_size;
+            continue;
+        }
+
         buffer[strcspn(buffer, "\r\n")] = 0;
+
         if (getenv("AT_DEBUG"))
+        {
             printf("AT_DEBUG: %s\r\n", buffer);
+        }
+
         if (strcmp(buffer, "ERROR") == 0)
         {
+            free(buffer);
             return -1;
         }
         else if (strcmp(buffer, "OK") == 0)
         {
+            free(buffer);
             return 0;
         }
         else if (expected && strncmp(buffer, expected, strlen(expected)) == 0)
         {
             if (response)
+            {
                 *response = strdup(buffer + strlen(expected));
+            }
         }
+        data_length = 0;
     }
+
+    free(buffer);
     return 0;
 }
 
