@@ -48,7 +48,7 @@ int es9p_ex_get_profile_metadata(struct euicc_ctx *ctx, struct es9p_ex_profile_m
         case 0x5A: // ICCID
             euicc_hexutil_bin2gsmbcd(profile_metadata->iccid, sizeof(profile_metadata->iccid), tmpnode.value, tmpnode.length);
             break;
-        case 0X91: // ISDPAID
+        case 0X91: // ServiceProviderName
             profile_metadata->serviceProviderName = malloc(tmpnode.length + 1);
             if (profile_metadata->serviceProviderName)
             {
