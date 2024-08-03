@@ -5,6 +5,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <main.h>
+#include <stdbool.h>
 
 #include <euicc/es10a.h>
 #include <euicc/es10b.h>
@@ -24,7 +25,7 @@ static int applet_main(int argc, char **argv)
     char *imei = NULL;
     char *confirmation_code = NULL;
     char *activation_code = NULL;
-    int is_preview_mode = -1;
+    bool is_preview_mode = false;
 
     struct es10a_euicc_configured_addresses configured_addresses = {0};
     struct es10b_load_bound_profile_package_result download_result = {0};
@@ -55,7 +56,7 @@ static int applet_main(int argc, char **argv)
             }
             break;
         case 'p':
-            is_preview_mode = 1;
+            is_preview_mode = true;
             break;
         case 'h':
         case '?':
@@ -170,7 +171,7 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
-    if (is_preview_mode == 1)
+    if (is_preview_mode)
     {
         struct es9p_ex_profile_metadata profile_metadata;
         if (es9p_ex_get_profile_metadata(&euicc_ctx, &profile_metadata))
