@@ -263,17 +263,15 @@ int download_cancel_session(struct euicc_ctx *ctx, enum es10b_cancel_session_rea
     if (es10b_cancel_session(&euicc_ctx, reason))
     {
         jprint_error("es10b_cancel_session", detail);
-        goto err;
+        return -1;
     }
     jprint_progress("es9p_cancel_session", detail);
     if (es9p_cancel_session(&euicc_ctx))
     {
         jprint_error("es9p_cancel_session", detail);
-        goto err;
+        return -1;
     }
     return 0;
-err:
-    return -1;
 }
 
 struct applet_entry applet_profile_download = {
