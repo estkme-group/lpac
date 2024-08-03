@@ -9,14 +9,14 @@
 #include <euicc/es10a.h>
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
+#include <euicc/es9p_ex.h>
 #include <euicc/tostr.h>
 
-static const char *opt_string = "s:m:i:c:a:h?";
+static const char *opt_string = "s:m:i:c:a:ph?";
 
 static int applet_main(int argc, char **argv)
 {
     int fret;
-
     int opt;
 
     char *smdp = NULL;
@@ -24,9 +24,11 @@ static int applet_main(int argc, char **argv)
     char *imei = NULL;
     char *confirmation_code = NULL;
     char *activation_code = NULL;
+    int is_preview_mode = -1;
 
     struct es10a_euicc_configured_addresses configured_addresses = {0};
     struct es10b_load_bound_profile_package_result download_result = {0};
+    enum es10b_cancel_session_reason cancel_reason = -1;
 
     opt = getopt(argc, argv, opt_string);
     while (opt != -1)
@@ -52,6 +54,9 @@ static int applet_main(int argc, char **argv)
                 activation_code += 4; // ignore uri scheme
             }
             break;
+        case 'p':
+            is_preview_mode = 1;
+            break;
         case 'h':
         case '?':
             printf("Usage: %s [OPTIONS]\r\n", argv[0]);
@@ -60,6 +65,7 @@ static int applet_main(int argc, char **argv)
             printf("\t -i IMEI\r\n");
             printf("\t -c Confirmation Code (Password)\r\n");
             printf("\t -a Activation Code (e.g: 'LPA:***')\r\n");
+            printf("\t -p Preview mode\r\n");
             printf("\t -h This help info\r\n");
             return -1;
         default:
@@ -156,13 +162,38 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es9p_authenticate_client", smdp);
     if (es9p_authenticate_client(&euicc_ctx))
     {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         jprint_error("es9p_authenticate_client", euicc_ctx.http.status.message);
         goto err;
+    }
+
+    if (is_preview_mode == 1)
+    {
+        struct es9p_ex_profile_metadata profile_metadata;
+        if (!es9p_ex_get_profile_metadata(&euicc_ctx, &profile_metadata))
+        {
+            goto err;
+        }
+
+        cJSON *jprofilemeta = cJSON_CreateObject();
+        cJSON_AddStringOrNullToObject(jprofilemeta, "iccid", profile_metadata.iccid);
+        cJSON_AddStringOrNullToObject(jprofilemeta, "isdpAid", profile_metadata.isdpAid);
+        cJSON_AddStringOrNullToObject(jprofilemeta, "serviceProviderName", profile_metadata.serviceProviderName);
+        cJSON_AddStringOrNullToObject(jprofilemeta, "profileName", profile_metadata.profileName);
+        cJSON_AddStringOrNullToObject(jprofilemeta, "profileClass", euicc_profileclass2str(profile_metadata.profileClass));
+        cJSON_AddStringOrNullToObject(jprofilemeta, "iconType", euicc_icontype2str(profile_metadata.iconType));
+        cJSON_AddStringOrNullToObject(jprofilemeta, "icon", profile_metadata.icon);
+        es9p_ex_free(&profile_metadata);
+
+        jprint_success(jprofilemeta);
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+        goto exit;
     }
 
     jprint_progress("es10b_prepare_download", smdp);
     if (es10b_prepare_download(&euicc_ctx, confirmation_code))
     {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         jprint_error("es10b_prepare_download", NULL);
         goto err;
     }
@@ -170,6 +201,7 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es9p_get_bound_profile_package", smdp);
     if (es9p_get_bound_profile_package(&euicc_ctx))
     {
+        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         jprint_error("es9p_get_bound_profile_package", euicc_ctx.http.status.message);
         goto err;
     }
@@ -179,6 +211,14 @@ static int applet_main(int argc, char **argv)
     {
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
+        if (download_result.errorReason == ES10B_ERROR_REASON_PPR_NOT_ALLOWED)
+        {
+            cancel_reason = ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED;
+        }
+        else
+        {
+            cancel_reason = ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR;
+        }
         jprint_error("es10b_load_bound_profile_package", buffer);
         goto err;
     }
@@ -191,6 +231,19 @@ static int applet_main(int argc, char **argv)
 err:
     fret = -1;
 exit:
+    if (cancel_reason != -1)
+    {
+        const char *detail = euicc_cancel_session_reason2str(cancel_reason);
+        if (es10b_cancel_session(&euicc_ctx, cancel_reason))
+        {
+            jprint_error("es10b_cancel_session", detail);
+        }
+        if (es9p_cancel_session(&euicc_ctx))
+        {
+            jprint_error("es9p_cancel_session", detail);
+        }
+    }
+
     es10a_euicc_configured_addresses_free(&configured_addresses);
     euicc_http_cleanup(&euicc_ctx);
     return fret;

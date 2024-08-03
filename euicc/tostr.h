@@ -11,3 +11,4 @@ const char *euicc_icontype2str(enum es10c_icon_type value);
 const char *euicc_profilemanagementoperation2str(enum es10b_profile_management_operation value);
 const char *euicc_bppcommandid2str(enum es10b_bpp_command_id value);
 const char *euicc_errorreason2str(enum es10b_error_reason value);
+const char *euicc_cancel_session_reason2str(enum es10b_cancel_session_reason reason);
