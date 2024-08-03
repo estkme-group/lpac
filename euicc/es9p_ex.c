@@ -23,7 +23,7 @@ int es9p_ex_get_profile_metadata(struct euicc_ctx *ctx, struct es9p_ex_profile_m
         goto err;
     }
 
-    int profile_metadata_buffer_len = euicc_base64_decode(profile_metadata_buffer, ctx->http._internal.prepare_download_param->b64_profileMetadata);
+    uint32_t profile_metadata_buffer_len = euicc_base64_decode(profile_metadata_buffer, ctx->http._internal.prepare_download_param->b64_profileMetadata);
     if (profile_metadata_buffer_len < 0)
     {
         goto err;
