@@ -163,6 +163,7 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 - `-m`: Matching ID, activation code. optional.
 - `-c`: Confirmation Code, optional.
 - `-i`: The IMEI of the device to which Profile is to be downloaded, optional.
+- `-p`: Preview mode, optional.
 - `-a`: LPA qrcode activation code string, e.g: `LPA:1$<sm-dp+ domain>$<matching id>`, if provided this option takes precedence over the `-s` and `-m` options, optional.
 
 <details>
