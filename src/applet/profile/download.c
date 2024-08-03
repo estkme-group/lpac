@@ -181,7 +181,6 @@ static int applet_main(int argc, char **argv)
 
         cJSON *jprofilemeta = cJSON_CreateObject();
         cJSON_AddStringOrNullToObject(jprofilemeta, "iccid", profile_metadata.iccid);
-        cJSON_AddStringOrNullToObject(jprofilemeta, "isdpAid", profile_metadata.isdpAid);
         cJSON_AddStringOrNullToObject(jprofilemeta, "serviceProviderName", profile_metadata.serviceProviderName);
         cJSON_AddStringOrNullToObject(jprofilemeta, "profileName", profile_metadata.profileName);
         cJSON_AddStringOrNullToObject(jprofilemeta, "profileClass", euicc_profileclass2str(profile_metadata.profileClass));

@@ -20,7 +20,6 @@ enum es9p_ex_profile_class
 struct es9p_ex_profile_metadata
 {
     char iccid[(10 * 2) + 1];
-    char isdpAid[(16 * 2) + 1];
     char *serviceProviderName;
     char *profileName;
     enum es9p_ex_profile_class profileClass;
@@ -37,10 +36,6 @@ struct es9p_ex_profile_metadata
         char *gid1;
         char *gid2;
     } profileOwner;
-    struct
-    {
-        char *dpOid;
-    } dpProprietaryData;
     char **profilePolicyRules;
 };
 
