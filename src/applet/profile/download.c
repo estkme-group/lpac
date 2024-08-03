@@ -162,7 +162,10 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es9p_authenticate_client", smdp);
     if (es9p_authenticate_client(&euicc_ctx))
     {
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+        if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION))
+        {
+            goto err;
+        }
         jprint_error("es9p_authenticate_client", euicc_ctx.http.status.message);
         goto err;
     }
@@ -170,7 +173,7 @@ static int applet_main(int argc, char **argv)
     if (is_preview_mode == 1)
     {
         struct es9p_ex_profile_metadata profile_metadata;
-        if (!es9p_ex_get_profile_metadata(&euicc_ctx, &profile_metadata))
+        if (es9p_ex_get_profile_metadata(&euicc_ctx, &profile_metadata))
         {
             goto err;
         }
@@ -185,8 +188,12 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringOrNullToObject(jprofilemeta, "icon", profile_metadata.icon);
         es9p_ex_free(&profile_metadata);
 
+        if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION))
+        {
+            goto err;
+        }
+
         jprint_success(jprofilemeta);
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
         fret = 0;
         goto exit;
     }
@@ -194,7 +201,10 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es10b_prepare_download", smdp);
     if (es10b_prepare_download(&euicc_ctx, confirmation_code))
     {
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+        if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION))
+        {
+            goto err;
+        }
         jprint_error("es10b_prepare_download", NULL);
         goto err;
     }
@@ -202,7 +212,10 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es9p_get_bound_profile_package", smdp);
     if (es9p_get_bound_profile_package(&euicc_ctx))
     {
-        cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+        if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION))
+        {
+            goto err;
+        }
         jprint_error("es9p_get_bound_profile_package", euicc_ctx.http.status.message);
         goto err;
     }
@@ -214,11 +227,17 @@ static int applet_main(int argc, char **argv)
         snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
         if (download_result.errorReason == ES10B_ERROR_REASON_PPR_NOT_ALLOWED)
         {
-            cancel_reason = ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED;
+            if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED))
+            {
+                goto err;
+            }
         }
         else
         {
-            cancel_reason = ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR;
+            if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR))
+            {
+                goto err;
+            }
         }
         jprint_error("es10b_load_bound_profile_package", buffer);
         goto err;
@@ -232,22 +251,29 @@ static int applet_main(int argc, char **argv)
 err:
     fret = -1;
 exit:
-    if (cancel_reason != -1)
-    {
-        const char *detail = euicc_cancel_session_reason2str(cancel_reason);
-        if (es10b_cancel_session(&euicc_ctx, cancel_reason))
-        {
-            fprintf(stderr, "Failed to cancel session (es10b_cancel_session): %s\n", detail);
-        }
-        if (es9p_cancel_session(&euicc_ctx))
-        {
-            fprintf(stderr, "Failed to cancel session (es9p_cancel_session): %s\n", detail);
-        }
-    }
-
     es10a_euicc_configured_addresses_free(&configured_addresses);
     euicc_http_cleanup(&euicc_ctx);
     return fret;
+}
+
+int download_cancel_session(struct euicc_ctx *ctx, enum es10b_cancel_session_reason reason)
+{
+    const char *detail = euicc_cancel_session_reason2str(reason);
+    jprint_progress("es10b_cancel_session", detail);
+    if (es10b_cancel_session(&euicc_ctx, reason))
+    {
+        jprint_error("es10b_cancel_session", detail);
+        goto err;
+    }
+    jprint_progress("es9p_cancel_session", detail);
+    if (es9p_cancel_session(&euicc_ctx))
+    {
+        jprint_error("es9p_cancel_session", detail);
+        goto err;
+    }
+    return 0;
+err:
+    return -1;
 }
 
 struct applet_entry applet_profile_download = {
