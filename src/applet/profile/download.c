@@ -163,10 +163,6 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es9p_authenticate_client", smdp);
     if (es9p_authenticate_client(&euicc_ctx))
     {
-        if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION))
-        {
-            goto err;
-        }
         jprint_error("es9p_authenticate_client", euicc_ctx.http.status.message);
         goto err;
     }
@@ -212,11 +208,13 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es9p_get_bound_profile_package", smdp);
     if (es9p_get_bound_profile_package(&euicc_ctx))
     {
+        char buffer[128 + 1];
+        strncpy(buffer, euicc_ctx.http.status.message, sizeof(buffer));
         if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION))
         {
             goto err;
         }
-        jprint_error("es9p_get_bound_profile_package", euicc_ctx.http.status.message);
+        jprint_error("es9p_get_bound_profile_package", buffer);
         goto err;
     }
 
@@ -225,19 +223,14 @@ static int applet_main(int argc, char **argv)
     {
         char buffer[256];
         snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
+        enum es10b_cancel_session_reason cancel_reason = ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR;
         if (download_result.errorReason == ES10B_ERROR_REASON_PPR_NOT_ALLOWED)
         {
-            if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED))
-            {
-                goto err;
-            }
+            cancel_reason = ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED;
         }
-        else
+        if (download_cancel_session(&euicc_ctx, cancel_reason))
         {
-            if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_LOADBPPEXECUTIONERROR))
-            {
-                goto err;
-            }
+            goto err;
         }
         jprint_error("es10b_load_bound_profile_package", buffer);
         goto err;
