@@ -187,6 +187,7 @@ static int applet_main(int argc, char **argv)
 
         jprint_success(jprofilemeta);
         cancel_reason = ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION;
+        fret = 0;
         goto exit;
     }
 
@@ -236,11 +237,11 @@ exit:
         const char *detail = euicc_cancel_session_reason2str(cancel_reason);
         if (es10b_cancel_session(&euicc_ctx, cancel_reason))
         {
-            jprint_error("es10b_cancel_session", detail);
+            fprintf(stderr, "Failed to cancel session (es10b_cancel_session): %s\n", detail);
         }
         if (es9p_cancel_session(&euicc_ctx))
         {
-            jprint_error("es9p_cancel_session", detail);
+            fprintf(stderr, "Failed to cancel session (es9p_cancel_session): %s\n", detail);
         }
     }
 
