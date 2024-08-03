@@ -29,7 +29,6 @@ static int applet_main(int argc, char **argv)
 
     struct es10a_euicc_configured_addresses configured_addresses = {0};
     struct es10b_load_bound_profile_package_result download_result = {0};
-    enum es10b_cancel_session_reason cancel_reason = -1;
 
     opt = getopt(argc, argv, opt_string);
     while (opt != -1)
