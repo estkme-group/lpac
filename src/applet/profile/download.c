@@ -196,10 +196,7 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es10b_prepare_download", smdp);
     if (es10b_prepare_download(&euicc_ctx, confirmation_code))
     {
-        if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION))
-        {
-            goto err;
-        }
+        download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION);
         jprint_error("es10b_prepare_download", NULL);
         goto err;
     }
@@ -209,10 +206,7 @@ static int applet_main(int argc, char **argv)
     {
         char buffer[128 + 1];
         strncpy(buffer, euicc_ctx.http.status.message, sizeof(buffer));
-        if (download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION))
-        {
-            goto err;
-        }
+        download_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION);
         jprint_error("es9p_get_bound_profile_package", buffer);
         goto err;
     }
@@ -227,10 +221,7 @@ static int applet_main(int argc, char **argv)
         {
             cancel_reason = ES10B_CANCEL_SESSION_REASON_PPRNOTALLOWED;
         }
-        if (download_cancel_session(&euicc_ctx, cancel_reason))
-        {
-            goto err;
-        }
+        download_cancel_session(&euicc_ctx, cancel_reason);
         jprint_error("es10b_load_bound_profile_package", buffer);
         goto err;
     }
