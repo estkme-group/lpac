@@ -102,11 +102,12 @@ int es9p_ex_get_profile_metadata(struct euicc_ctx *ctx, struct es9p_ex_profile_m
             break;
         }
     }
+    
+    free(profile_metadata_buffer);
     goto exit;
 err:
     fret = -1;
 exit:
-    free(profile_metadata_buffer);
     return fret;
 }
 
