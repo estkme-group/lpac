@@ -172,15 +172,22 @@ int euicc_init(struct euicc_ctx *ctx)
 {
     int ret;
 
+    if (ctx->aid == NULL)
+    {
+        ctx->aid = ISD_R_AID;
+        ctx->aid_len = sizeof(ISD_R_AID) - 1;
+    }
+
     ret = ctx->apdu.interface->connect(ctx);
     if (ret < 0)
     {
         return -1;
     }
 
-    ret = ctx->apdu.interface->logic_channel_open(ctx, (const uint8_t *)ISD_R_AID, sizeof(ISD_R_AID) - 1);
+    ret = ctx->apdu.interface->logic_channel_open(ctx, ctx->aid, ctx->aid_len);
     if (ret < 0)
     {
+        ctx->apdu.interface->disconnect(ctx);
         return -1;
     }
 

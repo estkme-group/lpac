@@ -767,6 +767,7 @@ int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionRespon
     n_transactionId.tag = 0x80;
     n_transactionId.value = (const uint8_t *)param->transactionId;
     n_transactionId.length = param->transactionIdLen;
+    n_transactionId.pack.next = &n_reason;
 
     n_reason.tag = 0x81;
     n_reason.value = reason_buf;

@@ -6,6 +6,8 @@
 
 struct euicc_ctx
 {
+    const uint8_t *aid;
+    uint8_t aid_len;
     struct
     {
         const struct euicc_apdu_interface *interface;

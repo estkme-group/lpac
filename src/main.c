@@ -106,16 +106,18 @@ static char **warg_to_arg(const int wargc, wchar_t **wargv)
 int main(int argc, char **argv)
 {
     int ret = 0;
+    const char *apdu_driver;
+    const char *http_driver;
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
-    const char *apdu_driver = getenv("LPAC_APDU");
+    apdu_driver = getenv("LPAC_APDU");
     if (apdu_driver == NULL)
     {
         apdu_driver = "pcsc";
     }
 
-    const char *http_driver = getenv("LPAC_HTTP");
+    http_driver = getenv("LPAC_HTTP");
     if (http_driver == NULL)
     {
         http_driver = "curl";

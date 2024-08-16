@@ -5,17 +5,38 @@
 #include <string.h>
 #include <getopt.h>
 #include <main.h>
+#include <signal.h>
 
 #include <euicc/es10a.h>
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
+#include <euicc/es8p.h>
 #include <euicc/tostr.h>
 
-static const char *opt_string = "s:m:i:c:a:h?";
+static const char *opt_string = "s:m:i:c:a:ph?";
+
+static volatile int cancelled = 0;
+
+static int BREAKABLE(int ret)
+{
+    if (cancelled)
+    {
+        return -1;
+    }
+
+    return ret;
+}
+
+static void sigint_handler(int x)
+{
+    cancelled = 1;
+}
 
 static int applet_main(int argc, char **argv)
 {
     int fret;
+    const char *error_function_name = NULL;
+    const char *error_detail = NULL;
 
     int opt;
 
@@ -24,9 +45,13 @@ static int applet_main(int argc, char **argv)
     char *imei = NULL;
     char *confirmation_code = NULL;
     char *activation_code = NULL;
+    int interactive_preview = 0;
 
     struct es10a_euicc_configured_addresses configured_addresses = {0};
     struct es10b_load_bound_profile_package_result download_result = {0};
+
+    cJSON *jmetadata = NULL;
+    struct es8p_metadata *profile_metadata = NULL;
 
     opt = getopt(argc, argv, opt_string);
     while (opt != -1)
@@ -52,6 +77,9 @@ static int applet_main(int argc, char **argv)
                 activation_code += 4; // ignore uri scheme
             }
             break;
+        case 'p':
+            interactive_preview = 1;
+            break;
         case 'h':
         case '?':
             printf("Usage: %s [OPTIONS]\r\n", argv[0]);
@@ -60,6 +88,7 @@ static int applet_main(int argc, char **argv)
             printf("\t -i IMEI\r\n");
             printf("\t -c Confirmation Code (Password)\r\n");
             printf("\t -a Activation Code (e.g: 'LPA:***')\r\n");
+            printf("\t -p Interactive preview profile\r\n");
             printf("\t -h This help info\r\n");
             return -1;
         default:
@@ -83,7 +112,8 @@ static int applet_main(int argc, char **argv)
             case 0: // Activation Code Format
                 if (strncmp(token, "1", strlen(token)) != 0)
                 {
-                    jprint_error("invalid activation code format", NULL);
+                    error_function_name = "activation_code";
+                    error_detail = "invalid";
                     goto err;
                 }
                 break;
@@ -99,7 +129,8 @@ static int applet_main(int argc, char **argv)
             case 4: // Confirmation Code Required Flag
                 if (strncmp(token, "1", strlen(token)) == 0 && confirmation_code == NULL)
                 {
-                    jprint_error("confirmation code required", NULL);
+                    error_function_name = "confirmation_code";
+                    error_detail = "required";
                     goto err;
                 }
                 break;
@@ -113,9 +144,10 @@ static int applet_main(int argc, char **argv)
     if (smdp == NULL)
     {
         jprint_progress("es10a_get_euicc_configured_addresses", NULL);
-        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses))
+        if (BREAKABLE(es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses)))
         {
-            jprint_error("es10a_get_euicc_configured_addresses", NULL);
+            error_function_name = "es10a_get_euicc_configured_addresses";
+            error_detail = NULL;
             goto err;
         }
         else
@@ -126,60 +158,105 @@ static int applet_main(int argc, char **argv)
 
     if (!smdp || (strlen(smdp) == 0))
     {
-        jprint_error("smdp is null", NULL);
+        error_function_name = "smdp";
+        error_detail = "empty";
         goto err;
     }
+
+    signal(SIGINT, sigint_handler);
 
     euicc_ctx.http.server_address = smdp;
 
     jprint_progress("es10b_get_euicc_challenge_and_info", smdp);
-    if (es10b_get_euicc_challenge_and_info(&euicc_ctx))
+    if (BREAKABLE(es10b_get_euicc_challenge_and_info(&euicc_ctx)))
     {
-        jprint_error("es10b_get_euicc_challenge_and_info", NULL);
+        error_function_name = "es10b_get_euicc_challenge_and_info";
+        error_detail = NULL;
         goto err;
     }
 
     jprint_progress("es9p_initiate_authentication", smdp);
-    if (es9p_initiate_authentication(&euicc_ctx))
+    if (BREAKABLE(es9p_initiate_authentication(&euicc_ctx)))
     {
-        jprint_error("es9p_initiate_authentication", euicc_ctx.http.status.message);
+        error_function_name = "es9p_initiate_authentication";
+        error_detail = euicc_ctx.http.status.message;
         goto err;
     }
 
     jprint_progress("es10b_authenticate_server", smdp);
-    if (es10b_authenticate_server(&euicc_ctx, matchingId, imei))
+    if (BREAKABLE(es10b_authenticate_server(&euicc_ctx, matchingId, imei)))
     {
-        jprint_error("es10b_authenticate_server", NULL);
+        error_function_name = "es10b_authenticate_server";
+        error_detail = NULL;
         goto err;
     }
 
     jprint_progress("es9p_authenticate_client", smdp);
-    if (es9p_authenticate_client(&euicc_ctx))
+    if (BREAKABLE(es9p_authenticate_client(&euicc_ctx)))
     {
-        jprint_error("es9p_authenticate_client", euicc_ctx.http.status.message);
+        error_function_name = "es9p_authenticate_client";
+        error_detail = euicc_ctx.http.status.message;
         goto err;
     }
 
-    jprint_progress("es10b_prepare_download", smdp);
-    if (es10b_prepare_download(&euicc_ctx, confirmation_code))
+    // preview here
+    if (euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)
     {
-        jprint_error("es10b_prepare_download", NULL);
+        if (BREAKABLE(es8p_meatadata_parse(&profile_metadata, euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)))
+        {
+            error_function_name = "es8p_meatadata_parse";
+            error_detail = NULL;
+            goto err;
+        }
+
+        jmetadata = cJSON_CreateObject();
+
+        cJSON_AddStringOrNullToObject(jmetadata, "iccid", profile_metadata->iccid);
+        cJSON_AddStringOrNullToObject(jmetadata, "serviceProviderName", profile_metadata->serviceProviderName);
+        cJSON_AddStringOrNullToObject(jmetadata, "profileName", profile_metadata->profileName);
+        cJSON_AddStringOrNullToObject(jmetadata, "iconType", euicc_icontype2str(profile_metadata->iconType));
+        cJSON_AddStringOrNullToObject(jmetadata, "icon", profile_metadata->icon);
+        cJSON_AddStringOrNullToObject(jmetadata, "profileClass", euicc_profileclass2str(profile_metadata->profileClass));
+
+        jprint_progress_obj("es8p_meatadata_parse", jmetadata);
+
+        if (interactive_preview)
+        {
+            char c;
+            jprint_progress("preview", "y/n");
+            c = getchar();
+            if (c != 'y' && c != 'Y')
+            {
+                cancelled = 1;
+            }
+        }
+    }
+
+    jprint_progress("es10b_prepare_download", smdp);
+    if (BREAKABLE(es10b_prepare_download(&euicc_ctx, confirmation_code)))
+    {
+        error_function_name = "es10b_prepare_download";
+        error_detail = NULL;
         goto err;
     }
 
     jprint_progress("es9p_get_bound_profile_package", smdp);
-    if (es9p_get_bound_profile_package(&euicc_ctx))
+    if (BREAKABLE(es9p_get_bound_profile_package(&euicc_ctx)))
     {
-        jprint_error("es9p_get_bound_profile_package", euicc_ctx.http.status.message);
+        error_function_name = "es9p_get_bound_profile_package";
+        error_detail = euicc_ctx.http.status.message;
         goto err;
     }
 
     jprint_progress("es10b_load_bound_profile_package", smdp);
-    if (es10b_load_bound_profile_package(&euicc_ctx, &download_result))
+    if (BREAKABLE(es10b_load_bound_profile_package(&euicc_ctx, &download_result)))
     {
         char buffer[256];
+
         snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
-        jprint_error("es10b_load_bound_profile_package", buffer);
+        error_function_name = "es10b_load_bound_profile_package";
+        error_detail = buffer;
+
         goto err;
     }
 
@@ -190,7 +267,20 @@ static int applet_main(int argc, char **argv)
 
 err:
     fret = -1;
+    jprint_progress("es10b_cancel_session", smdp);
+    es10b_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION);
+    jprint_progress("es9p_cancel_session", smdp);
+    es9p_cancel_session(&euicc_ctx);
+    if (!cancelled)
+    {
+        jprint_error(error_function_name, error_detail);
+    }
+    else
+    {
+        jprint_error("cancelled", error_function_name);
+    }
 exit:
+    es8p_metadata_free(&profile_metadata);
     es10a_euicc_configured_addresses_free(&configured_addresses);
     euicc_http_cleanup(&euicc_ctx);
     return fret;
