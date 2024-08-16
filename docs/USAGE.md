@@ -272,7 +272,7 @@ lpac notification <subcommand> [parameters]
 ```
 
 > [!NOTE]
-> Downstream developers or end users should process Notification as soon as possible when they exist to comply with GSMA specifications. lpac will not automatically delete the Notification after sending it, and you need to delete it manually.
+> Downstream developers or end users should process Notification as soon as possible when they exist to comply with GSMA specifications. lpac will not automatically delete the Notification after sending it. You can pass `-r` to `notification process` or you need to delete it manually.
 
 <details>
 
@@ -313,6 +313,13 @@ lpac notification <subcommand> [parameters]
 - `notificationAddress`: Profile's notification reporting server address
 
 </details>
+
+##### Processing requires connection to server and the following optional parameters:
+
+The following parameters can be used to customize the behavior of `notification process`:
+
+- `-a`: Process all notifications
+- `-r`: Automatically remove processed notifications
 
 #### driver
 
