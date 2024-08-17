@@ -17,15 +17,11 @@ static const char *opt_string = "s:m:i:c:a:ph?";
 
 static volatile int cancelled = 0;
 
-static int BREAKABLE(int ret)
-{
-    if (cancelled)
-    {
-        return -1;
+#define CANCELPOINT() \
+    if (cancelled)    \
+    {                 \
+        goto err;     \
     }
-
-    return ret;
-}
 
 static void sigint_handler(int x)
 {
@@ -144,7 +140,7 @@ static int applet_main(int argc, char **argv)
     if (smdp == NULL)
     {
         jprint_progress("es10a_get_euicc_configured_addresses", NULL);
-        if (BREAKABLE(es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses)))
+        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses))
         {
             error_function_name = "es10a_get_euicc_configured_addresses";
             error_detail = NULL;
@@ -167,32 +163,36 @@ static int applet_main(int argc, char **argv)
 
     euicc_ctx.http.server_address = smdp;
 
+    CANCELPOINT();
     jprint_progress("es10b_get_euicc_challenge_and_info", smdp);
-    if (BREAKABLE(es10b_get_euicc_challenge_and_info(&euicc_ctx)))
+    if (es10b_get_euicc_challenge_and_info(&euicc_ctx))
     {
         error_function_name = "es10b_get_euicc_challenge_and_info";
         error_detail = NULL;
         goto err;
     }
 
+    CANCELPOINT();
     jprint_progress("es9p_initiate_authentication", smdp);
-    if (BREAKABLE(es9p_initiate_authentication(&euicc_ctx)))
+    if (es9p_initiate_authentication(&euicc_ctx))
     {
         error_function_name = "es9p_initiate_authentication";
         error_detail = euicc_ctx.http.status.message;
         goto err;
     }
 
+    CANCELPOINT();
     jprint_progress("es10b_authenticate_server", smdp);
-    if (BREAKABLE(es10b_authenticate_server(&euicc_ctx, matchingId, imei)))
+    if (es10b_authenticate_server(&euicc_ctx, matchingId, imei))
     {
         error_function_name = "es10b_authenticate_server";
         error_detail = NULL;
         goto err;
     }
 
+    CANCELPOINT();
     jprint_progress("es9p_authenticate_client", smdp);
-    if (BREAKABLE(es9p_authenticate_client(&euicc_ctx)))
+    if (es9p_authenticate_client(&euicc_ctx))
     {
         error_function_name = "es9p_authenticate_client";
         error_detail = euicc_ctx.http.status.message;
@@ -202,7 +202,8 @@ static int applet_main(int argc, char **argv)
     // preview here
     if (euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)
     {
-        if (BREAKABLE(es8p_metadata_parse(&profile_metadata, euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)))
+        CANCELPOINT();
+        if (es8p_metadata_parse(&profile_metadata, euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata))
         {
             error_function_name = "es8p_meatadata_parse";
             error_detail = NULL;
@@ -232,24 +233,27 @@ static int applet_main(int argc, char **argv)
         }
     }
 
+    CANCELPOINT();
     jprint_progress("es10b_prepare_download", smdp);
-    if (BREAKABLE(es10b_prepare_download(&euicc_ctx, confirmation_code)))
+    if (es10b_prepare_download(&euicc_ctx, confirmation_code))
     {
         error_function_name = "es10b_prepare_download";
         error_detail = NULL;
         goto err;
     }
 
+    CANCELPOINT();
     jprint_progress("es9p_get_bound_profile_package", smdp);
-    if (BREAKABLE(es9p_get_bound_profile_package(&euicc_ctx)))
+    if (es9p_get_bound_profile_package(&euicc_ctx))
     {
         error_function_name = "es9p_get_bound_profile_package";
         error_detail = euicc_ctx.http.status.message;
         goto err;
     }
 
+    CANCELPOINT();
     jprint_progress("es10b_load_bound_profile_package", smdp);
-    if (BREAKABLE(es10b_load_bound_profile_package(&euicc_ctx, &download_result)))
+    if (es10b_load_bound_profile_package(&euicc_ctx, &download_result))
     {
         char buffer[256];
 
@@ -281,9 +285,9 @@ err:
     }
     else
     {
-        jprint_error("cancelled", error_function_name);
+        jprint_error("cancelled", NULL);
     }
-    free(error_detail);
+    free((void *)error_detail);
 exit:
     es8p_metadata_free(&profile_metadata);
     es10a_euicc_configured_addresses_free(&configured_addresses);
