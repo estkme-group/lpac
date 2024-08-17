@@ -267,6 +267,10 @@ static int applet_main(int argc, char **argv)
 
 err:
     fret = -1;
+    if (error_detail)
+    {
+        error_detail = strdup(error_detail);
+    }
     jprint_progress("es10b_cancel_session", smdp);
     es10b_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION);
     jprint_progress("es9p_cancel_session", smdp);
@@ -279,6 +283,7 @@ err:
     {
         jprint_error("cancelled", error_function_name);
     }
+    free(error_detail);
 exit:
     es8p_metadata_free(&profile_metadata);
     es10a_euicc_configured_addresses_free(&configured_addresses);
