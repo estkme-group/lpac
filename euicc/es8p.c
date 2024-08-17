@@ -10,7 +10,7 @@
 #include "hexutil.h"
 #include "base64.h"
 
-int es8p_meatadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Metadata)
+int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Metadata)
 {
     int ret;
     uint8_t *metadata = NULL;

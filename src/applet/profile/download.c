@@ -202,7 +202,7 @@ static int applet_main(int argc, char **argv)
     // preview here
     if (euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)
     {
-        if (BREAKABLE(es8p_meatadata_parse(&profile_metadata, euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)))
+        if (BREAKABLE(es8p_metadata_parse(&profile_metadata, euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)))
         {
             error_function_name = "es8p_meatadata_parse";
             error_detail = NULL;

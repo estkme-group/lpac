@@ -28,5 +28,5 @@ struct es8p_metadata
     char **profilePolicyRules;
 };
 
-int es8p_meatadata_parse(struct es8p_metadata **metadata, const char *b64_Metadata);
+int es8p_metadata_parse(struct es8p_metadata **metadata, const char *b64_Metadata);
 void es8p_metadata_free(struct es8p_metadata **stru_metadata);
