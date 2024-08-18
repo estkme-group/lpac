@@ -164,6 +164,7 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 - `-c`: Confirmation Code, optional.
 - `-i`: The IMEI of the device to which Profile is to be downloaded, optional.
 - `-a`: LPA qrcode activation code string, e.g: `LPA:1$<sm-dp+ domain>$<matching id>`, if provided this option takes precedence over the `-s` and `-m` options, optional.
+- `-p`: Interactive preview mode, optional.
 
 <details>
 
