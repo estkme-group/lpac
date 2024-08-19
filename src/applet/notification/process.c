@@ -126,8 +126,12 @@ run:
             unsigned long seqNumber;
 
             errno = 0;
-            seqNumber = strtoul(argv[i], NULL, 10);
-            if (errno != 0)
+            char *str_end;
+            seqNumber = strtoul(argv[i], &str_end, 10);
+            // Although POSIX said user should check errno instead of return value,
+            // but errno may not be set when no conversion is performed according to C99.
+            // Check nptr is same as str_end to ensure there is no conversion.
+            if ((seqNumber == 0 && strcmp(argv[i], str_end)) || errno != 0)
             {
                 continue;
             }
