@@ -49,8 +49,7 @@ static int applet_main(int argc, char **argv)
     cJSON *jmetadata = NULL;
     struct es8p_metadata *profile_metadata = NULL;
 
-    opt = getopt(argc, argv, opt_string);
-    while (opt != -1)
+    while ((opt = getopt(argc, argv, opt_string)) != -1)
     {
         switch (opt)
         {
@@ -90,7 +89,6 @@ static int applet_main(int argc, char **argv)
         default:
             break;
         }
-        opt = getopt(argc, argv, opt_string);
     }
 
     if (activation_code != NULL)
