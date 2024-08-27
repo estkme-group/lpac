@@ -174,7 +174,7 @@ int euicc_init(struct euicc_ctx *ctx)
 
     if (ctx->aid == NULL)
     {
-        ctx->aid = ISD_R_AID;
+        ctx->aid = (const uint8_t *)ISD_R_AID;
         ctx->aid_len = sizeof(ISD_R_AID) - 1;
     }
 
