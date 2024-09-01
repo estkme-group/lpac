@@ -50,3 +50,10 @@ nix-env -i lpac
 ```
 
 see <https://github.com/nix-community/nur-combined/blob/master/repos/linyinfeng/pkgs/lpac/default.nix>
+
+## Ubuntu and Debian/Devuan
+
+> Minimum available release: 14.04 Trusty Tahr
+> (Published on 2024-09-01)
+
+see <https://launchpad.net/~daniel-gimpelevich/+archive/ubuntu/ssl/+sourcepub/16421117/+listing-archive-extra>
