@@ -22,6 +22,9 @@
 #ifdef LPAC_WITH_APDU_AT
 #include "driver/apdu/at.h"
 #endif
+#ifdef LPAC_WITH_APDU_UQMI
+#include "driver/apdu/uqmi.h"
+#endif
 #ifdef LPAC_WITH_HTTP_CURL
 #include "driver/http/curl.h"
 #endif
@@ -43,6 +46,9 @@ static const struct euicc_driver *drivers[] = {
 #endif
 #ifdef LPAC_WITH_APDU_AT
     &driver_apdu_at,
+#endif
+#ifdef LPAC_WITH_APDU_UQMI
+    &driver_apdu_uqmi,
 #endif
 #ifdef LPAC_WITH_HTTP_CURL
     &driver_http_curl,
