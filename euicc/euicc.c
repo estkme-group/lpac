@@ -99,9 +99,9 @@ int es10x_command_iter(struct euicc_ctx *ctx, const uint8_t *der_req, unsigned r
     while (req_len)
     {
         uint8_t rlen;
-        if (req_len > 120)
+        if (req_len > ctx->es10x_mss)
         {
-            rlen = 120;
+            rlen = ctx->es10x_mss;
             ret = es10x_command_buildrequest_continue(ctx, reqseq, &req, req_ptr, rlen);
         }
         else
@@ -177,6 +177,8 @@ int euicc_init(struct euicc_ctx *ctx)
         ctx->aid = (const uint8_t *)ISD_R_AID;
         ctx->aid_len = sizeof(ISD_R_AID) - 1;
     }
+
+    ctx->es10x_mss = 120;
 
     ret = ctx->apdu.interface->connect(ctx);
     if (ret < 0)
