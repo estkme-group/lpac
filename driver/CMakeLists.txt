@@ -10,6 +10,7 @@ endif()
 option(LPAC_WITH_APDU_GBINDER "Build APDU Gbinder backend for libhybris devices (requires gbinder headers)" OFF)
 option(LPAC_WITH_APDU_QMI "Build QMI backend for Qualcomm devices (requires libqmi)" OFF)
 option(LPAC_WITH_APDU_QMI_QRTR "Build QMI-over-QRTR backend for Qualcomm devices (requires libqrtr and libqmi headers)" OFF)
+option(LPAC_WITH_APDU_MBIM "Build MBIM backend for MBIM devices (requires libmbim)" OFF)
 
 option(LPAC_WITH_HTTP_CURL "Build HTTP Curl interface" ON)
 
@@ -91,6 +92,19 @@ if(LPAC_WITH_APDU_QMI_QRTR)
     if(LPAC_DYNAMIC_DRIVERS)
         list(APPEND LIBEUICC_DRIVERS_REQUIRES "qrtr-glib")
         list(APPEND LIBEUICC_DRIVERS_REQUIRES "qmi-glib")
+    endif()
+endif()
+
+if(LPAC_WITH_APDU_MBIM)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_MBIM")
+    target_sources(euicc-drivers PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim_helpers.c)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(MBIM_GLIB REQUIRED IMPORTED_TARGET mbim-glib)
+    target_link_libraries(euicc-drivers PkgConfig::MBIM_GLIB PkgConfig::MBIM_GLIB)
+    if(LPAC_DYNAMIC_DRIVERS)
+        list(APPEND LIBEUICC_DRIVERS_REQUIRES "mbim-glib")
     endif()
 endif()
 
