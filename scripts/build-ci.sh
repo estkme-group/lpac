@@ -21,6 +21,13 @@ make)
     copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE.zip" "$BUILD/output"
     ;;
+make-without-lto)
+    cmake -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF "$WORKSPACE"
+    make -j
+    copy-license "$BUILD/output"
+    copy-usage "$BUILD/output"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE-without-lto.zip" "$BUILD/output"
+    ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
     make -j package
