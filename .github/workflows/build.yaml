@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         build:
           - {variant: make, name: Linux, artifact: linux-x64}
           - {variant: make-without-lto, name: Linux (w/o LTO), artifact: linux-x64-without-lto}
@@ -23,7 +23,7 @@ jobs:
           - {variant: mingw, name: Windows with MinGW, artifact: windows-x64}
           - {variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
         include:
-          - os: macos-latest
+          - os: macos-14
             build: {variant: make, name: macOS, artifact: macos-universal}
           - os: macos-latest
             build: {variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
@@ -48,7 +48,7 @@ jobs:
           path: ${{ github.workspace }}/build/*.*
   release:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     permissions:
