@@ -18,12 +18,15 @@ jobs:
         os: [ubuntu-latest]
         build:
           - {variant: make, name: Linux, artifact: linux-x64}
+          - {variant: make-without-lto, name: Linux (w/o LTO), artifact: linux-x64-without-lto}
           - {variant: debian, name: Debian, artifact: debian-x64}
           - {variant: mingw, name: Windows with MinGW, artifact: windows-x64}
           - {variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
         include:
           - os: macos-latest
             build: {variant: make, name: macOS, artifact: macos-universal}
+          - os: macos-latest
+            build: {variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
