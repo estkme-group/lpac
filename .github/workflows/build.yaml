@@ -24,9 +24,9 @@ jobs:
           - {variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
         include:
           - os: macos-latest
-            build:
-              - {variant: make, name: macOS, artifact: macos-universal}
-              - {variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
+            build: {variant: make, name: macOS, artifact: macos-universal}
+          - os: macos-latest
+            build: {variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
