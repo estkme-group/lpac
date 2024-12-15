@@ -745,7 +745,7 @@ int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionRespon
     int fret = 0;
     struct euicc_derutil_node n_request, n_transactionId, n_reason;
     uint8_t reason_buf[sizeof(enum es10b_cancel_session_reason)];
-    uint32_t reason_buf_len;
+    uint32_t reason_buf_len = sizeof(reason_buf);
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
     unsigned resplen;

@@ -322,6 +322,12 @@ The following parameters can be used to customize the behavior of `notification 
 - `-a`: Process all notifications
 - `-r`: Automatically remove processed notifications
 
+##### Removing supports the following optional parameters:
+
+The following parameters can be used to customize the behavior of `notification remove`:
+
+- `-a`: Remove all notifications
+
 #### driver
 
 Now there is only one command: `lpac driver apdu list` to get card reader list.

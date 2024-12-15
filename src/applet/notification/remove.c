@@ -41,10 +41,9 @@ static int applet_main(int argc, char **argv)
 
     int fret = 0;
     int all = 0;
-    int argc_seq_offset = 1;
+    int opt = 0;
 
-    int opt = getopt(argc, argv, opt_string);
-    for (int i = 0; opt != -1; i++)
+    while ((opt = getopt(argc, argv, opt_string)) != -1)
     {
         switch (opt)
         {
@@ -57,14 +56,10 @@ static int applet_main(int argc, char **argv)
             printf("\t -a All notifications\r\n");
             return -1;
         default:
-            goto run;
             break;
         }
-        argc_seq_offset++;
-        opt = getopt(argc, argv, opt_string);
     }
 
-run:
     if (all)
     {
         struct es10b_notification_metadata_list *notifications, *rptr;
@@ -91,13 +86,17 @@ run:
     }
     else
     {
-        for (int i = argc_seq_offset; i < argc; i++)
+        for (int i = optind; i < argc; i++)
         {
             unsigned long seqNumber;
 
             errno = 0;
-            seqNumber = strtoul(argv[i], NULL, 10);
-            if (errno != 0)
+            char *str_end;
+            seqNumber = strtoul(argv[i], &str_end, 10);
+            // Although POSIX said user should check errno instead of return value,
+            // but errno may not be set when no conversion is performed according to C99.
+            // Check nptr is same as str_end to ensure there is no conversion.
+            if ((seqNumber == 0 && strcmp(argv[i], str_end)) || errno != 0)
             {
                 continue;
             }

@@ -8,6 +8,7 @@
   - `stdio`: use standard input/output
   - `qmi`: use QMI
   - `qmi_qrtr`: use QMI over QRTR
+  - `mbim`: use MBIM
   - GBinder-based backends for `libhybris` (Halium) distributions:
 	- `gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
 * `LPAC_HTTP`: specify which HTTP backend will be used.
@@ -15,8 +16,10 @@
   - `stdio`: use standard input/ouput
 * `AT_DEVICE`: specify which serial port device will be used by AT APDU backend.
 * `QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
-* `UIM_SLOT`: specify which UIM slot will be used by QMI APDU backends. (default: 1)
+* `UIM_SLOT`: specify which UIM slot will be used by QMI and MBIM APDU backends. (default: 1, slot number starts from 1)
 * `DRIVER_IFID`: specify which PC/SC interface will be used by PC/SC APDU backend.
+* `MBIM_DEVICE`: specify which MBIM device will be used by MBIM APDU backend. (default: "/dev/cdc-wdm0")
+* `MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. (default: 0, anything other than 0 means true)
 
 ## Debug
 
