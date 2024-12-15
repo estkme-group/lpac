@@ -16,7 +16,10 @@ if(LPAC_DYNAMIC_LIBEUICC)
         endif()
     endforeach()
     set_target_properties(euicc PROPERTIES PUBLIC_HEADER "${ALL_HEADERS}")
-    set_target_properties(euicc PROPERTIES LINK_FLAGS "-Wl,--export-all-symbols")
+    # Only useful on Windows, and will lead to invalid arguments on ld.gold.
+    if(WIN32)
+        set_target_properties(euicc PROPERTIES LINK_FLAGS "-Wl,--export-all-symbols")
+    endif()
     # Install a pkg-config file
     configure_file(libeuicc.pc.in libeuicc.pc @ONLY)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeuicc.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
