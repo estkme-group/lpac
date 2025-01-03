@@ -55,7 +55,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
         device = "/dev/ttyUSB0";
     }
 
-    fuart = fopen(device, "r+");
+    fuart = fopen(device, "rb+");
     if (fuart == NULL)
     {
         fprintf(stderr, "Failed to open device: %s\n", device);
