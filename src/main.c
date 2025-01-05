@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include <euicc/interface.h>
+#include <euicc/hexutil.h>
 #include <euicc/euicc.h>
 #include <driver.h>
 
@@ -22,6 +23,8 @@
 #include <stringapiset.h>
 #include <processenv.h>
 #endif
+
+#define ISD_R_AID_STR_LENGTH 16
 
 static int driver_applet_main(int argc, char **argv)
 {
@@ -58,6 +61,21 @@ struct euicc_ctx euicc_ctx = {0};
 
 void main_init_euicc()
 {
+    const char *custom_aid_str = getenv("LPAC_CUSTOM_ISD_R_AID");
+    if (custom_aid_str)
+    {
+        unsigned char custom_aid[ISD_R_AID_STR_LENGTH];
+        const int custom_aid_len = euicc_hexutil_hex2bin(custom_aid, ISD_R_AID_STR_LENGTH, custom_aid_str);
+        if (custom_aid_len != ISD_R_AID_STR_LENGTH)
+        {
+            jprint_error("euicc_init", "invalid custom AID given");
+            exit(-1);
+        }
+
+        euicc_ctx.aid = custom_aid;
+        euicc_ctx.aid_len = custom_aid_len;
+    }
+
     if (euicc_init(&euicc_ctx))
     {
         jprint_error("euicc_init", NULL);

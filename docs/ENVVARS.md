@@ -2,6 +2,7 @@
 
 ## General
 
+* `LPAC_CUSTOM_ISD_R_AID`: specify which AID will be used to open the logic channel. (hex string, 32 chars)
 * `LPAC_APDU`: specify which APDU backend will be used. Values:
   - `at`: use AT commands interface used by LTE module
   - `pcsc`: use PC/SC Smart Card API
