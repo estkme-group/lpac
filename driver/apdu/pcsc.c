@@ -31,9 +31,9 @@ static LPSTR pcsc_mszReaders;
 
 static void pcsc_error_text(const char *method, const int32_t code) {
 #ifdef __MINGW32__
-    fprintf(stderr, "%s failed: %08X", method, code);
+    fprintf(stderr, "%s failed: %08X\n", method, code);
 #else
-    fprintf(stderr, "%s failed: %08X (%s)", method, code, pcsc_stringify_error(code));
+    fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
 #endif
 }
 
