@@ -29,15 +29,12 @@ static SCARDCONTEXT pcsc_ctx;
 static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
 
-static char *pcsc_error_text(const int32_t code) {
-    char *formatted = malloc(100);
-    if (!formatted) return NULL;
+static void pcsc_error_text(const char *method, const int32_t code) {
 #ifdef __MINGW32__
-    snprintf(formatted, 8, "%08X",  code);
+    fprintf(stderr, "%s failed: %08X", method, code);
 #else
-    snprintf(formatted, 100, "%08X (%s)", code, pcsc_stringify_error(code));
+    fprintf(stderr, "%s failed: %08X (%s)", method, code, pcsc_stringify_error(code));
 #endif
-    return formatted;
 }
 
 static int pcsc_ctx_open(void)
@@ -52,7 +49,7 @@ static int pcsc_ctx_open(void)
     ret = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &pcsc_ctx);
     if (ret != SCARD_S_SUCCESS)
     {
-        fprintf(stderr, "SCardEstablishContext() failed: %08X\n", ret);
+        pcsc_error_text("SCardEstablishContext()", ret);
         return -1;
     }
 
@@ -65,9 +62,7 @@ static int pcsc_ctx_open(void)
     ret = SCardListReaders(pcsc_ctx, NULL, NULL, &dwReaders);
     if (ret != SCARD_S_SUCCESS)
     {
-        char *error_text = pcsc_error_text(ret);
-        fprintf(stderr, "SCardListReaders() failed: %s\n", error_text);
-        free(error_text);
+        pcsc_error_text("SCardListReaders()", ret);
         return -1;
     }
     pcsc_mszReaders = malloc(sizeof(char) * dwReaders);
@@ -80,9 +75,7 @@ static int pcsc_ctx_open(void)
 #endif
     if (ret != SCARD_S_SUCCESS)
     {
-        char *error_text = pcsc_error_text(ret);
-        fprintf(stderr, "SCardListReaders() failed: %s\n", error_text);
-        free(error_text);
+        pcsc_error_text("SCardListReaders()", ret);
         return -1;
     }
 
@@ -136,9 +129,7 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
     ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS)
     {
-        char *error_text = pcsc_error_text(ret);
-        fprintf(stderr, "SCardConnect() failed: %s\n", error_text);
-        free(error_text);
+        pcsc_error_text("SCardConnect()", ret);
         return -1;
     }
 
@@ -185,9 +176,7 @@ static int pcsc_transmit_lowlevel(uint8_t *rx, uint32_t *rx_len, const uint8_t *
     ret = SCardTransmit(pcsc_hCard, SCARD_PCI_T0, tx, tx_len, NULL, rx, &rx_len_merged);
     if (ret != SCARD_S_SUCCESS)
     {
-        char *error_text = pcsc_error_text(ret);
-        fprintf(stderr, "SCardTransmit() failed: %s\n", error_text);
-        free(error_text);
+        pcsc_error_text("SCardTransmit()", ret);
         return -1;
     }
 
