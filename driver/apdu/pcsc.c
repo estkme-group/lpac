@@ -33,7 +33,7 @@ static char *pcsc_error_text(const int32_t code) {
     char *formatted = malloc(100);
     if (!formatted) return NULL;
 #ifdef __MINGW32__
-    snprintf(buf, 8, "%08X",  code);
+    snprintf(formatted, 8, "%08X",  code);
 #else
     snprintf(formatted, 100, "%08X (%s)", code, pcsc_stringify_error(code));
 #endif
