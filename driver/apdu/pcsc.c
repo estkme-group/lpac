@@ -109,7 +109,7 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void 
     return -1;
 }
 
-static int pcsc_open_hCard_iter(const int index, const char *reader, void *userdata)
+static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
 {
     int ret;
     int id;
@@ -118,7 +118,7 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
     id = 0;
     if (getenv(INTERFACE_SELECT_ENV))
     {
-        id = (int) strtol(getenv(INTERFACE_SELECT_ENV), NULL, 10);
+        id = atoi(getenv(INTERFACE_SELECT_ENV));
     }
 
     if (id != index)
