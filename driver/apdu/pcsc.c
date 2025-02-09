@@ -109,16 +109,16 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void 
     return -1;
 }
 
-static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
+static int pcsc_open_hCard_iter(const int index, const char *reader, void *userdata)
 {
     int ret;
-    long id;
+    int id;
     DWORD dwActiveProtocol;
 
     id = 0;
     if (getenv(INTERFACE_SELECT_ENV))
     {
-        id = strtol(getenv(INTERFACE_SELECT_ENV), NULL, 10);
+        id = (int) strtol(getenv(INTERFACE_SELECT_ENV), NULL, 10);
     }
 
     if (id != index)
