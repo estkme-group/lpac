@@ -23,9 +23,14 @@ jobs:
           - {variant: mingw, name: Windows with MinGW, artifact: windows-x64}
           - {variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
         include:
+          - os: ubuntu-24.04-arm
+            build:
+              - {variant: make, name: Linux ARM, artifact: linux-arm}
+              - {variant: make-without-lto, name: Linux ARM (w/o LTO), artifact: linux-arm-without-lto}
+              - {variant: debian, name: Debian ARM, artifact: debian-arm}
           - os: macos-14
             build: {variant: make, name: macOS, artifact: macos-universal}
-          - os: macos-latest
+          - os: macos-14
             build: {variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
     steps:
       - name: Checkout
@@ -46,6 +51,7 @@ jobs:
         with:
           name: lpac-${{ env.SHA7 }}-${{ matrix.build.artifact }}
           path: ${{ github.workspace }}/build/*.*
+
   release:
     name: Release
     runs-on: ubuntu-24.04
