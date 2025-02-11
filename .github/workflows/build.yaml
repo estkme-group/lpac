@@ -11,27 +11,22 @@ on:
 jobs:
   build:
     name: Build for ${{ matrix.build.name }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.build.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04]
         build:
-          - {variant: make, name: Linux, artifact: linux-x64}
-          - {variant: make-without-lto, name: Linux (w/o LTO), artifact: linux-x64-without-lto}
-          - {variant: debian, name: Debian, artifact: debian-x64}
-          - {variant: mingw, name: Windows with MinGW, artifact: windows-x64}
-          - {variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
-        include:
-          - os: ubuntu-24.04-arm
-            build:
-              - {variant: make, name: Linux ARM, artifact: linux-arm}
-              - {variant: make-without-lto, name: Linux ARM (w/o LTO), artifact: linux-arm-without-lto}
-              - {variant: debian, name: Debian ARM, artifact: debian-arm}
-          - os: macos-14
-            build: {variant: make, name: macOS, artifact: macos-universal}
-          - os: macos-14
-            build: {variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
+          - {os: ubuntu-24.04, variant: make, name: Linux, artifact: linux-x64}
+          - {os: ubuntu-24.04-arm, variant: make, name: Linux ARM, artifact: linux-arm}
+          - {os: ubuntu-24.04, variant: make-without-lto, name: Linux (w/o LTO), artifact: linux-x64-without-lto}
+          - {os: ubuntu-24.04-arm, variant: make-without-lto, name: Linux ARM (w/o LTO), artifact: linux-arm-without-lto}
+          - {os: ubuntu-24.04, variant: debian, name: Debian, artifact: debian-x64}
+          - {os: ubuntu-24.04-arm, variant: debian, name: Debian ARM, artifact: debian-arm}
+          - {os: ubuntu-24.04, variant: mingw, name: Windows with MinGW, artifact: windows-x64}
+          - {os: ubuntu-24.04, variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
+          - {os: macos-14, variant: make, name: macOS, artifact: macos-universal}
+          - {os: macos-14, variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
