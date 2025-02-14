@@ -29,6 +29,14 @@ static SCARDCONTEXT pcsc_ctx;
 static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
 
+static void pcsc_error(const char *method, const int32_t code) {
+#ifdef __MINGW32__
+    fprintf(stderr, "%s failed: %08X\n", method, code);
+#else
+    fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
+#endif
+}
+
 static int pcsc_ctx_open(void)
 {
     int ret;
@@ -41,7 +49,7 @@ static int pcsc_ctx_open(void)
     ret = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &pcsc_ctx);
     if (ret != SCARD_S_SUCCESS)
     {
-        fprintf(stderr, "SCardEstablishContext() failed: %08X\n", ret);
+        pcsc_error("SCardEstablishContext()", ret);
         return -1;
     }
 
@@ -54,7 +62,7 @@ static int pcsc_ctx_open(void)
     ret = SCardListReaders(pcsc_ctx, NULL, NULL, &dwReaders);
     if (ret != SCARD_S_SUCCESS)
     {
-        fprintf(stderr, "SCardListReaders() failed: %08X\n", ret);
+        pcsc_error("SCardListReaders()", ret);
         return -1;
     }
     pcsc_mszReaders = malloc(sizeof(char) * dwReaders);
@@ -67,7 +75,7 @@ static int pcsc_ctx_open(void)
 #endif
     if (ret != SCARD_S_SUCCESS)
     {
-        fprintf(stderr, "SCardListReaders() failed: %08X\n", ret);
+        pcsc_error("SCardListReaders()", ret);
         return -1;
     }
 
@@ -121,7 +129,7 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
     ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS)
     {
-        fprintf(stderr, "SCardConnect() failed: %08X\n", ret);
+        pcsc_error("SCardConnect()", ret);
         return -1;
     }
 
@@ -168,7 +176,7 @@ static int pcsc_transmit_lowlevel(uint8_t *rx, uint32_t *rx_len, const uint8_t *
     ret = SCardTransmit(pcsc_hCard, SCARD_PCI_T0, tx, tx_len, NULL, rx, &rx_len_merged);
     if (ret != SCARD_S_SUCCESS)
     {
-        fprintf(stderr, "SCardTransmit() failed: %08X\n", ret);
+        pcsc_error("SCardTransmit()", ret);
         return -1;
     }
 
@@ -464,3 +472,4 @@ const struct euicc_driver driver_apdu_pcsc = {
     .main = libapduinterface_main,
     .fini = (void (*)(void *))libapduinterface_fini,
 };
+
