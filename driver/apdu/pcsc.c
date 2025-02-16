@@ -15,7 +15,8 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 
-#define INTERFACE_SELECT_ENV "DRIVER_IFID"
+#define INTERFACE_SELECT_BY_INDEX_ENV "DRIVER_IFID"
+#define INTERFACE_SELECT_BY_NAME_ENV "DRIVER_NAME"
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -24,6 +25,11 @@
 #define APDU_OPENLOGICCHANNEL "\x00\x70\x00\x00\x01"
 #define APDU_CLOSELOGICCHANNEL "\x00\x70\x80\xFF\x00"
 #define APDU_SELECT_HEADER "\x00\xA4\x04\x00\xFF"
+
+static char *BLOCKLIST[] = {
+    "Yubico",
+    "Canokeys",
+};
 
 static SCARDCONTEXT pcsc_ctx;
 static SCARDHANDLE pcsc_hCard;
@@ -109,31 +115,37 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void 
     return -1;
 }
 
-static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
+static int pcsc_open_hCard_iter(const int index, const char *reader, void *userdata)
 {
-    int ret;
-    int id;
+    for (size_t i = sizeof(BLOCKLIST) / sizeof(BLOCKLIST[0]); i > 0; i--)
+    {
+        if (strstr(BLOCKLIST[i], reader) != NULL)
+        {
+            return 0; // skip
+        }
+    }
+
+    const char *value = getenv(INTERFACE_SELECT_BY_INDEX_ENV);
+    if (value != NULL && strtol(value, NULL, 10) != index)
+    {
+        return 0; // skip
+    }
+
+    value = getenv(INTERFACE_SELECT_BY_NAME_ENV);
+    if (value != NULL && strstr(value, reader) == NULL)
+    {
+        return 0; // skip
+    }
+
     DWORD dwActiveProtocol;
-
-    id = 0;
-    if (getenv(INTERFACE_SELECT_ENV))
-    {
-        id = atoi(getenv(INTERFACE_SELECT_ENV));
-    }
-
-    if (id != index)
-    {
-        return 0;
-    }
-
-    ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
+    const int ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS)
     {
         pcsc_error("SCardConnect()", ret);
-        return -1;
+        return -1; // failed
     }
 
-    return 1;
+    return 1; // success
 }
 
 static int pcsc_open_hCard(void)
@@ -435,7 +447,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_ENV))
+        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_BY_INDEX_ENV))
         {
             return -1;
         }
