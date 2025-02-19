@@ -112,7 +112,7 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
     }
 
     value = getenv(INTERFACE_SELECT_BY_NAME_ENV);
-    if (value != NULL && strstr(value, reader) == NULL)
+    if (value != NULL && strstr(reader, value) == NULL)
     {
         return 0; // name unmatched, skip
     }
@@ -123,7 +123,7 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
         const char *token = NULL;
         for (token = strtok(value, ";"); token != NULL; token = strtok(NULL, ";"))
         {
-            if (strstr(value, reader) != NULL)
+            if (strstr(reader, value) != NULL)
             {
                 return 0; // reader name is in blocklist, skip
             }
