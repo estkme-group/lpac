@@ -17,6 +17,7 @@
 
 #define INTERFACE_SELECT_BY_INDEX_ENV "DRIVER_IFID"
 #define INTERFACE_SELECT_BY_NAME_ENV "DRIVER_NAME"
+#define INTERFACE_SELECT_BLOCKLIST_ENV "DRIVER_BLOCKLIST"
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -25,11 +26,6 @@
 #define APDU_OPENLOGICCHANNEL "\x00\x70\x00\x00\x01"
 #define APDU_CLOSELOGICCHANNEL "\x00\x70\x80\xFF\x00"
 #define APDU_SELECT_HEADER "\x00\xA4\x04\x00\xFF"
-
-static char *BLOCKLIST[] = {
-    "Yubico",
-    "Canokeys",
-};
 
 static SCARDCONTEXT pcsc_ctx;
 static SCARDHANDLE pcsc_hCard;
@@ -90,24 +86,16 @@ static int pcsc_ctx_open(void)
 
 static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void *userdata), void *userdata)
 {
-    int ret;
-    LPSTR psReader;
-
-    psReader = pcsc_mszReaders;
+    LPSTR psReader = pcsc_mszReaders;
     for (int i = 0, n = 0;; i++)
     {
         char *p = pcsc_mszReaders + i;
         if (*p == '\0')
         {
-            ret = callback(n, psReader, userdata);
-            if (ret < 0)
-                return -1;
-            if (ret > 0)
-                return 0;
-            if (*(p + 1) == '\0')
-            {
-                break;
-            }
+            const int ret = callback(n, psReader, userdata);
+            if (ret < 0) return -1;
+            if (ret > 0) return 0;
+            if (*(p + 1) == '\0') break;
             psReader = p + 1;
             n++;
         }
@@ -117,15 +105,7 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void 
 
 static int pcsc_open_hCard_iter(const int index, const char *reader, void *userdata)
 {
-    for (size_t i = sizeof(BLOCKLIST) / sizeof(BLOCKLIST[0]); i > 0; i--)
-    {
-        if (strstr(BLOCKLIST[i], reader) != NULL)
-        {
-            return 0; // skip
-        }
-    }
-
-    const char *value = getenv(INTERFACE_SELECT_BY_INDEX_ENV);
+    char *value = getenv(INTERFACE_SELECT_BY_INDEX_ENV);
     if (value != NULL && strtol(value, NULL, 10) != index)
     {
         return 0; // skip
@@ -135,6 +115,19 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
     if (value != NULL && strstr(value, reader) == NULL)
     {
         return 0; // skip
+    }
+
+    value = getenv(INTERFACE_SELECT_BLOCKLIST_ENV);
+    if (value != NULL)
+    {
+        const char *token = NULL;
+        for (token = strtok(value, ";"); token != NULL; token = strtok(NULL, ";"))
+        {
+            if (strstr(value, reader) == NULL)
+            {
+                return 0; // skip
+            }
+        }
     }
 
     DWORD dwActiveProtocol;
