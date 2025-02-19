@@ -108,13 +108,13 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
     char *value = getenv(INTERFACE_SELECT_BY_INDEX_ENV);
     if (value != NULL && strtol(value, NULL, 10) != index)
     {
-        return 0; // skip
+        return 0; // index unmatched, skip
     }
 
     value = getenv(INTERFACE_SELECT_BY_NAME_ENV);
     if (value != NULL && strstr(value, reader) == NULL)
     {
-        return 0; // skip
+        return 0; // name unmatched, skip
     }
 
     value = getenv(INTERFACE_SELECT_BLOCKLIST_ENV);
@@ -123,9 +123,9 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
         const char *token = NULL;
         for (token = strtok(value, ";"); token != NULL; token = strtok(NULL, ";"))
         {
-            if (strstr(value, reader) == NULL)
+            if (strstr(value, reader) != NULL)
             {
-                return 0; // skip
+                return 0; // reader name is in blocklist, skip
             }
         }
     }
@@ -137,7 +137,7 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
         pcsc_error("SCardConnect()", ret);
         // see <https://blog.apdu.fr/posts/2024/12/gnupg-and-pcsc-conflicts-episode-3/>
         if (ret == SCARD_E_SHARING_VIOLATION) return 0; // skip
-        return -1; // failed
+        return -1; // connect failed
     }
 
     return 1; // success
