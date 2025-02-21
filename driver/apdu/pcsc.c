@@ -90,15 +90,13 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void 
     for (int i = 0, n = 0;; i++)
     {
         char *p = pcsc_mszReaders + i;
-        if (*p == '\0')
-        {
-            const int ret = callback(n, psReader, userdata);
-            if (ret < 0) return -1;
-            if (ret > 0) return 0;
-            if (*(p + 1) == '\0') break;
-            psReader = p + 1;
-            n++;
-        }
+        if (*p != '\0') continue;
+        const int ret = callback(n, psReader, userdata);
+        if (ret < 0) return -1;
+        if (ret > 0) return 0;
+        if (*(p + 1) == '\0') break;
+        psReader = p + 1;
+        n++;
     }
     return -1;
 }
@@ -123,7 +121,7 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
         const char *token = NULL;
         for (token = strtok(value, ";"); token != NULL; token = strtok(NULL, ";"))
         {
-            if (strstr(reader, value) != NULL)
+            if (strstr(reader, token) != NULL)
             {
                 return 0; // reader name is in blocklist, skip
             }
