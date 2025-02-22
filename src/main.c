@@ -24,7 +24,6 @@
 #include <processenv.h>
 #endif
 
-#define ISD_R_AID_MIN_LENGTH 5
 #define ISD_R_AID_MAX_LENGTH 16
 
 static int driver_applet_main(int argc, char **argv)
@@ -67,15 +66,9 @@ void main_init_euicc()
     {
         uint8_t custom_aid[ISD_R_AID_MAX_LENGTH];
         const int custom_aid_len = euicc_hexutil_hex2bin(custom_aid, ISD_R_AID_MAX_LENGTH, custom_aid_str);
-        if (custom_aid_len < ISD_R_AID_MIN_LENGTH || custom_aid_len > ISD_R_AID_MAX_LENGTH)
+        if (custom_aid_len < 1)
         {
-            char message[80];
-            sprintf(
-                message,
-                "invalid custom ISD-R AID given (length must be between %d and %d bytes)",
-                ISD_R_AID_MIN_LENGTH, ISD_R_AID_MAX_LENGTH
-            );
-            jprint_error("euicc_init", message);
+            jprint_error("euicc_init", "invalid custom ISD-R AID given");
             exit(-1);
         }
 
