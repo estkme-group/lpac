@@ -170,6 +170,8 @@ int es10x_command(struct euicc_ctx *ctx, uint8_t **resp, unsigned *resp_len, con
 
 int euicc_init(struct euicc_ctx *ctx)
 {
+    int ret;
+
     if (ctx->aid == NULL)
     {
         ctx->aid = (const uint8_t *)ISD_R_AID;
@@ -181,7 +183,7 @@ int euicc_init(struct euicc_ctx *ctx)
         ctx->es10x_mss = 120;
     }
 
-    int ret = ctx->apdu.interface->connect(ctx);
+    ret = ctx->apdu.interface->connect(ctx);
     if (ret < 0)
     {
         return -1;
