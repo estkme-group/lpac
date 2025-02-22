@@ -79,6 +79,7 @@ void main_init_euicc()
         euicc_ctx.aid_len = custom_aid_len;
     }
 
+    euicc_ctx.es10x_mss = 0; // use default value
     const char *custom_mss = getenv("LPAC_CUSTOM_ES10X_MSS");
     if (custom_mss)
     {
@@ -95,7 +96,7 @@ void main_init_euicc()
             exit(-1);
         }
 
-        euicc_ctx.es10x_mss = (uint8_t) mss;
+        euicc_ctx.es10x_mss = (uint8_t) mss; // override default value
     }
 
     if (euicc_init(&euicc_ctx))
