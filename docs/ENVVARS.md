@@ -11,7 +11,7 @@
   - `qmi_qrtr`: use QMI over QRTR
   - `mbim`: use MBIM
   - GBinder-based backends for `libhybris` (Halium) distributions:
-    - `gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
+	- `gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
 * `LPAC_HTTP`: specify which HTTP backend will be used.
   - `curl`: use libcurl
   - `stdio`: use standard input/ouput
