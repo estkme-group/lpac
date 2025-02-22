@@ -83,7 +83,7 @@ void main_init_euicc()
     const char *custom_mss = getenv("LPAC_CUSTOM_ES10X_MSS");
     if (custom_mss)
     {
-        const long long mss = strtol(custom_mss, NULL, 10);
+        const long mss = strtol(custom_mss, NULL, 10);
         if (mss < ES10X_MSS_MIN_VALUE || mss > ES10X_MSS_MAX_VALUE)
         {
             char message[80];
