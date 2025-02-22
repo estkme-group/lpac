@@ -85,7 +85,13 @@ void main_init_euicc()
         const long long mss = strtol(custom_mss, NULL, 10);
         if (mss < ES10X_MSS_MIN_VALUE || mss > ES10X_MSS_MAX_VALUE)
         {
-            jprint_error("euicc_init", "invalid custom MSS given");
+            char message[80];
+            sprintf(
+                message,
+                "invalid custom ES10x MSS given (must be between %d and %d)",
+                ES10X_MSS_MIN_VALUE, ES10X_MSS_MAX_VALUE
+            );
+            jprint_error("euicc_init", message);
             exit(-1);
         }
 
