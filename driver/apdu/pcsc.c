@@ -30,7 +30,7 @@ static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
 
 static void pcsc_error(const char *method, const int32_t code) {
-#ifdef __MINGW32__
+#ifdef _WIN32
     fprintf(stderr, "%s failed: %08X\n", method, code);
 #else
     fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
