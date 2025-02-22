@@ -2,7 +2,7 @@
 
 ## General
 
-* `LPAC_CUSTOM_MSS`: specify maximum segment size for APDU backend. (default: 120, min: 6, max: 255)
+* `LPAC_CUSTOM_ES10X_MSS`: specify maximum segment size for ES10x APDU backend. (default: 120, min: 6, max: 255)
 * `LPAC_CUSTOM_ISD_R_AID`: specify which AID will be used to open the logic channel. (hex string, 32 chars)
 * `LPAC_APDU`: specify which APDU backend will be used. Values:
   - `at`: use AT commands interface used by LTE module

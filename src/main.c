@@ -26,6 +26,9 @@
 
 #define ISD_R_AID_STR_LENGTH 16
 
+#define ES10X_MSS_MIN_VALUE 6
+#define ES10X_MSS_MAX_VALUE 255
+
 static int driver_applet_main(int argc, char **argv)
 {
     const struct applet_entry *applets[] = {
@@ -76,11 +79,11 @@ void main_init_euicc()
         euicc_ctx.aid_len = custom_aid_len;
     }
 
-    const char *custom_mss = getenv("LPAC_CUSTOM_MSS");
+    const char *custom_mss = getenv("LPAC_CUSTOM_ES10X_MSS");
     if (custom_mss)
     {
         const long long mss = strtol(custom_mss, NULL, 10);
-        if (mss < 6 || mss > 255)
+        if (mss < ES10X_MSS_MIN_VALUE || mss > ES10X_MSS_MAX_VALUE)
         {
             jprint_error("euicc_init", "invalid custom MSS given");
             exit(-1);
