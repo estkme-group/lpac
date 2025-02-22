@@ -76,6 +76,19 @@ void main_init_euicc()
         euicc_ctx.aid_len = custom_aid_len;
     }
 
+    const char *custom_mss = getenv("LPAC_CUSTOM_MSS");
+    if (custom_mss)
+    {
+        const long long mss = strtol(custom_mss, NULL, 10);
+        if (mss < 6 || mss > 255)
+        {
+            jprint_error("euicc_init", "invalid custom MSS given");
+            exit(-1);
+        }
+
+        euicc_ctx.es10x_mss = (uint8_t) mss;
+    }
+
     if (euicc_init(&euicc_ctx))
     {
         jprint_error("euicc_init", NULL);
