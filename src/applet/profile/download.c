@@ -37,7 +37,7 @@ static int applet_main(int argc, char **argv)
     int opt;
 
     char *smdp = NULL;
-    char *matchingId = NULL;
+    char *matching_id = NULL;
     char *imei = NULL;
     char *confirmation_code = NULL;
     char *activation_code = NULL;
@@ -57,7 +57,7 @@ static int applet_main(int argc, char **argv)
             smdp = strdup(optarg);
             break;
         case 'm':
-            matchingId = strdup(optarg);
+            matching_id = strdup(optarg);
             break;
         case 'i':
             imei = strdup(optarg);
@@ -96,10 +96,10 @@ static int applet_main(int argc, char **argv)
         // SGP.22 v2.2.2; Page 111
         // Section: 4.1 (Activation Code)
 
-        char *token = NULL;
+        const char *token = NULL;
         int index = 0;
 
-        for (token = strtok(activation_code, "$"); token != NULL; token = strtok(NULL, "$"))
+        while ((token = strsep(&activation_code, "$")) != NULL)
         {
             switch (index)
             {
@@ -115,7 +115,7 @@ static int applet_main(int argc, char **argv)
                 smdp = strdup(token);
                 break;
             case 2: // AC_Token or Matching ID
-                matchingId = strdup(token);
+                matching_id = strdup(token);
                 break;
             case 3: // SM-DP+ OID
                 // ignored; this function is not implemented
@@ -181,7 +181,7 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es10b_authenticate_server", smdp);
-    if (es10b_authenticate_server(&euicc_ctx, matchingId, imei))
+    if (es10b_authenticate_server(&euicc_ctx, matching_id, imei))
     {
         error_function_name = "es10b_authenticate_server";
         error_detail = NULL;
