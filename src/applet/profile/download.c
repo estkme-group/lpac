@@ -23,6 +23,20 @@ static volatile int cancelled = 0;
         goto err;     \
     }
 
+#ifdef _WIN32
+// https://stackoverflow.com/a/58244503
+char *strsep(char **stringp, const char *__delim) {
+    char *rv = *stringp;
+    if (!rv) return rv;
+    *stringp += strcspn(*stringp, __delim);
+    if (**stringp)
+        *(*stringp)++ = '\0';
+    else
+        *stringp = 0;
+    return rv;
+}
+#endif
+
 static void sigint_handler(int x)
 {
     cancelled = 1;
@@ -96,10 +110,10 @@ static int applet_main(int argc, char **argv)
         // SGP.22 v2.2.2; Page 111
         // Section: 4.1 (Activation Code)
 
-        char *token = NULL;
+        const char *token = NULL;
         int index = 0;
 
-        for (token = strtok(activation_code, "$"); token != NULL; token = strtok(NULL, "$"))
+        while ((token = strsep(&activation_code, "$")) != NULL)
         {
             switch (index)
             {
