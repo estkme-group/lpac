@@ -51,7 +51,7 @@ static int applet_main(int argc, char **argv)
     int opt;
 
     char *smdp = NULL;
-    char *matching_id = NULL;
+    char *matchingId = NULL;
     char *imei = NULL;
     char *confirmation_code = NULL;
     char *activation_code = NULL;
@@ -71,7 +71,7 @@ static int applet_main(int argc, char **argv)
             smdp = strdup(optarg);
             break;
         case 'm':
-            matching_id = strdup(optarg);
+            matchingId = strdup(optarg);
             break;
         case 'i':
             imei = strdup(optarg);
@@ -129,7 +129,7 @@ static int applet_main(int argc, char **argv)
                 smdp = strdup(token);
                 break;
             case 2: // AC_Token or Matching ID
-                matching_id = strdup(token);
+                matchingId = strdup(token);
                 break;
             case 3: // SM-DP+ OID
                 // ignored; this function is not implemented
@@ -195,7 +195,7 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es10b_authenticate_server", smdp);
-    if (es10b_authenticate_server(&euicc_ctx, matching_id, imei))
+    if (es10b_authenticate_server(&euicc_ctx, matchingId, imei))
     {
         error_function_name = "es10b_authenticate_server";
         error_detail = NULL;
