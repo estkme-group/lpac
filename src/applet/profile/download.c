@@ -23,6 +23,20 @@ static volatile int cancelled = 0;
         goto err;     \
     }
 
+#ifdef _WIN32
+// https://stackoverflow.com/a/58244503
+char *strsep(char **stringp, const char *__delim) {
+    char *rv = *stringp;
+    if (!rv) return rv;
+    *stringp += strcspn(*stringp, __delim);
+    if (**stringp)
+        *(*stringp)++ = '\0';
+    else
+        *stringp = 0;
+    return rv;
+}
+#endif
+
 static void sigint_handler(int x)
 {
     cancelled = 1;
