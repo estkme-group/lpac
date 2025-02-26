@@ -1,7 +1,7 @@
 #ifdef _WIN32
 #include "pcsc_win32.h"
 
-char *pcsc_stringify_error(const int32_t err) {
+const char *pcsc_stringify_error(const LONG err) {
   switch (err) {
     case SCARD_S_SUCCESS: return "SCARD_S_SUCCESS";
     case SCARD_F_INTERNAL_ERROR: return "SCARD_F_INTERNAL_ERROR";
@@ -37,6 +37,7 @@ char *pcsc_stringify_error(const int32_t err) {
     case SCARD_E_UNEXPECTED: return "SCARD_E_UNEXPECTED";
     case SCARD_E_ICC_INSTALLATION: return "SCARD_E_ICC_INSTALLATION";
     case SCARD_E_ICC_CREATEORDER: return "SCARD_E_ICC_CREATEORDER";
+    case SCARD_E_UNSUPPORTED_FEATURE: return "SCARD_E_UNSUPPORTED_FEATURE";
     case SCARD_E_DIR_NOT_FOUND: return "SCARD_E_DIR_NOT_FOUND";
     case SCARD_E_FILE_NOT_FOUND: return "SCARD_E_FILE_NOT_FOUND";
     case SCARD_E_NO_DIR: return "SCARD_E_NO_DIR";
@@ -52,6 +53,9 @@ char *pcsc_stringify_error(const int32_t err) {
     case SCARD_E_COMM_DATA_LOST: return "SCARD_E_COMM_DATA_LOST";
     case SCARD_E_NO_KEY_CONTAINER: return "SCARD_E_NO_KEY_CONTAINER";
     case SCARD_E_SERVER_TOO_BUSY: return "SCARD_E_SERVER_TOO_BUSY";
+    case SCARD_E_PIN_CACHE_EXPIRED: return "SCARD_E_PIN_CACHE_EXPIRED";
+    case SCARD_E_NO_PIN_CACHE: return "SCARD_E_NO_PIN_CACHE";
+    case SCARD_E_READ_ONLY_CARD: return "SCARD_E_READ_ONLY_CARD";
     case SCARD_W_UNSUPPORTED_CARD: return "SCARD_W_UNSUPPORTED_CARD";
     case SCARD_W_UNRESPONSIVE_CARD: return "SCARD_W_UNRESPONSIVE_CARD";
     case SCARD_W_UNPOWERED_CARD: return "SCARD_W_UNPOWERED_CARD";
@@ -63,6 +67,9 @@ char *pcsc_stringify_error(const int32_t err) {
     case SCARD_W_EOF: return "SCARD_W_EOF";
     case SCARD_W_CANCELLED_BY_USER: return "SCARD_W_CANCELLED_BY_USER";
     case SCARD_W_CARD_NOT_AUTHENTICATED: return "SCARD_W_CARD_NOT_AUTHENTICATED";
+    case SCARD_W_CACHE_ITEM_NOT_FOUND: return "SCARD_W_CACHE_ITEM_NOT_FOUND";
+    case SCARD_W_CACHE_ITEM_STALE: return "SCARD_W_CACHE_ITEM_STALE";
+    case ERROR_BROKEN_PIPE: return "ERROR_BROKEN_PIPE";
     default: return "Unknown error";
   }
 }

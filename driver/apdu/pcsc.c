@@ -6,8 +6,8 @@
 #include <string.h>
 
 #ifdef _WIN32
-#include "pcsc_win32.h"
 #include <winscard.h>
+#include "pcsc_win32.h"
 #else
 #include <PCSC/wintypes.h>
 #include <PCSC/winscard.h>
