@@ -7,6 +7,7 @@
 
 #ifdef _WIN32
 #include <winscard.h>
+#include "pcsc_win32.h"
 #else
 #include <PCSC/wintypes.h>
 #include <PCSC/winscard.h>
@@ -14,6 +15,7 @@
 
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
+#include "print.h"
 
 #define INTERFACE_SELECT_ENV "DRIVER_IFID"
 
@@ -30,11 +32,7 @@ static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
 
 static void pcsc_error(const char *method, const int32_t code) {
-#ifdef _WIN32
-    fprintf(stderr, "%s failed: %08X\n", method, code);
-#else
-    fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
-#endif
+    fprintlnf(stderr, "%s failed: %08X (%s)", method, code, pcsc_stringify_error(code));
 }
 
 static int pcsc_ctx_open(void)
