@@ -66,7 +66,7 @@ static int pcsc_ctx_open(void)
     pcsc_mszReaders = malloc(sizeof(char) * dwReaders);
     if (pcsc_mszReaders == NULL)
     {
-        fprintf(stderr, "malloc: not enough memory\n");
+        fprintlnf(stderr, "malloc: not enough memory");
         return -1;
     }
     ret = SCardListReaders(pcsc_ctx, NULL, pcsc_mszReaders, &dwReaders);
@@ -299,8 +299,7 @@ static int json_print(cJSON *jpayload)
     }
     cJSON_Delete(jroot);
 
-    fprintf(stdout, "%s\n", jstr);
-    fflush(stdout);
+    fprintlnf(stdout, "%s", jstr);
 
     free(jstr);
     jstr = NULL;
@@ -339,7 +338,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     *rx = malloc(EUICC_INTERFACE_BUFSZ);
     if (!*rx)
     {
-        fprintf(stderr, "SCardTransmit() RX buffer alloc failed\n");
+        fprintlnf(stderr, "SCardTransmit() RX buffer alloc failed");
         return -1;
     }
     *rx_len = EUICC_INTERFACE_BUFSZ;
@@ -418,7 +417,7 @@ static int libapduinterface_main(int argc, char **argv)
 {
     if (argc < 2)
     {
-        fprintf(stderr, "Usage: %s <list>\n", argv[0]);
+        fprintlnf(stderr, "Usage: %s <list>", argv[0]);
         return -1;
     }
 
