@@ -15,8 +15,8 @@ static int applet_main(int argc, char **argv)
 
     if (argc < 2)
     {
-        printlnf("Usage: %s [iccid/aid] [refreshflag]", argv[0]);
-        printlnf("\t[refreshflag]: optional");
+        printf("Usage: %s [iccid/aid] [refreshflag]\n", argv[0]);
+        printf("\t[refreshflag]: optional\n");
         return -1;
     }
 

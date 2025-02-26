@@ -15,8 +15,8 @@ static int applet_main(int argc, char **argv)
 
     if (argc < 2)
     {
-        printlnf("Usage: %s [iccid] [new_name]", argv[0]);
-        printlnf("\t[new_name]: optional");
+        printf("Usage: %s [iccid] [new_name]\n", argv[0]);
+        printf("\t[new_name]: optional\n");
         return -1;
     }
 

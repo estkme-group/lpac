@@ -9,7 +9,6 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
-#include "print.h"
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)
@@ -44,7 +43,7 @@ static int afgets(char **obuf, FILE *fp)
         }
     }
 
-    (*obuf)[strcspn(*obuf, "\r\n")] = 0;
+    (*obuf)[strcspn(*obuf, "\n")] = 0;
 
     return 0;
 
@@ -88,7 +87,8 @@ static int json_print(cJSON *jpayload)
     }
     cJSON_Delete(jroot);
 
-    printlnf("%s", jstr);
+    fprintf(stdout, "%s\n", jstr);
+    fflush(stdout);
 
     free(jstr);
     jstr = NULL;
