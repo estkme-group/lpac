@@ -15,7 +15,7 @@
 
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
-#include <src/jprint.h>
+#include "print.h"
 
 #define INTERFACE_SELECT_ENV "DRIVER_IFID"
 
