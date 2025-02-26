@@ -61,6 +61,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
         fprintf(stderr, "Failed to open device: %s\n", device);
         return -1;
     }
+    setbuf(fuart, NULL);
 
     fprintf(fuart, "AT+CCHO=?\r\n");
     if (at_expect(NULL, NULL))
