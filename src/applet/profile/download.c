@@ -23,6 +23,20 @@ static volatile int cancelled = 0;
         goto err;     \
     }
 
+#ifdef _WIN32
+// https://stackoverflow.com/a/58244503
+char *strsep(char **stringp, const char *__delim) {
+    char *rv = *stringp;
+    if (!rv) return rv;
+    *stringp += strcspn(*stringp, __delim);
+    if (**stringp)
+        *(*stringp)++ = '\0';
+    else
+        *stringp = 0;
+    return rv;
+}
+#endif
+
 static void sigint_handler(int x)
 {
     cancelled = 1;
@@ -77,14 +91,14 @@ static int applet_main(int argc, char **argv)
             break;
         case 'h':
         case '?':
-            printf("Usage: %s [OPTIONS]\r\n", argv[0]);
-            printf("\t -s SM-DP+ Domain\r\n");
-            printf("\t -m Matching ID\r\n");
-            printf("\t -i IMEI\r\n");
-            printf("\t -c Confirmation Code (Password)\r\n");
-            printf("\t -a Activation Code (e.g: 'LPA:***')\r\n");
-            printf("\t -p Interactive preview profile\r\n");
-            printf("\t -h This help info\r\n");
+            printlnf("Usage: %s [OPTIONS]", argv[0]);
+            printlnf("\t -s SM-DP+ Domain");
+            printlnf("\t -m Matching ID");
+            printlnf("\t -i IMEI");
+            printlnf("\t -c Confirmation Code (Password)");
+            printlnf("\t -a Activation Code (e.g: 'LPA:***')");
+            printlnf("\t -p Interactive preview profile");
+            printlnf("\t -h This help info");
             return -1;
         default:
             break;
@@ -96,10 +110,10 @@ static int applet_main(int argc, char **argv)
         // SGP.22 v2.2.2; Page 111
         // Section: 4.1 (Activation Code)
 
-        char *token = NULL;
+        const char *token = NULL;
         int index = 0;
 
-        for (token = strtok(activation_code, "$"); token != NULL; token = strtok(NULL, "$"))
+        while ((token = strsep(&activation_code, "$")) != NULL)
         {
             switch (index)
             {

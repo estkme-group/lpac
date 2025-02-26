@@ -178,7 +178,10 @@ int euicc_init(struct euicc_ctx *ctx)
         ctx->aid_len = sizeof(ISD_R_AID) - 1;
     }
 
-    ctx->es10x_mss = 120;
+    if (ctx->es10x_mss == 0)
+    {
+        ctx->es10x_mss = 120;
+    }
 
     ret = ctx->apdu.interface->connect(ctx);
     if (ret < 0)

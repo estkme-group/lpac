@@ -1,4 +1,6 @@
 #include "applet.h"
+
+#include <jprint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -17,7 +19,7 @@ static void applet_usage(const char *selfname, const struct applet_entry **entri
         }
     }
 
-    printf(">\n");
+    printlnf(">");
 }
 
 int applet_entry(int argc, char **argv, const struct applet_entry **entries)
@@ -41,7 +43,7 @@ int applet_entry(int argc, char **argv, const struct applet_entry **entries)
         }
     }
 
-    printf("Unknown command: %s\n", argv[1]);
+    printlnf("Unknown command: %s", argv[1]);
     applet_usage(argv[0], entries);
     return -1;
 }

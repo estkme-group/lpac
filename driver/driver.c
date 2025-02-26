@@ -29,6 +29,8 @@
 #ifdef LPAC_WITH_HTTP_CURL
 #include "driver/http/curl.h"
 #endif
+#include "print.h"
+
 #include "driver/apdu/stdio.h"
 #include "driver/http/stdio.h"
 
@@ -93,26 +95,26 @@ int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name
     _driver_apdu = _find_driver(DRIVER_APDU, apdu_driver_name);
     if (_driver_apdu == NULL)
     {
-        fprintf(stderr, "No APDU driver found\n");
+        eprintlnf("No APDU driver found");
         return -1;
     }
 
     _driver_http = _find_driver(DRIVER_HTTP, http_driver_name);
     if (_driver_http == NULL)
     {
-        fprintf(stderr, "No HTTP driver found\n");
+        eprintlnf("No HTTP driver found");
         return -1;
     }
 
     if (_driver_apdu->init(&euicc_driver_interface_apdu))
     {
-        fprintf(stderr, "APDU driver init failed\n");
+        eprintlnf("APDU driver init failed");
         return -1;
     }
 
     if (_driver_http->init(&euicc_driver_interface_http))
     {
-        fprintf(stderr, "HTTP driver init failed\n");
+        eprintlnf("HTTP driver init failed");
         return -1;
     }
 

@@ -13,14 +13,14 @@ static int applet_main(int argc, char **argv)
 
     if (argc < 2)
     {
-        printf("Usage: %s [yes|other]\n", argv[0]);
-        printf("\t\tConfirm purge eUICC, all data will lost!\n");
+        printlnf("Usage: %s [yes|other]", argv[0]);
+        printlnf("\t\tConfirm purge eUICC, all data will lost!");
         return -1;
     }
 
     if (strcmp(argv[1], "yes") != 0)
     {
-        printf("Purge canceled\n");
+        printlnf("Purge canceled");
         return -1;
     }
 
