@@ -32,11 +32,7 @@ static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
 
 static void pcsc_error(const char *method, const int32_t code) {
-#ifdef _WIN32
-    fprintlnf(stderr, "%s failed: %08X (%s)", method, code, pcsc_stringify_error_win32(code));
-#else
     fprintlnf(stderr, "%s failed: %08X (%s)", method, code, pcsc_stringify_error(code));
-#endif
 }
 
 static int pcsc_ctx_open(void)

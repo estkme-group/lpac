@@ -1,7 +1,7 @@
 #ifdef _WIN32
 #include "pcsc_win32.h"
 
-char *pcsc_stringify_error_win32(const int32_t err) {
+char *pcsc_stringify_error(const int32_t err) {
   switch (err) {
     case SCARD_S_SUCCESS: return "SCARD_S_SUCCESS";
     case SCARD_F_INTERNAL_ERROR: return "SCARD_F_INTERNAL_ERROR";

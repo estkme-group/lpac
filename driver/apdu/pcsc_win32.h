@@ -3,5 +3,5 @@
 #include <stdint.h>
 #include <winscard.h>
 
-char *pcsc_stringify_error_win32(int32_t err);
+char *pcsc_stringify_error(int32_t err);
 #endif
