@@ -91,14 +91,14 @@ static int applet_main(int argc, char **argv)
             break;
         case 'h':
         case '?':
-            printf("Usage: %s [OPTIONS]\r\n", argv[0]);
-            printf("\t -s SM-DP+ Domain\r\n");
-            printf("\t -m Matching ID\r\n");
-            printf("\t -i IMEI\r\n");
-            printf("\t -c Confirmation Code (Password)\r\n");
-            printf("\t -a Activation Code (e.g: 'LPA:***')\r\n");
-            printf("\t -p Interactive preview profile\r\n");
-            printf("\t -h This help info\r\n");
+            printf("Usage: %s [OPTIONS]\n", argv[0]);
+            printf("\t -s SM-DP+ Domain\n");
+            printf("\t -m Matching ID\n");
+            printf("\t -i IMEI\n");
+            printf("\t -c Confirmation Code (Password)\n");
+            printf("\t -a Activation Code (e.g: 'LPA:***')\n");
+            printf("\t -p Interactive preview profile\n");
+            printf("\t -h This help info\n");
             return -1;
         default:
             break;

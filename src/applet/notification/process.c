@@ -81,9 +81,9 @@ static int applet_main(int argc, char **argv)
             break;
         case 'h':
         case '?':
-            printf("Usage: %s [OPTIONS] [seqNumber_0] [seqNumber_1]...\r\n", argv[0]);
-            printf("\t -a All notifications\r\n");
-            printf("\t -r Automatically remove processed notifications\r\n");
+            printf("Usage: %s [OPTIONS] [seqNumber_0] [seqNumber_1]...\n", argv[0]);
+            printf("\t -a All notifications\n");
+            printf("\t -r Automatically remove processed notifications\n");
             return -1;
         default:
             break;

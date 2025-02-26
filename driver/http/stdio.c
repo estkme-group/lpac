@@ -43,7 +43,7 @@ static int afgets(char **obuf, FILE *fp)
         }
     }
 
-    (*obuf)[strcspn(*obuf, "\r\n")] = 0;
+    (*obuf)[strcspn(*obuf, "\n")] = 0;
 
     return 0;
 
@@ -87,7 +87,7 @@ static int json_print(cJSON *jpayload)
     }
     cJSON_Delete(jroot);
 
-    fprintf(stdout, "%s\r\n", jstr);
+    fprintf(stdout, "%s\n", jstr);
     fflush(stdout);
 
     free(jstr);

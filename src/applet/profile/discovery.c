@@ -36,10 +36,10 @@ static int applet_main(int argc, char **argv)
             break;
         case 'h':
         case '?':
-            printf("Usage: %s [OPTIONS]\r\n", argv[0]);
-            printf("\t -s SM-DS Domain\r\n");
-            printf("\t -i IMEI\r\n");
-            printf("\t -h This help info\r\n");
+            printf("Usage: %s [OPTIONS]\n", argv[0]);
+            printf("\t -s SM-DS Domain\n");
+            printf("\t -i IMEI\n");
+            printf("\t -h This help info\n");
             return -1;
             break;
         }
