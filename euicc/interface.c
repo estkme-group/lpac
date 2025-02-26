@@ -44,7 +44,6 @@ static void euicc_apdu_request_print(const struct apdu_request *req, uint32_t re
     for (uint32_t i = 0; i < (request_len - sizeof(struct apdu_request)); i++)
         fprintf(stderr, "%02X ", (req->data[i] & 0xFF));
     fprintf(stderr, "\n");
-    fflush(stderr);
 }
 
 static void euicc_apdu_response_print(const struct apdu_response *resp)
@@ -53,7 +52,6 @@ static void euicc_apdu_response_print(const struct apdu_response *resp)
     for (uint32_t i = 0; i < resp->length; i++)
         fprintf(stderr, "%02X ", (resp->data[i] & 0xFF));
     fprintf(stderr, "\n");
-    fflush(stderr);
 }
 
 int euicc_apdu_transmit(struct euicc_ctx *ctx, struct apdu_response *response, const struct apdu_request *request, uint32_t request_len)

@@ -8,7 +8,6 @@
 
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
-#include "print.h"
 
 #define AT_BUFFER_SIZE 20480
 static FILE *fuart;
@@ -216,7 +215,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     buffer = malloc(AT_BUFFER_SIZE);
     if (!buffer)
     {
-        fprintlnf(stderr, "Failed to allocate memory");
+        fprintf(stderr, "Failed to allocate memory\n");
         return -1;
     }
 
