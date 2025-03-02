@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include <euicc/interface.h>
-#include "print.h"
 
 #ifndef _WIN32
 #include <curl/curl.h>
@@ -60,7 +59,7 @@ static size_t http_trans_write_callback(void *contents, size_t size, size_t nmem
     if (mem->data == NULL)
     {
         /* out of memory! */
-        printlnf("not enough memory (realloc returned NULL)");
+        printf("not enough memory (realloc returned NULL)\n");
         return 0;
     }
 
@@ -115,7 +114,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
 
     if (res != CURLE_OK)
     {
-        eprintlnf("curl_easy_perform() failed: %s", libcurl._curl_easy_strerror(res));
+        fprintf(stderr, "curl_easy_perform() failed: %s\n", libcurl._curl_easy_strerror(res));
         goto err;
     }
 
@@ -141,7 +140,7 @@ static int _init_libcurl(void)
 #ifdef _WIN32
     if (!(libcurl_interface_dlhandle = dlopen("libcurl.dll", RTLD_LAZY)))
     {
-        eprintlnf("libcurl init err: %s", dlerror());
+        fprintf(stderr, "libcurl init err: %s\n", dlerror());
         return -1;
     }
 

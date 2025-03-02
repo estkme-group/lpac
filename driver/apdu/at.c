@@ -8,7 +8,6 @@
 
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
-#include "print.h"
 
 #define AT_BUFFER_SIZE 20480
 static FILE *fuart;
@@ -27,7 +26,7 @@ static int at_expect(char **response, const char *expected)
         fgets(buffer, AT_BUFFER_SIZE, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
         if (getenv("AT_DEBUG"))
-            printf("AT_DEBUG: %s\r\n", buffer);
+            printf("AT_DEBUG: %s\n", buffer);
         if (strcmp(buffer, "ERROR") == 0)
         {
             return -1;
@@ -62,6 +61,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
         fprintf(stderr, "Failed to open device: %s\n", device);
         return -1;
     }
+    setbuf(fuart, NULL);
 
     fprintf(fuart, "AT+CCHO=?\r\n");
     if (at_expect(NULL, NULL))
@@ -216,7 +216,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     buffer = malloc(AT_BUFFER_SIZE);
     if (!buffer)
     {
-        fprintlnf(stderr, "Failed to allocate memory");
+        fprintf(stderr, "Failed to allocate memory\n");
         return -1;
     }
 
