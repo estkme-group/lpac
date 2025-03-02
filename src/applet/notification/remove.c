@@ -52,8 +52,8 @@ static int applet_main(int argc, char **argv)
             break;
         case 'h':
         case '?':
-            printlnf("Usage: %s [OPTIONS] [seqNumber_0] [seqNumber_1]...", argv[0]);
-            printlnf("\t -a All notifications");
+            printf("Usage: %s [OPTIONS] [seqNumber_0] [seqNumber_1]...\n", argv[0]);
+            printf("\t -a All notifications\n");
             return -1;
         default:
             break;

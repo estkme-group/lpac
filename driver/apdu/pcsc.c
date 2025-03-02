@@ -15,7 +15,6 @@
 
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
-#include "print.h"
 
 #define INTERFACE_SELECT_ENV "DRIVER_IFID"
 
@@ -32,7 +31,7 @@ static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
 
 static void pcsc_error(const char *method, const int32_t code) {
-    fprintlnf(stderr, "%s failed: %08X (%s)", method, code, pcsc_stringify_error(code));
+    fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
 }
 
 static int pcsc_ctx_open(void)
@@ -66,7 +65,7 @@ static int pcsc_ctx_open(void)
     pcsc_mszReaders = malloc(sizeof(char) * dwReaders);
     if (pcsc_mszReaders == NULL)
     {
-        fprintlnf(stderr, "malloc: not enough memory");
+        fprintf(stderr, "malloc: not enough memory\n");
         return -1;
     }
     ret = SCardListReaders(pcsc_ctx, NULL, pcsc_mszReaders, &dwReaders);
@@ -299,7 +298,8 @@ static int json_print(cJSON *jpayload)
     }
     cJSON_Delete(jroot);
 
-    fprintlnf(stdout, "%s", jstr);
+    fprintf(stdout, "%s\n", jstr);
+    fflush(stdout);
 
     free(jstr);
     jstr = NULL;
@@ -338,7 +338,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     *rx = malloc(EUICC_INTERFACE_BUFSZ);
     if (!*rx)
     {
-        fprintlnf(stderr, "SCardTransmit() RX buffer alloc failed");
+        fprintf(stderr, "SCardTransmit() RX buffer alloc failed\n");
         return -1;
     }
     *rx_len = EUICC_INTERFACE_BUFSZ;
@@ -417,7 +417,7 @@ static int libapduinterface_main(int argc, char **argv)
 {
     if (argc < 2)
     {
-        fprintlnf(stderr, "Usage: %s <list>", argv[0]);
+        fprintf(stderr, "Usage: %s <list>\n", argv[0]);
         return -1;
     }
 
