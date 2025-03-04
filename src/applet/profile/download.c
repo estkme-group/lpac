@@ -241,6 +241,8 @@ static int applet_main(const int argc, char **argv)
             }
         }
     }
+
+    // confirmation code
     if (euicc_ctx.http._internal.prepare_download_param->b64_smdpSigned2)
     {
         CANCELPOINT();
@@ -254,10 +256,16 @@ static int applet_main(const int argc, char **argv)
         if (smdp_signed2->confirmationCodeRequired && confirmation_code == NULL)
         {
             jprint_progress("es8p_smdp_signed2_parse", "confirmation code required");
-            if (getline(&confirmation_code, NULL, stdin) < 0)
+#ifdef _WIN32
+            cancelled = 1;
+#else
+            char *cc;
+            if (getline(&cc, NULL, stdin) < 0)
             {
                 cancelled = 1;
             }
+            confirmation_code = strdup(cc);
+#endif
             jprint_progress("confirmation_code", confirmation_code);
         }
     }
