@@ -256,11 +256,11 @@ static int applet_main(const int argc, char **argv)
         const int unset = confirmation_code == NULL || strlen(confirmation_code) == 0;
         if (required && unset) {
             jprint_progress("es8p_smdp_signed2_parse", "confirmation code required");
-            if (fgets(confirmation_code, 128, stdin) != NULL) {
-                jprint_progress("confirmation_code", confirmation_code);
-            } else {
-                cancelled = 1;
-            }
+            // if (fgets(confirmation_code, 128, stdin) != NULL) {
+            //     jprint_progress("confirmation_code", confirmation_code);
+            // } else {
+            cancelled = 1;
+            // }
         }
     }
 
