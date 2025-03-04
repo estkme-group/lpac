@@ -39,7 +39,7 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
         goto err;
     }
 
-    if (!(p = malloc(sizeof(struct es8p_metadata))))
+    if (!((p = malloc(sizeof(struct es8p_metadata)))))
     {
         goto err;
     }
@@ -54,7 +54,7 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
 
     while (euicc_derutil_unpack_next(&n_iter, &n_iter, n_metadata.value, n_metadata.length) == 0)
     {
-        int tmplong;
+        long tmplong;
         switch (n_iter.tag)
         {
         case 0x5A:
@@ -120,6 +120,8 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
             // }
             // fprintf(stderr, "\n");
             break;
+        default:
+            break;
         }
     }
 
@@ -156,3 +158,46 @@ void es8p_metadata_free(struct es8p_metadata **stru_metadata)
 
     *stru_metadata = NULL;
 }
+
+int es8p_smdp_signed2_parse(struct es8p_smdp_signed2 **smdp_signed2, const char *b64_smdpSigned2)
+{
+    int fret = 0;
+
+    *smdp_signed2 = NULL;
+
+    uint8_t *smdpSigned2 = NULL;
+    int smdpSigned2_len;
+    struct euicc_derutil_node n_smdpSigned2, n_ccRequiredFlag;
+
+    smdpSigned2 = malloc(euicc_base64_decode_len(b64_smdpSigned2));
+    if (!smdpSigned2)
+    {
+        goto err;
+    }
+
+    if ((smdpSigned2_len = euicc_base64_decode(smdpSigned2, b64_smdpSigned2)) < 0)
+    {
+        goto err;
+    }
+
+    if (euicc_derutil_unpack_find_tag(&n_smdpSigned2, 0x30, smdpSigned2, smdpSigned2_len) < 0)
+    {
+        goto err;
+    }
+
+    if (euicc_derutil_unpack_find_tag(&n_ccRequiredFlag, 0x01, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
+    {
+        goto err;
+    }
+
+    struct es8p_smdp_signed2 *p = malloc(sizeof(struct es8p_smdp_signed2));
+    p->confirmationCodeRequired = euicc_derutil_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length);
+    *smdp_signed2 = p;
+    goto exit;
+
+err:
+    fret = -1;
+exit:
+    return fret;
+}
+

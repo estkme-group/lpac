@@ -42,7 +42,7 @@ static void sigint_handler(int x)
     cancelled = 1;
 }
 
-static int applet_main(int argc, char **argv)
+static int applet_main(const int argc, char **argv)
 {
     int fret;
     const char *error_function_name = NULL;
@@ -53,7 +53,7 @@ static int applet_main(int argc, char **argv)
     char *smdp = NULL;
     char *matchingId = NULL;
     char *imei = NULL;
-    char *confirmation_code = NULL;
+    const char *confirmation_code = NULL;
     char *activation_code = NULL;
     int interactive_preview = 0;
 
@@ -62,6 +62,7 @@ static int applet_main(int argc, char **argv)
 
     cJSON *jmetadata = NULL;
     struct es8p_metadata *profile_metadata = NULL;
+    struct es8p_smdp_signed2 *smdp_signed2 = NULL;
 
     while ((opt = getopt(argc, argv, opt_string)) != -1)
     {
@@ -158,10 +159,7 @@ static int applet_main(int argc, char **argv)
             error_detail = NULL;
             goto err;
         }
-        else
-        {
-            smdp = configured_addresses.defaultDpAddress;
-        }
+        smdp = configured_addresses.defaultDpAddress;
     }
 
     if (!smdp || (strlen(smdp) == 0))
@@ -235,13 +233,32 @@ static int applet_main(int argc, char **argv)
 
         if (interactive_preview)
         {
-            char c;
             jprint_progress("preview", "y/n");
-            c = getchar();
+            const int c = getchar();
             if (c != 'y' && c != 'Y')
             {
                 cancelled = 1;
             }
+        }
+    }
+    if (euicc_ctx.http._internal.prepare_download_param->b64_smdpSigned2)
+    {
+        CANCELPOINT();
+        if (es8p_smdp_signed2_parse(&smdp_signed2, euicc_ctx.http._internal.prepare_download_param->b64_smdpSigned2))
+        {
+            error_function_name = "es8p_smdp_signed2_parse";
+            error_detail = NULL;
+            goto err;
+        }
+
+        if (smdp_signed2->confirmationCodeRequired && confirmation_code == NULL)
+        {
+            jprint_progress("es8p_smdp_signed2_parse", "confirmation code required");
+            if (getline(&confirmation_code, NULL, stdin) < 0)
+            {
+                cancelled = 1;
+            }
+            jprint_progress("confirmation_code", confirmation_code);
         }
     }
 
