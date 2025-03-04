@@ -256,17 +256,7 @@ static int applet_main(const int argc, char **argv)
         if (smdp_signed2->confirmationCodeRequired && confirmation_code == NULL)
         {
             jprint_progress("es8p_smdp_signed2_parse", "confirmation code required");
-#ifdef _WIN32
             cancelled = 1;
-#else
-            char *cc;
-            if (getline(&cc, NULL, stdin) < 0)
-            {
-                cancelled = 1;
-            }
-            confirmation_code = strdup(cc);
-#endif
-            jprint_progress("confirmation_code", confirmation_code);
         }
     }
 
