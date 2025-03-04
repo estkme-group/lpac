@@ -33,7 +33,7 @@ void es8p_metadata_free(struct es8p_metadata **stru_metadata);
 
 struct es8p_smdp_signed2
 {
-    long confirmationCodeRequired;
+    int confirmationCodeRequired;
 };
 
 int es8p_smdp_signed2_parse(struct es8p_smdp_signed2 **smdp_signed2, const char *b64_smdpSigned2);

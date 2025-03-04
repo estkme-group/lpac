@@ -191,7 +191,7 @@ int es8p_smdp_signed2_parse(struct es8p_smdp_signed2 **smdp_signed2, const char 
     }
 
     struct es8p_smdp_signed2 *p = malloc(sizeof(struct es8p_smdp_signed2));
-    p->confirmationCodeRequired = euicc_derutil_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length);
+    p->confirmationCodeRequired = euicc_derutil_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length) != 0;
     *smdp_signed2 = p;
     goto exit;
 

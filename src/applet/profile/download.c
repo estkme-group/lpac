@@ -53,7 +53,7 @@ static int applet_main(const int argc, char **argv)
     char *smdp = NULL;
     char *matchingId = NULL;
     char *imei = NULL;
-    const char *confirmation_code = NULL;
+    char *confirmation_code = NULL;
     char *activation_code = NULL;
     int interactive_preview = 0;
 
@@ -243,20 +243,24 @@ static int applet_main(const int argc, char **argv)
     }
 
     // confirmation code
-    if (euicc_ctx.http._internal.prepare_download_param->b64_smdpSigned2)
-    {
+    const char *b64_smdpSigned2 = euicc_ctx.http._internal.prepare_download_param->b64_smdpSigned2;
+    if (b64_smdpSigned2 != NULL) {
         CANCELPOINT();
-        if (es8p_smdp_signed2_parse(&smdp_signed2, euicc_ctx.http._internal.prepare_download_param->b64_smdpSigned2))
-        {
+        if (es8p_smdp_signed2_parse(&smdp_signed2, b64_smdpSigned2)) {
             error_function_name = "es8p_smdp_signed2_parse";
             error_detail = NULL;
             goto err;
         }
 
-        if (smdp_signed2->confirmationCodeRequired && confirmation_code == NULL)
-        {
+        const int required = smdp_signed2->confirmationCodeRequired;
+        const int unset = confirmation_code == NULL || strlen(confirmation_code) == 0;
+        if (required && unset) {
             jprint_progress("es8p_smdp_signed2_parse", "confirmation code required");
-            cancelled = 1;
+            if (fgets(confirmation_code, 128, stdin) != NULL) {
+                jprint_progress("confirmation_code", confirmation_code);
+            } else {
+                cancelled = 1;
+            }
         }
     }
 
