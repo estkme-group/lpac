@@ -67,7 +67,7 @@ int euicc_base64_decode(unsigned char *bufplain, const char *bufcoded)
         nprbytes -= 4;
     }
 
-    /* Note: (nprbytes == 1) would be an error, so just ingore that case */
+    /* Note: (nprbytes == 1) would be an error, so just ignore that case */
     if (nprbytes > 1)
     {
         *(bufout++) =

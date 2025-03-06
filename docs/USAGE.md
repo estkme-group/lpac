@@ -151,7 +151,7 @@ lpac profile <subcommand> [parameters]
 ```
 
 > [!NOTE]
-> Some eUICC chip have trouble when enable profile (e.g. These removeable eUICC cards from ECP), try AID, ICCID, refreshFlag with 1 or 0 to find out the working way for these chips.
+> Some eUICC chip have trouble when enable profile (e.g. These removable eUICC cards from ECP), try AID, ICCID, refreshFlag with 1 or 0 to find out the working way for these chips.
 
 There is no secondary confirmation for deleting a Profile, so please perform it with caution.
 > [!NOTE]
