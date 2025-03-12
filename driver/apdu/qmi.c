@@ -51,7 +51,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
     struct qmi_data *qmi_priv;
 
-    qmi_priv = malloc(sizeof(struct qmi_data));
+    qmi_priv = calloc(1, sizeof(struct qmi_data));
     if(!qmi_priv) {
         fprintf(stderr, "Failed allocating memory\n");
         return -1;
