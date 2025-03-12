@@ -45,5 +45,7 @@ If you have any issue, please read [FAQ](docs/FAQ.md) first.
 
 - lpac ([/src](src), [/driver](driver)): AGPL-3.0
 - libeuicc ([/euicc](euicc)): LGPL-v2
+- cjson ([/cjson](cjson)): MIT
+- dlfcn-win32 ([/dlfcn-win32](dlfcn-win32)): MIT
 
 Copyright &copy; 2023-2024 eSTKme Group
