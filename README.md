@@ -44,7 +44,7 @@ If you have any issue, please read [FAQ](docs/FAQ.md) first.
 ## License
 
 - lpac ([/src](src), [/driver](driver)): AGPL-3.0
-- libeuicc ([/euicc](euicc)): LGPL-v2
+- libeuicc ([/euicc](euicc)): LGPL-v2.1
 - cjson ([/cjson](cjson)): MIT
 - dlfcn-win32 ([/dlfcn-win32](dlfcn-win32)): MIT
 
