@@ -87,6 +87,7 @@ qmi_device_new_from_path(GFile *file,
 
 gboolean
 qmi_device_open_sync(QmiDevice *device,
+                     QmiDeviceOpenFlags flags,
                      GMainContext *context,
                      GError **error)
 {
@@ -96,7 +97,7 @@ qmi_device_open_sync(QmiDevice *device,
     pusher = g_main_context_pusher_new(context);
 
     qmi_device_open(device,
-                    QMI_DEVICE_OPEN_FLAGS_PROXY,
+                    flags,
                     15,
                     NULL,
                     async_result_ready,

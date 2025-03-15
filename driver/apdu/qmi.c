@@ -30,7 +30,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
         return -1;
     }
 
-    qmi_device_open_sync(device, qmi_priv->context, &error);
+    qmi_device_open_sync(device, QMI_DEVICE_OPEN_FLAGS_PROXY, qmi_priv->context, &error);
     if (error) {
         fprintf(stderr, "error: open QMI device failed: %s\n", error->message);
         return -1;
