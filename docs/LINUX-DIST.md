@@ -56,4 +56,4 @@ see <https://github.com/nix-community/nur-combined/blob/master/repos/linyinfeng/
 > Minimum available release: Ubuntu [14.04 Trusty Tahr](https://releases.ubuntu.com/14.04/)
 > (Published on 2024-09-01)
 
-see <https://launchpad.net/~daniel-gimpelevich/+archive/ubuntu/ssl/+sourcepub/16426799/+listing-archive-extra>
+see <https://launchpad.net/~daniel-gimpelevich/+archive/ubuntu/ssl/+sourcepub/17063242/+listing-archive-extra>
