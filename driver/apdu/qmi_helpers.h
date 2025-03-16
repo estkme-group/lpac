@@ -30,6 +30,7 @@ qmi_device_new_from_path(
 gboolean
 qmi_device_open_sync(
     QmiDevice *device,
+    QmiDeviceOpenFlags flags,
     GMainContext *context,
     GError **error);
 

@@ -1,10 +1,10 @@
 ## Usage
 
-In Linux, you need install `pcscd`, `pcsclite` and `libcurl`.
+In Linux, you need to install `pcscd`, `pcsclite` and `libcurl`.
 
-APDU and HTTP interfaces of lpac has serval backends, you need specify `$LPAC_APDU` and `$LPAC_HTTP` environment variable to interface library path. If not specified, it will use `pcsc` and `curl`. See also [environment variables](ENVVARS.md).
+APDU and HTTP interfaces of lpac has several backends, you need to specify `$LPAC_APDU` and `$LPAC_HTTP` environment variables to interface library path. If not specified, it will use `pcsc` and `curl`. See also [environment variables](ENVVARS.md).
 
-Using `at` APDU backend need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need add yourself into `dialout` group. If your serial port is not `/dev/ttyUSB0`, please use `$AT_DEVICE` to specify which one you want to use.
+Using `at` APDU backend need access permission to serial port (normally `/dev/ttyUSBx`). On Arch Linux, you can add yourself to `uucp` group by `sudo usermod -aG uucp $USER`. On other distro, you may need to add yourself into `dialout` group. If your serial port is not `/dev/ttyUSB0`, please use `$AT_DEVICE` to specify which one you want to use.
 
 ## CLI
 
@@ -151,7 +151,7 @@ lpac profile <subcommand> [parameters]
 ```
 
 > [!NOTE]
-> Some eUICC chip have trouble when enable profile (e.g. These removeable eUICC cards from ECP), try AID, ICCID, refreshFlag with 1 or 0 to find out the working way for these chips.
+> Some eUICC chips have trouble when enabling profile (e.g. These removable eUICC cards from ECP), try AID, ICCID, refreshFlag with 1 or 0 to find out the working way for these chips.
 
 There is no secondary confirmation for deleting a Profile, so please perform it with caution.
 > [!NOTE]
@@ -163,7 +163,7 @@ There is no secondary confirmation for deleting a Profile, so please perform it 
 - `-m`: Matching ID, activation code. optional.
 - `-c`: Confirmation Code, optional.
 - `-i`: The IMEI of the device to which Profile is to be downloaded, optional.
-- `-a`: LPA qrcode activation code string, e.g: `LPA:1$<sm-dp+ domain>$<matching id>`, if provided this option takes precedence over the `-s` and `-m` options, optional.
+- `-a`: LPA qrcode activation code string, e.g: `LPA:1$<sm-dp+ domain>$<matching id>`, if provided, this option takes precedence over the `-s` and `-m` options, optional.
 - `-p`: Interactive preview mode, optional.
 
 <details>
@@ -330,4 +330,4 @@ The following parameters can be used to customize the behavior of `notification 
 
 #### driver
 
-Now there is only one command: `lpac driver apdu list` to get card reader list.
+Now, there is only one command: `lpac driver apdu list` to get the card reader list.

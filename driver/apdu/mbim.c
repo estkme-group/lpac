@@ -131,7 +131,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     MbimDeviceOpenFlags open_flags = MBIM_DEVICE_OPEN_FLAGS_NONE;
     if (mbim_priv->use_proxy)
-        open_flags |= MBIM_DEVICE_OPEN_FLAGS_NONE;
+        open_flags |= MBIM_DEVICE_OPEN_FLAGS_PROXY;
 
     mbim_device_open_sync(mbim_priv->device, open_flags, mbim_priv->context, &error);
     if (error) {

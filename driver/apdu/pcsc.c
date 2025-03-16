@@ -15,7 +15,6 @@
 
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
-#include "print.h"
 
 #define INTERFACE_SELECT_BY_INDEX_ENV "DRIVER_IFID"
 #define INTERFACE_SELECT_BY_NAME_ENV "DRIVER_NAME"
@@ -34,7 +33,7 @@ static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
 
 static void pcsc_error(const char *method, const int32_t code) {
-    fprintlnf(stderr, "%s failed: %08X (%s)", method, code, pcsc_stringify_error(code));
+    fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
 }
 
 static int pcsc_ctx_open(void)
