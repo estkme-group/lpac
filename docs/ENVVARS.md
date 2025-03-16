@@ -21,7 +21,7 @@
 * `UIM_SLOT`: specify which UIM slot will be used by QMI and MBIM APDU backends. (default: 1, slot number starts from 1)
 * `DRIVER_IFID`: specify which PC/SC interface index number will be used by PC/SC APDU backend.
 * `DRIVER_NAME`: specify which PC/SC interface name will be used by PC/SC APDU backend.
-* `DRIVER_BLACKLIST`: specify which PC/SC interface name will be blacklisted by PC/SC APDU backend. (use semicolon (`;`) split, for example: `Yubico;Canokeys`).
+* `DRIVER_IGNORE_LIST`: specify which PC/SC interface names will be ignored by PC/SC APDU backend. (use semicolon (`;`) split, for example: `Yubico;Canokeys`).
 * `MBIM_DEVICE`: specify which MBIM device will be used by MBIM APDU backend. (default: `/dev/cdc-wdm0`)
 * `MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. (default: 0, anything other than 0 means true)
 

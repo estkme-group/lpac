@@ -18,7 +18,7 @@
 
 #define INTERFACE_SELECT_BY_INDEX_ENV "DRIVER_IFID"
 #define INTERFACE_SELECT_BY_NAME_ENV "DRIVER_NAME"
-#define INTERFACE_SELECT_BLOCKLIST_ENV "DRIVER_BLOCKLIST"
+#define INTERFACE_SELECT_IGNORE_LIST_ENV "DRIVER_IGNORE_LIST"
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -112,7 +112,7 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
         return 0; // name unmatched, skip
     }
 
-    value = getenv(INTERFACE_SELECT_BLOCKLIST_ENV);
+    value = getenv(INTERFACE_SELECT_IGNORE_LIST_ENV);
     if (value != NULL)
     {
         const char *token = NULL;
@@ -120,7 +120,7 @@ static int pcsc_open_hCard_iter(const int index, const char *reader, void *userd
         {
             if (strstr(reader, token) != NULL)
             {
-                return 0; // reader name is in blocklist, skip
+                return 0; // reader name is in ignore list, skip
             }
         }
     }
