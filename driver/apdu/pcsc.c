@@ -17,7 +17,7 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 
-#define ENV_IFID APDU_ENV_NAME("PCSC", "IFID")
+#define ENV_IFID APDU_ENV_NAME(PCSC, IFID)
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -398,7 +398,7 @@ static int pcsc_list_iter(int index, const char *reader, void *userdata)
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
-    set_deprecated_env(ENV_IFID, "DRIVER_IFID");
+    set_deprecated_env_name(ENV_IFID, "DRIVER_IFID");
 
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 

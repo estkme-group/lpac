@@ -11,8 +11,8 @@
 #include <euicc/hexutil.h>
 
 #define AT_BUFFER_SIZE 20480
-#define ENV_AT_DEBUG APDU_ENV_NAME("AT", "DEBUG")
-#define ENV_AT_DEVICE APDU_ENV_NAME("AT", "DEVICE")
+#define ENV_AT_DEBUG APDU_ENV_NAME(AT, DEBUG)
+#define ENV_AT_DEVICE APDU_ENV_NAME(AT, DEVICE)
 
 static FILE *fuart;
 static int logic_channel = 0;
@@ -209,8 +209,8 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
-    set_deprecated_env(ENV_AT_DEBUG, "AT_DEBUG");
-    set_deprecated_env(ENV_AT_DEVICE, "AT_DEVICE");
+    set_deprecated_env_name(ENV_AT_DEBUG, "AT_DEBUG");
+    set_deprecated_env_name(ENV_AT_DEVICE, "AT_DEVICE");
 
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
