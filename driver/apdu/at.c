@@ -6,10 +6,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <helpers.h>
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
 
 #define AT_BUFFER_SIZE 20480
+#define ENV_AT_DEBUG APDU_ENV_NAME("AT", "DEBUG")
+#define ENV_AT_DEVICE APDU_ENV_NAME("AT", "DEVICE")
+
 static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
@@ -25,7 +29,7 @@ static int at_expect(char **response, const char *expected)
     {
         fgets(buffer, AT_BUFFER_SIZE, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
-        if (getenv("AT_DEBUG"))
+        if (getenv(ENV_AT_DEBUG) != NULL)
             printf("AT_DEBUG: %s\n", buffer);
         if (strcmp(buffer, "ERROR") == 0)
         {
@@ -50,7 +54,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     logic_channel = 0;
 
-    if (!(device = getenv("AT_DEVICE")))
+    if (!((device = getenv(ENV_AT_DEVICE))))
     {
         device = "/dev/ttyUSB0";
     }
@@ -205,6 +209,9 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
+    set_deprecated_env(ENV_AT_DEBUG, "AT_DEBUG");
+    set_deprecated_env(ENV_AT_DEVICE, "AT_DEVICE");
+
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
     ifstruct->connect = apdu_interface_connect;

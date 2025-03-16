@@ -24,6 +24,7 @@ endif()
 target_link_libraries(euicc-drivers euicc cjson-static)
 target_include_directories(euicc-drivers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/helpers.c)
 target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/stdio.c)
 target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/stdio.c)
 

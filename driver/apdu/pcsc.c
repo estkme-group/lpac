@@ -13,10 +13,11 @@
 #include <PCSC/winscard.h>
 #endif
 
+#include <helpers.h>
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 
-#define INTERFACE_SELECT_ENV "DRIVER_IFID"
+#define ENV_IFID APDU_ENV_NAME("PCSC", "IFID")
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -113,9 +114,9 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
     DWORD dwActiveProtocol;
 
     id = 0;
-    if (getenv(INTERFACE_SELECT_ENV))
+    if (getenv(ENV_IFID) != NULL)
     {
-        id = atoi(getenv(INTERFACE_SELECT_ENV));
+        id = (int) strtol(getenv(ENV_IFID), NULL, 10);
     }
 
     if (id != index)
@@ -397,6 +398,8 @@ static int pcsc_list_iter(int index, const char *reader, void *userdata)
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
+    set_deprecated_env(ENV_IFID, "DRIVER_IFID");
+
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
     if (pcsc_ctx_open() < 0)
@@ -432,7 +435,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_ENV))
+        if (!cJSON_AddStringOrNullToObject(payload, "env", ENV_IFID))
         {
             return -1;
         }
