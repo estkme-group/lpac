@@ -104,6 +104,11 @@ int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name
         return -1;
     }
 
+    if (_driver_apdu->userdata != NULL)
+    {
+        euicc_driver_interface_apdu.userdata = _driver_apdu->userdata();
+    }
+
     if (_driver_apdu->init(&euicc_driver_interface_apdu))
     {
         fprintf(stderr, "APDU driver init failed\n");

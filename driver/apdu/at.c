@@ -6,13 +6,31 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <helpers.h>
+#include <euicc/euicc.h>
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
 
 #define AT_BUFFER_SIZE 20480
+
 static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
+static int at_debug;
+
+struct at_userdata {
+    int debug;
+    char *device;
+};
+
+#define USERDATA(ctx) ((struct at_userdata *)ctx->apdu.interface->userdata)
+
+static void free_userdata(struct at_userdata *userdata)
+{
+    if (userdata == NULL) return;
+    free(userdata->device);
+    free(userdata);
+}
 
 static int at_expect(char **response, const char *expected)
 {
@@ -25,7 +43,7 @@ static int at_expect(char **response, const char *expected)
     {
         fgets(buffer, AT_BUFFER_SIZE, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
-        if (getenv("AT_DEBUG"))
+        if (at_debug)
             printf("AT_DEBUG: %s\n", buffer);
         if (strcmp(buffer, "ERROR") == 0)
         {
@@ -44,16 +62,12 @@ static int at_expect(char **response, const char *expected)
     return 0;
 }
 
-static int apdu_interface_connect(struct euicc_ctx *ctx)
+static int apdu_interface_connect(const struct euicc_ctx *ctx)
 {
-    const char *device;
+    at_debug = USERDATA(ctx)->debug;
+    const char *device = USERDATA(ctx)->device;
 
     logic_channel = 0;
-
-    if (!(device = getenv("AT_DEVICE")))
-    {
-        device = "/dev/ttyUSB0";
-    }
 
     fuart = fopen(device, "r+");
     if (fuart == NULL)
@@ -94,6 +108,7 @@ static void apdu_interface_disconnect(struct euicc_ctx *ctx)
 
 static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {
+    at_debug = USERDATA(ctx)->debug;
     int fret = 0;
     int ret;
     char *response = NULL;
@@ -162,6 +177,7 @@ exit:
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
 {
+    at_debug = USERDATA(ctx)->debug;
     char *response;
 
     if (logic_channel)
@@ -195,12 +211,36 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel)
 {
+    at_debug = USERDATA(ctx)->debug;
     if (!logic_channel)
     {
         return;
     }
     fprintf(fuart, "AT+CCHC=%d\r\n", logic_channel);
     at_expect(NULL, NULL);
+}
+
+static void *libapduinterface_userdata() {
+    struct at_userdata *userdata = malloc(sizeof(struct at_userdata));
+    memset(userdata, 0, sizeof(struct at_userdata));
+
+    const char *at_debug_name = APDU_ENV_NAME("AT", "DEBUG");
+    const char *at_device_name = APDU_ENV_NAME("AT", "DEVICE");
+
+    set_deprecated_env(at_debug_name, "AT_DEBUG");
+    set_deprecated_env(at_device_name, "AT_DEVICE");
+
+    char *value = NULL;
+
+    value = getenv(at_debug_name);
+    userdata->debug = value != NULL;
+
+    userdata->device = "/dev/ttyUSB0";
+    value = getenv(at_device_name);
+    if (value != NULL) {
+        userdata->device = value;
+    }
+    return userdata;
 }
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
@@ -231,11 +271,17 @@ static int libapduinterface_main(int argc, char **argv)
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 {
     free(buffer);
+    free_userdata((struct at_userdata *) ifstruct->userdata);
 }
 
 const struct euicc_driver driver_apdu_at = {
     .type = DRIVER_APDU,
     .name = "at",
+#ifdef LPAC_ENV_VARS
+    .userdata = (void *(*)())libapduinterface_userdata,
+#else
+    .userdata = NULL,
+#endif
     .init = (int (*)(void *))libapduinterface_init,
     .main = libapduinterface_main,
     .fini = (void (*)(void *))libapduinterface_fini,

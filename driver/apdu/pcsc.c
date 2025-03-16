@@ -13,10 +13,12 @@
 #include <PCSC/winscard.h>
 #endif
 
+#include <helpers.h>
 #include <cjson/cJSON_ex.h>
+#include <euicc/euicc.h>
 #include <euicc/interface.h>
 
-#define INTERFACE_SELECT_ENV "DRIVER_IFID"
+#define ENV_IFACE_BY_INDEX APDU_ENV_NAME("PCSC", "IFID")
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -25,6 +27,18 @@
 #define APDU_OPENLOGICCHANNEL "\x00\x70\x00\x00\x01"
 #define APDU_CLOSELOGICCHANNEL "\x00\x70\x80\xFF\x00"
 #define APDU_SELECT_HEADER "\x00\xA4\x04\x00\xFF"
+
+struct pcsc_userdata {
+    int *index;
+};
+
+#define USERDATA(ctx) ((struct pcsc_userdata *)ctx->apdu.interface->userdata)
+
+static void free_userdata(struct pcsc_userdata *userdata)
+{
+    if (userdata == NULL) return;
+    free(userdata);
+}
 
 static SCARDCONTEXT pcsc_ctx;
 static SCARDHANDLE pcsc_hCard;
@@ -106,19 +120,14 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void 
     return -1;
 }
 
-static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
+static int pcsc_open_hCard_iter(const int index, const char *reader, void *userdata)
 {
     int ret;
-    int id;
     DWORD dwActiveProtocol;
 
-    id = 0;
-    if (getenv(INTERFACE_SELECT_ENV))
-    {
-        id = atoi(getenv(INTERFACE_SELECT_ENV));
-    }
+    const int *specified_index = ((struct pcsc_userdata *)userdata)->index;
 
-    if (id != index)
+    if (specified_index != NULL && index != *specified_index)
     {
         return 0;
     }
@@ -133,9 +142,9 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
     return 1;
 }
 
-static int pcsc_open_hCard(void)
+static int pcsc_open_hCard(void *userdata)
 {
-    return pcsc_iter_reader(pcsc_open_hCard_iter, NULL);
+    return pcsc_iter_reader(pcsc_open_hCard_iter, userdata);
 }
 
 static void pcsc_close(void)
@@ -317,7 +326,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     uint8_t rx[EUICC_INTERFACE_BUFSZ];
     uint32_t rx_len;
 
-    if (pcsc_open_hCard() < 0)
+    if (pcsc_open_hCard(USERDATA(ctx)) < 0)
     {
         return -1;
     }
@@ -395,6 +404,21 @@ static int pcsc_list_iter(int index, const char *reader, void *userdata)
     return 0;
 }
 
+static void *libapduinterface_userdata() {
+    struct pcsc_userdata *userdata = malloc(sizeof(struct pcsc_userdata));
+    memset(userdata, 0, sizeof(struct pcsc_userdata));
+
+    const char *index_name = APDU_ENV_NAME("PCSC", "IFID");
+    set_deprecated_env(index_name, "DRIVER_IFID");
+
+    const char *value = getenv(index_name);
+    if (value != NULL) {
+        int index = (int) strtol(getenv(index_name), NULL, 10);
+        userdata->index = &index;
+    }
+    return userdata;
+}
+
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
@@ -432,7 +456,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_ENV))
+        if (!cJSON_AddStringOrNullToObject(payload, "env", ENV_IFACE_BY_INDEX))
         {
             return -1;
         }
@@ -460,11 +484,17 @@ static int libapduinterface_main(int argc, char **argv)
 
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 {
+    free_userdata((struct pcsc_userdata *) ifstruct->userdata);
 }
 
 const struct euicc_driver driver_apdu_pcsc = {
     .type = DRIVER_APDU,
     .name = "pcsc",
+#ifdef LPAC_ENV_VARS
+    .userdata = (void *(*)())libapduinterface_userdata,
+#else
+    .userdata = NULL,
+#endif
     .init = (int (*)(void *))libapduinterface_init,
     .main = libapduinterface_main,
     .fini = (void (*)(void *))libapduinterface_fini,

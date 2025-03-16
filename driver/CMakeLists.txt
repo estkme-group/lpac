@@ -14,6 +14,12 @@ option(LPAC_WITH_APDU_MBIM "Build MBIM backend for MBIM devices (requires libmbi
 
 option(LPAC_WITH_HTTP_CURL "Build HTTP Curl interface" ON)
 
+option(LPAC_ENV_VARS "userdata based on environment variables" ON)
+
+if (LPAC_ENV_VARS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_ENV_VARS")
+endif ()
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} DIR_INTERFACE_SRCS)
 if(LPAC_DYNAMIC_DRIVERS)
     add_library(euicc-drivers SHARED ${DIR_INTERFACE_SRCS})
@@ -24,6 +30,7 @@ endif()
 target_link_libraries(euicc-drivers euicc cjson-static)
 target_include_directories(euicc-drivers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/helpers.c)
 target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/stdio.c)
 target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/stdio.c)
 
