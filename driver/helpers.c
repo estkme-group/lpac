@@ -4,12 +4,14 @@
 
 #ifdef _WIN32
 int setenv(const char *name, const char *value, const int overwrite) {
-    if (overwrite != 0) {
-        size_t n = 0;
-        const int errcode = getenv_s(&n, NULL, 0, name);
-        if (errcode || n) return errcode;
-    }
-    return _putenv_s(name, value);
+    if (overwrite != 0 && getenv(name) != NULL) return -1;
+    const size_t n = strlen(name) + 1 /* = */ + strlen(value) + 1 /* \0 */;
+    char *env = calloc(n, sizeof(char));
+    if (env == NULL) return -1;
+    snprintf(env, n, "%s=%s", name, value);
+    const int errcode = _putenv(env);
+    free(env);
+    return errcode;
 }
 #endif
 
