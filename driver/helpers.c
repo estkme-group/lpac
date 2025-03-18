@@ -4,11 +4,11 @@
 
 #ifdef _WIN32
 int setenv(const char *name, const char *value, const int overwrite) {
-    if (overwrite) goto replace;
-    size_t n = 0;
-    const int errcode = getenv_s(&n, NULL, 0, name);
-    if (errcode || n) return errcode;
-replace:
+    if (overwrite != 0) {
+        size_t n = 0;
+        const int errcode = getenv_s(&n, NULL, 0, name);
+        if (errcode || n) return errcode;
+    }
     return _putenv_s(name, value);
 }
 #endif
