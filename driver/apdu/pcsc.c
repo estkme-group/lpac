@@ -110,16 +110,10 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void 
 static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
 {
     int ret;
-    int id;
     DWORD dwActiveProtocol;
 
-    id = 0;
-    if (getenv(ENV_IFID) != NULL)
-    {
-        id = (int) strtol(getenv(ENV_IFID), NULL, 10);
-    }
-
-    if (id != index)
+    const long id = getenv_long(ENV_IFID, -1);
+    if (id != -1 && id != index)
     {
         return 0;
     }

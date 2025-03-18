@@ -1,3 +1,4 @@
+#include "helpers.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -14,6 +15,30 @@ int setenv(const char *name, const char *value, const int overwrite) {
     return errcode;
 }
 #endif
+
+const char *getenv_or_default(const char *name, const char *default_value) {
+    const char *value = getenv(name);
+    if (value == NULL) return default_value;
+    return value;
+}
+
+bool getenv_bool(const char *name, const bool default_value) {
+    const char *value = getenv(name);
+    if (value == NULL) return default_value;
+    return strcmp(value, "1") == 0 ||
+           strcmp(value, "y") == 0 ||
+           strcmp(value, "Y") == 0 ||
+           strcmp(value, "yes") == 0 ||
+           strcmp(value, "YES") == 0 ||
+           strcmp(value, "true") == 0 ||
+           strcmp(value, "TRUE") == 0;
+}
+
+long getenv_long(const char *name, const long default_value) {
+    const char *value = getenv(name);
+    if (value == NULL) return default_value;
+    return strtol(value, NULL, 10);
+}
 
 void set_deprecated_env_name(const char *name, const char *deprecated_name) {
     const char *value = getenv(name);

@@ -29,7 +29,7 @@ static int at_expect(char **response, const char *expected)
     {
         fgets(buffer, AT_BUFFER_SIZE, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
-        if (getenv(ENV_AT_DEBUG) != NULL)
+        if (getenv_bool(ENV_AT_DEBUG, false))
             printf("AT_DEBUG: %s\n", buffer);
         if (strcmp(buffer, "ERROR") == 0)
         {
@@ -50,14 +50,9 @@ static int at_expect(char **response, const char *expected)
 
 static int apdu_interface_connect(struct euicc_ctx *ctx)
 {
-    const char *device;
+    const char *device = getenv_or_default(ENV_AT_DEVICE, "/dev/ttyUSB0");
 
     logic_channel = 0;
-
-    if (!((device = getenv(ENV_AT_DEVICE))))
-    {
-        device = "/dev/ttyUSB0";
-    }
 
     fuart = fopen(device, "r+");
     if (fuart == NULL)
