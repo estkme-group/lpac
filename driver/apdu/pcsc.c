@@ -112,7 +112,7 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
     int ret;
     DWORD dwActiveProtocol;
 
-    const long id = getenv_long(ENV_IFID, -1);
+    const int id = getenv_or_default(ENV_IFID, (int) -1);
     if (id != -1 && id != index)
     {
         return 0;

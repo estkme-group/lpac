@@ -72,7 +72,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     * Allow the user to select the SIM card slot via environment variable.
     * Use the primary SIM slot if not set.
     */
-    qmi_priv->uimSlot = (int) getenv_long(ENV_UIM_SLOT, 1);
+    qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int) 1);
 
     ifstruct->userdata = qmi_priv;
 

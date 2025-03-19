@@ -29,7 +29,7 @@ static int at_expect(char **response, const char *expected)
     {
         fgets(buffer, AT_BUFFER_SIZE, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
-        if (getenv_bool_or_default(ENV_AT_DEBUG, false))
+        if (getenv_or_default(ENV_AT_DEBUG, false))
             printf("AT_DEBUG: %s\n", buffer);
         if (strcmp(buffer, "ERROR") == 0)
         {

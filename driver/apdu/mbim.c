@@ -313,7 +313,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 
     struct mbim_data *mbim_priv;
 
-    guint32 uim_slot = getenv_long(ENV_UIM_SLOT, 0);
+    guint32 uim_slot = getenv_or_default(ENV_UIM_SLOT, (int) 0);
     /*
      * We're using the same UIM_SLOT environment variable as the QMI backends.
      * QMI uses 1-based indexing for the sim slots. MBIM uses 0-based indexing,
@@ -332,7 +332,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     }
 
     mbim_priv->uim_slot = uim_slot;
-    mbim_priv->use_proxy = getenv_bool_or_default(ENV_USE_PROXY, FALSE);
+    mbim_priv->use_proxy = getenv_or_default(ENV_USE_PROXY, false);
     mbim_priv->device_path = getenv_or_default(ENV_DEVICE, "/dev/cdc-wdm0");
 
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));

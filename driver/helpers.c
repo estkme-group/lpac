@@ -15,7 +15,7 @@ int setenv(const char *name, const char *value, const int overwrite) {
 }
 #endif
 
-const char *getenv_or_default(const char *name, const char *default_value) {
+const char *getenv_str_or_default(const char *name, const char *default_value) {
     const char *value = getenv(name);
     if (value == NULL) return default_value;
     return value;
@@ -33,7 +33,11 @@ bool getenv_bool_or_default(const char *name, const bool default_value) {
            strcmp(value, "TRUE") == 0;
 }
 
-long getenv_long(const char *name, const long default_value) {
+int getenv_int_or_default(const char *name, const int default_value) {
+    return (int) getenv_long_or_default(name, default_value);
+}
+
+long getenv_long_or_default(const char *name, const long default_value) {
     const char *value = getenv(name);
     if (value == NULL) return default_value;
     return strtol(value, NULL, 10);
