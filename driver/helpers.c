@@ -7,7 +7,8 @@
 int setenv(const char *name, const char *value, const int overwrite) {
     if (overwrite != 0 && getenv(name) != NULL) return -1;
     const size_t n = strlen(name) + 1 /* = */ + strlen(value) + 1 /* \0 */;
-    char env[n];
+    // refs: <https://pubs.opengroup.org/onlinepubs/009696899/functions/putenv.html>
+    char *env = calloc(n, sizeof(char));
     snprintf(env, n, "%s=%s", name, value);
     return _putenv(env);
 }
