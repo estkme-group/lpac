@@ -13,12 +13,9 @@ bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
     if (value == NULL) return default_value;
     return strcmp(value, "1") == 0 ||
-           strcmp(value, "y") == 0 ||
-           strcmp(value, "Y") == 0 ||
-           strcmp(value, "yes") == 0 ||
-           strcmp(value, "YES") == 0 ||
-           strcmp(value, "true") == 0 ||
-           strcmp(value, "TRUE") == 0;
+           strcasecmp(value, "y") == 0 ||
+           strcasecmp(value, "yes") == 0 ||
+           strcasecmp(value, "true") == 0;
 }
 
 int getenv_int_or_default(const char *name, const int default_value) {
