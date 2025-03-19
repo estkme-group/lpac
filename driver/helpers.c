@@ -9,9 +9,7 @@ int setenv(const char *name, const char *value, const int overwrite) {
     const size_t n = strlen(name) + 1 /* = */ + strlen(value) + 1 /* \0 */;
     char env[n];
     snprintf(env, n, "%s=%s", name, value);
-    const int errcode = _putenv(env);
-    free(env);
-    return errcode;
+    return _putenv(env);
 }
 #endif
 
