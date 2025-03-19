@@ -31,6 +31,9 @@
 #define ES10X_MSS_MIN_VALUE 6
 #define ES10X_MSS_MAX_VALUE 255
 
+#define ENV_APDU_DRIVER "LPAC_APDU"
+#define ENV_HTTP_DRIVER "LPAC_HTTP"
+
 static int driver_applet_main(const int argc, char **argv)
 {
     const struct applet_entry *applets[] = {
@@ -70,6 +73,7 @@ static int setup_aid(const uint8_t **aid, uint8_t *aid_len) {
 
     const char *value = getenv(ENV_ISD_R_AID);
     if (value == NULL) return 0;
+
     uint8_t *parsed = malloc(ISD_R_AID_MAX_LENGTH);
     const int n = euicc_hexutil_hex2bin(parsed, ISD_R_AID_MAX_LENGTH, value);
     if (n < 1) {
@@ -86,6 +90,7 @@ static int setup_mss(uint8_t *mss) {
 
     const char *value = getenv(ENV_ES10X_MSS);
     if (value == NULL) return 0;
+
     const long parsed = strtol(value, NULL, 10);
     if (parsed < ES10X_MSS_MIN_VALUE || parsed > ES10X_MSS_MAX_VALUE) {
         return -1;
@@ -161,13 +166,13 @@ int main(int argc, char **argv)
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
-    apdu_driver = getenv("LPAC_APDU");
+    apdu_driver = getenv(ENV_APDU_DRIVER);
     if (apdu_driver == NULL)
     {
         apdu_driver = "pcsc";
     }
 
-    http_driver = getenv("LPAC_HTTP");
+    http_driver = getenv(ENV_HTTP_DRIVER);
     if (http_driver == NULL)
     {
         http_driver = "curl";
