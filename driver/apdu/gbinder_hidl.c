@@ -244,7 +244,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     uint8_t tx_hex[4096] = {0};
     euicc_hexutil_bin2hex(tx_hex, 4096, &tx[5], tx_len - 5);
 
-    if (getenv_bool(ENV_DEBUG, false))
+    if (getenv_bool_or_default(ENV_DEBUG, false))
         fprintf(stderr, "APDU req: %s\n", tx_hex);
 
     struct sim_apdu apdu = {
@@ -277,7 +277,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
         return -lastRadioErr;
     }
 
-    if (getenv_bool(ENV_DEBUG, false))
+    if (getenv_bool_or_default(ENV_DEBUG, false))
         fprintf(stderr, "APDU resp: %d%d %d %s\n", lastIccIoResult.sw1, lastIccIoResult.sw2, lastIccIoResult.simResponse.len, lastIccIoResult.simResponse.data.str);
 
     *rx_len = lastIccIoResult.simResponse.len / 2 + 2;

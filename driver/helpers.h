@@ -10,7 +10,7 @@ int setenv(const char *name, const char *value, int overwrite);
 
 const char *getenv_or_default(const char *name, const char *default_value);
 
-bool getenv_bool(const char *name, bool default_value);
+bool getenv_bool_or_default(const char *name, bool default_value);
 
 long getenv_long(const char *name, long default_value);
 

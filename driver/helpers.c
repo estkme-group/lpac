@@ -7,8 +7,7 @@
 int setenv(const char *name, const char *value, const int overwrite) {
     if (overwrite != 0 && getenv(name) != NULL) return -1;
     const size_t n = strlen(name) + 1 /* = */ + strlen(value) + 1 /* \0 */;
-    char *env = calloc(n, sizeof(char));
-    if (env == NULL) return -1;
+    char env[n];
     snprintf(env, n, "%s=%s", name, value);
     const int errcode = _putenv(env);
     free(env);
@@ -22,7 +21,7 @@ const char *getenv_or_default(const char *name, const char *default_value) {
     return value;
 }
 
-bool getenv_bool(const char *name, const bool default_value) {
+bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
     if (value == NULL) return default_value;
     return strcmp(value, "1") == 0 ||
