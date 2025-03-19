@@ -24,12 +24,14 @@
 #include <processenv.h>
 #endif
 
+#define ENV_ISD_R_AID "LPAC_CUSTOM_ISD_R_AID"
 #define ISD_R_AID_MAX_LENGTH 16
 
+#define ENV_ES10X_MSS "LPAC_CUSTOM_ES10X_MSS"
 #define ES10X_MSS_MIN_VALUE 6
 #define ES10X_MSS_MAX_VALUE 255
 
-static int driver_applet_main(int argc, char **argv)
+static int driver_applet_main(const int argc, char **argv)
 {
     const struct applet_entry *applets[] = {
         &(struct applet_entry){
@@ -62,17 +64,17 @@ static const struct applet_entry *applets[] = {
 static int euicc_ctx_inited = 0;
 struct euicc_ctx euicc_ctx = {0};
 
-void main_init_euicc()
+int main_init_euicc()
 {
-    const char *custom_aid_str = getenv("LPAC_CUSTOM_ISD_R_AID");
-    if (custom_aid_str)
+    const char *custom_aid_hex = getenv(ENV_ISD_R_AID);
+    if (custom_aid_hex != NULL)
     {
-        uint8_t custom_aid[ISD_R_AID_MAX_LENGTH];
-        const int custom_aid_len = euicc_hexutil_hex2bin(custom_aid, ISD_R_AID_MAX_LENGTH, custom_aid_str);
+        uint8_t *custom_aid = malloc(ISD_R_AID_MAX_LENGTH);
+        const int custom_aid_len = euicc_hexutil_hex2bin(custom_aid, ISD_R_AID_MAX_LENGTH, custom_aid_hex);
         if (custom_aid_len < 1)
         {
-            jprint_error("euicc_init", "invalid custom ISD-R AID given");
-            exit(-1);
+            jprint_error("euicc_init", "invalid custom ISD-R applet id given");
+            return -1;
         }
 
         euicc_ctx.aid = custom_aid;
@@ -80,20 +82,18 @@ void main_init_euicc()
     }
 
     euicc_ctx.es10x_mss = 0; // use default value
-    const char *custom_mss = getenv("LPAC_CUSTOM_ES10X_MSS");
-    if (custom_mss)
+    const char *custom_mss = getenv(ENV_ES10X_MSS);
+    if (custom_mss != NULL)
     {
         const long mss = strtol(custom_mss, NULL, 10);
         if (mss < ES10X_MSS_MIN_VALUE || mss > ES10X_MSS_MAX_VALUE)
         {
-            char message[80];
-            sprintf(
-                message,
-                "invalid custom ES10x MSS given (must be between %d and %d)",
-                ES10X_MSS_MIN_VALUE, ES10X_MSS_MAX_VALUE
-            );
+            const char *format = "invalid custom ES10x MSS given (must be between %d and %d)";
+            const size_t n = snprintf(NULL, 0, format, ES10X_MSS_MIN_VALUE, ES10X_MSS_MAX_VALUE);
+            char *message = malloc(n);
+            snprintf(message, n, format, ES10X_MSS_MIN_VALUE, ES10X_MSS_MAX_VALUE);
             jprint_error("euicc_init", message);
-            exit(-1);
+            return -1;
         }
 
         euicc_ctx.es10x_mss = (uint8_t) mss; // override default value
@@ -102,9 +102,10 @@ void main_init_euicc()
     if (euicc_init(&euicc_ctx))
     {
         jprint_error("euicc_init", NULL);
-        exit(-1);
+        return -1;
     }
     euicc_ctx_inited = 1;
+    return 0;
 }
 
 void main_fini_euicc()
