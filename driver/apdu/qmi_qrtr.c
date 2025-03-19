@@ -3,15 +3,17 @@
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
 #include "qmi_qrtr.h"
+#include "qmi_common.h"
 
-#include <euicc/interface.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+
 #include <libqrtr-glib.h>
-#include "qmi_common.h"
+#include <helpers.h>
+#include <euicc/interface.h>
 
 static QrtrBus *bus = NULL;
 
@@ -79,6 +81,8 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
+    set_deprecated_env_name(ENV_UIM_SLOT, "UIM_SLOT");
+
     struct qmi_data *qmi_priv;
 
     qmi_priv = malloc(sizeof(struct qmi_data));
@@ -99,14 +103,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
      * Allow the user to select the SIM card slot via environment variable.
      * Use the primary SIM slot if not set.
      */
-    if (getenv("UIM_SLOT"))
-    {
-        qmi_priv->uimSlot = atoi(getenv("UIM_SLOT"));
-    }
-    else
-    {
-        qmi_priv->uimSlot = 1;
-    }
+    qmi_priv->uimSlot = getenv_long(ENV_UIM_SLOT, 1);
 
     ifstruct->userdata = qmi_priv;
 

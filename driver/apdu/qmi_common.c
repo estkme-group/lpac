@@ -3,9 +3,9 @@
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
 
-#include <stdio.h>
-
 #include "qmi_common.h"
+
+#include <stdio.h>
 
 int qmi_apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
 {

@@ -17,15 +17,16 @@
   - `curl`: use libcurl
   - `stdio`: use standard input/output
 * `LPAC_APDU_AT_DEVICE`: specify which serial port device will be used by AT APDU backend.
-* `QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
-* `UIM_SLOT`: specify which UIM slot will be used by QMI and MBIM APDU backends. (default: 1, slot number starts from 1)
 * `LPAC_APDU_PCSC_IFID`: specify which PC/SC interface will be used by PC/SC APDU backend.
-* `MBIM_DEVICE`: specify which MBIM device will be used by MBIM APDU backend. (default: `/dev/cdc-wdm0`)
-* `MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. (default: 0, anything other than 0 means true)
+* `LPAC_APDU_QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
+* `LPAC_APDU_QMI_UIM_SLOT`: specify which UIM slot will be used by QMI APDU backends. (default: 1, slot number starts from 1)
+* `LPAC_APDU_MBIM_UIM_SLOT`: specify which UIM slot will be used by MBIM APDU backends. (default: 1, slot number starts from 1)
+* `LPAC_APDU_MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. (boolean)
+* `LPAC_APDU_MBIM_DEVICE`: specify which MBIM device will be used by MBIM APDU backend. (default: `/dev/cdc-wdm0`)
 
 ## Debug
 
 * `LIBEUICC_DEBUG_APDU`: enable debug output for APDU.
 * `LIBEUICC_DEBUG_HTTP`: enable debug output for HTTP.
-* `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend.
-* `GBINDER_APDU_DEBUG`: enable debug output for GBinder APDU backend. MUST be `true` to take effect.
+* `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend. (boolean)
+* `LPAC_APDU_GBINDER_DEBUG`: enable debug output for GBinder APDU backend. (boolean)

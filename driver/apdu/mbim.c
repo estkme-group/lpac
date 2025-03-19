@@ -4,11 +4,16 @@
  */
 #include "mbim.h"
 
+#include <helpers.h>
 #include <libmbim-glib.h>
 #include <stdio.h>
 #include <euicc/interface.h>
 #include <euicc/euicc.h>
 #include "mbim_helpers.h"
+
+#define ENV_UIM_SLOT APDU_ENV_NAME(MBIM, UIM_SLOT)
+#define ENV_USE_PROXY APDU_ENV_NAME(MBIM, USE_PROXY)
+#define ENV_DEVICE APDU_ENV_NAME(MBIM, DEVICE)
 
 struct mbim_data {
     const char *device_path;
@@ -302,23 +307,23 @@ static void mbim_apdu_interface_disconnect(struct euicc_ctx *ctx)
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
+    set_deprecated_env_name(ENV_UIM_SLOT, "UIM_SLOT");
+    set_deprecated_env_name(ENV_USE_PROXY, "MBIM_USE_PROXY");
+    set_deprecated_env_name(ENV_DEVICE, "MBIM_DEVICE");
+
     struct mbim_data *mbim_priv;
 
-    guint32 uim_slot = 0;
+    guint32 uim_slot = getenv_long(ENV_UIM_SLOT, 0);
     /*
      * We're using the same UIM_SLOT environment variable as the QMI backends.
      * QMI uses 1-based indexing for the sim slots. MBIM uses 0-based indexing,
      * so account for that.
      */
-    const char *env_uim_slot = getenv("UIM_SLOT");
-    if (env_uim_slot) {
-        uim_slot = atoi(env_uim_slot);
-        if (uim_slot == 0) {
-            fprintf(stderr, "error: Invalid UIM_SLOT: '%s'\n", env_uim_slot);
-            return -1;
-        }
-        uim_slot--;
+    if (uim_slot == 0) {
+        fprintf(stderr, "error: Invalid " ENV_UIM_SLOT "\n");
+        return -1;
     }
+    uim_slot--;
 
     mbim_priv = malloc(sizeof(struct mbim_data));
     if (!mbim_priv) {
@@ -327,15 +332,8 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     }
 
     mbim_priv->uim_slot = uim_slot;
-
-    const char *use_proxy = getenv("MBIM_USE_PROXY");
-    if (use_proxy && strcmp(use_proxy, "0") != 0) {
-        mbim_priv->use_proxy = TRUE;
-    }
-
-    if (!(mbim_priv->device_path = getenv("MBIM_DEVICE"))) {
-        mbim_priv->device_path = "/dev/cdc-wdm0";
-    }
+    mbim_priv->use_proxy = getenv_bool(ENV_USE_PROXY, FALSE);
+    mbim_priv->device_path = getenv_or_default(ENV_DEVICE, "/dev/cdc-wdm0");
 
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
     ifstruct->connect = apdu_interface_connect;
