@@ -81,7 +81,7 @@ static int setup_aid(const uint8_t **aid, uint8_t *aid_len) {
     return 0;
 }
 
-int setup_mss(uint8_t *mss) {
+static int setup_mss(uint8_t *mss) {
     *mss = 0;
 
     const char *value = getenv(ENV_ES10X_MSS);
