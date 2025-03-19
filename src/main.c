@@ -76,9 +76,7 @@ static int setup_aid(const uint8_t **aid, uint8_t *aid_len) {
 
     uint8_t *parsed = malloc(ISD_R_AID_MAX_LENGTH);
     const int n = euicc_hexutil_hex2bin(parsed, ISD_R_AID_MAX_LENGTH, value);
-    if (n < 1) {
-        return -1;
-    }
+    if (n < 1) return -1;
 
     *aid = parsed;
     *aid_len = n;
@@ -92,9 +90,7 @@ static int setup_mss(uint8_t *mss) {
     if (value == NULL) return 0;
 
     const long parsed = strtol(value, NULL, 10);
-    if (parsed < ES10X_MSS_MIN_VALUE || parsed > ES10X_MSS_MAX_VALUE) {
-        return -1;
-    }
+    if (parsed < ES10X_MSS_MIN_VALUE || parsed > ES10X_MSS_MAX_VALUE) return -1;
 
     *mss = (uint8_t) mss;
     return 0;
