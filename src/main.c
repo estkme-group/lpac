@@ -92,7 +92,7 @@ static int setup_mss(uint8_t *mss) {
     const long parsed = strtol(value, NULL, 10);
     if (parsed < ES10X_MSS_MIN_VALUE || parsed > ES10X_MSS_MAX_VALUE) return -1;
 
-    *mss = (uint8_t) mss;
+    *mss = (uint8_t) parsed;
     return 0;
 }
 
