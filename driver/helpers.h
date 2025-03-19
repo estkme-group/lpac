@@ -4,10 +4,6 @@
 #define HTTP_ENV_NAME(DRIVER, NAME) "LPAC_HTTP_" #DRIVER "_" #NAME
 #define APDU_ENV_NAME(DRIVER, NAME) "LPAC_APDU_" #DRIVER "_" #NAME
 
-#ifdef _WIN32
-int setenv(const char *name, const char *value, int overwrite);
-#endif
-
 #define getenv_or_default(name, default_value) \
   _Generic((default_value), \
     bool: getenv_bool_or_default, \
