@@ -2,7 +2,7 @@
 /*
  * Copyright (c) 2024, Frans Klaver <frans.klaver@vislink.com>
  */
-
+#pragma once
 #include <libmbim-glib.h>
 
 MbimDevice *

@@ -2,7 +2,7 @@
 /*
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
-
+#pragma once
 #include <euicc/interface.h>
 #include <euicc/euicc.h>
 #include "qmi_helpers.h"
