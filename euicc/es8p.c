@@ -113,7 +113,7 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
         case 0xB6:
         case 0xB7:
         case 0x99:
-            euicc_derutil_print_unhandled_node(&n_iter);
+            euicc_derutil_print_unhandled_tag(&n_iter);
             break;
         }
     }

@@ -162,7 +162,7 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
             case 0xB7:
             case 0xB8:
             case 0x99:
-                euicc_derutil_print_unhandled_node(&tmpnode);
+                euicc_derutil_print_unhandled_tag(&tmpnode);
                 break;
             }
         }

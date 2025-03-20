@@ -1,11 +1,11 @@
 #include "main.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
 
-#include <euicc/interface.h>
+#include <debug.h>
 #include <euicc/hexutil.h>
 #include <euicc/euicc.h>
 #include <driver.h>
@@ -179,6 +179,13 @@ int main(int argc, char **argv)
     if (euicc_driver_init(apdu_driver, http_driver))
     {
         return -1;
+    }
+
+    if (getenv("LIBEUICC_DEBUG_APDU")) {
+        set_apdu_interface_debug(&euicc_driver_interface_apdu);
+    }
+    if (getenv("LIBEUICC_DEBUG_HTTP")) {
+        set_http_interface_debug(&euicc_driver_interface_http);
     }
 
     euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
