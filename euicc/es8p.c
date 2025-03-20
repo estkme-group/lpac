@@ -113,12 +113,14 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
         case 0xB6:
         case 0xB7:
         case 0x99:
-            // fprintf(stderr, "\n[PLEASE REPORT][TODO][TAG %02X]: ", n_iter.tag);
-            // for (uint32_t i = 0; i < n_iter.self.length; i++)
-            // {
-            //     fprintf(stderr, "%02X ", n_iter.self.ptr[i]);
-            // }
-            // fprintf(stderr, "\n");
+#ifdef UNKNOWN_ASN1_TAG
+            fprintf(stderr, "\n[PLEASE REPORT][TODO][TAG %02X]: ", n_iter.tag);
+            for (uint32_t i = 0; i < n_iter.self.length; i++)
+            {
+                fprintf(stderr, "%02X ", n_iter.self.ptr[i]);
+            }
+            fprintf(stderr, "\n");
+#endif
             break;
         }
     }

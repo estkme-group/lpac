@@ -162,12 +162,14 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
             case 0xB7:
             case 0xB8:
             case 0x99:
+#ifdef UNKNOWN_ASN1_TAG
                 fprintf(stderr, "\n[PLEASE REPORT][TODO][TAG %02X]: ", tmpnode.tag);
                 for (uint32_t i = 0; i < tmpnode.self.length; i++)
                 {
                     fprintf(stderr, "%02X ", tmpnode.self.ptr[i]);
                 }
                 fprintf(stderr, "\n");
+#endif
                 break;
             }
         }
