@@ -17,9 +17,10 @@ static const struct applet_entry *applets[] = {
     NULL,
 };
 
-static int applet_main(int argc, char **argv)
+static int applet_main(const int argc, char **argv)
 {
-    main_init_euicc();
+    const int ret = main_init_euicc();
+    if (ret != 0) return ret;
     return applet_entry(argc, argv, applets);
 }
 
