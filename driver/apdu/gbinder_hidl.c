@@ -90,7 +90,7 @@ static GBinderLocalReply *radio_response_transact(
         case HIDL_SERVICE_ICC_OPEN_LOGICAL_CHANNEL_CALLBACK:
             gbinder_reader_read_int32(&reader, &lastIntResp);
             break;
-        case HIDL_SERVICE_ICC_TRANSMIT_APDU_LOGICAL_CHANNEL_CALLBACK:
+        case HIDL_SERVICE_ICC_TRANSMIT_APDU_LOGICAL_CHANNEL_CALLBACK: {
             const struct icc_io_result *icc_io_res = gbinder_reader_read_hidl_struct(&reader, struct icc_io_result);
             // We cannot rely on the *req pointer being valid after we return
             lastIccIoResult.sw1 = icc_io_res->sw1;
@@ -99,6 +99,7 @@ static GBinderLocalReply *radio_response_transact(
             lastIccIoResult.simResponse.len = icc_io_res->simResponse.len;
             lastIccIoResult.simResponse.owns_buffer = TRUE;
             break;
+        }
     }
 
 out:
@@ -321,7 +322,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 const struct euicc_driver driver_apdu_gbinder_hidl = {
     .type = DRIVER_APDU,
     .name = "gbinder_hidl",
-    .init = libapduinterface_init,
+    .init = (int (*)(void *))libapduinterface_init,
     .main = libapduinterface_main,
-    .fini = libapduinterface_fini,
+    .fini = (void (*)(void *))libapduinterface_fini,
 };
