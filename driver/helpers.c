@@ -1,7 +1,18 @@
 #include "helpers.h"
+
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
+static bool is_numeric(const char *value) {
+    if (value == NULL) return false;
+    for (size_t i = strlen(value); i > 0; --i) {
+        if (isdigit(value[i])) continue;
+        return false;
+    }
+    return true;
+}
 
 const char *getenv_str_or_default(const char *name, const char *default_value) {
     const char *value = getenv(name);
@@ -12,8 +23,8 @@ const char *getenv_str_or_default(const char *name, const char *default_value) {
 bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
     if (value == NULL) return default_value;
-    return strcmp(value, "1") == 0 ||
-           strcasecmp(value, "y") == 0 ||
+    if (is_numeric(value)) return strcmp(value, "0") != 0;
+    return strcasecmp(value, "y") == 0 ||
            strcasecmp(value, "yes") == 0 ||
            strcasecmp(value, "true") == 0;
 }
