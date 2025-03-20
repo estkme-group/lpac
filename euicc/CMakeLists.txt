@@ -1,6 +1,6 @@
 option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" OFF)
-option(LPAC_DEBUG_HTTP "Enable debug logs for HTTP requests" ON)
-option(LPAC_DEBUG_APDU "Enable debug logs for APDU commands" ON)
+option(LPAC_DEBUG_HTTP "Enable debug logs for HTTP requests" OFF)
+option(LPAC_DEBUG_APDU "Enable debug logs for APDU commands" OFF)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} LIB_EUICC_SRCS)
 
