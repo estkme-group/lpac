@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 int euicc_derutil_unpack_first(struct euicc_derutil_node *result, const uint8_t *buffer, uint32_t buffer_len)
 {
@@ -453,4 +454,14 @@ int euicc_derutil_convert_bin2bits_str(const char ***output, const uint8_t *buff
     }
 
     return 0;
+}
+
+void euicc_derutil_print_unhandled_node(const struct euicc_derutil_node *node) {
+#ifdef DEBUG_APDU
+    fprintf(stderr, "\n[PLEASE REPORT][TODO][TAG %02X]: ", node->tag);
+    for (uint32_t i = 0; i < node->self.length; i++) {
+        fprintf(stderr, "%02X ", node->self.ptr[i]);
+    }
+    fprintf(stderr, "\n");
+#endif
 }

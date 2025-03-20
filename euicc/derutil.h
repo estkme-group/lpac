@@ -32,3 +32,5 @@ int euicc_derutil_convert_long2bin(uint8_t *buffer, uint32_t *buffer_len, long v
 int euicc_derutil_convert_bits2bin(uint8_t *buffer, uint32_t buffer_len, const uint32_t *bits, uint32_t bits_count);
 int euicc_derutil_convert_bits2bin_alloc(uint8_t **buffer, uint32_t *buffer_len, const uint32_t *bits, uint32_t bits_count);
 int euicc_derutil_convert_bin2bits_str(const char ***output, const uint8_t *buffer, int buffer_len, const char **desc);
+
+void euicc_derutil_print_unhandled_node(const struct euicc_derutil_node *node);
