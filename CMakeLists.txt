@@ -16,7 +16,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # add_compile_options(-Wall -Wextra -Wpedantic)
 
 # Enable LTO when possible.
-cmake_policy(SET CMP0069 NEW)
 include(CheckIPOSupported)
 check_ipo_supported(RESULT result OUTPUT output)
 if(result)
