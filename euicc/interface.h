@@ -11,10 +11,12 @@ struct euicc_apdu_interface
     void (*logic_channel_close)(struct euicc_ctx *ctx, uint8_t channel);
     int (*transmit)(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len);
     void *userdata;
+    struct euicc_apdu_interface *parent;
 };
 
 struct euicc_http_interface
 {
     int (*transmit)(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers);
     void *userdata;
+    struct euicc_http_interface *parent;
 };
