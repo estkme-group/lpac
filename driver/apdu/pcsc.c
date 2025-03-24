@@ -16,7 +16,9 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 
-#define INTERFACE_SELECT_ENV "DRIVER_IFID"
+#define INTERFACE_SELECT_BY_INDEX_ENV "DRIVER_IFID"
+#define INTERFACE_SELECT_BY_NAME_ENV "DRIVER_NAME"
+#define INTERFACE_SELECT_IGNORE_LIST_ENV "DRIVER_IGNORE_LIST"
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -81,56 +83,59 @@ static int pcsc_ctx_open(void)
 
 static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void *userdata), void *userdata)
 {
-    int ret;
-    LPSTR psReader;
-
-    psReader = pcsc_mszReaders;
+    LPSTR psReader = pcsc_mszReaders;
     for (int i = 0, n = 0;; i++)
     {
         char *p = pcsc_mszReaders + i;
-        if (*p == '\0')
-        {
-            ret = callback(n, psReader, userdata);
-            if (ret < 0)
-                return -1;
-            if (ret > 0)
-                return 0;
-            if (*(p + 1) == '\0')
-            {
-                break;
-            }
-            psReader = p + 1;
-            n++;
-        }
+        if (*p != '\0') continue;
+        const int ret = callback(n, psReader, userdata);
+        if (ret < 0) return -1;
+        if (ret > 0) return 0;
+        if (*(p + 1) == '\0') break;
+        psReader = p + 1;
+        n++;
     }
     return -1;
 }
 
-static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
+static int pcsc_open_hCard_iter(const int index, const char *reader, void *userdata)
 {
-    int ret;
-    int id;
+    char *value = getenv(INTERFACE_SELECT_BY_INDEX_ENV);
+    if (value != NULL && strtol(value, NULL, 10) != index)
+    {
+        return 0; // index unmatched, skip
+    }
+
+    value = getenv(INTERFACE_SELECT_BY_NAME_ENV);
+    if (value != NULL && strstr(reader, value) == NULL)
+    {
+        return 0; // name unmatched, skip
+    }
+
+    value = getenv(INTERFACE_SELECT_IGNORE_LIST_ENV);
+    if (value != NULL)
+    {
+        const char *token = NULL;
+        for (token = strtok(value, ";"); token != NULL; token = strtok(NULL, ";"))
+        {
+            if (strstr(reader, token) != NULL)
+            {
+                return 0; // reader name is in ignore list, skip
+            }
+        }
+    }
+
     DWORD dwActiveProtocol;
-
-    id = 0;
-    if (getenv(INTERFACE_SELECT_ENV))
-    {
-        id = atoi(getenv(INTERFACE_SELECT_ENV));
-    }
-
-    if (id != index)
-    {
-        return 0;
-    }
-
-    ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
+    const int ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS)
     {
         pcsc_error("SCardConnect()", ret);
-        return -1;
+        // see <https://blog.apdu.fr/posts/2024/12/gnupg-and-pcsc-conflicts-episode-3/>
+        if (ret == SCARD_E_SHARING_VIOLATION) return 0; // skip
+        return -1; // connect failed
     }
 
-    return 1;
+    return 1; // success
 }
 
 static int pcsc_open_hCard(void)
@@ -432,7 +437,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_ENV))
+        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_BY_INDEX_ENV))
         {
             return -1;
         }
