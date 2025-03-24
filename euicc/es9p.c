@@ -7,6 +7,8 @@
 
 #include <cjson/cJSON_ex.h>
 
+#include "debug.h"
+
 static const char *lpa_header[] = {
     "User-Agent: gsma-rsp-lpad",
     "X-Admin-Protocol: gsma/rsp/v2.2.0",
@@ -56,18 +58,12 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     strcat(full_url, url);
     strcat(full_url, url_postfix);
 
-    if (getenv("LIBEUICC_DEBUG_HTTP"))
-    {
-        fprintf(stderr, "[DEBUG] [HTTP] [TX] url: %s, data: %s\n", full_url, str_tx);
-    }
+    euicc_http_request_print(full_url, str_tx);
     if (ctx->http.interface->transmit(ctx, full_url, &rcode_mearged, &rbuf, &rlen, (const uint8_t *)str_tx, strlen(str_tx), lpa_header) < 0)
     {
         goto err;
     }
-    if (getenv("LIBEUICC_DEBUG_HTTP"))
-    {
-        fprintf(stderr, "[DEBUG] [HTTP] [RX] rcode: %d, data: %s\n", rcode_mearged, rbuf);
-    }
+    euicc_http_response_print(rcode_mearged, (const char *) rbuf);
 
     free(full_url);
     full_url = NULL;

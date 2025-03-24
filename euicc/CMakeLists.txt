@@ -1,12 +1,25 @@
 option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" OFF)
+option(LIBEUICC_DEBUG_APDU "Enable apdu logging function in libeuicc" ON)
+option(LIBEUICC_DEBUG_HTTP "Enable http logging function in libeuicc" ON)
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} LIB_EUICC_SRCS)
+
 if(LPAC_DYNAMIC_LIBEUICC)
     add_library(euicc SHARED ${LIB_EUICC_SRCS})
 else()
     add_library(euicc STATIC ${LIB_EUICC_SRCS})
 endif()
+
 target_link_libraries(euicc cjson-static)
 target_include_directories(euicc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+
+if (LIBEUICC_DEBUG_APDU)
+    target_compile_definitions(euicc PRIVATE -DLIBEUICC_DEBUG_APDU)
+endif ()
+if (LIBEUICC_DEBUG_HTTP)
+    target_compile_definitions(euicc PRIVATE -DLIBEUICC_DEBUG_HTTP)
+endif ()
+
 if(LPAC_DYNAMIC_LIBEUICC)
     # Install headers
     file(GLOB ALL_HEADERS "*.h")

@@ -5,11 +5,11 @@
 #include "hexutil.h"
 #include "base64.h"
 
-#include <inttypes.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+
+#include "debug.h"
 
 int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList)
 {
@@ -158,17 +158,11 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
                     break;
                 }
                 break;
-            case 0xB6:
-            case 0xB7:
-            case 0xB8:
-            case 0x99:
-                fprintf(stderr, "\n[PLEASE REPORT][TODO][TAG %02X]: ", tmpnode.tag);
-                for (uint32_t i = 0; i < tmpnode.self.length; i++)
-                {
-                    fprintf(stderr, "%02X ", tmpnode.self.ptr[i]);
-                }
-                fprintf(stderr, "\n");
+            default:
+                // 0xB6, 0xB7, 0xB8, 0x99
+                euicc_derutil_print_unhandled_tag(&tmpnode);
                 break;
+
             }
         }
 

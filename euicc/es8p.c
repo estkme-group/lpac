@@ -1,14 +1,13 @@
 #include "es8p.h"
 
-#include <inttypes.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
 #include "derutil.h"
 #include "hexutil.h"
 #include "base64.h"
+#include "debug.h"
 
 int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Metadata)
 {
@@ -110,15 +109,9 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
                 break;
             }
             break;
-        case 0xB6:
-        case 0xB7:
-        case 0x99:
-            // fprintf(stderr, "\n[PLEASE REPORT][TODO][TAG %02X]: ", n_iter.tag);
-            // for (uint32_t i = 0; i < n_iter.self.length; i++)
-            // {
-            //     fprintf(stderr, "%02X ", n_iter.self.ptr[i]);
-            // }
-            // fprintf(stderr, "\n");
+        default:
+            // 0xB6, 0xB7, 0x99
+            euicc_derutil_print_unhandled_tag(&n_iter);
             break;
         }
     }
