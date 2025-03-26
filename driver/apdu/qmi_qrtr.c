@@ -122,8 +122,6 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 {
     struct qmi_data *qmi_priv = ifstruct->userdata;
 
-    qmi_cleanup(qmi_priv);
-
     free(qmi_priv);
 }
 
