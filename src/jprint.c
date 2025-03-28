@@ -4,15 +4,15 @@
 #include <unistd.h>
 #include <string.h>
 
-void jprint_error(const char *function_name, const char *detail)
+void jprint_error_details(const char *function_name, const char *message, cJSON *details)
 {
     cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
     char *jstr = NULL;
 
-    if (detail == NULL)
+    if (message == NULL)
     {
-        detail = "";
+        message = "";
     }
 
     jroot = cJSON_CreateObject();
@@ -20,7 +20,8 @@ void jprint_error(const char *function_name, const char *detail)
     jpayload = cJSON_CreateObject();
     cJSON_AddNumberToObject(jpayload, "code", -1);
     cJSON_AddStringOrNullToObject(jpayload, "message", function_name);
-    cJSON_AddStringOrNullToObject(jpayload, "data", detail);
+    cJSON_AddStringToObject(jpayload, "data", message);
+    cJSON_AddItemToObject(jpayload, "details", details);
     cJSON_AddItemToObject(jroot, "payload", jpayload);
 
     jstr = cJSON_PrintUnformatted(jroot);
@@ -29,6 +30,11 @@ void jprint_error(const char *function_name, const char *detail)
     printf("%s\n", jstr);
     fflush(stdout);
     free(jstr);
+}
+
+void jprint_error(const char *function_name, const char *message)
+{
+    jprint_error_details(function_name, message, NULL);
 }
 
 void jprint_progress(const char *function_name, const char *detail)
