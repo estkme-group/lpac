@@ -42,12 +42,20 @@ static void sigint_handler(int x)
     cancelled = 1;
 }
 
+static cJSON *build_download_result_json(const struct es10b_load_bound_profile_package_result *result)
+{
+    cJSON *jdata = cJSON_CreateObject();
+    cJSON_AddNumberToObject(jdata, "seqNumber", (double) result->seqNumber);
+    cJSON_AddStringToObject(jdata, "bppCommandId", euicc_bppcommandid2str(result->bppCommandId));
+    cJSON_AddStringToObject(jdata, "errorReason", euicc_errorreason2str(result->errorReason));
+    return jdata;
+}
+
 static int applet_main(int argc, char **argv)
 {
     int fret;
     const char *error_function_name = NULL;
-    const char *error_message = NULL;
-    cJSON *error_details = NULL;
+    const char *error_detail = NULL;
 
     int opt;
 
@@ -122,7 +130,7 @@ static int applet_main(int argc, char **argv)
                 if (strncmp(token, "1", strlen(token)) != 0)
                 {
                     error_function_name = "activation_code";
-                    error_message = "invalid";
+                    error_detail = "invalid";
                     goto err;
                 }
                 break;
@@ -139,7 +147,7 @@ static int applet_main(int argc, char **argv)
                 if (strncmp(token, "1", strlen(token)) == 0 && confirmation_code == NULL)
                 {
                     error_function_name = "confirmation_code";
-                    error_message = "required";
+                    error_detail = "required";
                     goto err;
                 }
                 break;
@@ -156,7 +164,7 @@ static int applet_main(int argc, char **argv)
         if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses))
         {
             error_function_name = "es10a_get_euicc_configured_addresses";
-            error_message = NULL;
+            error_detail = NULL;
             goto err;
         }
         else
@@ -168,7 +176,7 @@ static int applet_main(int argc, char **argv)
     if (!smdp || (strlen(smdp) == 0))
     {
         error_function_name = "smdp";
-        error_message = "empty";
+        error_detail = "empty";
         goto err;
     }
 
@@ -181,7 +189,7 @@ static int applet_main(int argc, char **argv)
     if (es10b_get_euicc_challenge_and_info(&euicc_ctx))
     {
         error_function_name = "es10b_get_euicc_challenge_and_info";
-        error_message = NULL;
+        error_detail = NULL;
         goto err;
     }
 
@@ -190,7 +198,7 @@ static int applet_main(int argc, char **argv)
     if (es9p_initiate_authentication(&euicc_ctx))
     {
         error_function_name = "es9p_initiate_authentication";
-        error_message = euicc_ctx.http.status.message;
+        error_detail = euicc_ctx.http.status.message;
         goto err;
     }
 
@@ -199,7 +207,7 @@ static int applet_main(int argc, char **argv)
     if (es10b_authenticate_server(&euicc_ctx, matchingId, imei))
     {
         error_function_name = "es10b_authenticate_server";
-        error_message = NULL;
+        error_detail = NULL;
         goto err;
     }
 
@@ -208,7 +216,7 @@ static int applet_main(int argc, char **argv)
     if (es9p_authenticate_client(&euicc_ctx))
     {
         error_function_name = "es9p_authenticate_client";
-        error_message = euicc_ctx.http.status.message;
+        error_detail = euicc_ctx.http.status.message;
         goto err;
     }
 
@@ -219,7 +227,7 @@ static int applet_main(int argc, char **argv)
         if (es8p_metadata_parse(&profile_metadata, euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata))
         {
             error_function_name = "es8p_meatadata_parse";
-            error_message = NULL;
+            error_detail = NULL;
             goto err;
         }
 
@@ -236,8 +244,9 @@ static int applet_main(int argc, char **argv)
 
         if (interactive_preview)
         {
+            char c;
             jprint_progress("preview", "y/n");
-            const int c = getchar();
+            c = getchar();
             if (c != 'y' && c != 'Y')
             {
                 cancelled = 1;
@@ -250,7 +259,7 @@ static int applet_main(int argc, char **argv)
     if (es10b_prepare_download(&euicc_ctx, confirmation_code))
     {
         error_function_name = "es10b_prepare_download";
-        error_message = NULL;
+        error_detail = NULL;
         goto err;
     }
 
@@ -259,7 +268,7 @@ static int applet_main(int argc, char **argv)
     if (es9p_get_bound_profile_package(&euicc_ctx))
     {
         error_function_name = "es9p_get_bound_profile_package";
-        error_message = euicc_ctx.http.status.message;
+        error_detail = euicc_ctx.http.status.message;
         goto err;
     }
 
@@ -267,36 +276,27 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es10b_load_bound_profile_package", smdp);
     if (es10b_load_bound_profile_package(&euicc_ctx, &download_result))
     {
+        jprint_progress_obj("es10b_load_bound_profile_package:result", build_download_result_json(&download_result));
+
         char buffer[256];
-        const char *bpp_command_id_str = euicc_bppcommandid2str(download_result.bppCommandId);
-        const char *error_reason_str = euicc_errorreason2str(download_result.errorReason);
 
-        snprintf(buffer, sizeof(buffer), "%s,%s", bpp_command_id_str, error_reason_str);
-
+        snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
         error_function_name = "es10b_load_bound_profile_package";
-        error_message = buffer;
-        error_details = cJSON_CreateObject();
-        cJSON_AddNumberToObject(error_details, "seqNumber", download_result.seqNumber);
-        cJSON_AddStringToObject(error_details, "bppCommandId", bpp_command_id_str);
-        cJSON_AddStringToObject(error_details, "errorReason", error_reason_str);
+        error_detail = buffer;
 
         goto err;
     }
 
-    cJSON *result = cJSON_CreateObject();
-    cJSON_AddNumberToObject(result, "seqNumber", download_result.seqNumber);
-    cJSON_AddNullToObject(result, "bppCommandId");
-    cJSON_AddNullToObject(result, "errorReason");
-    jprint_success(result);
+    jprint_success(build_download_result_json(&download_result));
 
     fret = 0;
     goto exit;
 
 err:
     fret = -1;
-    if (error_message)
+    if (error_detail)
     {
-        error_message = strdup(error_message);
+        error_detail = strdup(error_detail);
     }
     jprint_progress("es10b_cancel_session", smdp);
     es10b_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION);
@@ -304,13 +304,13 @@ err:
     es9p_cancel_session(&euicc_ctx);
     if (!cancelled)
     {
-        jprint_error_details(error_function_name, error_message, error_details);
+        jprint_error(error_function_name, error_detail);
     }
     else
     {
         jprint_error("cancelled", NULL);
     }
-    free((void *) error_message);
+    free((void *)error_detail);
 exit:
     es8p_metadata_free(&profile_metadata);
     es10a_euicc_configured_addresses_free(&configured_addresses);
