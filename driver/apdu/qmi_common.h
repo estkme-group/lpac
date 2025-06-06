@@ -18,4 +18,3 @@ int qmi_apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *r
 int qmi_apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len);
 void qmi_apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel);
 void qmi_apdu_interface_disconnect(struct euicc_ctx *ctx);
-void qmi_cleanup(struct qmi_data *qmi_priv);
