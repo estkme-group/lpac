@@ -107,6 +107,11 @@ static int select_sim_slot(struct mbim_data *mbim_priv)
         if (is_sim_available(mbim_priv)) {
             return 0;
         }
+        struct timespec ts = {
+            .tv_sec = 0,
+            .tv_nsec = 50000000
+        };
+        nanosleep(&ts, NULL);
     }
 
     fprintf(stderr, "sim did not become available\n");
