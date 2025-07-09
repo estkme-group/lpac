@@ -116,24 +116,36 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *s
         char high_nibble = (i + 1 < str_length) ? str[i + 1] : 'F';
         char low_nibble = str[i];
 
-        if (low_nibble < '0' || low_nibble > '9')
-        {
-            return -1;
-        }
+        uint8_t high_nibble_val = 0x0;
+        uint8_t low_nibble_val = 0x0;
 
-        if (high_nibble >= '0' && high_nibble <= '9')
+        if (low_nibble >= '0' && low_nibble <= '9')
         {
-            output[idx] = (high_nibble - '0') << 4 | (low_nibble - '0');
+            low_nibble_val = low_nibble - '0';
         }
-        else if (high_nibble == 'F')
+        else if (low_nibble == 'F' || low_nibble == 'f')
         {
-            output[idx] = 0xF0 | (low_nibble - '0');
+            low_nibble_val = 0x0F;
         }
         else
         {
             return -1;
         }
 
+        if (high_nibble >= '0' && high_nibble <= '9')
+        {
+            high_nibble_val = high_nibble - '0';
+        }
+        else if (high_nibble == 'F' || high_nibble == 'f')
+        {
+            high_nibble_val = 0xF;
+        }
+        else
+        {
+            return -1;
+        }
+
+        output[idx] = (high_nibble_val << 4) | low_nibble_val;
         idx++;
     }
 
