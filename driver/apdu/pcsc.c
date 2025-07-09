@@ -112,15 +112,22 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
     int id;
     DWORD dwActiveProtocol;
 
-    id = 0;
-    if (getenv(INTERFACE_SELECT_ENV))
+    if (getenv("DRIVER_IFID"))
     {
-        id = atoi(getenv(INTERFACE_SELECT_ENV));
+        int id = atoi(getenv("DRIVER_IFID"));
+        if (id != index)
+        {
+            return 0;
+        }
     }
 
-    if (id != index)
+    if (getenv("DRIVER_NAME"))
     {
-        return 0;
+        const char *part_name = getenv("DRIVER_NAME");
+        if (strstr(reader, part_name) == NULL)
+        {
+            return 0;
+        }
     }
 
     ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
