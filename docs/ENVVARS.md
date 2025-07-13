@@ -5,7 +5,8 @@
 * `LPAC_CUSTOM_ES10X_MSS`: specify maximum segment size for ES10x APDU backend. (default: 120, min: 6, max: 255)
 * `LPAC_CUSTOM_ISD_R_AID`: specify which AID will be used to open the logic channel. (hex string, 32 chars)
 * `LPAC_APDU`: specify which APDU backend will be used. Values:
-  - `at`: use AT commands interface used by LTE module
+  - `at`: use AT commands interface on Unix-like platforms (Linux, BSD) via serial device (e.g., `/dev/ttyUSB0`).
+  - `at_win32`: use AT commands interface on Windows platform via serial COM port (e.g., `COM3`).
   - `pcsc`: use PC/SC Smart Card API
   - `stdio`: use standard input/output
   - `qmi`: use QMI
