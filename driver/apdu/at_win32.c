@@ -63,7 +63,7 @@ static int at_expect(char **response, const char *expected)
         }
 
         if (getenv("AT_DEBUG"))
-            printf("AT_DEBUG_RX: %s\n", line);
+            fprintf(stderr, "AT_DEBUG_RX: %s\n", line);
 
         if (strcmp(line, "ERROR") == 0)
         {
@@ -98,7 +98,7 @@ end:
 static int at_write_command(const char *cmd) {
     DWORD bytes_written;
     if (getenv("AT_DEBUG"))
-        printf("AT_DEBUG_TX: %s", cmd);
+        fprintf(stderr, "AT_DEBUG_TX: %s", cmd);
 
     if (!WriteFile(hComm, cmd, strlen(cmd), &bytes_written, NULL)) {
         fprintf(stderr, "Failed to write to port, error: %lu\n", GetLastError());
@@ -115,15 +115,18 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     logic_channel = 0;
 
-    if (!(device = getenv("AT_DEVICE_WIN32")))
+    if (!(device = getenv("AT_DEVICE")))
     {
-        device = "COM3";
+        device = "COM3"; // Default values on Quectel devices
     }
 
-    char devname[64];
-    snprintf(devname, sizeof(devname), "\\\\.\\%s", device);
+    char dev_ascii[64];
+    snprintf(dev_ascii, sizeof(dev_ascii), "\\\\.\\%s", device);
 
-    hComm = CreateFileA(devname,
+    wchar_t devname[64];
+    mbstowcs(devname, dev_ascii, sizeof(devname) / sizeof(wchar_t));
+
+    hComm = CreateFileW(devname,
                         GENERIC_READ | GENERIC_WRITE,
                         0,
                         NULL,
@@ -133,7 +136,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     if (hComm == INVALID_HANDLE_VALUE)
     {
-        fprintf(stderr, "Failed to open device: %s, error: %lu\n", devname, GetLastError());
+        fprintf(stderr, "Failed to open device: %s, error: %lu\n", dev_ascii, GetLastError());
         return -1;
     }
 

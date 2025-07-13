@@ -16,7 +16,7 @@
 * `LPAC_HTTP`: specify which HTTP backend will be used.
   - `curl`: use libcurl
   - `stdio`: use standard input/output
-* `AT_DEVICE`: specify which serial port device will be used by AT APDU backend.
+* `AT_DEVICE`: specify which serial port device will be used by AT APDU backend or AT Win32 APDU backend.
 * `QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
 * `UIM_SLOT`: specify which UIM slot will be used by QMI and MBIM APDU backends. (default: 1, slot number starts from 1)
 * `DRIVER_IFID`: specify which PC/SC interface will be used by PC/SC APDU backend.
