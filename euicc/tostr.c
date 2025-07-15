@@ -120,8 +120,8 @@ const char *euicc_errorreason2str(enum es10b_error_reason value)
         return "install_failed_due_to_interruption";
     case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_PE_PROCESSING_ERROR:
         return "install_failed_due_to_pe_processing_error";
-    case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_MISMATCH:
-        return "install_failed_due_to_iccid_mismatch";
+    case ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_DATA_MISMATCH:
+        return "install_failed_due_to_data_mismatch";
     case ES10B_ERROR_REASON_TEST_PROFILE_INSTALL_FAILED_DUE_TO_INVALID_NAA_KEY:
         return "test_profile_install_failed_due_to_invalid_naa_key";
     case ES10B_ERROR_REASON_PPR_NOT_ALLOWED:
