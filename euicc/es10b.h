@@ -59,6 +59,7 @@ enum es10b_cancel_session_reason
 
 struct es10b_load_bound_profile_package_result
 {
+    unsigned long seqNumber;
     enum es10b_bpp_command_id bppCommandId;
     enum es10b_error_reason errorReason;
 };

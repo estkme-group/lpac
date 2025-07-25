@@ -186,6 +186,7 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
     uint8_t *respbuf = NULL;
     unsigned resplen;
 
+    result->seqNumber = 0;
     result->bppCommandId = ES10B_BPP_COMMAND_ID_UNDEFINED;
     result->errorReason = ES10B_ERROR_REASON_UNDEFINED;
 
@@ -196,7 +197,7 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
 
     if (resplen > 0)
     {
-        struct euicc_derutil_node tmpnode, n_finalResult;
+        struct euicc_derutil_node tmpnode, n_notificationMetadata, n_sequenceNumber, n_finalResult;
 
         if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF37, respbuf, resplen) < 0) // ProfileInstallationResult
         {
@@ -204,6 +205,11 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
         }
 
         if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, tmpnode.value, tmpnode.length) < 0) // ProfileInstallationResultData
+        {
+            goto err;
+        }
+
+        if (euicc_derutil_unpack_find_tag(&n_notificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) < 0) // NotificationMetadata
         {
             goto err;
         }
@@ -218,6 +224,11 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
             goto err;
         }
 
+        if (euicc_derutil_unpack_find_tag(&n_sequenceNumber, 0x80, n_notificationMetadata.value, n_notificationMetadata.length) == 0)
+        {
+            result->seqNumber = euicc_derutil_convert_bin2long(n_sequenceNumber.value, n_sequenceNumber.length);
+        }
+
         switch (n_finalResult.tag)
         {
         case 0xA0: // SuccessResult
@@ -227,7 +238,7 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
             tmpnode.self.length = 0;
             while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_finalResult.value, n_finalResult.length) == 0)
             {
-                int tmpint;
+                long tmpint;
                 switch (tmpnode.tag)
                 {
                 case 0x80:
@@ -273,6 +284,8 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
                         result->errorReason = ES10B_ERROR_REASON_UNDEFINED;
                         break;
                     }
+                    break;
+                default:
                     break;
                 }
             }
