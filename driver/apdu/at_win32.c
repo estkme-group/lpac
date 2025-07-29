@@ -117,7 +117,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
     if (!(device = getenv("AT_DEVICE")))
     {
-        device = "COM3"; // Default values on Quectel devices
+        device = "COM3"; // The default values of Quectel devices or virtual serial ports (possibly).
     }
 
     char dev_ascii[64];
@@ -147,16 +147,6 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
         fprintf(stderr, "GetCommState failed, error: %lu\n", GetLastError());
         CloseHandle(hComm);
         return -1;
-    }
-
-    const char *baud_env = getenv("AT_BAUD");
-    if (baud_env) {
-        dcb.BaudRate = atoi(baud_env);
-        if (!SetCommState(hComm, &dcb)) {
-            fprintf(stderr, "SetCommState failed, error: %lu\n", GetLastError());
-            CloseHandle(hComm);
-            return -1;
-        }
     }
 
     if (at_write_command("AT+CCHO=?\r\n") || at_expect(NULL, NULL)) {
@@ -344,7 +334,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 
 const struct euicc_driver driver_apdu_at_win32 = {
     .type = DRIVER_APDU,
-    .name = "at_win32",
+    .name = "at",
     .init = (int (*)(void *))libapduinterface_init,
     .main = libapduinterface_main,
     .fini = (void (*)(void *))libapduinterface_fini,
