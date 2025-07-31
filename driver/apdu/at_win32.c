@@ -6,15 +6,63 @@
 #include <windows.h>
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <cjson/cJSON_ex.h>
+#include <Winbase.h>
+#include <setupapi.h>
+#include <initguid.h>
+#include <devguid.h>
+#include <regstr.h>
 
 #define AT_BUFFER_SIZE 20480
 #define AT_READ_BUFFER_SIZE 4096
+
+#pragma comment(lib, "setupapi.lib")
 
 static HANDLE hComm;
 static int logic_channel = 0;
 static char *at_cmd_buffer;
 static char at_read_buffer[AT_READ_BUFFER_SIZE];
 static DWORD at_read_buffer_len = 0;
+
+int starts_with(const char *str, const char *prefix) {
+    size_t len_prefix = strlen(prefix);
+    return strncmp(str, prefix, len_prefix) == 0;
+}
+
+static void enumerate_com_ports(cJSON *data) {
+    HDEVINFO hDevInfo;
+    SP_DEVINFO_DATA devInfoData;
+    DWORD i;
+
+    hDevInfo = SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
+    if (hDevInfo == INVALID_HANDLE_VALUE)
+        return;
+
+    devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
+    for (i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, &devInfoData); i++) {
+        HKEY hKey = SetupDiOpenDevRegKey(hDevInfo, &devInfoData,
+                                         DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
+        if (hKey == INVALID_HANDLE_VALUE)
+            continue;
+
+        char portName[256];
+        DWORD size = sizeof(portName);
+        DWORD type;
+        if (RegQueryValueExA(hKey, "PortName", NULL, &type, (LPBYTE)portName, &size) == ERROR_SUCCESS) {
+            if (type == REG_SZ && starts_with(portName, "COM")) {
+                cJSON *item = cJSON_CreateObject();
+                if (item && cJSON_AddStringToObject(item, "env", portName)) {
+                    cJSON_AddItemToArray(data, item);
+                } else {
+                    cJSON_Delete(item);
+                }
+            }
+        }
+        RegCloseKey(hKey);
+    }
+
+    SetupDiDestroyDeviceInfoList(hDevInfo);
+}
 
 static int at_expect(char **response, const char *expected)
 {
@@ -319,8 +367,97 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     return 0;
 }
 
+static int json_print(cJSON *jpayload)
+{
+    cJSON *jroot = NULL;
+    char *jstr = NULL;
+
+    if (jpayload == NULL)
+    {
+        goto err;
+    }
+
+    jroot = cJSON_CreateObject();
+    if (jroot == NULL)
+    {
+        goto err;
+    }
+
+    if (cJSON_AddStringOrNullToObject(jroot, "type", "driver") == NULL)
+    {
+        goto err;
+    }
+
+    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
+    {
+        goto err;
+    }
+
+    jstr = cJSON_PrintUnformatted(jroot);
+
+    if (jstr == NULL)
+    {
+        goto err;
+    }
+    cJSON_Delete(jroot);
+
+    fprintf(stdout, "%s\n", jstr);
+    fflush(stdout);
+
+    free(jstr);
+    jstr = NULL;
+
+    return 0;
+
+err:
+    cJSON_Delete(jroot);
+    free(jstr);
+    return -1;
+}
+
 static int libapduinterface_main(int argc, char **argv)
 {
+    if (argc < 2)
+    {
+        fprintf(stderr, "Usage: %s <list>\n", argv[0]);
+        return -1;
+    }
+
+    if (strcmp(argv[1], "list") == 0)
+    {
+        cJSON *payload;
+        cJSON *data;
+
+        payload = cJSON_CreateObject();
+        if (!payload)
+        {
+            return -1;
+        }
+
+        if (!cJSON_AddStringOrNullToObject(payload, "env", "AT_DEVICE"))
+        {
+            return -1;
+        }
+
+        data = cJSON_CreateArray();
+
+        enumerate_com_ports(data);
+
+        if (!data)
+        {
+            return -1;
+        }
+
+        if (!cJSON_AddItemToObject(payload, "data", data))
+        {
+            return -1;
+        }
+
+        json_print(payload);
+
+        return 0;
+    }
+
     return 0;
 }
 
