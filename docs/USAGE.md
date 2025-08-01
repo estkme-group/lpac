@@ -330,4 +330,4 @@ The following parameters can be used to customize the behavior of `notification 
 
 #### driver
 
-Now, there is only one command: `lpac driver apdu list` to get the card reader list.
+Now, there is only one command: `lpac driver apdu list` to get the list of card readers or AT devices (AT devices are available only on the AT backend on Windows).
