@@ -7,7 +7,6 @@
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
 #include <cjson/cJSON_ex.h>
-#include <Winbase.h>
 #include <setupapi.h>
 #include <initguid.h>
 #include <devguid.h>
