@@ -42,6 +42,20 @@ static void sigint_handler(int x)
     cancelled = 1;
 }
 
+static cJSON *build_download_result_json(const struct es10b_load_bound_profile_package_result *result)
+{
+    cJSON *jdata = cJSON_CreateObject();
+    if (jdata == NULL)
+    {
+        // Memory allocation failed, return NULL to indicate error
+        return NULL;
+    }
+    cJSON_AddNumberToObject(jdata, "seqNumber", (double) result->seqNumber);
+    cJSON_AddStringToObject(jdata, "bppCommandId", euicc_bppcommandid2str(result->bppCommandId));
+    cJSON_AddStringToObject(jdata, "errorReason", euicc_errorreason2str(result->errorReason));
+    return jdata;
+}
+
 static int applet_main(int argc, char **argv)
 {
     int fret;
@@ -267,6 +281,8 @@ static int applet_main(int argc, char **argv)
     jprint_progress("es10b_load_bound_profile_package", smdp);
     if (es10b_load_bound_profile_package(&euicc_ctx, &download_result))
     {
+        jprint_progress_obj("es10b_load_bound_profile_package:result", build_download_result_json(&download_result));
+
         char buffer[256];
 
         snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
@@ -276,7 +292,7 @@ static int applet_main(int argc, char **argv)
         goto err;
     }
 
-    jprint_success(NULL);
+    jprint_success(build_download_result_json(&download_result));
 
     fret = 0;
     goto exit;
