@@ -105,7 +105,7 @@ static int select_sim_slot(struct mbim_data *mbim_priv)
     int retries = 20;
     while (retries--) {
         if (is_sim_available(mbim_priv)) {
-            return 0;
+            break;
         }
         struct timespec ts = {
             .tv_sec = 0,
@@ -114,8 +114,7 @@ static int select_sim_slot(struct mbim_data *mbim_priv)
         nanosleep(&ts, NULL);
     }
 
-    fprintf(stderr, "sim did not become available\n");
-    return -1;
+    return 0;
 }
 
 static int apdu_interface_connect(struct euicc_ctx *ctx)
