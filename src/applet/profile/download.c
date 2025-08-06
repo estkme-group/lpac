@@ -45,6 +45,11 @@ static void sigint_handler(int x)
 static cJSON *build_download_result_json(const struct es10b_load_bound_profile_package_result *result)
 {
     cJSON *jdata = cJSON_CreateObject();
+    if (jdata == NULL)
+    {
+        // Memory allocation failed, return NULL to indicate error
+        return NULL;
+    }
     cJSON_AddNumberToObject(jdata, "seqNumber", (double) result->seqNumber);
     cJSON_AddStringToObject(jdata, "bppCommandId", euicc_bppcommandid2str(result->bppCommandId));
     cJSON_AddStringToObject(jdata, "errorReason", euicc_errorreason2str(result->errorReason));
