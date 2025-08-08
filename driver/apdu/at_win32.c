@@ -14,9 +14,6 @@
 
 #include "at_common.h"
 
-#define AT_BUFFER_SIZE 20480
-#define AT_READ_BUFFER_SIZE 4096
-
 #pragma comment(lib, "setupapi.lib")
 
 static HANDLE hComm;
@@ -344,6 +341,9 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
+    set_deprecated_env_name(ENV_AT_DEBUG, "AT_DEBUG");
+    set_deprecated_env_name(ENV_AT_DEVICE, "AT_DEVICE");
+
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
     ifstruct->connect = apdu_interface_connect;

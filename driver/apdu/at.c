@@ -11,8 +11,6 @@
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
 
-#define AT_BUFFER_SIZE 20480
-
 static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
