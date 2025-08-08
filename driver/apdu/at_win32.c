@@ -158,7 +158,6 @@ static int at_write_command(const char *cmd) {
 
 static int apdu_interface_connect(struct euicc_ctx *ctx)
 {
-    const char *device;
     DCB dcb = {0};
 
     logic_channel = 0;
