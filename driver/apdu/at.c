@@ -112,7 +112,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
         fprintf(fuart, "%02X", (uint8_t)(tx[i] & 0xFF));
     }
     fprintf(fuart, "\"\r\n");
-    if (at_expect(&response, "+CGLA: "))
+    if (at_expect(&response, "+CGLA:"))
     {
         goto err;
     }

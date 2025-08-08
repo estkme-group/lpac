@@ -24,8 +24,8 @@ jobs:
           - {os: ubuntu-24.04-arm, variant: debian, name: Debian ARM, artifact: debian-arm}
           - {os: ubuntu-24.04, variant: mingw, name: Windows with MinGW, artifact: windows-x64}
           - {os: ubuntu-24.04, variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
-          - {os: macos-14, variant: make, name: macOS, artifact: macos-universal}
-          - {os: macos-14, variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
+          - {os: macos-15, variant: make, name: macOS, artifact: macos-universal}
+          - {os: macos-15, variant: make-without-lto, name: macOS (w/o LTO), artifact: macos-universal-without-lto}
 
     steps:
       - name: Checkout

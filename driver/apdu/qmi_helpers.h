@@ -3,7 +3,6 @@
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
 #pragma once
-
 #include <libqmi-glib.h>
 #include <helpers.h>
 

@@ -5,7 +5,9 @@
 * `LPAC_CUSTOM_ES10X_MSS`: specify maximum segment size for ES10x APDU backend. (default: 120, min: 6, max: 255)
 * `LPAC_CUSTOM_ISD_R_AID`: specify which AID will be used to open the logic channel. (hex string, 32 chars)
 * `LPAC_APDU`: specify which APDU backend will be used. Values:
-  - `at`: use AT commands interface used by LTE module
+  - `at`: Use the AT command interface via a serial device on different platforms.
+    - On Unix-like platforms (Linux, BSD), use serial devices such as `/dev/ttyUSB0`.
+    - On Windows platforms, use serial COM ports such as `COM3`.
   - `pcsc`: use PC/SC Smart Card API
   - `stdio`: use standard input/output
   - `qmi`: use QMI
@@ -17,7 +19,8 @@
   - `curl`: use libcurl
   - `stdio`: use standard input/output
 * `LPAC_APDU_AT_DEVICE`: specify which serial port device will be used by AT APDU backend.
-* `LPAC_APDU_PCSC_IFID`: specify which PC/SC interface will be used by PC/SC APDU backend.
+* `LPAC_APDU_PCSC_DRV_IFID`: specify which PC/SC interface index will be used by PC/SC APDU backend.
+* `LPAC_APDU_PCSC_DRV_NAME`: specify which PC/SC interface name will be used by PC/SC APDU backend.
 * `LPAC_APDU_QMI_UIM_SLOT`: specify which UIM slot will be used by QMI APDU backend. (default: 1, slot number starts from 1)
 * `LPAC_APDU_QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
 * `LPAC_APDU_MBIM_UIM_SLOT`: specify which UIM slot will be used by MBIM APDU backend. (default: 1, slot number starts from 1)

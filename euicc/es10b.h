@@ -37,6 +37,8 @@ enum es10b_error_reason
     ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INSUFFICIENT_MEMORY_FOR_PROFILE = 10,
     ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_INTERRUPTION = 11,
     ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_PE_PROCESSING_ERROR = 12,
+    ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_DATA_MISMATCH = 13,
+    // For compatibility, see https://github.com/estkme-group/lpac/pull/246
     ES10B_ERROR_REASON_INSTALL_FAILED_DUE_TO_ICCID_MISMATCH = 13,
     ES10B_ERROR_REASON_TEST_PROFILE_INSTALL_FAILED_DUE_TO_INVALID_NAA_KEY = 14,
     ES10B_ERROR_REASON_PPR_NOT_ALLOWED = 15,
@@ -57,6 +59,7 @@ enum es10b_cancel_session_reason
 
 struct es10b_load_bound_profile_package_result
 {
+    unsigned long seqNumber;
     enum es10b_bpp_command_id bppCommandId;
     enum es10b_error_reason errorReason;
 };
