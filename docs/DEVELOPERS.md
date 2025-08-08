@@ -6,6 +6,27 @@ lpac is written with C99 and compatible with [SGP.22 version 2.2.2](https://www.
 
 ## How to Compile
 
+### CMake
+
+lpac uses CMake as its build system. Common build steps for all OSs look as follows:
+
+``` bash
+# clone this repo in the top-level folder
+git clone https://github.com/estkme-group/lpac.git
+cd lpac
+
+# configuration (this step can also include options -DOPTION=VALUE)
+cmake -B build
+
+# compilation
+cmake --build build
+
+# installation (optionally)
+cmake --install build
+```
+
+The resulting binary can then be found under `build/output` folder.
+
 ### Linux
 
 #### Debian/Ubuntu
@@ -17,8 +38,7 @@ lpac is written with C99 and compatible with [SGP.22 version 2.2.2](https://www.
 ./scripts/setup-debian.sh 
 ```
 
-Run `cmake` and `make`, compiled output will be in `output` directory.  
-If you want to get a Deb package, run `cmake -DCPACK_GENERATOR=DEB` then `make`.
+If you want to get a Deb package, run `cmake -B build -DCPACK_GENERATOR=DEB` then `cmake --build build`.
 
 #### Droidian
 
@@ -29,16 +49,16 @@ Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, y
 ### macOS
 
 Install [Homebrew](https://brew.sh/).  
-Run `cmake` and `make`, compiled output will be in `output` directory.  
+Execute the same commands as you would do in Debian.  
 
 ---
 
 ### Windows(x86_64)
 
-Windows need libcurl.dll to run.  
-Download libcurl from <https://curl.se/download.html> and place it as `libcurl.dll` in `output` directory.  
+Windows needs libcurl.dll to run.  
+Download libcurl from <https://curl.se/download.html> and place it as `libcurl.dll` aside `lpac.exe`.  
 
-Install prerequisites, run `cmake` and `make`, compiled output will be in `output` directory.  
+Install prerequisites and run CMake commands.  
 
 #### Build on Linux(MINGW)
 
