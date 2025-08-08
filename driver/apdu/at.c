@@ -6,13 +6,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <helpers.h>
+#include "at_common.h"
+
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
 
 #define AT_BUFFER_SIZE 20480
-#define ENV_AT_DEBUG APDU_ENV_NAME(AT, DEBUG)
-#define ENV_AT_DEVICE APDU_ENV_NAME(AT, DEVICE)
 
 static FILE *fuart;
 static int logic_channel = 0;

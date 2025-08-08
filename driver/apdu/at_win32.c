@@ -12,6 +12,8 @@
 #include <devguid.h>
 #include <regstr.h>
 
+#include "at_common.h"
+
 #define AT_BUFFER_SIZE 20480
 #define AT_READ_BUFFER_SIZE 4096
 
@@ -109,7 +111,7 @@ static int at_expect(char **response, const char *expected)
             continue;
         }
 
-        if (getenv("AT_DEBUG"))
+        if (getenv_or_default(ENV_AT_DEBUG, false))
             fprintf(stderr, "AT_DEBUG_RX: %s\n", line);
 
         if (strcmp(line, "ERROR") == 0)
@@ -144,7 +146,7 @@ end:
 
 static int at_write_command(const char *cmd) {
     DWORD bytes_written;
-    if (getenv("AT_DEBUG"))
+    if (getenv_or_default(ENV_AT_DEBUG, false))
         fprintf(stderr, "AT_DEBUG_TX: %s", cmd);
 
     if (!WriteFile(hComm, cmd, strlen(cmd), &bytes_written, NULL)) {
@@ -158,14 +160,10 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 {
     const char *device;
     DCB dcb = {0};
-    COMMTIMEOUTS timeouts = {0};
 
     logic_channel = 0;
 
-    if (!(device = getenv("AT_DEVICE")))
-    {
-        device = "COM3"; // The default values of Quectel devices or virtual serial ports (possibly).
-    }
+    const char *device = getenv_or_default(ENV_AT_DEVICE, "COM3");
 
     char dev_ascii[64];
     snprintf(dev_ascii, sizeof(dev_ascii), "\\\\.\\%s", device);
