@@ -132,7 +132,6 @@ static int select_sim_slot(struct qmi_data *qmi_priv)
         // Create switch slot input
         switch_slot_input = qmi_message_uim_switch_slot_input_new();
 
-        // Set the logical slot (0-based indexing)
         if (!qmi_message_uim_switch_slot_input_set_logical_slot(switch_slot_input, 1, &error))
         {
             fprintf(stderr, "error: set logical slot failed: %s\n", error->message);
