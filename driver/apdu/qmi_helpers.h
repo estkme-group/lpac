@@ -71,3 +71,22 @@ qmi_client_uim_send_apdu_sync(
     QmiMessageUimSendApduInput *input,
     GMainContext *context,
     GError **error);
+
+QmiMessageUimGetSlotStatusOutput *
+qmi_client_uim_get_slot_status_sync(
+    QmiClientUim *client,
+    GMainContext *context,
+    GError **error);
+
+QmiMessageUimSwitchSlotOutput *
+qmi_client_uim_switch_slot_sync(
+    QmiClientUim *client,
+    QmiMessageUimSwitchSlotInput *input,
+    GMainContext *context,
+    GError **error);
+
+QmiMessageUimGetCardStatusOutput *
+qmi_client_uim_get_card_status_sync(
+    QmiClientUim *client,
+    GMainContext *context,
+    GError **error);
