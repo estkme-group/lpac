@@ -10,10 +10,6 @@
 
 #include <euicc/interface.h>
 
-struct winhttp_userdata {
-    HINTERNET hSession;
-};
-
 static wchar_t *toLPCWSTR(const char *input) {
     const int n = MultiByteToWideChar(CP_ACP, 0, input, -1, NULL, 0);
     wchar_t *output = calloc(sizeof(wchar_t), n);
@@ -151,12 +147,6 @@ static int libhttpinterface_main(int argc, char **argv) {
 }
 
 static void libhttpinterface_fini(struct euicc_http_interface *ifstruct) {
-    if (ifstruct->userdata == NULL) return;
-    struct winhttp_userdata *userdata = ifstruct->userdata;
-    if (userdata->hSession != NULL) {
-        WinHttpCloseHandle(userdata->hSession);
-    }
-    free(userdata);
 }
 
 const struct euicc_driver driver_http_winhttp = {
