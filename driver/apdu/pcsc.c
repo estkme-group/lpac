@@ -13,10 +13,12 @@
 #include <PCSC/winscard.h>
 #endif
 
+#include <helpers.h>
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 
-#define INTERFACE_SELECT_ENV "DRIVER_IFID"
+#define ENV_DRV_IFID APDU_ENV_NAME(PCSC, DRV_IFID)
+#define ENV_DRV_NAME APDU_ENV_NAME(PCSC, DRV_NAME)
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -108,29 +110,19 @@ static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void 
 
 static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
 {
-    int ret;
-    int id;
     DWORD dwActiveProtocol;
 
-    if (getenv("DRIVER_IFID"))
+    const int id = getenv_or_default(ENV_DRV_IFID, (int) -1);
+    if (id != -1 && id != index)
     {
-        int id = atoi(getenv("DRIVER_IFID"));
-        if (id != index)
-        {
-            return 0;
-        }
-    }
-
-    if (getenv("DRIVER_NAME"))
-    {
-        const char *part_name = getenv("DRIVER_NAME");
+        const char *part_name = getenv(ENV_DRV_NAME);
         if (strstr(reader, part_name) == NULL)
         {
             return 0;
         }
     }
 
-    ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
+    const int ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS)
     {
         pcsc_error("SCardConnect()", ret);
@@ -404,6 +396,9 @@ static int pcsc_list_iter(int index, const char *reader, void *userdata)
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
+    set_deprecated_env_name(ENV_DRV_IFID, "DRIVER_IFID");
+    set_deprecated_env_name(ENV_DRV_NAME, "DRIVER_NAME");
+
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
     if (pcsc_ctx_open() < 0)
@@ -439,7 +434,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        if (!cJSON_AddStringOrNullToObject(payload, "env", INTERFACE_SELECT_ENV))
+        if (!cJSON_AddStringOrNullToObject(payload, "env", ENV_DRV_IFID))
         {
             return -1;
         }
