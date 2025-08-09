@@ -155,11 +155,10 @@ static int at_write_command(const char *cmd) {
 
 static int apdu_interface_connect(struct euicc_ctx *ctx)
 {
+    const char *device = getenv_or_default(ENV_AT_DEVICE, "COM3");
     DCB dcb = {0};
 
     logic_channel = 0;
-
-    const char *device = getenv_or_default(ENV_AT_DEVICE, "COM3");
 
     char dev_ascii[64];
     snprintf(dev_ascii, sizeof(dev_ascii), "\\\\.\\%s", device);
