@@ -10,7 +10,7 @@
 
 #include "qmi_common.h"
 
-static int is_sim_available(struct qmi_data *qmi_priv)
+static gboolean is_sim_available(struct qmi_data *qmi_priv)
 {
     g_autoptr(GError) error = NULL;
     g_autoptr(QmiMessageUimGetCardStatusOutput) card_status_output = NULL;
@@ -24,14 +24,14 @@ static int is_sim_available(struct qmi_data *qmi_priv)
     if (!card_status_output)
     {
         fprintf(stderr, "error: get card status failed: %s\n", error->message);
-        return 0;
+        return FALSE;
     }
 
     // Check if the operation was successful
     if (!qmi_message_uim_get_card_status_output_get_result(card_status_output, &error))
     {
         fprintf(stderr, "error: get card status operation failed: %s\n", error->message);
-        return 0;
+        return FALSE;
     }
 
     // Get card status details
@@ -44,7 +44,7 @@ static int is_sim_available(struct qmi_data *qmi_priv)
                                                                 &error))
     {
         fprintf(stderr, "error: get card status details failed: %s\n", error->message);
-        return 0;
+        return FALSE;
     }
 
     // Check if any card is present and has a USIM application that is ready
@@ -63,12 +63,12 @@ static int is_sim_available(struct qmi_data *qmi_priv)
             if (app_element->type == QMI_UIM_CARD_APPLICATION_TYPE_USIM &&
                 app_element->state == QMI_UIM_CARD_APPLICATION_STATE_READY)
             {
-                return 1;
+                return TRUE;
             }
         }
     }
 
-    return 0;
+    return FALSE;
 }
 
 static int select_sim_slot(struct qmi_data *qmi_priv)
