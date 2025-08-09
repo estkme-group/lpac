@@ -10,8 +10,6 @@
 
 #include <euicc/interface.h>
 
-#include "euicc/euicc.h"
-
 struct winhttp_userdata {
     HINTERNET hSession;
 };
