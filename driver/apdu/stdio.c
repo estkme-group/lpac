@@ -7,8 +7,8 @@
 #include <unistd.h>
 
 #include <cjson/cJSON_ex.h>
-#include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <euicc/interface.h>
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)
@@ -307,7 +307,8 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
 // {"type":"apdu","payload":{"ecode":0,"data":"BF3E125A10890490320010012345000123456789019000"}}
 // {"type":"apdu","payload":{"ecode":0,"data":"BF3C17811574657374726F6F74736D64732E67736D612E636F6D9000"}}
 // {"type":"apdu","payload":{"ecode":0,"data":"BF2281C6810302010082030202008303040600840F8101008204000628248304000019228504067F36C08603090200870302030088020490A916041481370F5125D0B1D408D4C3B232E6D25E795BEBFBAA16041481370F5125D0B1D408D4C3B232E6D25E795BEBFB990206C004030000010C0D47492D42412D55502D30343139AC48801F312E322E3834302E313233343536372F6D79506C6174666F726D4C6162656C812568747470733A2F2F6D79636F6D70616E792E636F6D2F6D79444C4F415265676973747261729000"}}
-static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
+                                   uint32_t tx_len)
 {
     int ecode;
 

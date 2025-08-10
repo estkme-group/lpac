@@ -72,7 +72,8 @@ int euicc_derutil_unpack_first(struct euicc_derutil_node *result, const uint8_t 
     return 0;
 }
 
-int euicc_derutil_unpack_next(struct euicc_derutil_node *result, struct euicc_derutil_node *prev, const uint8_t *buffer, uint32_t buffer_len)
+int euicc_derutil_unpack_next(struct euicc_derutil_node *result, struct euicc_derutil_node *prev, const uint8_t *buffer,
+                              uint32_t buffer_len)
 {
     const uint8_t *cptr;
     uint32_t rlen;
@@ -83,7 +84,8 @@ int euicc_derutil_unpack_next(struct euicc_derutil_node *result, struct euicc_de
     return euicc_derutil_unpack_first(result, cptr, rlen);
 }
 
-int euicc_derutil_unpack_find_alias_tags(struct euicc_derutil_node *result, const uint16_t *tags, uint32_t tags_count, const uint8_t *buffer, uint32_t buffer_len)
+int euicc_derutil_unpack_find_alias_tags(struct euicc_derutil_node *result, const uint16_t *tags, uint32_t tags_count,
+                                         const uint8_t *buffer, uint32_t buffer_len)
 {
     result->self.ptr = buffer;
     result->self.length = 0;
@@ -102,7 +104,8 @@ int euicc_derutil_unpack_find_alias_tags(struct euicc_derutil_node *result, cons
     return -1;
 }
 
-int euicc_derutil_unpack_find_tag(struct euicc_derutil_node *result, uint16_t tag, const uint8_t *buffer, uint32_t buffer_len)
+int euicc_derutil_unpack_find_tag(struct euicc_derutil_node *result, uint16_t tag, const uint8_t *buffer,
+                                  uint32_t buffer_len)
 {
     return euicc_derutil_unpack_find_alias_tags(result, &tag, 1, buffer, buffer_len);
 }
@@ -145,7 +148,9 @@ static void euicc_derutil_pack_sizeof_single_node(struct euicc_derutil_node *nod
     node->self.length += node->length;
 }
 
-static int euicc_derutil_pack_iterate_size_and_relative_offset(struct euicc_derutil_node *node, struct euicc_derutil_node *parent, uint32_t relative_offset)
+static int euicc_derutil_pack_iterate_size_and_relative_offset(struct euicc_derutil_node *node,
+                                                               struct euicc_derutil_node *parent,
+                                                               uint32_t relative_offset)
 {
     uint32_t full_size = 0;
 
@@ -370,7 +375,8 @@ int euicc_derutil_convert_bits2bin(uint8_t *buffer, uint32_t buffer_len, const u
     return 0;
 }
 
-int euicc_derutil_convert_bits2bin_alloc(uint8_t **buffer, uint32_t *buffer_len, const uint32_t *bits, uint32_t bits_count)
+int euicc_derutil_convert_bits2bin_alloc(uint8_t **buffer, uint32_t *buffer_len, const uint32_t *bits,
+                                         uint32_t bits_count)
 {
     *buffer_len = euicc_derutil_convert_bits2bin_sizeof(bits, bits_count);
     *buffer = malloc(*buffer_len);

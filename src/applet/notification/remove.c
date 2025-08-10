@@ -1,10 +1,10 @@
 #include "remove.h"
+#include <errno.h>
+#include <main.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <string.h>
-#include <main.h>
+#include <unistd.h>
 
 #include <euicc/es10b.h>
 

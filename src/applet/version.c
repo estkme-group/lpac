@@ -13,6 +13,6 @@ static int applet_main(int argc, char **argv)
 }
 
 struct applet_entry applet_version = {
-        .name = "version",
-        .main = applet_main,
+    .name = "version",
+    .main = applet_main,
 };

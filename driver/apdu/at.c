@@ -2,14 +2,14 @@
 
 #include <inttypes.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "at_common.h"
 
-#include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <euicc/interface.h>
 
 static FILE *fuart;
 static int logic_channel = 0;
@@ -88,7 +88,8 @@ static void apdu_interface_disconnect(struct euicc_ctx *ctx)
     logic_channel = 0;
 }
 
-static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
+                                   uint32_t tx_len)
 {
     int fret = 0;
     int ret;

@@ -1,10 +1,10 @@
 #include "info.h"
 #include "cjson/cJSON.h"
+#include <main.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <main.h>
+#include <unistd.h>
 
 #include <euicc/es10a.h>
 #include <euicc/es10c.h>
@@ -59,9 +59,12 @@ static int applet_main(int argc, char **argv)
         {
             cJSON *jextCardResource = cJSON_CreateObject();
 
-            cJSON_AddNumberToObject(jextCardResource, "installedApplication", euiccinfo2.extCardResource.installedApplication);
-            cJSON_AddNumberToObject(jextCardResource, "freeNonVolatileMemory", euiccinfo2.extCardResource.freeNonVolatileMemory);
-            cJSON_AddNumberToObject(jextCardResource, "freeVolatileMemory", euiccinfo2.extCardResource.freeVolatileMemory);
+            cJSON_AddNumberToObject(jextCardResource, "installedApplication",
+                                    euiccinfo2.extCardResource.installedApplication);
+            cJSON_AddNumberToObject(jextCardResource, "freeNonVolatileMemory",
+                                    euiccinfo2.extCardResource.freeNonVolatileMemory);
+            cJSON_AddNumberToObject(jextCardResource, "freeVolatileMemory",
+                                    euiccinfo2.extCardResource.freeVolatileMemory);
 
             cJSON_AddItemToObject(jeuiccinfo2, "extCardResource", jextCardResource);
         }
@@ -90,7 +93,8 @@ static int applet_main(int argc, char **argv)
             cJSON *verification_keys = cJSON_CreateArray();
             for (int i = 0; euiccinfo2.euiccCiPKIdListForVerification[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(verification_keys, cJSON_CreateString(euiccinfo2.euiccCiPKIdListForVerification[i]));
+                cJSON_AddItemToArray(verification_keys,
+                                     cJSON_CreateString(euiccinfo2.euiccCiPKIdListForVerification[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "euiccCiPKIdListForVerification", verification_keys);
         }
@@ -109,7 +113,8 @@ static int applet_main(int argc, char **argv)
             cJSON *jforbiddenProfilePolicyRules = cJSON_CreateArray();
             for (int i = 0; euiccinfo2.forbiddenProfilePolicyRules[i] != NULL; i++)
             {
-                cJSON_AddItemToArray(jforbiddenProfilePolicyRules, cJSON_CreateString(euiccinfo2.forbiddenProfilePolicyRules[i]));
+                cJSON_AddItemToArray(jforbiddenProfilePolicyRules,
+                                     cJSON_CreateString(euiccinfo2.forbiddenProfilePolicyRules[i]));
             }
             cJSON_AddItemToObject(jeuiccinfo2, "forbiddenProfilePolicyRules", jforbiddenProfilePolicyRules);
         }
@@ -118,8 +123,10 @@ static int applet_main(int argc, char **argv)
         {
             cJSON *jcertificationDataObject = cJSON_CreateObject();
 
-            cJSON_AddStringOrNullToObject(jcertificationDataObject, "platformLabel", euiccinfo2.certificationDataObject.platformLabel);
-            cJSON_AddStringOrNullToObject(jcertificationDataObject, "discoveryBaseURL", euiccinfo2.certificationDataObject.discoveryBaseURL);
+            cJSON_AddStringOrNullToObject(jcertificationDataObject, "platformLabel",
+                                          euiccinfo2.certificationDataObject.platformLabel);
+            cJSON_AddStringOrNullToObject(jcertificationDataObject, "discoveryBaseURL",
+                                          euiccinfo2.certificationDataObject.discoveryBaseURL);
 
             cJSON_AddItemToObject(jeuiccinfo2, "certificationDataObject", jcertificationDataObject);
         }
@@ -129,7 +136,8 @@ static int applet_main(int argc, char **argv)
 
     if (jratList)
     {
-        while (ratList) {
+        while (ratList)
+        {
             struct cJSON *jrat = cJSON_CreateObject();
             if (ratList->pprIds)
             {

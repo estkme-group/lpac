@@ -6,14 +6,14 @@
 #include "qmi_common.h"
 
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
-#include <libqrtr-glib.h>
-#include <helpers.h>
 #include <euicc/interface.h>
+#include <helpers.h>
+#include <libqrtr-glib.h>
 
 static QrtrBus *bus = NULL;
 
@@ -86,7 +86,8 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     struct qmi_data *qmi_priv;
 
     qmi_priv = malloc(sizeof(struct qmi_data));
-    if(!qmi_priv) {
+    if (!qmi_priv)
+    {
         fprintf(stderr, "Failed allocating memory\n");
         return -1;
     }
@@ -103,7 +104,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
      * Allow the user to select the SIM card slot via environment variable.
      * Use the primary SIM slot if not set.
      */
-    qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int) 1);
+    qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int)1);
 
     ifstruct->userdata = qmi_priv;
 

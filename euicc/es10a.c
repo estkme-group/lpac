@@ -1,14 +1,14 @@
-#include "euicc.private.h"
 #include "es10a.h"
+#include "euicc.private.h"
 
-#include "hexutil.h"
 #include "derutil.h"
+#include "hexutil.h"
 
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, struct es10a_euicc_configured_addresses *address)
 {
@@ -79,13 +79,15 @@ int es10a_set_default_dp_address(struct euicc_ctx *ctx, const char *smdp)
     int fret = 0;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF3F, // SetDefaultDpAddressRequest
-        .pack = {
-            .child = &(struct euicc_derutil_node){
-                .tag = 0x80,
-                .length = strlen(smdp),
-                .value = (const uint8_t *)smdp,
+        .pack =
+            {
+                .child =
+                    &(struct euicc_derutil_node){
+                        .tag = 0x80,
+                        .length = strlen(smdp),
+                        .value = (const uint8_t *)smdp,
+                    },
             },
-        },
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;

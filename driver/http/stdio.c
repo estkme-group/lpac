@@ -7,8 +7,8 @@
 #include <unistd.h>
 
 #include <cjson/cJSON_ex.h>
-#include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <euicc/interface.h>
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)
@@ -164,7 +164,8 @@ exit:
 }
 
 // {"type":"http","payload":{"rcode":404,"rx":"333435"}}
-static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers)
+static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
+                                   uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
     int fret = 0;
     char *rx_json;

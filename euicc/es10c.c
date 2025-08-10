@@ -1,15 +1,15 @@
-#include "euicc.private.h"
 #include "es10c.h"
+#include "euicc.private.h"
 
+#include "base64.h"
 #include "derutil.h"
 #include "hexutil.h"
-#include "base64.h"
 
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList)
 {
@@ -53,7 +53,8 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
     n_ProfileInfo.self.ptr = n_profileInfoListOk.value;
     n_ProfileInfo.self.length = 0;
 
-    while (euicc_derutil_unpack_next(&n_ProfileInfo, &n_ProfileInfo, n_profileInfoListOk.value, n_profileInfoListOk.length) == 0)
+    while (euicc_derutil_unpack_next(&n_ProfileInfo, &n_ProfileInfo, n_profileInfoListOk.value,
+                                     n_profileInfoListOk.length) == 0)
     {
         struct es10c_profile_info_list *p;
 
@@ -195,7 +196,8 @@ exit:
     return fret;
 }
 
-static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t op_tag, const char *str_id, uint8_t refreshFlag)
+static int es10c_enable_disable_delete_profile(struct euicc_ctx *ctx, uint16_t op_tag, const char *str_id,
+                                               uint8_t refreshFlag)
 {
     int fret = 0;
     uint8_t id[16];
@@ -325,13 +327,15 @@ int es10c_euicc_memory_reset(struct euicc_ctx *ctx)
     int fret = 0;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF34, // EuiccMemoryResetRequest
-        .pack = {
-            .child = &(struct euicc_derutil_node){
-                .tag = 0x82, // resetOptions
-                .length = 2,
-                .value = (const uint8_t[]){0x05, 0xE0},
+        .pack =
+            {
+                .child =
+                    &(struct euicc_derutil_node){
+                        .tag = 0x82, // resetOptions
+                        .length = 2,
+                        .value = (const uint8_t[]){0x05, 0xE0},
+                    },
             },
-        },
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
@@ -377,13 +381,15 @@ int es10c_get_eid(struct euicc_ctx *ctx, char **eidValue)
     int fret = 0;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF3E, // GetEuiccDataRequest
-        .pack = {
-            .child = &(struct euicc_derutil_node){
-                .tag = 0x5C, // tagList
-                .length = 1,
-                .value = (const uint8_t[]){0x5A},
+        .pack =
+            {
+                .child =
+                    &(struct euicc_derutil_node){
+                        .tag = 0x5C, // tagList
+                        .length = 1,
+                        .value = (const uint8_t[]){0x5A},
+                    },
             },
-        },
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;

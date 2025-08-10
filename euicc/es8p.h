@@ -1,6 +1,6 @@
 #pragma once
-#include "euicc.h"
 #include "es10c.h"
+#include "euicc.h"
 
 struct es8p_metadata
 {

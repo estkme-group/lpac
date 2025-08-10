@@ -1,9 +1,9 @@
 #include "list.h"
+#include <main.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <main.h>
+#include <unistd.h>
 
 #include <euicc/es10b.h>
 #include <euicc/tostr.h>
@@ -27,7 +27,8 @@ static int applet_main(int argc, char **argv)
 
         jnotification = cJSON_CreateObject();
         cJSON_AddNumberToObject(jnotification, "seqNumber", rptr->seqNumber);
-        cJSON_AddStringOrNullToObject(jnotification, "profileManagementOperation", euicc_profilemanagementoperation2str(rptr->profileManagementOperation));
+        cJSON_AddStringOrNullToObject(jnotification, "profileManagementOperation",
+                                      euicc_profilemanagementoperation2str(rptr->profileManagementOperation));
         cJSON_AddStringOrNullToObject(jnotification, "notificationAddress", rptr->notificationAddress);
         cJSON_AddStringOrNullToObject(jnotification, "iccid", rptr->iccid);
         cJSON_AddItemToArray(jdata, jnotification);

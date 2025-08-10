@@ -1,8 +1,8 @@
 #include "notification.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <main.h>
 
@@ -20,7 +20,8 @@ static const struct applet_entry *applets[] = {
 static int applet_main(const int argc, char **argv)
 {
     const int ret = main_init_euicc();
-    if (ret != 0) return ret;
+    if (ret != 0)
+        return ret;
     return applet_entry(argc, argv, applets);
 }
 

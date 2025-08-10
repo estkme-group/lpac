@@ -1,8 +1,8 @@
 #include "jprint.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 void jprint_error(const char *function_name, const char *detail)
 {

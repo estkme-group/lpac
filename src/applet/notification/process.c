@@ -1,10 +1,10 @@
 #include "process.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <errno.h>
 #include <main.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>

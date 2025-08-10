@@ -1,33 +1,35 @@
 #include "download.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <getopt.h>
 #include <main.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <euicc/es10a.h>
 #include <euicc/es10b.h>
-#include <euicc/es9p.h>
 #include <euicc/es8p.h>
+#include <euicc/es9p.h>
 #include <euicc/tostr.h>
 
 static const char *opt_string = "s:m:i:c:a:ph?";
 
 static volatile int cancelled = 0;
 
-#define CANCELPOINT() \
-    if (cancelled)    \
-    {                 \
-        goto err;     \
+#define CANCELPOINT()                                                                                                  \
+    if (cancelled)                                                                                                     \
+    {                                                                                                                  \
+        goto err;                                                                                                      \
     }
 
 #ifdef _WIN32
 // https://stackoverflow.com/a/58244503
-char *strsep(char **stringp, const char *__delim) {
+char *strsep(char **stringp, const char *__delim)
+{
     char *rv = *stringp;
-    if (!rv) return rv;
+    if (!rv)
+        return rv;
     *stringp += strcspn(*stringp, __delim);
     if (**stringp)
         *(*stringp)++ = '\0';
@@ -50,7 +52,7 @@ static cJSON *build_download_result_json(const struct es10b_load_bound_profile_p
         // Memory allocation failed, return NULL to indicate error
         return NULL;
     }
-    cJSON_AddNumberToObject(jdata, "seqNumber", (double) result->seqNumber);
+    cJSON_AddNumberToObject(jdata, "seqNumber", (double)result->seqNumber);
     cJSON_AddStringToObject(jdata, "bppCommandId", euicc_bppcommandid2str(result->bppCommandId));
     cJSON_AddStringToObject(jdata, "errorReason", euicc_errorreason2str(result->errorReason));
     return jdata;
@@ -229,7 +231,8 @@ static int applet_main(int argc, char **argv)
     if (euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)
     {
         CANCELPOINT();
-        if (es8p_metadata_parse(&profile_metadata, euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata))
+        if (es8p_metadata_parse(&profile_metadata,
+                                euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata))
         {
             error_function_name = "es8p_meatadata_parse";
             error_detail = NULL;
@@ -243,7 +246,8 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringOrNullToObject(jmetadata, "profileName", profile_metadata->profileName);
         cJSON_AddStringOrNullToObject(jmetadata, "iconType", euicc_icontype2str(profile_metadata->iconType));
         cJSON_AddStringOrNullToObject(jmetadata, "icon", profile_metadata->icon);
-        cJSON_AddStringOrNullToObject(jmetadata, "profileClass", euicc_profileclass2str(profile_metadata->profileClass));
+        cJSON_AddStringOrNullToObject(jmetadata, "profileClass",
+                                      euicc_profileclass2str(profile_metadata->profileClass));
 
         jprint_progress_obj("es8p_meatadata_parse", jmetadata);
 
@@ -285,7 +289,8 @@ static int applet_main(int argc, char **argv)
 
         char buffer[256];
 
-        snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
+        snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId),
+                 euicc_errorreason2str(download_result.errorReason));
         error_function_name = "es10b_load_bound_profile_package";
         error_detail = buffer;
 

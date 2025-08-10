@@ -3,8 +3,8 @@
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
 #pragma once
-#include <libqmi-glib.h>
 #include <helpers.h>
+#include <libqmi-glib.h>
 
 #define ENV_UIM_SLOT APDU_ENV_NAME(QMI, UIM_SLOT)
 #define ENV_DEVICE APDU_ENV_NAME(QMI, DEVICE)
@@ -12,62 +12,27 @@
 #ifdef LPAC_WITH_APDU_QMI_QRTR
 #include <libqrtr-glib.h>
 
-QrtrBus *qrtr_bus_new_sync(
-    GMainContext *context,
-    GError **error);
+QrtrBus *qrtr_bus_new_sync(GMainContext *context, GError **error);
 
-QmiDevice *
-qmi_device_new_from_node_sync(
-    QrtrNode *node,
-    GMainContext *context,
-    GError **error);
+QmiDevice *qmi_device_new_from_node_sync(QrtrNode *node, GMainContext *context, GError **error);
 #endif
 
 #ifdef LPAC_WITH_APDU_QMI
-QmiDevice *
-qmi_device_new_from_path(
-    GFile *file,
-    GMainContext *context,
-    GError **error);
+QmiDevice *qmi_device_new_from_path(GFile *file, GMainContext *context, GError **error);
 #endif
 
-gboolean
-qmi_device_open_sync(
-    QmiDevice *device,
-    QmiDeviceOpenFlags flags,
-    GMainContext *context,
-    GError **error);
+gboolean qmi_device_open_sync(QmiDevice *device, QmiDeviceOpenFlags flags, GMainContext *context, GError **error);
 
-QmiClient *
-qmi_device_allocate_client_sync(
-    QmiDevice *device,
-    GMainContext *context,
-    GError **error);
+QmiClient *qmi_device_allocate_client_sync(QmiDevice *device, GMainContext *context, GError **error);
 
-gboolean
-qmi_device_release_client_sync(
-    QmiDevice *device,
-    QmiClient *client,
-    GMainContext *context,
-    GError **error);
+gboolean qmi_device_release_client_sync(QmiDevice *device, QmiClient *client, GMainContext *context, GError **error);
 
-QmiMessageUimOpenLogicalChannelOutput *
-qmi_client_uim_open_logical_channel_sync(
-    QmiClientUim *client,
-    QmiMessageUimOpenLogicalChannelInput *input,
-    GMainContext *context,
-    GError **error);
+QmiMessageUimOpenLogicalChannelOutput *qmi_client_uim_open_logical_channel_sync(
+    QmiClientUim *client, QmiMessageUimOpenLogicalChannelInput *input, GMainContext *context, GError **error);
 
-QmiMessageUimLogicalChannelOutput *
-qmi_client_uim_logical_channel_sync(
-    QmiClientUim *client,
-    QmiMessageUimLogicalChannelInput *input,
-    GMainContext *context,
-    GError **error);
+QmiMessageUimLogicalChannelOutput *qmi_client_uim_logical_channel_sync(QmiClientUim *client,
+                                                                       QmiMessageUimLogicalChannelInput *input,
+                                                                       GMainContext *context, GError **error);
 
-QmiMessageUimSendApduOutput *
-qmi_client_uim_send_apdu_sync(
-    QmiClientUim *client,
-    QmiMessageUimSendApduInput *input,
-    GMainContext *context,
-    GError **error);
+QmiMessageUimSendApduOutput *qmi_client_uim_send_apdu_sync(QmiClientUim *client, QmiMessageUimSendApduInput *input,
+                                                           GMainContext *context, GError **error);

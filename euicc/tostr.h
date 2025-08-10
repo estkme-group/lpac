@@ -2,8 +2,8 @@
 #include <inttypes.h>
 #include <stddef.h>
 
-#include "es10c.h"
 #include "es10b.h"
+#include "es10c.h"
 
 const char *euicc_profilestate2str(enum es10c_profile_state value);
 const char *euicc_profileclass2str(enum es10c_profile_class value);

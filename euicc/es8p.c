@@ -3,12 +3,12 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
+#include "base64.h"
 #include "derutil.h"
 #include "hexutil.h"
-#include "base64.h"
 
 int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Metadata)
 {

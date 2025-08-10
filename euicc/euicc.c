@@ -4,21 +4,23 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #define ISD_R_AID "\xA0\x00\x00\x05\x59\x10\x10\xFF\xFF\xFF\xFF\x89\x00\x00\x01\x00"
 
 #define APDU_EUICC_HEADER 0x80, 0xE2
 #define APDU_CONTINUE_READ_HEADER 0x80, 0xC0, 0x00, 0x00
 
-static int es10x_transmit(struct euicc_ctx *ctx, struct apdu_response *response, struct apdu_request *req, unsigned req_len)
+static int es10x_transmit(struct euicc_ctx *ctx, struct apdu_response *response, struct apdu_request *req,
+                          unsigned req_len)
 {
     req->cla = (req->cla & 0xF0) | (ctx->apdu._internal.logic_channel & 0x0F);
     return euicc_apdu_transmit(ctx, response, req, req_len);
 }
 
-static int es10x_transmit_iter(struct euicc_ctx *ctx, struct apdu_request *req, unsigned req_len, int (*callback)(struct apdu_response *response, void *userdata), void *userdata)
+static int es10x_transmit_iter(struct euicc_ctx *ctx, struct apdu_request *req, unsigned req_len,
+                               int (*callback)(struct apdu_response *response, void *userdata), void *userdata)
 {
     struct apdu_request *request = NULL;
     struct apdu_response response;
@@ -65,7 +67,8 @@ static int es10x_transmit_iter(struct euicc_ctx *ctx, struct apdu_request *req, 
     } while (1);
 }
 
-int es10x_command_buildrequest(struct euicc_ctx *ctx, struct apdu_request **request, uint8_t p1, uint8_t p2, const uint8_t *der_req, unsigned req_len)
+int es10x_command_buildrequest(struct euicc_ctx *ctx, struct apdu_request **request, uint8_t p1, uint8_t p2,
+                               const uint8_t *der_req, unsigned req_len)
 {
     int ret;
 
@@ -78,17 +81,20 @@ int es10x_command_buildrequest(struct euicc_ctx *ctx, struct apdu_request **requ
     return ret;
 }
 
-static int es10x_command_buildrequest_continue(struct euicc_ctx *ctx, uint8_t reqseq, struct apdu_request **request, const uint8_t *der_req, unsigned req_len)
+static int es10x_command_buildrequest_continue(struct euicc_ctx *ctx, uint8_t reqseq, struct apdu_request **request,
+                                               const uint8_t *der_req, unsigned req_len)
 {
     return es10x_command_buildrequest(ctx, request, 0x11, reqseq, der_req, req_len);
 }
 
-static int es10x_command_buildrequest_last(struct euicc_ctx *ctx, uint8_t reqseq, struct apdu_request **request, const uint8_t *der_req, unsigned req_len)
+static int es10x_command_buildrequest_last(struct euicc_ctx *ctx, uint8_t reqseq, struct apdu_request **request,
+                                           const uint8_t *der_req, unsigned req_len)
 {
     return es10x_command_buildrequest(ctx, request, 0x91, reqseq, der_req, req_len);
 }
 
-int es10x_command_iter(struct euicc_ctx *ctx, const uint8_t *der_req, unsigned req_len, int (*callback)(struct apdu_response *response, void *userdata), void *userdata)
+int es10x_command_iter(struct euicc_ctx *ctx, const uint8_t *der_req, unsigned req_len,
+                       int (*callback)(struct apdu_response *response, void *userdata), void *userdata)
 {
     int ret, reqseq;
     struct apdu_request *req;

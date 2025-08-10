@@ -2,20 +2,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef _WIN32
-#include <winscard.h>
 #include "pcsc_win32.h"
+#include <winscard.h>
 #else
-#include <PCSC/wintypes.h>
 #include <PCSC/winscard.h>
+#include <PCSC/wintypes.h>
 #endif
 
-#include <helpers.h>
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
+#include <helpers.h>
 
 #define ENV_DRV_IFID APDU_ENV_NAME(PCSC, DRV_IFID)
 #define ENV_DRV_NAME APDU_ENV_NAME(PCSC, DRV_NAME)
@@ -32,7 +32,8 @@ static SCARDCONTEXT pcsc_ctx;
 static SCARDHANDLE pcsc_hCard;
 static LPSTR pcsc_mszReaders;
 
-static void pcsc_error(const char *method, const int32_t code) {
+static void pcsc_error(const char *method, const int32_t code)
+{
     fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
 }
 
@@ -112,7 +113,7 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
 {
     DWORD dwActiveProtocol;
 
-    const int id = getenv_or_default(ENV_DRV_IFID, (int) -1);
+    const int id = getenv_or_default(ENV_DRV_IFID, (int)-1);
     if (id != -1 && id != index)
     {
         const char *part_name = getenv(ENV_DRV_NAME);
@@ -122,7 +123,8 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
         }
     }
 
-    const int ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
+    const int ret =
+        SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS)
     {
         pcsc_error("SCardConnect()", ret);
@@ -208,7 +210,8 @@ static int pcsc_logic_channel_open(const uint8_t *aid, uint8_t aid_len)
     }
 
     rx_len = sizeof(rx);
-    if (pcsc_transmit_lowlevel(rx, &rx_len, (const uint8_t *)APDU_OPENLOGICCHANNEL, sizeof(APDU_OPENLOGICCHANNEL) - 1) < 0)
+    if (pcsc_transmit_lowlevel(rx, &rx_len, (const uint8_t *)APDU_OPENLOGICCHANNEL, sizeof(APDU_OPENLOGICCHANNEL) - 1) <
+        0)
     {
         goto err;
     }
@@ -322,7 +325,8 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     }
 
     rx_len = sizeof(rx);
-    pcsc_transmit_lowlevel(rx, &rx_len, (const uint8_t *)APDU_TERMINAL_CAPABILITIES, sizeof(APDU_TERMINAL_CAPABILITIES) - 1);
+    pcsc_transmit_lowlevel(rx, &rx_len, (const uint8_t *)APDU_TERMINAL_CAPABILITIES,
+                           sizeof(APDU_TERMINAL_CAPABILITIES) - 1);
 
     return 0;
 }
@@ -332,7 +336,8 @@ static void apdu_interface_disconnect(struct euicc_ctx *ctx)
     pcsc_close();
 }
 
-static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
+                                   uint32_t tx_len)
 {
     *rx = malloc(EUICC_INTERFACE_BUFSZ);
     if (!*rx)
@@ -471,4 +476,3 @@ const struct euicc_driver driver_apdu_pcsc = {
     .main = libapduinterface_main,
     .fini = (void (*)(void *))libapduinterface_fini,
 };
-

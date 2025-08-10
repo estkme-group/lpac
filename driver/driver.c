@@ -60,9 +60,7 @@ static const struct euicc_driver *drivers[] = {
 #ifdef LPAC_WITH_HTTP_CURL
     &driver_http_curl,
 #endif
-    &driver_apdu_stdio,
-    &driver_http_stdio,
-    NULL,
+    &driver_apdu_stdio,        &driver_http_stdio, NULL,
 };
 
 static const struct euicc_driver *_driver_apdu = NULL;

@@ -15,6 +15,7 @@ struct euicc_apdu_interface
 
 struct euicc_http_interface
 {
-    int (*transmit)(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers);
+    int (*transmit)(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len,
+                    const uint8_t *tx, uint32_t tx_len, const char **headers);
     void *userdata;
 };

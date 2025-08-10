@@ -1,27 +1,27 @@
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
-#include <euicc/interface.h>
-#include <euicc/hexutil.h>
-#include <euicc/euicc.h>
 #include <driver.h>
+#include <euicc/euicc.h>
+#include <euicc/hexutil.h>
+#include <euicc/interface.h>
 
 #include "applet.h"
 #include "applet/chip.h"
-#include "applet/profile.h"
 #include "applet/notification.h"
+#include "applet/profile.h"
 #include "applet/version.h"
 
 #ifdef WIN32
-#include <windef.h>
+#include <processenv.h>
 #include <processthreadsapi.h>
 #include <shellapi.h>
 #include <stringapiset.h>
-#include <processenv.h>
+#include <windef.h>
 #endif
 
 #define ENV_ISD_R_AID "LPAC_CUSTOM_ISD_R_AID"
@@ -56,45 +56,48 @@ struct applet_entry driver_applet = {
 };
 
 static const struct applet_entry *applets[] = {
-    &driver_applet,
-    &applet_chip,
-    &applet_profile,
-    &applet_notification,
-    &applet_version,
-    NULL,
+    &driver_applet, &applet_chip, &applet_profile, &applet_notification, &applet_version, NULL,
 };
 
 static int euicc_ctx_inited = 0;
 struct euicc_ctx euicc_ctx = {0};
 
-static int setup_aid(const uint8_t **aid, uint8_t *aid_len) {
+static int setup_aid(const uint8_t **aid, uint8_t *aid_len)
+{
     *aid = NULL;
     *aid_len = 0;
 
     const char *value = getenv(ENV_ISD_R_AID);
-    if (value == NULL) return 0;
+    if (value == NULL)
+        return 0;
 
     uint8_t *parsed = malloc(ISD_R_AID_MAX_LENGTH);
     const int n = euicc_hexutil_hex2bin(parsed, ISD_R_AID_MAX_LENGTH, value);
-    if (n < 1) return -1;
+    if (n < 1)
+        return -1;
 
     *aid = parsed;
     *aid_len = n;
     return 0;
 }
 
-static int setup_mss(uint8_t *mss) {
+static int setup_mss(uint8_t *mss)
+{
     *mss = 0;
 
     const char *value = getenv(ENV_ES10X_MSS);
-    if (value == NULL) return 0;
+    if (value == NULL)
+        return 0;
 
     const long parsed = strtol(value, NULL, 10);
-    if (parsed == 0) return 0;
-    if (parsed < ES10X_MSS_MIN_VALUE) return -1;
-    if (parsed > ES10X_MSS_MAX_VALUE) return -1;
+    if (parsed == 0)
+        return 0;
+    if (parsed < ES10X_MSS_MIN_VALUE)
+        return -1;
+    if (parsed > ES10X_MSS_MAX_VALUE)
+        return -1;
 
-    *mss = (uint8_t) parsed;
+    *mss = (uint8_t)parsed;
     return 0;
 }
 

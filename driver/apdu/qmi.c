@@ -17,7 +17,8 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     const char *device_path = getenv(ENV_DEVICE);
     GFile *file;
 
-    if (device_path == NULL) {
+    if (device_path == NULL)
+    {
         fprintf(stderr, "No QMI device path specified!\n");
         return -1;
     }
@@ -26,19 +27,22 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     qmi_priv->context = g_main_context_new();
 
     device = qmi_device_new_from_path(file, qmi_priv->context, &error);
-    if (!device) {
+    if (!device)
+    {
         fprintf(stderr, "error: create QMI device from path failed: %s\n", error->message);
         return -1;
     }
 
     qmi_device_open_sync(device, QMI_DEVICE_OPEN_FLAGS_PROXY, qmi_priv->context, &error);
-    if (error) {
+    if (error)
+    {
         fprintf(stderr, "error: open QMI device failed: %s\n", error->message);
         return -1;
     }
 
     client = qmi_device_allocate_client_sync(device, qmi_priv->context, &error);
-    if (!client) {
+    if (!client)
+    {
         fprintf(stderr, "error: allocate QMI client failed: %s\n", error->message);
         return -1;
     }
@@ -56,7 +60,8 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     struct qmi_data *qmi_priv;
 
     qmi_priv = calloc(1, sizeof(struct qmi_data));
-    if(!qmi_priv) {
+    if (!qmi_priv)
+    {
         fprintf(stderr, "Failed allocating memory\n");
         return -1;
     }
@@ -69,10 +74,10 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     ifstruct->transmit = qmi_apdu_interface_transmit;
 
     /*
-    * Allow the user to select the SIM card slot via environment variable.
-    * Use the primary SIM slot if not set.
-    */
-    qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int) 1);
+     * Allow the user to select the SIM card slot via environment variable.
+     * Use the primary SIM slot if not set.
+     */
+    qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int)1);
 
     ifstruct->userdata = qmi_priv;
 

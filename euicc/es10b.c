@@ -1,18 +1,20 @@
-#include "euicc.private.h"
 #include "es10b.h"
+#include "euicc.private.h"
 
+#include "base64.h"
 #include "derutil.h"
 #include "hexutil.h"
-#include "base64.h"
 #include "sha256.h"
 
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
-int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param, struct es10b_prepare_download_param_user *param_user)
+int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse,
+                             struct es10b_prepare_download_param *param,
+                             struct es10b_prepare_download_param_user *param_user)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -25,7 +27,8 @@ int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadRe
 
     uint8_t *smdpSigned2 = NULL, *smdpSignature2 = NULL, *smdpCertificate = NULL;
     int smdpSigned2_len, smdpSignature2_len, smdpCertificate_len;
-    struct euicc_derutil_node n_request, n_smdpSigned2, n_smdpSignature2, n_smdpCertificate, n_hashCc, n_transactionId, n_ccRequiredFlag;
+    struct euicc_derutil_node n_request, n_smdpSigned2, n_smdpSignature2, n_smdpCertificate, n_hashCc, n_transactionId,
+        n_ccRequiredFlag;
 
     *b64_PrepareDownloadResponse = NULL;
 
@@ -106,7 +109,8 @@ int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadRe
 
         memset(&sha256ctx, 0, sizeof(sha256ctx));
         euicc_sha256_init(&sha256ctx);
-        euicc_sha256_update(&sha256ctx, (const uint8_t *)param_user->confirmationCode, strlen(param_user->confirmationCode));
+        euicc_sha256_update(&sha256ctx, (const uint8_t *)param_user->confirmationCode,
+                            strlen(param_user->confirmationCode));
         euicc_sha256_final(&sha256ctx, hashCC);
 
         memset(&sha256ctx, 0, sizeof(sha256ctx));
@@ -180,7 +184,9 @@ exit:
     return fret;
 }
 
-static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const uint8_t *reqbuf, int reqbuf_len)
+static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx,
+                                               struct es10b_load_bound_profile_package_result *result,
+                                               const uint8_t *reqbuf, int reqbuf_len)
 {
     int fret = 0;
     uint8_t *respbuf = NULL;
@@ -204,12 +210,14 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
             goto err;
         }
 
-        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, tmpnode.value, tmpnode.length) < 0) // ProfileInstallationResultData
+        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, tmpnode.value, tmpnode.length) <
+            0) // ProfileInstallationResultData
         {
             goto err;
         }
 
-        if (euicc_derutil_unpack_find_tag(&n_notificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) < 0) // NotificationMetadata
+        if (euicc_derutil_unpack_find_tag(&n_notificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) <
+            0) // NotificationMetadata
         {
             goto err;
         }
@@ -224,7 +232,8 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
             goto err;
         }
 
-        if (euicc_derutil_unpack_find_tag(&n_sequenceNumber, 0x80, n_notificationMetadata.value, n_notificationMetadata.length) == 0)
+        if (euicc_derutil_unpack_find_tag(&n_sequenceNumber, 0x80, n_notificationMetadata.value,
+                                          n_notificationMetadata.length) == 0)
         {
             result->seqNumber = euicc_derutil_convert_bin2long(n_sequenceNumber.value, n_sequenceNumber.length);
         }
@@ -306,7 +315,8 @@ exit:
     return fret;
 }
 
-int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage)
+int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result,
+                                       const char *b64_BoundProfilePackage)
 {
     int fret = 0;
 
@@ -539,7 +549,9 @@ exit:
     return fret;
 }
 
-int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id, uint32_t *transaction_id_len, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param, struct es10b_authenticate_server_param_user *param_user)
+int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id, uint32_t *transaction_id_len,
+                                char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param,
+                                struct es10b_authenticate_server_param_user *param_user)
 {
     int fret = 0;
     uint8_t *reqbuf = NULL;
@@ -550,7 +562,8 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id,
     uint8_t imei[8];
     uint8_t *serverSigned1 = NULL, *serverSignature1 = NULL, *euiccCiPKIdToBeUsed = NULL, *serverCertificate = NULL;
     int serverSigned1_len, serverSignature1_len, euiccCiPKIdToBeUsed_len, serverCertificate_len;
-    struct euicc_derutil_node n_request, n_serverSigned1, n_transactionId, n_serverSignature1, n_euiccCiPKIdToBeUsed, n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
+    struct euicc_derutil_node n_request, n_serverSigned1, n_transactionId, n_serverSignature1, n_euiccCiPKIdToBeUsed,
+        n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
 
     *transaction_id = NULL;
     *transaction_id_len = 0;
@@ -753,7 +766,8 @@ exit:
     return fret;
 }
 
-int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param)
+int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionResponse,
+                           struct es10b_cancel_session_param *param)
 {
     int fret = 0;
     struct euicc_derutil_node n_request, n_transactionId, n_reason;
@@ -872,7 +886,8 @@ int es10b_prepare_download(struct euicc_ctx *ctx, const char *confirmationCode)
         return -1;
     }
 
-    fret = es10b_prepare_download_r(ctx, &ctx->http._internal.b64_prepare_download_response, ctx->http._internal.prepare_download_param, &param_user);
+    fret = es10b_prepare_download_r(ctx, &ctx->http._internal.b64_prepare_download_response,
+                                    ctx->http._internal.prepare_download_param, &param_user);
     if (fret < 0)
     {
         ctx->http._internal.b64_prepare_download_response = NULL;
@@ -963,7 +978,10 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, con
         return -1;
     }
 
-    fret = es10b_authenticate_server_r(ctx, &ctx->http._internal.transaction_id_bin, &ctx->http._internal.transaction_id_bin_len, &ctx->http._internal.b64_authenticate_server_response, ctx->http._internal.authenticate_server_param, &param_user);
+    fret = es10b_authenticate_server_r(ctx, &ctx->http._internal.transaction_id_bin,
+                                       &ctx->http._internal.transaction_id_bin_len,
+                                       &ctx->http._internal.b64_authenticate_server_response,
+                                       ctx->http._internal.authenticate_server_param, &param_user);
     if (fret < 0)
     {
         ctx->http._internal.b64_authenticate_server_response = NULL;
@@ -1052,7 +1070,8 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
     n_NotificationMetadata.self.ptr = n_notificationMetadataList.value;
     n_NotificationMetadata.self.length = 0;
 
-    while (euicc_derutil_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value, n_notificationMetadataList.length) == 0)
+    while (euicc_derutil_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value,
+                                     n_notificationMetadataList.length) == 0)
     {
         struct es10b_notification_metadata_list *p;
 
@@ -1072,7 +1091,8 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
         tmpnode.self.ptr = n_NotificationMetadata.value;
         tmpnode.self.length = 0;
         p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_NULL;
-        while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_NotificationMetadata.value, n_NotificationMetadata.length) == 0)
+        while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_NotificationMetadata.value,
+                                         n_NotificationMetadata.length) == 0)
         {
             switch (tmpnode.tag)
             {
@@ -1141,7 +1161,8 @@ exit:
     return fret;
 }
 
-int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification, unsigned long seqNumber)
+int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification,
+                                      unsigned long seqNumber)
 {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
@@ -1195,7 +1216,8 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_alias_tags(&n_PendingNotification, (uint16_t[]){0xBF37, 0x30}, 2, tmpnode.value, tmpnode.length) < 0)
+    if (euicc_derutil_unpack_find_alias_tags(&n_PendingNotification, (uint16_t[]){0xBF37, 0x30}, 2, tmpnode.value,
+                                             tmpnode.length) < 0)
     {
         goto err;
     }
@@ -1203,7 +1225,8 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
     switch (n_PendingNotification.tag)
     {
     case 0xBF37: // profileInstallationResult
-        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, n_PendingNotification.value, n_PendingNotification.length) < 0)
+        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, n_PendingNotification.value, n_PendingNotification.length) <
+            0)
         {
             goto err;
         }
@@ -1213,7 +1236,8 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
         }
         break;
     case 0x30: // otherSignedNotification
-        if (euicc_derutil_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, n_PendingNotification.value, n_PendingNotification.length) < 0)
+        if (euicc_derutil_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, n_PendingNotification.value,
+                                          n_PendingNotification.length) < 0)
         {
             goto err;
         }
@@ -1238,7 +1262,8 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
     {
         goto err;
     }
-    if (euicc_base64_encode(PendingNotification->b64_PendingNotification, n_PendingNotification.self.ptr, n_PendingNotification.self.length) < 0)
+    if (euicc_base64_encode(PendingNotification->b64_PendingNotification, n_PendingNotification.self.ptr,
+                            n_PendingNotification.self.length) < 0)
     {
         goto err;
     }
@@ -1420,7 +1445,8 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
                 n_allowed_operator.self.ptr = tmpchildnode.value;
                 n_allowed_operator.self.length = 0;
 
-                while (euicc_derutil_unpack_next(&n_allowed_operator, &n_allowed_operator, tmpchildnode.value, tmpchildnode.length) == 0)
+                while (euicc_derutil_unpack_next(&n_allowed_operator, &n_allowed_operator, tmpchildnode.value,
+                                                 tmpchildnode.length) == 0)
                 {
                     p = malloc(sizeof(struct es10b_operation_id));
                     if (!p)
@@ -1432,7 +1458,8 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
                     n_operator.self.ptr = n_allowed_operator.value;
                     n_operator.self.length = 0;
 
-                    while (euicc_derutil_unpack_next(&n_operator, &n_operator, n_allowed_operator.value, n_allowed_operator.length) == 0)
+                    while (euicc_derutil_unpack_next(&n_operator, &n_operator, n_allowed_operator.value,
+                                                     n_allowed_operator.length) == 0)
                     {
                         if (n_operator.length == 0)
                         {
@@ -1442,15 +1469,18 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
                         {
                         case 0x80: // mcc_mnc
                             p->plmn = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->plmn, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->plmn, (n_operator.length * 2) + 1, n_operator.value,
+                                                  n_operator.length);
                             break;
                         case 0x81: // gid1
                             p->gid1 = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->gid1, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->gid1, (n_operator.length * 2) + 1, n_operator.value,
+                                                  n_operator.length);
                             break;
                         case 0x82: // gid2
                             p->gid2 = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->gid2, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->gid2, (n_operator.length * 2) + 1, n_operator.value,
+                                                  n_operator.length);
                             break;
                         }
                     }

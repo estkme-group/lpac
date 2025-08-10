@@ -132,12 +132,18 @@ struct es10b_operation_id
     struct es10b_operation_id *next;
 };
 
-int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param, struct es10b_prepare_download_param_user *param_user);
-int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage);
+int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse,
+                             struct es10b_prepare_download_param *param,
+                             struct es10b_prepare_download_param_user *param_user);
+int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result,
+                                       const char *b64_BoundProfilePackage);
 int es10b_get_euicc_challenge_r(struct euicc_ctx *ctx, char **b64_euiccChallenge);
 int es10b_get_euicc_info_r(struct euicc_ctx *ctx, char **b64_EUICCInfo1);
-int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id, uint32_t *transaction_id_len, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param, struct es10b_authenticate_server_param_user *param_user);
-int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param);
+int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id, uint32_t *transaction_id_len,
+                                char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param,
+                                struct es10b_authenticate_server_param_user *param_user);
+int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionResponse,
+                           struct es10b_cancel_session_param *param);
 
 void es10b_prepare_download_param_free(struct es10b_prepare_download_param *param);
 void es10b_authenticate_server_param_free(struct es10b_authenticate_server_param *param);
@@ -149,7 +155,8 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, con
 int es10b_cancel_session(struct euicc_ctx *ctx, enum es10b_cancel_session_reason reason);
 
 int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList);
-int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification, unsigned long seqNumber);
+int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification,
+                                      unsigned long seqNumber);
 int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber);
 
 void es10b_notification_metadata_list_free_all(struct es10b_notification_metadata_list *notificationMetadataList);
