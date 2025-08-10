@@ -25,6 +25,7 @@ endif()
 target_link_libraries(euicc-drivers euicc cjson-static)
 target_include_directories(euicc-drivers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/helpers.c)
 target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/stdio.c)
 target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/stdio.c)
 
@@ -51,13 +52,19 @@ endif()
 
 if(LPAC_WITH_APDU_AT)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_AT")
-    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at.c)
+    target_sources(euicc-drivers PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_common.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at.c
+    )
 endif()
 
 if(LPAC_WITH_APDU_AT_WIN32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_AT_WIN32")
     target_link_libraries(euicc-drivers setupapi)
-    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_win32.c)
+    target_sources(euicc-drivers PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_common.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_win32.c
+    )
 endif()
 
 if(LPAC_WITH_APDU_GBINDER)

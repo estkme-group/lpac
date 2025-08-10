@@ -4,8 +4,9 @@
  */
 #include "qmi.h"
 
-#include <stdio.h>
 #include "qmi_common.h"
+#include <helpers.h>
+#include <stdio.h>
 
 static int apdu_interface_connect(struct euicc_ctx *ctx)
 {
@@ -13,10 +14,10 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     g_autoptr(GError) error = NULL;
     QmiDevice *device = NULL;
     QmiClient *client = NULL;
-    const char *device_path;
+    const char *device_path = getenv(ENV_DEVICE);
     GFile *file;
 
-    if (!(device_path = getenv("QMI_DEVICE"))) {
+    if (device_path == NULL) {
         fprintf(stderr, "No QMI device path specified!\n");
         return -1;
     }
@@ -49,6 +50,9 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
+    set_deprecated_env_name(ENV_UIM_SLOT, "UIM_SLOT");
+    set_deprecated_env_name(ENV_DEVICE, "QMI_DEVICE");
+
     struct qmi_data *qmi_priv;
 
     qmi_priv = calloc(1, sizeof(struct qmi_data));
@@ -68,10 +72,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     * Allow the user to select the SIM card slot via environment variable.
     * Use the primary SIM slot if not set.
     */
-    if (getenv("UIM_SLOT"))
-        qmi_priv->uimSlot = atoi(getenv("UIM_SLOT"));
-    else
-        qmi_priv->uimSlot = 1;
+    qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int) 1);
 
     ifstruct->userdata = qmi_priv;
 

@@ -1,6 +1,7 @@
 // vim: expandtab sw=4 ts=4:
 #include "gbinder_hidl.h"
 
+#include <helpers.h>
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
@@ -8,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG (getenv("GBINDER_APDU_DEBUG") != NULL && strcmp("true", getenv("GBINDER_APDU_DEBUG")) == 0)
+#define ENV_DEBUG APDU_ENV_NAME(GBINDER, DEBUG)
 
 #define HIDL_SERVICE_DEVICE "/dev/hwbinder"
 #define HIDL_SERVICE_IFACE "android.hardware.radio@1.0::IRadio"
@@ -244,7 +245,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     uint8_t tx_hex[4096] = {0};
     euicc_hexutil_bin2hex(tx_hex, 4096, &tx[5], tx_len - 5);
 
-    if (DEBUG)
+    if (getenv_or_default(ENV_DEBUG, false))
         fprintf(stderr, "APDU req: %s\n", tx_hex);
 
     struct sim_apdu apdu = {
@@ -277,7 +278,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
         return -lastRadioErr;
     }
 
-    if (DEBUG)
+    if (getenv_or_default(ENV_DEBUG, false))
         fprintf(stderr, "APDU resp: %d%d %d %s\n", lastIccIoResult.sw1, lastIccIoResult.sw2, lastIccIoResult.simResponse.len, lastIccIoResult.simResponse.data.str);
 
     *rx_len = lastIccIoResult.simResponse.len / 2 + 2;
@@ -294,6 +295,8 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 {
+    set_deprecated_env_name(ENV_DEBUG, "GBINDER_APDU_DEBUG");
+
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = apdu_interface_disconnect;
     ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
@@ -322,7 +325,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
 const struct euicc_driver driver_apdu_gbinder_hidl = {
     .type = DRIVER_APDU,
     .name = "gbinder_hidl",
-    .init = (int (*)(void *))libapduinterface_init,
+    .init = (int (*)(void *)) libapduinterface_init,
     .main = libapduinterface_main,
-    .fini = (void (*)(void *))libapduinterface_fini,
+    .fini = (void (*)(void *)) libapduinterface_fini,
 };
