@@ -19,6 +19,7 @@
 
 #define ENV_DRV_IFID APDU_ENV_NAME(PCSC, DRV_IFID)
 #define ENV_DRV_NAME APDU_ENV_NAME(PCSC, DRV_NAME)
+#define ENV_DRV_IGNORE_NAME APDU_ENV_NAME(PCSC, DRV_IGNORE_NAME)
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -119,6 +120,19 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
         if (strstr(reader, part_name) == NULL)
         {
             return 0;
+        }
+    }
+
+    char *value = getenv(ENV_DRV_IGNORE_NAME);
+    if (value != NULL)
+    {
+        const char *token = NULL;
+        for (token = strtok(value, ";"); token != NULL; token = strtok(NULL, ";"))
+        {
+            if (strstr(reader, token) != NULL)
+            {
+                return 0; // reader name is in ignore list, skip
+            }
         }
     }
 
