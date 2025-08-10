@@ -19,6 +19,7 @@
 
 #define ENV_DRV_IFID APDU_ENV_NAME(PCSC, DRV_IFID)
 #define ENV_DRV_NAME APDU_ENV_NAME(PCSC, DRV_NAME)
+#define ENV_DRV_IGNORE_NAME APDU_ENV_NAME(PCSC, DRV_IGNORE_NAME)
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -34,6 +35,17 @@ static LPSTR pcsc_mszReaders;
 
 static void pcsc_error(const char *method, const int32_t code) {
     fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
+}
+
+static bool is_ignored_reader_name(const char *reader) {
+    char *value = getenv(ENV_DRV_IGNORE_NAME);
+    if (value == NULL) return false;
+    const char *token = NULL;
+    for (token = strtok(value, ";"); token != NULL; token = strtok(NULL, ";")) {
+        if (strstr(reader, token) == NULL) continue;
+        return true; // reader name is in ignore list, skip
+    }
+    return false;
 }
 
 static int pcsc_ctx_open(void)
@@ -120,6 +132,10 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
         {
             return 0;
         }
+    }
+
+    if (is_ignored_reader_name(reader)) {
+        return 0; // skip ignored reader names
     }
 
     const int ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
