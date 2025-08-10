@@ -73,7 +73,27 @@ struct euicc_http_interface euicc_driver_interface_http;
 int (*euicc_driver_main_apdu)(int argc, char **argv) = NULL;
 int (*euicc_driver_main_http)(int argc, char **argv) = NULL;
 
-static const struct euicc_driver *_find_driver(enum euicc_driver_type type, const char *name)
+static const char **get_driver_names(const enum euicc_driver_type type)
+{
+    static const char *names[32];
+    int i = 0;
+
+    for (int j = 0; drivers[j] != NULL; j++)
+    {
+        const struct euicc_driver *d = drivers[j];
+        if (d->type != type)
+        {
+            continue;
+        }
+        names[i++] = d->name;
+    }
+    names[i] = NULL;
+
+    return names;
+}
+
+static const struct euicc_driver *find_driver(const enum euicc_driver_type type,
+                                              const char *name)
 {
     for (int i = 0; drivers[i] != NULL; i++)
     {
@@ -96,17 +116,27 @@ static const struct euicc_driver *_find_driver(enum euicc_driver_type type, cons
 
 int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name)
 {
-    _driver_apdu = _find_driver(DRIVER_APDU, apdu_driver_name);
+    _driver_apdu = find_driver(DRIVER_APDU, apdu_driver_name);
     if (_driver_apdu == NULL)
     {
         fprintf(stderr, "No APDU driver found\n");
+        const char **names = get_driver_names(DRIVER_APDU);
+        for (int i = 0; names[i] != NULL; i++)
+        {
+            fprintf(stderr, "APDU Driver Name: %s\n", names[i]);
+        }
         return -1;
     }
 
-    _driver_http = _find_driver(DRIVER_HTTP, http_driver_name);
+    _driver_http = find_driver(DRIVER_HTTP, http_driver_name);
     if (_driver_http == NULL)
     {
         fprintf(stderr, "No HTTP driver found\n");
+        const char **names = get_driver_names(DRIVER_HTTP);
+        for (int i = 0; names[i] != NULL; i++)
+        {
+            fprintf(stderr, "HTTP Driver Name: %s\n", names[i]);
+        }
         return -1;
     }
 
