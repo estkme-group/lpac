@@ -125,6 +125,8 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
     const int ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS)
     {
+        // see <https://blog.apdu.fr/posts/2024/12/gnupg-and-pcsc-conflicts-episode-3/>
+        if (ret == SCARD_E_SHARING_VIOLATION) return 0; // skip
         pcsc_error("SCardConnect()", ret);
         return -1;
     }
