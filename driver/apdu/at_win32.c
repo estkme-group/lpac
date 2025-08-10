@@ -362,54 +362,6 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     return 0;
 }
 
-static int json_print(cJSON *jpayload)
-{
-    cJSON *jroot = NULL;
-    char *jstr = NULL;
-
-    if (jpayload == NULL)
-    {
-        goto err;
-    }
-
-    jroot = cJSON_CreateObject();
-    if (jroot == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddStringOrNullToObject(jroot, "type", "driver") == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
-    {
-        goto err;
-    }
-
-    jstr = cJSON_PrintUnformatted(jroot);
-
-    if (jstr == NULL)
-    {
-        goto err;
-    }
-    cJSON_Delete(jroot);
-
-    fprintf(stdout, "%s\n", jstr);
-    fflush(stdout);
-
-    free(jstr);
-    jstr = NULL;
-
-    return 0;
-
-err:
-    cJSON_Delete(jroot);
-    free(jstr);
-    return -1;
-}
-
 static int libapduinterface_main(int argc, char **argv)
 {
     if (argc < 2)

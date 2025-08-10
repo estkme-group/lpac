@@ -1,6 +1,9 @@
 #include "driver.h"
 #include "driver.private.h"
 
+#include "cjson/cJSON_ex.h"
+#include "helpers.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -73,25 +76,6 @@ struct euicc_http_interface euicc_driver_interface_http;
 int (*euicc_driver_main_apdu)(int argc, char **argv) = NULL;
 int (*euicc_driver_main_http)(int argc, char **argv) = NULL;
 
-static const char **get_driver_names(const enum euicc_driver_type type)
-{
-    static const char *names[32];
-    int i = 0;
-
-    for (int j = 0; drivers[j] != NULL; j++)
-    {
-        const struct euicc_driver *d = drivers[j];
-        if (d->type != type)
-        {
-            continue;
-        }
-        names[i++] = d->name;
-    }
-    names[i] = NULL;
-
-    return names;
-}
-
 static const struct euicc_driver *find_driver(const enum euicc_driver_type type,
                                               const char *name)
 {
@@ -114,17 +98,51 @@ static const struct euicc_driver *find_driver(const enum euicc_driver_type type,
     return NULL;
 }
 
+int euicc_driver_list(int argc, char **argv) {
+    cJSON *payload = cJSON_CreateObject();
+    if (payload == NULL) return -1;
+
+    const struct euicc_driver *driver;
+    cJSON *name;
+    // APDU Drivers
+    {
+        cJSON *apdu_drivers = cJSON_CreateArray();
+        if (apdu_drivers == NULL) return -1;
+        for (int i = 0; drivers[i] != NULL; i++)
+        {
+            driver = drivers[i];
+            if (driver->type != DRIVER_APDU) continue;
+            name = cJSON_CreateString(driver->name);
+            if (name == NULL) return -1;
+            cJSON_AddItemToArray(apdu_drivers, name);
+        }
+        cJSON_AddItemToObject(payload, "LPAC_APDU", apdu_drivers);
+    }
+    // HTTP Drivers
+    {
+        cJSON *http_drivers = cJSON_CreateArray();
+        if (http_drivers == NULL) return -1;
+        for (int i = 0; drivers[i] != NULL; i++)
+        {
+            driver = drivers[i];
+            if (driver->type != DRIVER_HTTP) continue;
+            name = cJSON_CreateString(driver->name);
+            if (name == NULL) return -1;
+            cJSON_AddItemToArray(http_drivers, name);
+        }
+        cJSON_AddItemToObject(payload, "LPAC_HTTP", http_drivers);
+    }
+
+    json_print(payload);
+    return 0;
+}
+
 int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name)
 {
     _driver_apdu = find_driver(DRIVER_APDU, apdu_driver_name);
     if (_driver_apdu == NULL)
     {
         fprintf(stderr, "No APDU driver found\n");
-        const char **names = get_driver_names(DRIVER_APDU);
-        for (int i = 0; names[i] != NULL; i++)
-        {
-            fprintf(stderr, "APDU Driver Name: %s\n", names[i]);
-        }
         return -1;
     }
 
@@ -132,11 +150,6 @@ int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name
     if (_driver_http == NULL)
     {
         fprintf(stderr, "No HTTP driver found\n");
-        const char **names = get_driver_names(DRIVER_HTTP);
-        for (int i = 0; names[i] != NULL; i++)
-        {
-            fprintf(stderr, "HTTP Driver Name: %s\n", names[i]);
-        }
         return -1;
     }
 

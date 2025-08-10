@@ -45,6 +45,10 @@ static int driver_applet_main(const int argc, char **argv)
             .name = "http",
             .main = euicc_driver_main_http,
         },
+        &(struct applet_entry){
+            .name = "list",
+            .main = euicc_driver_list,
+        },
         NULL,
     };
     return applet_entry(argc, argv, applets);
