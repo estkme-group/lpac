@@ -429,7 +429,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        if (!cJSON_AddStringOrNullToObject(payload, "env", "AT_DEVICE"))
+        if (!cJSON_AddStringOrNullToObject(payload, "env", ENV_AT_DEVICE))
         {
             return -1;
         }
