@@ -9,6 +9,8 @@
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
 
+#include "helpers.h"
+
 static int _process_single(uint32_t seqNumber, uint8_t autoremove)
 {
     int ret;
@@ -24,7 +26,7 @@ static int _process_single(uint32_t seqNumber, uint8_t autoremove)
         return -1;
     }
 
-    euicc_ctx.http.server_address = notification.notificationAddress;
+    euicc_ctx.http.server_address = notification_strstrip(notification.notificationAddress);
 
     jprint_progress("es9p_handle_notification", str_seqNumber);
     if (es9p_handle_notification(&euicc_ctx, notification.b64_PendingNotification))
