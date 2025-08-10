@@ -1,0 +1,108 @@
+#include "process.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <main.h>
+#include <errno.h>
+
+#include <euicc/es10b.h>
+#include <euicc/es10c.h>
+
+#include "helpers.h"
+
+static int retrieve_notification(const char *eid, const uint32_t seqNumber) {
+    struct es10b_pending_notification notification;
+
+    if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber)) {
+        jprint_error("es10b_retrieve_notifications_list", NULL);
+        return -1;
+    }
+
+    cJSON *jroot = cJSON_CreateObject();
+
+    build_notification(&jroot, eid, seqNumber, &notification);
+
+    es10b_pending_notification_free(&notification);
+
+    char *jstr = cJSON_PrintUnformatted(jroot);
+    cJSON_Delete(jroot);
+    printf("%s\n", jstr);
+    fflush(stdout);
+    free(jstr);
+
+    return 0;
+}
+
+static int applet_main(const int argc, char **argv) {
+    static const char *opt_string = "ah?";
+
+    int fret = 0;
+    int all = 0;
+    int opt = 0;
+    char *eid = NULL;
+
+    while ((opt = getopt(argc, argv, opt_string)) != -1) {
+        switch (opt) {
+            case 'a':
+                all = 1;
+                break;
+            case 'h':
+            case '?':
+                printf("Usage: %s [OPTIONS] [seqNumber_0] [seqNumber_1]...\n", argv[0]);
+                printf("\t -a All notifications\n");
+                return -1;
+            default:
+                break;
+        }
+    }
+
+    if (es10c_get_eid(&euicc_ctx, &eid)) {
+        jprint_error("es10c_get_eid", NULL);
+        return -1;
+    }
+
+    if (all) {
+        struct es10b_notification_metadata_list *notifications, *rptr;
+
+        if (es10b_list_notification(&euicc_ctx, &notifications)) {
+            jprint_error("es10b_list_notification", NULL);
+            return -1;
+        }
+
+        rptr = notifications;
+        while (rptr) {
+            if (retrieve_notification(eid, rptr->seqNumber)) {
+                fret = -1;
+                break;
+            }
+            rptr = rptr->next;
+        }
+
+        es10b_notification_metadata_list_free_all(notifications);
+    } else {
+        for (int i = optind; i < argc; i++) {
+            errno = 0;
+            char *str_end;
+            const unsigned long seqNumber = strtoul(argv[i], &str_end, 10);
+            // Although POSIX said user should check errno instead of return value,
+            // but errno may not be set when no conversion is performed according to C99.
+            // Check nptr is same as str_end to ensure there is no conversion.
+            if ((seqNumber == 0 && strcmp(argv[i], str_end)) || errno != 0) {
+                continue;
+            }
+            if (retrieve_notification(eid, seqNumber)) {
+                fret = -1;
+                break;
+            }
+        }
+    }
+
+    return fret;
+}
+
+struct applet_entry applet_notification_dump = {
+    .name = "dump",
+    .main = applet_main,
+};

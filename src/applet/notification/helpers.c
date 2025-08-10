@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <string.h>
 
+
 char *notification_strstrip(char *input) {
     if (input == NULL) return NULL;
 
@@ -22,4 +23,51 @@ char *notification_strstrip(char *input) {
     }
 
     return input;
+}
+
+int build_notification(cJSON **jroot, const char *eid, const uint32_t seqNumber,
+                       const struct es10b_pending_notification *notification) {
+    if (jroot == NULL) return -1;
+    *jroot = cJSON_CreateObject();
+    if (*jroot == NULL) return -1;
+    cJSON_AddStringToObject(*jroot, "type", "notification");
+    cJSON_AddStringToObject(*jroot, "eid", eid);
+    cJSON_AddNumberToObject(*jroot, "seqNumber", seqNumber);
+    cJSON_AddStringToObject(*jroot, "notificationAddress", notification_strstrip(notification->notificationAddress));
+    cJSON_AddStringToObject(*jroot, "pendingNotification", notification->b64_PendingNotification);
+    return 0;
+}
+
+int parse_notification(const cJSON *jroot, const char *eid, uint32_t *seqNumber,
+                       struct es10b_pending_notification *notification) {
+    int fret = 0;
+    const char *value = NULL;
+
+    const cJSON *jvalue = cJSON_GetObjectItem(jroot, "type");
+    if (!cJSON_IsString(jvalue)) goto error;
+    value = cJSON_GetStringValue(jvalue);
+    if (strcmp(value, "notification") != 0) goto error;
+
+    jvalue = cJSON_GetObjectItem(jroot, "eid");
+    if (!cJSON_IsString(jvalue)) goto error;
+    value = cJSON_GetStringValue(jvalue);
+    if (strcmp(value, eid) != 0) goto error;
+
+    jvalue = cJSON_GetObjectItem(jroot, "seqNumber");
+    if (!cJSON_IsNumber(jvalue)) goto error;
+    *seqNumber = (int) cJSON_GetNumberValue(jvalue);
+
+    jvalue = cJSON_GetObjectItem(jroot, "notificationAddress");
+    if (!cJSON_IsString(jvalue)) goto error;
+    notification->notificationAddress = notification_strstrip(cJSON_GetStringValue(jvalue));
+
+    jvalue = cJSON_GetObjectItem(jroot, "pendingNotification");
+    if (!cJSON_IsString(jvalue)) goto error;
+    notification->b64_PendingNotification = cJSON_GetStringValue(jvalue);
+
+    goto exit;
+error:
+    fret = -1;
+exit:
+    return fret;
 }
