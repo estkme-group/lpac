@@ -78,6 +78,11 @@ static int handle_notification(const uint32_t seqNumber, const struct es10b_pend
 }
 
 static int applet_main(const int argc, char **argv) {
+    if (isatty(fileno(stdin))) {
+        jprint_error("This applet must be run with input redirection from a file or pipe.", NULL);
+        return -1;
+    }
+
     int fret = 0;
     char *input = NULL;
     char *eid = NULL;
