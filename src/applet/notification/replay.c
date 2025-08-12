@@ -33,7 +33,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     size_t len = 0;
     int c;
 
-    while ((c = fgetc(stream)) != EOF) {
+    while ((c = fread(stream)) != EOF) {
         if (len + 1 >= *n) {
             // +1 for null terminator
             size_t new_size = *n * 2;
@@ -52,8 +52,8 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
         }
     }
 
-    if (len == 0 && c == EOF) {
-        return -1; // No characters read and EOF reached
+    if (c == EOF) {
+        return -1; // No newline found and EOF reached
     }
 
     (*lineptr)[len] = '\0'; // Null-terminate the string
