@@ -71,7 +71,7 @@ static gboolean is_sim_available(struct qmi_data *qmi_priv)
     return FALSE;
 }
 
-static int select_sim_slot(struct qmi_data *qmi_priv)
+static gboolean select_sim_slot(struct qmi_data *qmi_priv)
 {
     g_autoptr(GError) error = NULL;
     g_autoptr(QmiMessageUimGetSlotStatusOutput) slot_status_output = NULL;
@@ -94,14 +94,14 @@ static int select_sim_slot(struct qmi_data *qmi_priv)
     if (!slot_status_output)
     {
         fprintf(stderr, "error: get slot status failed: %s\n", error->message);
-        return -1;
+        return FALSE;
     }
 
     // Check if the operation was successful
     if (!qmi_message_uim_get_slot_status_output_get_result(slot_status_output, &error))
     {
         fprintf(stderr, "error: get slot status operation failed: %s\n", error->message);
-        return -1;
+        return FALSE;
     }
 
     // Get physical slot status
@@ -110,7 +110,7 @@ static int select_sim_slot(struct qmi_data *qmi_priv)
                                                                          &error))
     {
         fprintf(stderr, "error: get physical slot status failed: %s\n", error->message);
-        return -1;
+        return FALSE;
     }
 
     // Find the active slot
@@ -135,14 +135,14 @@ static int select_sim_slot(struct qmi_data *qmi_priv)
         if (!qmi_message_uim_switch_slot_input_set_logical_slot(switch_slot_input, 1, &error))
         {
             fprintf(stderr, "error: set logical slot failed: %s\n", error->message);
-            return -1;
+            return FALSE;
         }
 
         // Set the physical slot (use the logical slot number as physical slot)
         if (!qmi_message_uim_switch_slot_input_set_physical_slot(switch_slot_input, target_slot, &error))
         {
             fprintf(stderr, "error: set physical slot failed: %s\n", error->message);
-            return -1;
+            return FALSE;
         }
 
         // Switch to the target slot
@@ -153,14 +153,14 @@ static int select_sim_slot(struct qmi_data *qmi_priv)
         if (!switch_slot_output)
         {
             fprintf(stderr, "error: switch slot failed: %s\n", error->message);
-            return -1;
+            return FALSE;
         }
 
         // Check if the operation was successful
         if (!qmi_message_uim_switch_slot_output_get_result(switch_slot_output, &error))
         {
             fprintf(stderr, "error: switch slot operation failed: %s\n", error->message);
-            return -1;
+            return FALSE;
         }
 
         // Wait for SIM to be available
@@ -168,17 +168,17 @@ static int select_sim_slot(struct qmi_data *qmi_priv)
         {
             if (is_sim_available(qmi_priv))
             {
-                return 0;
+                return TRUE;
             }
             // Wait a bit and retry
             g_usleep(500000); // 0.5 seconds
         }
 
         fprintf(stderr, "error: SIM not available after switching slot\n");
-        return -1;
+        return FALSE;
     }
 
-    return 0;
+    return TRUE;
 }
 
 static int apdu_interface_connect(struct euicc_ctx *ctx)
