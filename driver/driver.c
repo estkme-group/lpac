@@ -1,7 +1,6 @@
 #include "driver.h"
 #include "driver.private.h"
 
-#include "cjson/cJSON_ex.h"
 #include "helpers.h"
 
 #include <stdio.h>

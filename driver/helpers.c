@@ -1,11 +1,11 @@
 #include "helpers.h"
 
-#include "cjson/cJSON_ex.h"
-
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <cjson/cJSON_ex.h>
 
 static bool is_numeric(const char *value) {
     if (value == NULL) return false;
@@ -54,36 +54,30 @@ void set_deprecated_env_name(const char *name, const char *deprecated_name) {
 #endif
 }
 
-int json_print(cJSON *jpayload)
-{
+int json_print(cJSON *jpayload) {
     cJSON *jroot = NULL;
     char *jstr = NULL;
 
-    if (jpayload == NULL)
-    {
+    if (jpayload == NULL) {
         goto err;
     }
 
     jroot = cJSON_CreateObject();
-    if (jroot == NULL)
-    {
+    if (jroot == NULL) {
         goto err;
     }
 
-    if (cJSON_AddStringOrNullToObject(jroot, "type", "driver") == NULL)
-    {
+    if (cJSON_AddStringOrNullToObject(jroot, "type", "driver") == NULL) {
         goto err;
     }
 
-    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
-    {
+    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0) {
         goto err;
     }
 
     jstr = cJSON_PrintUnformatted(jroot);
 
-    if (jstr == NULL)
-    {
+    if (jstr == NULL) {
         goto err;
     }
     cJSON_Delete(jroot);
@@ -96,8 +90,8 @@ int json_print(cJSON *jpayload)
 
     return 0;
 
-    err:
-        cJSON_Delete(jroot);
+err:
+    cJSON_Delete(jroot);
     free(jstr);
     return -1;
 }
