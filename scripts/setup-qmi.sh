@@ -3,12 +3,21 @@
 
 set -xeuo pipefail
 
-apt -qq -o=Dpkg::Use-Pty=0 install meson ninja-build pkg-config help2man \
-    libgirepository1.0-dev libglib2.0-dev libgudev-1.0-dev libqrtr-glib-dev
+sudo apt-get -qq --no-install-recommends install -y libqrtr-glib-dev
 
-TMPDIR="$(mktemp -d)"
-git clone --depth 1 https://gitlab.freedesktop.org/mobile-broadband/libqmi.git "$TMPDIR"
-cd "$TMPDIR" || exit 1
-meson setup build --prefix=/usr --buildtype=debug -Dmbim_qmux=false
-ninja -C build
-ninja -C build install
+function install() {
+    local URL="https://launchpad.net/ubuntu/+archive/primary/+files/$1"
+    local NAME="$(basename "$URL")"
+    local TMPFILE="$(mktemp)"
+    curl -L "$1" -o "$TMPFILE"
+    dpkg -i "$TMPFILE"
+    rm -rf "$TMPFILE"
+}
+
+VERSION="1.36.0-1_$(dpkg --print-architecture)"
+
+install "libqmi-glib5_$VERSION.deb"
+install "gir1.2-qmi-1.0_$VERSION.deb"
+install "libqmi-glib-dev_$VERSION.deb"
+install "libqmi-utils_$VERSION.deb"
+install "libqmi-proxy_$VERSION.deb"
