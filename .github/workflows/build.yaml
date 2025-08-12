@@ -47,11 +47,36 @@ jobs:
           name: lpac-${{ env.SHA7 }}-${{ matrix.build.artifact }}
           path: ${{ github.workspace }}/build/*.*
 
+  build-with-qmi:
+    runs-on: ubuntu-24.04
+    name: Build with QMI
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Toolchain
+        run: sudo ./scripts/setup-debian.sh
+
+      - name: Setup QMI
+        run: sudo ./scripts/setup-qmi.sh
+
+      - name: Build with QMI
+        run: ./scripts/build-ci.sh make-qmi
+
+      - name: Get short SHA
+        run: echo "SHA7=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Upload QMI to Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lpac-${{ env.SHA7 }}-qmi
+          path: ${{ github.workspace }}/build/*.*
+
   release:
     name: Release
     runs-on: ubuntu-24.04
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [build, build-with-qmi]
     permissions:
       contents: write
     steps:
