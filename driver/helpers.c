@@ -54,7 +54,7 @@ void set_deprecated_env_name(const char *name, const char *deprecated_name) {
 #endif
 }
 
-int json_print(cJSON *jpayload) {
+bool json_print(cJSON *jpayload) {
     cJSON *jroot = NULL;
     char *jstr = NULL;
 
@@ -88,10 +88,10 @@ int json_print(cJSON *jpayload) {
     free(jstr);
     jstr = NULL;
 
-    return 0;
+    return true;
 
 err:
     cJSON_Delete(jroot);
     free(jstr);
-    return -1;
+    return false;
 }

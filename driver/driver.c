@@ -75,8 +75,7 @@ struct euicc_http_interface euicc_driver_interface_http;
 int (*euicc_driver_main_apdu)(int argc, char **argv) = NULL;
 int (*euicc_driver_main_http)(int argc, char **argv) = NULL;
 
-static const struct euicc_driver *find_driver(const enum euicc_driver_type type,
-                                              const char *name)
+static const struct euicc_driver *find_driver(const enum euicc_driver_type type, const char *name)
 {
     for (int i = 0; drivers[i] != NULL; i++)
     {
@@ -101,36 +100,23 @@ int euicc_driver_list(int argc, char **argv) {
     cJSON *payload = cJSON_CreateObject();
     if (payload == NULL) return -1;
 
-    const struct euicc_driver *driver;
-    cJSON *name;
-    // APDU Drivers
-    {
-        cJSON *apdu_drivers = cJSON_CreateArray();
-        if (apdu_drivers == NULL) return -1;
-        for (int i = 0; drivers[i] != NULL; i++)
-        {
-            driver = drivers[i];
-            if (driver->type != DRIVER_APDU) continue;
-            name = cJSON_CreateString(driver->name);
-            if (name == NULL) return -1;
-            cJSON_AddItemToArray(apdu_drivers, name);
+    const struct euicc_driver *driver = NULL;
+    cJSON *driver_name = NULL;
+    cJSON *apdu_drivers = cJSON_CreateArray();
+    cJSON *http_drivers = cJSON_CreateArray();
+    if (apdu_drivers == NULL) return -1;
+    for (int i = 0; drivers[i] != NULL; i++) {
+        driver = drivers[i];
+        driver_name = cJSON_CreateString(driver->name);
+        if (driver_name == NULL) return -1;
+        if (driver->type == DRIVER_APDU) {
+            cJSON_AddItemToArray(apdu_drivers, driver_name);
+        } else if (driver->type == DRIVER_HTTP) {
+            cJSON_AddItemToArray(http_drivers, driver_name);
         }
-        cJSON_AddItemToObject(payload, "LPAC_APDU", apdu_drivers);
     }
-    // HTTP Drivers
-    {
-        cJSON *http_drivers = cJSON_CreateArray();
-        if (http_drivers == NULL) return -1;
-        for (int i = 0; drivers[i] != NULL; i++)
-        {
-            driver = drivers[i];
-            if (driver->type != DRIVER_HTTP) continue;
-            name = cJSON_CreateString(driver->name);
-            if (name == NULL) return -1;
-            cJSON_AddItemToArray(http_drivers, name);
-        }
-        cJSON_AddItemToObject(payload, "LPAC_HTTP", http_drivers);
-    }
+    cJSON_AddItemToObject(payload, "LPAC_APDU", apdu_drivers);
+    cJSON_AddItemToObject(payload, "LPAC_HTTP", http_drivers);
 
     json_print(payload);
     return 0;
