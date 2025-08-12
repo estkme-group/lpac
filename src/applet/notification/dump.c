@@ -12,17 +12,16 @@
 
 #include "helpers.h"
 
-static int retrieve_notification(const char *eid, const uint32_t seqNumber) {
+static bool retrieve_notification(const char *eid, const uint32_t seqNumber) {
     struct es10b_pending_notification notification;
 
     if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber)) {
         jprint_error("es10b_retrieve_notifications_list", NULL);
-        return -1;
+        return false;
     }
-
-    cJSON *jroot = cJSON_CreateObject();
-
-    build_notification(&jroot, eid, seqNumber, &notification);
+    
+    cJSON *jroot build_notification(eid, seqNumber, &notification);
+    if (jroot == NULL) return false
 
     es10b_pending_notification_free(&notification);
 
@@ -32,7 +31,7 @@ static int retrieve_notification(const char *eid, const uint32_t seqNumber) {
     fflush(stdout);
     free(jstr);
 
-    return 0;
+    return true;
 }
 
 static int applet_main(const int argc, char **argv) {
@@ -73,7 +72,7 @@ static int applet_main(const int argc, char **argv) {
 
         rptr = notifications;
         while (rptr) {
-            if (retrieve_notification(eid, rptr->seqNumber)) {
+            if (!retrieve_notification(eid, rptr->seqNumber)) {
                 fret = -1;
                 break;
             }
@@ -92,7 +91,7 @@ static int applet_main(const int argc, char **argv) {
             if ((seqNumber == 0 && strcmp(argv[i], str_end)) || errno != 0) {
                 continue;
             }
-            if (retrieve_notification(eid, seqNumber)) {
+            if (!retrieve_notification(eid, seqNumber)) {
                 fret = -1;
                 break;
             }
