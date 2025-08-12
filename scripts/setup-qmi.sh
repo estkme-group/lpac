@@ -1,7 +1,9 @@
 #!/bin/bash
 # This script is only for GitHub Actions use
+set -euo pipefail
 
-set -xeuo pipefail
+export DEBIAN_FRONTEND=noninteractive
+export DEBIAN_PRIORITY=critical
 
 apt-get -qq --no-install-recommends install -y libqrtr-glib-dev libmbim-glib-dev
 
