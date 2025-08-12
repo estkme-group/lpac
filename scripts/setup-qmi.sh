@@ -3,21 +3,22 @@
 
 set -xeuo pipefail
 
-sudo apt-get -qq --no-install-recommends install -y libqrtr-glib-dev
+apt-get -qq --no-install-recommends install -y libqrtr-glib-dev libmbim-glib-dev
 
-function install() {
-    local URL="https://launchpad.net/ubuntu/+archive/primary/+files/$1"
-    local NAME="$(basename "$URL")"
-    local TMPFILE="$(mktemp)"
-    curl -L "$1" -o "$TMPFILE"
-    dpkg -i "$TMPFILE"
-    rm -rf "$TMPFILE"
+TMPDIR="$(mktemp -d)"
+
+function download() {
+    local NAME="$1"
+    curl -L "https://launchpad.net/ubuntu/+archive/primary/+files/$NAME" -o "$TMPDIR/$NAME"
 }
 
+# https://launchpad.net/libqmi
 VERSION="1.36.0-1_$(dpkg --print-architecture)"
 
-install "libqmi-glib5_$VERSION.deb"
-install "gir1.2-qmi-1.0_$VERSION.deb"
-install "libqmi-glib-dev_$VERSION.deb"
-install "libqmi-utils_$VERSION.deb"
-install "libqmi-proxy_$VERSION.deb"
+download "libqmi-glib5_$VERSION.deb"
+download "libqmi-glib-dev_$VERSION.deb"
+download "libqmi-utils_$VERSION.deb"
+download "libqmi-proxy_$VERSION.deb"
+download "gir1.2-qmi-1.0_$VERSION.deb"
+
+dpkg -i "$TMPDIR"/*
