@@ -1,5 +1,3 @@
-#include <iso646.h>
-
 #include "process.h"
 
 #include <stdio.h>
