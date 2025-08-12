@@ -1,4 +1,5 @@
 #pragma once
+#include "cjson/cJSON.h"
 #include <stdbool.h>
 
 #define HTTP_ENV_NAME(DRIVER, NAME) "LPAC_HTTP_" #DRIVER "_" #NAME
@@ -21,3 +22,5 @@ int getenv_int_or_default(const char *name, int default_value);
 long getenv_long_or_default(const char *name, long default_value);
 
 void set_deprecated_env_name(const char *name, const char *deprecated_name);
+
+bool json_print(cJSON *jpayload);

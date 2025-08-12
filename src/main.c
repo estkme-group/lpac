@@ -45,6 +45,10 @@ static int driver_applet_main(const int argc, char **argv)
             .name = "http",
             .main = euicc_driver_main_http,
         },
+        &(struct applet_entry){
+            .name = "list",
+            .main = euicc_driver_list,
+        },
         NULL,
     };
     return applet_entry(argc, argv, applets);
@@ -159,22 +163,12 @@ static char **warg_to_arg(const int wargc, wchar_t **wargv)
 int main(int argc, char **argv)
 {
     int ret = 0;
-    const char *apdu_driver;
-    const char *http_driver;
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
-    apdu_driver = getenv(ENV_APDU_DRIVER);
-    if (apdu_driver == NULL)
-    {
-        apdu_driver = "pcsc";
-    }
+    const char *apdu_driver = getenv(ENV_APDU_DRIVER);
 
-    http_driver = getenv(ENV_HTTP_DRIVER);
-    if (http_driver == NULL)
-    {
-        http_driver = "curl";
-    }
+    const char *http_driver = getenv(ENV_HTTP_DRIVER);
 
     if (euicc_driver_init(apdu_driver, http_driver))
     {

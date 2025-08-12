@@ -21,6 +21,20 @@ make)
     copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE.zip" "$BUILD/output"
     ;;
+make-qmi)
+    cmake "$WORKSPACE" -DLPAC_WITH_APDU_QMI=ON -DLPAC_WITH_APDU_QMI_QRTR=ON -DLPAC_WITH_APDU_MBIM=ON
+    make -j
+    copy-license "$BUILD/output"
+    copy-usage "$BUILD/output"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE-with-qmi.zip" "$BUILD/output"
+    ;;
+make-gbinder)
+    cmake "$WORKSPACE" -DLPAC_WITH_APDU_GBINDER=ON
+    make -j
+    copy-license "$BUILD/output"
+    copy-usage "$BUILD/output"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE-with-gbinder.zip" "$BUILD/output"
+    ;;
 make-without-lto)
     cmake -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF "$WORKSPACE"
     make -j

@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "helpers.h"
+
 #ifdef _WIN32
 #include <winscard.h>
 #include "pcsc_win32.h"
@@ -19,6 +21,7 @@
 
 #define ENV_DRV_IFID APDU_ENV_NAME(PCSC, DRV_IFID)
 #define ENV_DRV_NAME APDU_ENV_NAME(PCSC, DRV_NAME)
+#define ENV_DRV_IGNORE_NAME APDU_ENV_NAME(PCSC, DRV_IGNORE_NAME)
 
 #define EUICC_INTERFACE_BUFSZ 264
 
@@ -34,6 +37,17 @@ static LPSTR pcsc_mszReaders;
 
 static void pcsc_error(const char *method, const int32_t code) {
     fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
+}
+
+static bool is_ignored_reader_name(const char *reader) {
+    char *value = getenv(ENV_DRV_IGNORE_NAME);
+    if (value == NULL) return false;
+    const char *token = NULL;
+    for (token = strtok(value, ";"); token != NULL; token = strtok(NULL, ";")) {
+        if (strstr(reader, token) == NULL) continue;
+        return true; // reader name is in ignore list, skip
+    }
+    return false;
 }
 
 static int pcsc_ctx_open(void)
@@ -122,10 +136,16 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata)
         }
     }
 
+    if (is_ignored_reader_name(reader)) {
+        return 0; // skip ignored reader names
+    }
+
     const int ret = SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS)
     {
         pcsc_error("SCardConnect()", ret);
+        // see <https://blog.apdu.fr/posts/2024/12/gnupg-and-pcsc-conflicts-episode-3/>
+        if (ret == SCARD_E_SHARING_VIOLATION) return 0; // skip
         return -1;
     }
 
@@ -260,54 +280,6 @@ err:
         pcsc_logic_channel_close(channel);
     }
 
-    return -1;
-}
-
-static int json_print(cJSON *jpayload)
-{
-    cJSON *jroot = NULL;
-    char *jstr = NULL;
-
-    if (jpayload == NULL)
-    {
-        goto err;
-    }
-
-    jroot = cJSON_CreateObject();
-    if (jroot == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddStringOrNullToObject(jroot, "type", "driver") == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
-    {
-        goto err;
-    }
-
-    jstr = cJSON_PrintUnformatted(jroot);
-
-    if (jstr == NULL)
-    {
-        goto err;
-    }
-    cJSON_Delete(jroot);
-
-    fprintf(stdout, "%s\n", jstr);
-    fflush(stdout);
-
-    free(jstr);
-    jstr = NULL;
-
-    return 0;
-
-err:
-    cJSON_Delete(jroot);
-    free(jstr);
     return -1;
 }
 
