@@ -10,5 +10,5 @@ TMPDIR="$(mktemp -d)"
 git clone --depth 1 https://gitlab.freedesktop.org/mobile-broadband/libqmi.git "$TMPDIR"
 cd "$TMPDIR" || exit 1
 meson setup build --prefix=/usr --buildtype=debug -Dmbim_qmux=false
-ninja -j$(nproc) -C build
+ninja -C build
 ninja -C build install
