@@ -9,6 +9,8 @@ apt-get -qq --no-install-recommends install -y libqrtr-glib-dev libmbim-glib-dev
 
 TMPDIR="$(mktemp -d)"
 
+trap "rm -vrf \"$TMPDIR\"" EXIT
+
 # https://launchpad.net/libqmi
 QMI_VERSION="1.36.0-1_$(dpkg --print-architecture)"
 
@@ -21,5 +23,3 @@ https://launchpad.net/ubuntu/+archive/primary/+files/gir1.2-qmi-1.0_$QMI_VERSION
 EOF
 
 dpkg -i "$TMPDIR"/*
-
-rm -vrf "$TMPDIR"
