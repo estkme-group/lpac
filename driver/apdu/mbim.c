@@ -317,7 +317,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
 
     struct mbim_data *mbim_priv;
 
-    guint32 uim_slot = getenv_or_default(ENV_UIM_SLOT, (int) 0);
+    guint32 uim_slot = getenv_or_default(ENV_UIM_SLOT, (int) 1);
     /*
      * We're using the same UIM_SLOT environment variable as the QMI backends.
      * QMI uses 1-based indexing for the sim slots. MBIM uses 0-based indexing,
