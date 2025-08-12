@@ -19,9 +19,9 @@ static bool retrieve_notification(const char *eid, const uint32_t seqNumber) {
         jprint_error("es10b_retrieve_notifications_list", NULL);
         return false;
     }
-    
-    cJSON *jroot build_notification(eid, seqNumber, &notification);
-    if (jroot == NULL) return false
+
+    cJSON *jroot = build_notification(eid, seqNumber, &notification);
+    if (jroot == NULL) return false;
 
     es10b_pending_notification_free(&notification);
 

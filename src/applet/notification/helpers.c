@@ -24,15 +24,15 @@ char *notification_strstrip(char *input) {
     return input;
 }
 
-bool build_notification(const char *eid, const uint32_t seqNumber,
-                        const struct es10b_pending_notification *notification) {
+cJSON *build_notification(const char *eid, const uint32_t seqNumber,
+                          const struct es10b_pending_notification *notification) {
     cJSON *jroot = cJSON_CreateObject();
     if (jroot == NULL) return jroot;
-    cJSON_AddStringToObject(*jroot, "type", "notification");
-    cJSON_AddStringToObject(*jroot, "eid", eid);
-    cJSON_AddNumberToObject(*jroot, "seqNumber", seqNumber);
-    cJSON_AddStringToObject(*jroot, "notificationAddress", notification_strstrip(notification->notificationAddress));
-    cJSON_AddStringToObject(*jroot, "pendingNotification", notification->b64_PendingNotification);
+    cJSON_AddStringToObject(jroot, "type", "notification");
+    cJSON_AddStringToObject(jroot, "eid", eid);
+    cJSON_AddNumberToObject(jroot, "seqNumber", seqNumber);
+    cJSON_AddStringToObject(jroot, "notificationAddress", notification_strstrip(notification->notificationAddress));
+    cJSON_AddStringToObject(jroot, "pendingNotification", notification->b64_PendingNotification);
     return jroot;
 }
 
