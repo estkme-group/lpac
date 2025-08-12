@@ -33,7 +33,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     size_t len = 0;
     int c;
 
-    while ((c = fread(stream)) != EOF) {
+    while ((c = fgetc(stream)) != EOF) {
         if (len + 1 >= *n) {
             // +1 for null terminator
             size_t new_size = *n * 2;
@@ -100,8 +100,18 @@ static int applet_main(const int argc, char **argv) {
 
     while (getline(&input, &n, stdin) != -1) {
         jroot = cJSON_ParseWithLength(input, n);
-        if (parse_notification(jroot, eid, &seqNumber, &notification) != 0) goto error;
-        if (handle_notification(seqNumber, notification) != 0) goto error;
+        if (jroot == NULL) {
+            jprint_error("cJSON_ParseWithLength", NULL);
+            goto error;
+        }
+        if (parse_notification(jroot, eid, &seqNumber, &notification) != 0) {
+            jprint_error("parse_notification", NULL);
+            goto error;
+        }
+        if (handle_notification(seqNumber, notification) != 0) {
+            jprint_error("handle_notification", NULL);
+            goto error;
+        }
         cJSON_Delete(jroot);
     }
 
