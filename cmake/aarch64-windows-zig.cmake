@@ -1,15 +1,19 @@
+# This requires installing the Zig environment first.
+# https://ziglang.org/download/
+
 set(CMAKE_SYSTEM_NAME Windows)
+
 set(CMAKE_SYSTEM_PROCESSOR "aarch64")
 set(CMAKE_C_COMPILER "zig" cc -target aarch64-windows-gnu)
 set(CMAKE_CXX_COMPILER "zig" c++ -target aarch64-windows-gnu)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -s")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -s")
 
-if(WIN32)
+if (WIN32)
     set(SCRIPT_SUFFIX ".cmd")
-else()
+else ()
     set(SCRIPT_SUFFIX ".sh")
-endif()
+endif ()
 
 set(CMAKE_AR "${CMAKE_CURRENT_LIST_DIR}/zig-ar${SCRIPT_SUFFIX}")
 set(CMAKE_RANLIB "${CMAKE_CURRENT_LIST_DIR}/zig-ranlib${SCRIPT_SUFFIX}")

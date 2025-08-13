@@ -1,3 +1,6 @@
+# Please download the toolchain from https://github.com/Windows-on-ARM-Experiments/mingw-woarm64-build
+# and add it to your PATH
+
 set(CMAKE_SYSTEM_NAME Windows)
 
 set(TOOLCHAIN_PREFIX aarch64-w64-mingw32)
