@@ -43,9 +43,6 @@ If you have any issue, please read [FAQ](docs/FAQ.md) first.
 
 ## License
 
-- lpac ([/src](src), [/driver](driver)): AGPL-v3.0-only
-- libeuicc ([/euicc](euicc)): LGPL-v2.1-only or Commercial License Agreement with ESTKME TECHNOLOGY LIMITED, Hong Kong
-- cjson ([/cjson](cjson)): MIT
-- dlfcn-win32 ([/dlfcn-win32](dlfcn-win32)): MIT
+See [REUSE.toml](REUSE.toml) and comment header of files for details.
 
 Copyright &copy; 2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong

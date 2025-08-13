@@ -1,0 +1,51 @@
+version = 1
+
+[[annotations]]
+path = [
+    "src/**",
+    "driver/**"
+]
+SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = ["euicc/**"]
+SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
+SPDX-License-Identifier = "LGPL-2.1-only OR LicenseRef-ESTKME-Commercial"
+
+[[annotations]]
+path = [
+    # Auxiliary files
+    ".github/**",
+    # Build system files
+    "cmake/**",
+    "CMakeLists.txt",
+    # Documents
+    "docs/**",
+    "README.md",
+    # Config for other tools
+    ".editorconfig",
+    ".gitignore"
+]
+SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["cjson/**"]
+SPDX-FileCopyrightText = "2009-2017 Dave Gamble and cJSON contributors"
+SPDX-FileContributor = [
+    "ESTKME TECHNOLOGY LIMITED, Hong Kong",
+    "Celeste Liu"
+]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["dlfcn-win32/**"]
+SPDX-FileCopyrightText = "2007 Ramiro Polla"
+SPDX-FileContributor = [
+    "ESTKME TECHNOLOGY LIMITED, Hong Kong",
+    "Celeste Liu",
+    "IcedTangerine",
+    "Yegor Yefremov"
+]
+SPDX-License-Identifier = "MIT"
