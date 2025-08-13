@@ -100,6 +100,10 @@ static gboolean select_sim_slot(struct qmi_data *qmi_priv)
     // Check if the operation was successful
     if (!qmi_message_uim_get_slot_status_output_get_result(slot_status_output, &error))
     {
+        if (error->code == QMI_PROTOCOL_ERROR_NOT_SUPPORTED)
+        {
+            return TRUE;
+        }
         fprintf(stderr, "error: get slot status operation failed: %s\n", error->message);
         return FALSE;
     }
@@ -109,12 +113,6 @@ static gboolean select_sim_slot(struct qmi_data *qmi_priv)
                                                                          &physical_slot_status,
                                                                          &error))
     {
-        // Some older devices do not support the GetPhysicalSlotStatus command
-        if (error->code == QMI_PROTOCOL_ERROR_NOT_SUPPORTED)
-        {
-            return TRUE;
-        }
-        
         fprintf(stderr, "error: get physical slot status failed: %s\n", error->message);
         return FALSE;
     }
