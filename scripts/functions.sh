@@ -1,4 +1,7 @@
 #!/bin/bash
+# This script is only for GitHub Actions use
+set -euo pipefail
+
 KERNEL="$(uname -s)"
 MACHINE="$(uname -m)"
 
@@ -74,7 +77,7 @@ function create-bundle {
     local BUNDLE_FILE="$1"
     local INPUT_DIR="$2"
 
-    pushd "$INPUT_DIR" || exit 1
+    pushd "$INPUT_DIR"
     zip -r "$BUNDLE_FILE" ./*
-    popd || exit 1
+    popd
 }

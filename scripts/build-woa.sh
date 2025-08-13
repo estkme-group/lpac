@@ -9,7 +9,7 @@ BUILD="$WORKSPACE/build"
 rm -rf "$BUILD"
 mkdir -p "$BUILD"
 
-cd "$BUILD" || exit 1
+cd "$BUILD"
 
 case "${1:-}" in
 mingw)

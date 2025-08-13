@@ -1,4 +1,5 @@
 #!/bin/bash
+# This script is only for GitHub Actions use
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname -- "${BASH_SOURCE[0]}")"
@@ -13,7 +14,7 @@ mkdir -p "$ARTIFACT"
 
 trap 'rm -rf '"$BUILD" EXIT
 
-cd "$BUILD" || exit 1
+cd "$BUILD"
 
 case "${1:-}" in
 make)

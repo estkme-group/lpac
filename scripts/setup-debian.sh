@@ -21,7 +21,7 @@ function setup-mingw-woarm64() {
     SAVED_DIR="$(mktemp -d)"
 
     wget -nv "$BASE_URL/releases/download/$VERSION/$FILENAME" -O "$SAVED_PATH"
-    tar -C "$SAVED_DIR" --gzip --extract --file="$SAVED_PATH"
+    tar -C "$SAVED_DIR" -xaf "$SAVED_PATH"
 
     echo "$SAVED_DIR/bin" >> "$GITHUB_PATH"
 }
