@@ -3,9 +3,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
+#include <locale.h>
 
-#include <euicc/interface.h>
 #include <euicc/hexutil.h>
 #include <euicc/euicc.h>
 #include <driver.h>
@@ -163,6 +162,8 @@ static char **warg_to_arg(const int wargc, wchar_t **wargv)
 int main(int argc, char **argv)
 {
     int ret = 0;
+
+    setlocale(LC_ALL, "C.UTF-8");
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
