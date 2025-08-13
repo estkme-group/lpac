@@ -11,6 +11,9 @@ apt-get -qq -o=Dpkg::Use-Pty=0 update
 apt-get -qq -o=Dpkg::Use-Pty=0 install -y build-essential libpcsclite-dev libcurl4-openssl-dev zip
 
 case "${1:-}" in
+woa-mingw)
+    "$SCRIPT_DIR/setup-mingw-woarm64.sh"
+    ;;
 make-qmi)
     "$SCRIPT_DIR/setup-qmi.sh"
     ;;

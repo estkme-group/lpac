@@ -10,8 +10,7 @@ cd "$BUILD" || exit 1
 
 case "${1:-}" in
 mingw)
-    TOOLCHAIN="$(download "$MINGW32_TOOLCHAIN_BLOB")"
-    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake "-DTOOLCHAIN_BIN_PATH=$TOOLCHAIN/bin"
+    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake
     make -j
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
