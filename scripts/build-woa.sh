@@ -1,28 +1,23 @@
 #!/bin/bash
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+set -euo pipefail
+
+SCRIPT_DIR="$(dirname -- "${BASH_SOURCE[0]}")"
 
 source "$SCRIPT_DIR/functions.sh"
 
-set -euo pipefail
+BUILD="$WORKSPACE/build"
+rm -rf "$BUILD"
+mkdir -p "$BUILD"
 
-BUILD="$(mktemp -d)"
-cd "$BUILD" || exit 1
+cd "$BUILD"
 
 case "${1:-}" in
 mingw)
-    TOOLCHAIN="$(download "$MINGW32_TOOLCHAIN_BLOB")"
-    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake "-DTOOLCHAIN_BIN_PATH=$TOOLCHAIN/bin"
-    make -j
-    copy-license "$BUILD/output"
-    copy-curl-woa "$BUILD/output"
-    copy-usage "$BUILD/output"
+    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake
     ;;
 zig)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
-    make -j
-    copy-license "$BUILD/output"
-    copy-curl-woa "$BUILD/output"
-    copy-usage "$BUILD/output"
+
     ;;
 *)
     echo "Usage: $0 {mingw,zig}"
@@ -30,4 +25,7 @@ zig)
     ;;
 esac
 
-rm -rf "$BUILD"
+make -j
+copy-license "$BUILD/output"
+copy-curl-woa "$BUILD/output"
+copy-usage "$BUILD/output"

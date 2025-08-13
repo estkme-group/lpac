@@ -31,10 +31,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Toolchain
-        run: sudo ./scripts/setup-debian.sh ${{ matrix.build.variant }}
+        run: ./scripts/setup-debian.sh ${{ matrix.build.variant }}
         if: runner.os == 'Linux'
 
       - name: Build for ${{ matrix.build.name }}
@@ -58,7 +58,7 @@ jobs:
       contents: write
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           merge-multiple: true
           pattern: '*'

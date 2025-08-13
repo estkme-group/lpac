@@ -1,13 +1,16 @@
 #!/bin/bash
-export KERNEL="$(uname -s)"
-export MATCHINE="$(uname -m)"
+# This script is only for GitHub Actions use
+set -euo pipefail
+
+KERNEL="$(uname -s)"
+MACHINE="$(uname -m)"
+
+export KERNEL MACHINE
 
 export WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
 export CURL_VERSION="8.6.0_1"
-export WOA_TOOLCHAIN_VERSION="2024-02-08"
 export MINGW_CURL_WIN64_BLOB="https://curl.se/windows/dl-$CURL_VERSION/curl-$CURL_VERSION-win64-mingw.zip"
 export MINGW_CURL_WIN64A_BLOB="https://curl.se/windows/dl-$CURL_VERSION/curl-$CURL_VERSION-win64a-mingw.zip"
-export MINGW32_TOOLCHAIN_BLOB="https://github.com/Windows-on-ARM-Experiments/mingw-woarm64-build/releases/download/$WOA_TOOLCHAIN_VERSION/aarch64-w64-mingw32-msvcrt-toolchain.tar.gz"
 
 case "$KERNEL" in
 Linux)
@@ -15,23 +18,19 @@ Linux)
     ;;
 Darwin)
     KERNEL="darwin"
-    MATCHINE="universal"
+    MACHINE="universal"
     ;;
 esac
 
 function download {
-    local URL="$1"
-    local SAVED_PATH="$(mktemp)"
-    local SAVED_DIR="$(mktemp -d)"
+    local URL SAVED_PATH SAVED_DIR
+    URL="$1"
+    SAVED_PATH="$(mktemp)"
+    SAVED_DIR="$(mktemp -d)"
     wget --no-verbose "$URL" -O "$SAVED_PATH"
     case "$URL" in
     *.zip)
         unzip -q -d "$SAVED_DIR" "$SAVED_PATH"
-        rm "$SAVED_PATH"
-        echo "$SAVED_DIR"
-        ;;
-    *.tar.gz)
-        tar -C "$SAVED_DIR" --gzip --extract --file="$SAVED_PATH"
         rm "$SAVED_PATH"
         echo "$SAVED_DIR"
         ;;
@@ -79,6 +78,6 @@ function create-bundle {
     local INPUT_DIR="$2"
 
     pushd "$INPUT_DIR"
-    zip -r "$BUNDLE_FILE" *
+    zip -r "$BUNDLE_FILE" ./*
     popd
 }

@@ -2,14 +2,16 @@
 # This script is only for GitHub Actions use
 set -euo pipefail
 
-export DEBIAN_FRONTEND=noninteractive
-export DEBIAN_PRIORITY=critical
+function apt() {
+    sudo DEBIAN_PRIORITY=critical DEBIAN_FRONTEND=noninteractive \
+        apt-get -qq -o=Dpkg::Use-Pty=0 "$@"
+}
 
-apt-get -qq --no-install-recommends install -y libqrtr-glib-dev libmbim-glib-dev
+apt install -y libqrtr-glib-dev libmbim-glib-dev
 
 TMPDIR="$(mktemp -d)"
 
-trap "rm -vrf \"$TMPDIR\"" EXIT
+trap 'rm -vrf '"$TMPDIR" EXIT
 
 # https://launchpad.net/libqmi
 QMI_VERSION="1.36.0-1_$(dpkg --print-architecture)"
@@ -22,4 +24,4 @@ https://launchpad.net/ubuntu/+archive/primary/+files/libqmi-proxy_$QMI_VERSION.d
 https://launchpad.net/ubuntu/+archive/primary/+files/gir1.2-qmi-1.0_$QMI_VERSION.deb
 EOF
 
-dpkg -i "$TMPDIR"/*
+sudo dpkg -i "$TMPDIR"/*

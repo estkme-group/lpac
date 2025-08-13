@@ -1,17 +1,20 @@
 #!/bin/bash
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+# This script is only for GitHub Actions use
+set -euo pipefail
+
+SCRIPT_DIR="$(dirname -- "${BASH_SOURCE[0]}")"
 
 source "$SCRIPT_DIR/functions.sh"
-
-set -euo pipefail
 
 BUILD="$(mktemp -d)"
 ARTIFACT="$WORKSPACE/build"
 
-cd "$BUILD" || exit 1
-
 mkdir -p "$BUILD/output"
 mkdir -p "$ARTIFACT"
+
+trap 'rm -rf '"$BUILD" EXIT
+
+cd "$BUILD"
 
 case "${1:-}" in
 make)
@@ -19,28 +22,28 @@ make)
     make -j
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE.zip" "$BUILD/output"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE.zip" "$BUILD/output"
     ;;
 make-qmi)
     cmake "$WORKSPACE" -DLPAC_WITH_APDU_QMI=ON -DLPAC_WITH_APDU_QMI_QRTR=ON -DLPAC_WITH_APDU_MBIM=ON
     make -j
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE-with-qmi.zip" "$BUILD/output"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-with-qmi.zip" "$BUILD/output"
     ;;
 make-gbinder)
     cmake "$WORKSPACE" -DLPAC_WITH_APDU_GBINDER=ON
     make -j
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE-with-gbinder.zip" "$BUILD/output"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-with-gbinder.zip" "$BUILD/output"
     ;;
 make-without-lto)
     cmake -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF "$WORKSPACE"
     make -j
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-$KERNEL-$MATCHINE-without-lto.zip" "$BUILD/output"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-without-lto.zip" "$BUILD/output"
     ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
@@ -56,10 +59,8 @@ mingw)
     create-bundle "$ARTIFACT/lpac-windows-x86_64-mingw.zip" "$BUILD/output"
     ;;
 woa-mingw)
-    TOOLCHAIN="$(download "$MINGW32_TOOLCHAIN_BLOB")"
-    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake "-DTOOLCHAIN_BIN_PATH=$TOOLCHAIN/bin"
+    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake
     make -j
-    rm -rf "$TOOLCHAIN"
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
     copy-usage "$BUILD/output"
@@ -78,5 +79,3 @@ woa-zig)
     exit 1
     ;;
 esac
-
-rm -rf "$BUILD"
