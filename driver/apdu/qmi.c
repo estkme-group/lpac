@@ -100,6 +100,7 @@ static gboolean select_sim_slot(struct qmi_data *qmi_priv)
     // Check if the operation was successful
     if (!qmi_message_uim_get_slot_status_output_get_result(slot_status_output, &error))
     {
+        // Some older devices do not support the GetSlotStatusRequest QMI command
         if (error->code == QMI_PROTOCOL_ERROR_NOT_SUPPORTED)
         {
             return TRUE;
