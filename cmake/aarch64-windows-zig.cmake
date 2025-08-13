@@ -1,3 +1,6 @@
+# This requires installing the Zig environment first.
+# https://ziglang.org/download/
+
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR "aarch64")
 set(CMAKE_C_COMPILER "zig" cc -target aarch64-windows-gnu)

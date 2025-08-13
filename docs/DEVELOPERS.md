@@ -31,12 +31,7 @@ The resulting binary can then be found under `build/output` folder.
 
 #### Debian/Ubuntu
 
-``` bash
-# clone this repo in the top-level folder
-
-# install dependencies
-./scripts/setup-debian.sh 
-```
+Require `build-essential` `libpcsclite-dev` `libcurl4-openssl-dev` installed.
 
 If you want to get a Deb package, run `cmake -B build -DCPACK_GENERATOR=DEB` then `cmake --build build`.
 
@@ -79,25 +74,15 @@ To run it outside Cygwin shell, you need copy `cygwin1.dll` to the program folde
 
 ### Windows on ARM
 
-#### Cross compile on Windows/Linux host(arm64,x86_64 and more architecture) with zig
+#### Cross compile on Windows/Linux host (arm64, x86_64 and more architecture) with zig
 
-Install [zig](https://ziglang.org/download/)
+See [aarch64-windows-zig.cmake](../cmake/aarch64-windows-zig.cmake)
 
-```bash
-# clone this repo in the top-level folder
+#### Cross compile on Linux x86_64 host (GNU toolchain)
 
-./scripts/build-woa.sh zig
-```
+See [linux-mingw64-woa.cmake](../cmake/linux-mingw64-woa.cmake)
 
-#### Cross compile on Linux x86_64 host(GNU toolchain)
-
-```bash
-# clone this repo in the top-level folder
-
-./scripts/build-woa.sh mingw
-```
-
-#### Build on Native Windows on ARM(MSYS2)
+#### Build on Native Windows on ARM (MSYS2)
 
 It is possible to build on **WoA devices** with [MSYS2 ARM64 Support](https://www.msys2.org/wiki/arm64/)
 

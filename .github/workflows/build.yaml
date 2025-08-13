@@ -34,11 +34,11 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Setup Toolchain
-        run: ./scripts/setup-debian.sh ${{ matrix.build.variant }}
+        run: .github/scripts/setup-debian.sh ${{ matrix.build.variant }}
         if: runner.os == 'Linux'
 
       - name: Build for ${{ matrix.build.name }}
-        run: ./scripts/build-ci.sh ${{ matrix.build.variant }}
+        run: .github/scripts/build-ci.sh ${{ matrix.build.variant }}
 
       - name: Get short SHA
         run: echo "SHA7=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_ENV
