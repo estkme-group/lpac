@@ -4,11 +4,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-export DEBIAN_FRONTEND=noninteractive
-export DEBIAN_PRIORITY=critical
+function apt() {
+    sudo DEBIAN_PRIORITY=critical DEBIAN_FRONTEND=noninteractive \
+        apt-get -qq -o=Dpkg::Use-Pty=0 "$@"
+}
 
-apt-get -qq -o=Dpkg::Use-Pty=0 update
-apt-get -qq -o=Dpkg::Use-Pty=0 install -y build-essential libpcsclite-dev libcurl4-openssl-dev zip
+apt update
+apt install -y build-essential libpcsclite-dev libcurl4-openssl-dev zip
 
 function setup-mingw-woarm64() {
     BASE_URL="https://github.com/Windows-on-ARM-Experiments/mingw-woarm64-build"
@@ -32,6 +34,6 @@ make-qmi)
     exec "$SCRIPT_DIR/setup-qmi.sh"
     ;;
 mingw)
-    apt-get -qq -o=Dpkg::Use-Pty=0 install -y gcc-mingw-w64 g++-mingw-w64
+    apt install -y gcc-mingw-w64 g++-mingw-w64
     ;;
 esac
