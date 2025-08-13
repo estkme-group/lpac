@@ -1,4 +1,6 @@
 #include "download.h"
+
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -40,15 +42,9 @@ char *strsep(char **stringp, const char *__delim) {
 
 static bool is_strict_matching_id(const char *token) {
     const size_t n = strlen(token);
-    bool allowed = false;
     for (int i = 0; i < n; i++) {
-        allowed = (
-            (token[i] >= '0' && token[i] <= '9') ||
-            (token[i] >= 'a' && token[i] <= 'z') ||
-            (token[i] >= 'A' && token[i] <= 'Z') ||
-            (token[i] == '-')
-        );
-        if (!allowed) return false;
+        if (isalnum(token[i]) || token[i] == '-') continue;
+        return false;
     }
     return true;
 }
@@ -162,7 +158,7 @@ static int applet_main(int argc, char **argv)
                 matchingId = strdup(token);
                 if (!is_strict_matching_id(matchingId)) {
                     error_function_name = "matching_id";
-                    error_detail = "invalid format";
+                    error_detail = "invalid format, contains character not alphanumeric or dash";
                     goto err;
                 }
                 break;
