@@ -1,6 +1,7 @@
 #include "download.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
@@ -36,6 +37,21 @@ char *strsep(char **stringp, const char *__delim) {
     return rv;
 }
 #endif
+
+static bool is_strict_matching_id(const char *token) {
+    const size_t n = strlen(token);
+    bool allowed = false;
+    for (int i = 0; i < n; i++) {
+        allowed = (
+            (token[i] >= '0' && token[i] <= '9') ||
+            (token[i] >= 'a' && token[i] <= 'z') ||
+            (token[i] >= 'A' && token[i] <= 'Z') ||
+            (token[i] == '-')
+        );
+        if (!allowed) return false;
+    }
+    return true;
+}
 
 static void sigint_handler(int x)
 {
@@ -144,6 +160,11 @@ static int applet_main(int argc, char **argv)
                 break;
             case 2: // AC_Token or Matching ID
                 matchingId = strdup(token);
+                if (!is_strict_matching_id(matchingId)) {
+                    error_function_name = "matching_id";
+                    error_detail = "invalid format";
+                    goto err;
+                }
                 break;
             case 3: // SM-DP+ OID
                 // ignored; this function is not implemented
