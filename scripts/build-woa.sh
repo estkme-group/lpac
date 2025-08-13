@@ -1,9 +1,9 @@
 #!/bin/bash
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+set -euo pipefail
+
+SCRIPT_DIR=$(dirname -- "${BASH_SOURCE[0]}")
 
 source "$SCRIPT_DIR/functions.sh"
-
-set -euo pipefail
 
 BUILD="$(mktemp -d)"
 cd "$BUILD" || exit 1

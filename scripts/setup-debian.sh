@@ -10,14 +10,28 @@ export DEBIAN_PRIORITY=critical
 apt-get -qq -o=Dpkg::Use-Pty=0 update
 apt-get -qq -o=Dpkg::Use-Pty=0 install -y build-essential libpcsclite-dev libcurl4-openssl-dev zip
 
+function setup-mingw-woarm64() {
+    BASE_URL="https://github.com/Windows-on-ARM-Experiments/mingw-woarm64-build"
+    FILENAME="aarch64-w64-mingw32-msvcrt-toolchain.tar.gz"
+    VERSION="2024-02-08"
+
+    SAVED_PATH="$(mktemp --suffix .tar.gz)"
+    SAVED_DIR="$(mktemp -d)"
+
+    wget -nv "$BASE_URL/releases/download/$VERSION/$FILENAME" -O "$SAVED_PATH"
+    tar -C "$SAVED_DIR" --gzip --extract --file="$SAVED_PATH"
+
+    echo "$SAVED_DIR/bin" >> "$GITHUB_PATH"
+}
+
 case "${1:-}" in
 woa-mingw)
-    "$SCRIPT_DIR/setup-mingw-woarm64.sh"
+    setup-mingw-woarm64
     ;;
 make-qmi)
-    "$SCRIPT_DIR/setup-qmi.sh"
+    exec "$SCRIPT_DIR/setup-qmi.sh"
     ;;
 mingw)
-    apt-get -qq -o=Dpkg::Use-Pty=0 install gcc-mingw-w64 g++-mingw-w64
+    apt-get -qq -o=Dpkg::Use-Pty=0 install -y gcc-mingw-w64 g++-mingw-w64
     ;;
 esac

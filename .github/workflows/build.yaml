@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Toolchain
-        run: sudo ./scripts/setup-debian.sh ${{ matrix.build.variant }}
+        run: sudo -E ./scripts/setup-debian.sh ${{ matrix.build.variant }}
         if: runner.os == 'Linux'
 
       - name: Build for ${{ matrix.build.name }}

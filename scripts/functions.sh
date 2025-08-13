@@ -2,6 +2,8 @@
 KERNEL="$(uname -s)"
 MACHINE="$(uname -m)"
 
+export KERNEL MACHINE
+
 export WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
 export CURL_VERSION="8.6.0_1"
 export MINGW_CURL_WIN64_BLOB="https://curl.se/windows/dl-$CURL_VERSION/curl-$CURL_VERSION-win64-mingw.zip"
@@ -26,11 +28,6 @@ function download {
     case "$URL" in
     *.zip)
         unzip -q -d "$SAVED_DIR" "$SAVED_PATH"
-        rm "$SAVED_PATH"
-        echo "$SAVED_DIR"
-        ;;
-    *.tar.gz)
-        tar -C "$SAVED_DIR" --gzip --extract --file="$SAVED_PATH"
         rm "$SAVED_PATH"
         echo "$SAVED_DIR"
         ;;
