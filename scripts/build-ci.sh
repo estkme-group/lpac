@@ -1,17 +1,19 @@
 #!/bin/bash
-SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+set -euo pipefail
+
+SCRIPT_DIR="$(dirname -- "${BASH_SOURCE[0]}")"
 
 source "$SCRIPT_DIR/functions.sh"
-
-set -euo pipefail
 
 BUILD="$(mktemp -d)"
 ARTIFACT="$WORKSPACE/build"
 
-cd "$BUILD" || exit 1
-
 mkdir -p "$BUILD/output"
 mkdir -p "$ARTIFACT"
+
+trap 'rm -rf '"$BUILD" EXIT
+
+cd "$BUILD" || exit 1
 
 case "${1:-}" in
 make)
@@ -76,5 +78,3 @@ woa-zig)
     exit 1
     ;;
 esac
-
-rm -rf "$BUILD"
