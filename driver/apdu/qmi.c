@@ -3,12 +3,11 @@
  * Copyright (c) 2024, Robert Marko <robert.marko@sartura.hr>
  */
 #include "qmi.h"
+#include "qmi_common.h"
 
 #include <stdio.h>
 #include <libqmi-glib.h>
 #include <helpers.h>
-
-#include "qmi_common.h"
 
 static gboolean is_sim_available(struct qmi_data *qmi_priv)
 {
