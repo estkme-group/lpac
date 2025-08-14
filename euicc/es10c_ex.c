@@ -106,7 +106,10 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *e
             break;
         case 0x88: // rspCapability
         {
-            static const char *desc[] = {"additionalProfile", "crlSupport", "rpmSupport", "testProfileSupport", NULL};
+            static const char *desc[] = {
+                "additionalProfile", "crlSupport", "rpmSupport", "testProfileSupport", "deviceInfoExtensibilitySupport",
+                NULL
+            };
 
             if (euicc_derutil_convert_bin2bits_str(&euiccinfo2->rspCapability, tmpnode.value, tmpnode.length, desc))
             {
