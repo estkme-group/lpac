@@ -89,8 +89,7 @@ int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *e
                 "akaTuak128", "akaTuak256", "rfu1", "rfu2", "gbaAuthenUsim", "gbaAuthenISim", "mbmsAuthenUsim",
                 "eapClient", "javacard", "multos", "multipleUsimSupport", "multipleIsimSupport", "multipleCsimSupport",
                 "berTlvFileSupport", "dfLinkSupport", "catTp", "getIdentity", "profile-a-x25519", "profile-b-p256",
-                "suciCalculatorApi",
-                NULL
+                "suciCalculatorApi", NULL
             };
 
             if (euicc_derutil_convert_bin2bits_str(&euiccinfo2->uiccCapability, tmpnode.value, tmpnode.length, desc))
