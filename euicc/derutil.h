@@ -1,3 +1,5 @@
+#pragma once
+
 #include <inttypes.h>
 
 struct euicc_derutil_node

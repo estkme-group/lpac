@@ -4,7 +4,7 @@ libdir="${prefix}/lib"
 includedir="${prefix}/include"
 
 Name: libeuicc
-Description: Library to manipuate eUICC (eSIM) cards
+Description: Library to manipulate eUICC (eSIM) cards
 Version: @PROJECT_VERSION@
 Cflags: -I${includedir}
 Libs: -L${libdir} -leuicc
