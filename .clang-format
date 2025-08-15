@@ -1,0 +1,10 @@
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 120
+AlignEscapedNewlines: Left
+BreakBeforeBinaryOperators: NonAssignment
+IndentPPDirectives: AfterHash
+
+# vim: ft=yaml
+# kate: syntax yaml;
