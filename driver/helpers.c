@@ -54,7 +54,7 @@ void set_deprecated_env_name(const char *name, const char *deprecated_name) {
 #endif
 }
 
-bool json_print(cJSON *jpayload) {
+bool json_print(char *type, cJSON *jpayload) {
     cJSON *jroot = NULL;
     char *jstr = NULL;
 
@@ -67,7 +67,7 @@ bool json_print(cJSON *jpayload) {
         goto err;
     }
 
-    if (cJSON_AddStringOrNullToObject(jroot, "type", "driver") == NULL) {
+    if (cJSON_AddStringOrNullToObject(jroot, "type", type) == NULL) {
         goto err;
     }
 

@@ -9,6 +9,7 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include "helpers.h"
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)
@@ -53,57 +54,9 @@ err:
     return -1;
 }
 
-static int json_print(cJSON *jpayload)
+static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
-    cJSON *jroot = NULL;
-    char *jstr = NULL;
-
-    if (jpayload == NULL)
-    {
-        goto err;
-    }
-
-    jroot = cJSON_CreateObject();
-    if (jroot == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddStringOrNullToObject(jroot, "type", "http") == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
-    {
-        goto err;
-    }
-
-    jstr = cJSON_PrintUnformatted(jroot);
-
-    if (jstr == NULL)
-    {
-        goto err;
-    }
-    cJSON_Delete(jroot);
-
-    fprintf(stdout, "%s\n", jstr);
-    fflush(stdout);
-
-    free(jstr);
-    jstr = NULL;
-
-    return 0;
-
-err:
-    cJSON_Delete(jroot);
-    free(jstr);
-    return -1;
-}
-
-static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers)
-{
-    int fret = 0;
+    int fret = true;
     char *tx_hex = NULL;
     cJSON *jpayload = NULL;
     cJSON *jheaders = NULL;
@@ -150,13 +103,13 @@ static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len, con
         cJSON_AddItemToArray(jheaders, jh);
     }
 
-    fret = json_print(jpayload);
+    fret = json_print("http", jpayload);
     cJSON_Delete(jpayload);
     jpayload = NULL;
     goto exit;
 
 err:
-    fret = -1;
+    fret = false;
 exit:
     cJSON_Delete(jpayload);
     free(tx_hex);

@@ -421,7 +421,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        json_print(payload);
+        json_print("driver", payload);
 
         return 0;
     }
