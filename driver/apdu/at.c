@@ -16,28 +16,31 @@ static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
 
-#ifdef __linux__
 static void enumerate_serial_devices_linux(cJSON *data) {
     const char *dir_path = "/dev/serial/by-id";
     DIR *dir = opendir(dir_path);
     if (dir == NULL) return;
     struct dirent *entry;
+    char *full_path = NULL;
+    size_t path_len = 0;
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
 
-        char full_path[PATH_MAX];
-        snprintf(full_path, PATH_MAX, "%s/%s", dir_path, entry->d_name);
+        path_len = strlen(dir_path) + 1 /* SEP */ + strlen(entry->d_name) + 1 /* NUL */;
+        full_path = malloc(path_len);
+        snprintf(full_path, path_len, "%s/%s", dir_path, entry->d_name);
 
         cJSON *item = cJSON_CreateObject();
         cJSON_AddStringToObject(item, "env", full_path);
         cJSON_AddStringToObject(item, "name", entry->d_name);
         cJSON_AddItemToArray(data, item);
+
+        free(full_path);
     }
     closedir(dir);
 }
-#endif
 
 static int at_expect(char **response, const char *expected)
 {
