@@ -12,6 +12,9 @@ _deps
 .vscode*
 .DS_Store
 
+# clangd per-project index
+.cache/clangd
+
 # version
 /src/version.h
 
