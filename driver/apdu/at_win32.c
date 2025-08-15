@@ -393,35 +393,11 @@ static int libapduinterface_main(int argc, char **argv)
 
     if (strcmp(argv[1], "list") == 0)
     {
-        cJSON *payload;
-        cJSON *data;
-
-        payload = cJSON_CreateObject();
-        if (!payload)
-        {
-            return -1;
-        }
-
-        if (!cJSON_AddStringOrNullToObject(payload, "env", ENV_AT_DEVICE))
-        {
-            return -1;
-        }
-
-        data = cJSON_CreateArray();
+        cJSON *data = cJSON_CreateArray();
 
         enumerate_com_ports(data);
 
-        if (!data)
-        {
-            return -1;
-        }
-
-        if (!cJSON_AddItemToObject(payload, "data", data))
-        {
-            return -1;
-        }
-
-        json_print(payload);
+        jprint_enumerate_devices(data);
 
         return 0;
     }
