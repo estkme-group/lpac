@@ -56,9 +56,9 @@ err:
 
 static bool json_request(const char *func, const uint8_t *param, unsigned param_len)
 {
-    int fret = true;
-    char *param_hex = NULL;
-    cJSON *jpayload = NULL;
+    bool fret = true;
+    _cleanup_free_ char *param_hex = NULL;
+    _cleanup_cjson_ cJSON *jpayload = NULL;
 
     if (param && param_len)
     {
@@ -90,27 +90,21 @@ static bool json_request(const char *func, const uint8_t *param, unsigned param_
     {
         goto err;
     }
-    free(param_hex);
-    param_hex = NULL;
 
     fret = json_print("apdu", jpayload);
-    cJSON_Delete(jpayload);
-    jpayload = NULL;
     goto exit;
 
 err:
     fret = false;
 exit:
-    cJSON_Delete(jpayload);
-    free(param_hex);
     return fret;
 }
 
 static int json_response(int *ecode, uint8_t **data, uint32_t *data_len)
 {
     int fret = 0;
-    char *data_json;
-    cJSON *data_jroot;
+    _cleanup_free_ char *data_json;
+    _cleanup_cjson_ cJSON *data_jroot;
     cJSON *data_payload;
     cJSON *jtmp;
 
@@ -125,8 +119,6 @@ static int json_response(int *ecode, uint8_t **data, uint32_t *data_len)
     }
 
     data_jroot = cJSON_Parse(data_json);
-    free(data_json);
-    data_json = NULL;
     if (data_jroot == NULL)
     {
         return -1;
@@ -198,8 +190,6 @@ err:
     }
     *ecode = -1;
 exit:
-    free(data_json);
-    cJSON_Delete(data_jroot);
     return fret;
 }
 

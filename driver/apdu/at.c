@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "at_common.h"
+#include "helpers.h"
 
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
@@ -92,7 +93,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
 {
     int fret = 0;
     int ret;
-    char *response = NULL;
+    _cleanup_free_ char *response = NULL;
     char *hexstr = NULL;
 
     *rx = NULL;
@@ -152,7 +153,6 @@ err:
     *rx = NULL;
     *rx_len = 0;
 exit:
-    free(response);
     return fret;
 }
 

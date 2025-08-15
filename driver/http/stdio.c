@@ -56,9 +56,9 @@ err:
 
 static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
-    int fret = true;
-    char *tx_hex = NULL;
-    cJSON *jpayload = NULL;
+    bool fret = true;
+    _cleanup_free_ char *tx_hex = NULL;
+    _cleanup_cjson_ cJSON *jpayload = NULL;
     cJSON *jheaders = NULL;
 
     tx_hex = malloc((2 * tx_len) + 1);
@@ -84,8 +84,6 @@ static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, co
     {
         goto err;
     }
-    free(tx_hex);
-    tx_hex = NULL;
 
     jheaders = cJSON_AddArrayToObject(jpayload, "headers");
     if (jheaders == NULL)
@@ -104,15 +102,11 @@ static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, co
     }
 
     fret = json_print("http", jpayload);
-    cJSON_Delete(jpayload);
-    jpayload = NULL;
     goto exit;
 
 err:
     fret = false;
 exit:
-    cJSON_Delete(jpayload);
-    free(tx_hex);
     return fret;
 }
 
@@ -120,8 +114,8 @@ exit:
 static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
     int fret = 0;
-    char *rx_json;
-    cJSON *rx_jroot;
+    _cleanup_free_ char *rx_json;
+    _cleanup_cjson_ cJSON *rx_jroot;
     cJSON *rx_payload;
     cJSON *jtmp;
 
@@ -134,8 +128,6 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     }
 
     rx_jroot = cJSON_Parse(rx_json);
-    free(rx_json);
-    rx_json = NULL;
     if (rx_jroot == NULL)
     {
         return -1;
@@ -206,8 +198,6 @@ err:
     *rx_len = 0;
     *rcode = 500;
 exit:
-    free(rx_json);
-    cJSON_Delete(rx_jroot);
     return fret;
 }
 

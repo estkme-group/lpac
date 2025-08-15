@@ -55,8 +55,8 @@ void set_deprecated_env_name(const char *name, const char *deprecated_name) {
 }
 
 bool json_print(char *type, cJSON *jpayload) {
-    cJSON *jroot = NULL;
-    char *jstr = NULL;
+    _cleanup_cjson_ cJSON *jroot = NULL;
+    _cleanup_free_ char *jstr = NULL;
 
     if (jpayload == NULL) {
         goto err;
@@ -80,18 +80,12 @@ bool json_print(char *type, cJSON *jpayload) {
     if (jstr == NULL) {
         goto err;
     }
-    cJSON_Delete(jroot);
 
     fprintf(stdout, "%s\n", jstr);
     fflush(stdout);
 
-    free(jstr);
-    jstr = NULL;
-
     return true;
 
 err:
-    cJSON_Delete(jroot);
-    free(jstr);
     return false;
 }

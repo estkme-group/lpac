@@ -1,9 +1,27 @@
 #pragma once
 #include "cjson/cJSON.h"
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define HTTP_ENV_NAME(DRIVER, NAME) "LPAC_HTTP_" #DRIVER "_" #NAME
 #define APDU_ENV_NAME(DRIVER, NAME) "LPAC_APDU_" #DRIVER "_" #NAME
+
+#define _cleanup_(x) __attribute__((cleanup(x)))
+
+#define DEFINE_TRIVIAL_CLEANUP_FUNC(type, func)                 \
+        static inline void func##p(type *p) {                   \
+                if (*p)                                         \
+                        func(*p);                               \
+        }                                                       \
+        struct __useless_struct_to_allow_trailing_semicolon__
+
+DEFINE_TRIVIAL_CLEANUP_FUNC(cJSON*, cJSON_Delete);
+#define _cleanup_cjson_ _cleanup_(cJSON_Deletep)
+
+static inline void freep(void *p) {
+    free(*(void**) p);
+}
+#define _cleanup_free_ _cleanup_(freep)
 
 #define getenv_or_default(name, default_value) \
   _Generic((default_value), \
