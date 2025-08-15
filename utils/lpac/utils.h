@@ -8,8 +8,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define HTTP_ENV_NAME(DRIVER, NAME) "LPAC_HTTP_" #DRIVER "_" #NAME
-#define APDU_ENV_NAME(DRIVER, NAME) "LPAC_APDU_" #DRIVER "_" #NAME
+#define ENV_HTTP_DRIVER "LPAC_HTTP"
+#define ENV_APDU_DRIVER "LPAC_APDU"
+
+#define HTTP_ENV_NAME(DRIVER, NAME) ENV_HTTP_DRIVER "_" #DRIVER "_" #NAME
+#define APDU_ENV_NAME(DRIVER, NAME) ENV_APDU_DRIVER "_" #DRIVER "_" #NAME
+#define CUSTOM_ENV_NAME(NAME) "LPAC_CUSTOM_" #NAME
 
 #define _cleanup_(x) __attribute__((cleanup(x)))
 

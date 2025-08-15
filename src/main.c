@@ -15,6 +15,7 @@
 #include <driver.h>
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
+#include <lpac/utils.h>
 
 #ifdef WIN32
 #    include <windef.h>
@@ -25,15 +26,12 @@
 #    include <stringapiset.h>
 #endif
 
-#define ENV_ISD_R_AID "LPAC_CUSTOM_ISD_R_AID"
+#define ENV_ISD_R_AID CUSTOM_ENV_NAME(ISD_R_AID)
 #define ISD_R_AID_MAX_LENGTH 16
 
-#define ENV_ES10X_MSS "LPAC_CUSTOM_ES10X_MSS"
+#define ENV_ES10X_MSS CUSTOM_ENV_NAME(ES10X_MSS)
 #define ES10X_MSS_MIN_VALUE 6
 #define ES10X_MSS_MAX_VALUE 255
-
-#define ENV_APDU_DRIVER "LPAC_APDU"
-#define ENV_HTTP_DRIVER "LPAC_HTTP"
 
 static int driver_applet_main(const int argc, char **argv) {
     const struct applet_entry *applets[] = {
