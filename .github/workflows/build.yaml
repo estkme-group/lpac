@@ -15,6 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # prettier-ignore
         build:
           - {os: ubuntu-24.04, variant: make, name: Linux, artifact: linux-x64}
           - {os: ubuntu-24.04-arm, variant: make, name: Linux ARM, artifact: linux-arm}
@@ -61,7 +62,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           merge-multiple: true
-          pattern: '*'
+          pattern: "*"
       - name: Run SHA1SUM
         id: checksum
         run: |
@@ -76,4 +77,4 @@ jobs:
             ${{ steps.checksum.outputs.sha1sum }}
             ```
           append_body: true
-          files: '*'
+          files: "*"
