@@ -9,6 +9,7 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <lpac/utils.h>
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)
@@ -53,91 +54,40 @@ err:
     return -1;
 }
 
-static int json_print(cJSON *jpayload)
+static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
-    cJSON *jroot = NULL;
-    char *jstr = NULL;
-
-    if (jpayload == NULL)
-    {
-        goto err;
-    }
-
-    jroot = cJSON_CreateObject();
-    if (jroot == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddStringOrNullToObject(jroot, "type", "http") == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
-    {
-        goto err;
-    }
-
-    jstr = cJSON_PrintUnformatted(jroot);
-
-    if (jstr == NULL)
-    {
-        goto err;
-    }
-    cJSON_Delete(jroot);
-
-    fprintf(stdout, "%s\n", jstr);
-    fflush(stdout);
-
-    free(jstr);
-    jstr = NULL;
-
-    return 0;
-
-err:
-    cJSON_Delete(jroot);
-    free(jstr);
-    return -1;
-}
-
-static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers)
-{
-    int fret = 0;
-    char *tx_hex = NULL;
-    cJSON *jpayload = NULL;
+    _cleanup_free_ char *tx_hex = NULL;
+    _cleanup_cjson_ cJSON *jpayload = NULL;
     cJSON *jheaders = NULL;
 
     tx_hex = malloc((2 * tx_len) + 1);
     if (tx_hex == NULL)
     {
-        goto err;
+        return false;
     }
     if (euicc_hexutil_bin2hex(tx_hex, (2 * tx_len) + 1, tx, tx_len) < 0)
     {
-        goto err;
+        return false;
     }
 
     jpayload = cJSON_CreateObject();
     if (jpayload == NULL)
     {
-        goto err;
+        return false;
     }
     if (cJSON_AddStringOrNullToObject(jpayload, "url", url) == NULL)
     {
-        goto err;
+        return false;
     }
     if (cJSON_AddStringOrNullToObject(jpayload, "tx", tx_hex) == NULL)
     {
-        goto err;
+        return false;
     }
-    free(tx_hex);
-    tx_hex = NULL;
 
     jheaders = cJSON_AddArrayToObject(jpayload, "headers");
     if (jheaders == NULL)
     {
-        goto err;
+        return false;
     }
 
     for (int i = 0; headers[i] != NULL; i++)
@@ -145,30 +95,20 @@ static int json_request(const char *url, const uint8_t *tx, uint32_t tx_len, con
         cJSON *jh = cJSON_CreateString(headers[i]);
         if (jh == NULL)
         {
-            goto err;
+            return false;
         }
         cJSON_AddItemToArray(jheaders, jh);
     }
 
-    fret = json_print(jpayload);
-    cJSON_Delete(jpayload);
-    jpayload = NULL;
-    goto exit;
-
-err:
-    fret = -1;
-exit:
-    cJSON_Delete(jpayload);
-    free(tx_hex);
-    return fret;
+    return json_print("http", jpayload);
 }
 
 // {"type":"http","payload":{"rcode":404,"rx":"333435"}}
 static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
     int fret = 0;
-    char *rx_json;
-    cJSON *rx_jroot;
+    _cleanup_free_ char *rx_json;
+    _cleanup_cjson_ cJSON *rx_jroot;
     cJSON *rx_payload;
     cJSON *jtmp;
 
@@ -181,8 +121,6 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     }
 
     rx_jroot = cJSON_Parse(rx_json);
-    free(rx_json);
-    rx_json = NULL;
     if (rx_jroot == NULL)
     {
         return -1;
@@ -253,8 +191,6 @@ err:
     *rx_len = 0;
     *rcode = 500;
 exit:
-    free(rx_json);
-    cJSON_Delete(rx_jroot);
     return fret;
 }
 

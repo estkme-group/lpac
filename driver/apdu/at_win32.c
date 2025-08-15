@@ -13,6 +13,7 @@
 #include <regstr.h>
 
 #include "at_common.h"
+#include <lpac/utils.h>
 
 #pragma comment(lib, "setupapi.lib")
 
@@ -242,7 +243,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
 {
     int fret = 0;
     int ret;
-    char *response = NULL;
+    _cleanup_free_ char *response = NULL;
     char *hexstr = NULL;
 
     *rx = NULL;
@@ -305,13 +306,12 @@ err:
     *rx = NULL;
     *rx_len = 0;
 exit:
-    free(response);
     return fret;
 }
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
 {
-    char *response;
+    _cleanup_free_ char *response = NULL;
 
     if (logic_channel)
     {
@@ -343,7 +343,6 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
         return -1;
     }
     logic_channel = atoi(response);
-    free(response);
     return logic_channel;
 }
 
@@ -421,7 +420,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        json_print(payload);
+        json_print("driver", payload);
 
         return 0;
     }

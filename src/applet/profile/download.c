@@ -15,6 +15,7 @@
 #include <euicc/es9p.h>
 #include <euicc/es8p.h>
 #include <euicc/tostr.h>
+#include <lpac/utils.h>
 
 static const char *opt_string = "s:m:i:c:a:ph?";
 
@@ -72,7 +73,7 @@ static int applet_main(int argc, char **argv)
 {
     int fret;
     const char *error_function_name = NULL;
-    const char *error_detail = NULL;
+    _cleanup_free_ char *error_detail = NULL;
 
     int opt;
 
@@ -83,11 +84,11 @@ static int applet_main(int argc, char **argv)
     char *activation_code = NULL;
     int interactive_preview = 0;
 
-    struct es10a_euicc_configured_addresses configured_addresses = {0};
+    _cleanup_(es10a_euicc_configured_addresses_free) struct es10a_euicc_configured_addresses configured_addresses = {0};
     struct es10b_load_bound_profile_package_result download_result = {0};
 
     cJSON *jmetadata = NULL;
-    struct es8p_metadata *profile_metadata = NULL;
+    _cleanup_(es8p_metadata_free) struct es8p_metadata *profile_metadata = NULL;
 
     while ((opt = getopt(argc, argv, opt_string)) != -1)
     {
@@ -147,7 +148,7 @@ static int applet_main(int argc, char **argv)
                 if (strncmp(token, "1", strlen(token)) != 0)
                 {
                     error_function_name = "activation_code";
-                    error_detail = "invalid";
+                    error_detail = strdup("invalid");
                     goto err;
                 }
                 break;
@@ -158,7 +159,7 @@ static int applet_main(int argc, char **argv)
                 matchingId = strdup(token);
                 if (!is_strict_matching_id(matchingId)) {
                     error_function_name = "matching_id";
-                    error_detail = "invalid format, contains character not alphanumeric or dash";
+                    error_detail = strdup("invalid format, contains character not alphanumeric or dash");
                     goto err;
                 }
                 break;
@@ -169,7 +170,7 @@ static int applet_main(int argc, char **argv)
                 if (strncmp(token, "1", strlen(token)) == 0 && confirmation_code == NULL)
                 {
                     error_function_name = "confirmation_code";
-                    error_detail = "required";
+                    error_detail = strdup("required");
                     goto err;
                 }
                 break;
@@ -198,7 +199,7 @@ static int applet_main(int argc, char **argv)
     if (!smdp || (strlen(smdp) == 0))
     {
         error_function_name = "smdp";
-        error_detail = "empty";
+        error_detail = strdup("empty");
         goto err;
     }
 
@@ -220,7 +221,7 @@ static int applet_main(int argc, char **argv)
     if (es9p_initiate_authentication(&euicc_ctx))
     {
         error_function_name = "es9p_initiate_authentication";
-        error_detail = euicc_ctx.http.status.message;
+        error_detail = strdup(euicc_ctx.http.status.message);
         goto err;
     }
 
@@ -238,7 +239,7 @@ static int applet_main(int argc, char **argv)
     if (es9p_authenticate_client(&euicc_ctx))
     {
         error_function_name = "es9p_authenticate_client";
-        error_detail = euicc_ctx.http.status.message;
+        error_detail = strdup(euicc_ctx.http.status.message);
         goto err;
     }
 
@@ -290,7 +291,7 @@ static int applet_main(int argc, char **argv)
     if (es9p_get_bound_profile_package(&euicc_ctx))
     {
         error_function_name = "es9p_get_bound_profile_package";
-        error_detail = euicc_ctx.http.status.message;
+        error_detail = strdup(euicc_ctx.http.status.message);
         goto err;
     }
 
@@ -304,7 +305,7 @@ static int applet_main(int argc, char **argv)
 
         snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
         error_function_name = "es10b_load_bound_profile_package";
-        error_detail = buffer;
+        error_detail = strdup(buffer);
 
         goto err;
     }
@@ -316,10 +317,6 @@ static int applet_main(int argc, char **argv)
 
 err:
     fret = -1;
-    if (error_detail)
-    {
-        error_detail = strdup(error_detail);
-    }
     jprint_progress("es10b_cancel_session", smdp);
     es10b_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION);
     jprint_progress("es9p_cancel_session", smdp);
@@ -332,10 +329,7 @@ err:
     {
         jprint_error("cancelled", NULL);
     }
-    free((void *)error_detail);
 exit:
-    es8p_metadata_free(&profile_metadata);
-    es10a_euicc_configured_addresses_free(&configured_addresses);
     euicc_http_cleanup(&euicc_ctx);
     return fret;
 }

@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <libqmi-glib.h>
-#include <helpers.h>
+#include <lpac/utils.h>
 
 static gboolean is_sim_available(struct qmi_data *qmi_priv)
 {

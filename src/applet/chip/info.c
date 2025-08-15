@@ -9,13 +9,14 @@
 #include <euicc/es10a.h>
 #include <euicc/es10c.h>
 #include <euicc/es10c_ex.h>
+#include <lpac/utils.h>
 
 static int applet_main(int argc, char **argv)
 {
-    char *eid = NULL;
-    struct es10a_euicc_configured_addresses addresses;
-    struct es10b_rat *ratList;
-    struct es10c_ex_euiccinfo2 euiccinfo2;
+    _cleanup_free_ char *eid = NULL;
+    _cleanup_(es10a_euicc_configured_addresses_free) struct es10a_euicc_configured_addresses addresses;
+    _cleanup_es10b_rat_list_ struct es10b_rat *ratList;
+    _cleanup_(es10c_ex_euiccinfo2_free) struct es10c_ex_euiccinfo2 euiccinfo2;
     cJSON *jaddresses = NULL, *jratList = NULL, *jeuiccinfo2 = NULL, *jdata = NULL;
 
     if (es10c_get_eid(&euicc_ctx, &eid))
@@ -41,7 +42,6 @@ static int applet_main(int argc, char **argv)
 
     jdata = cJSON_CreateObject();
     cJSON_AddStringOrNullToObject(jdata, "eidValue", eid);
-    free(eid);
 
     if (jaddresses)
     {
@@ -49,7 +49,6 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringOrNullToObject(jaddresses, "rootDsAddress", addresses.rootDsAddress);
     }
     cJSON_AddItemToObject(jdata, "EuiccConfiguredAddresses", jaddresses);
-    es10a_euicc_configured_addresses_free(&addresses);
 
     if (jeuiccinfo2)
     {
@@ -123,7 +122,6 @@ static int applet_main(int argc, char **argv)
 
             cJSON_AddItemToObject(jeuiccinfo2, "certificationDataObject", jcertificationDataObject);
         }
-        es10c_ex_euiccinfo2_free(&euiccinfo2);
     }
     cJSON_AddItemToObject(jdata, "EUICCInfo2", jeuiccinfo2);
 
@@ -168,7 +166,6 @@ static int applet_main(int argc, char **argv)
             ratList = ratList->next;
         }
         cJSON_AddItemToObject(jdata, "rulesAuthorisationTable", jratList);
-        es10b_rat_list_free_all(ratList);
     }
 
     jprint_success(jdata);

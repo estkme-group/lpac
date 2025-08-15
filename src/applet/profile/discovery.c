@@ -8,6 +8,7 @@
 
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
+#include <lpac/utils.h>
 
 static const char *opt_string = "s:i:h?";
 
@@ -20,7 +21,7 @@ static int applet_main(int argc, char **argv)
     char *smds = NULL;
     char *imei = NULL;
 
-    char **smdp_list = NULL;
+    _cleanup_es11_smdp_list_ char **smdp_list = NULL;
 
     cJSON *jdata = NULL;
 
@@ -107,7 +108,6 @@ static int applet_main(int argc, char **argv)
 err:
     fret = -1;
 exit:
-    es11_smdp_list_free_all(smdp_list);
     euicc_http_cleanup(&euicc_ctx);
     return fret;
 }

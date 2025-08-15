@@ -9,6 +9,7 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <lpac/utils.h>
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)
@@ -53,70 +54,21 @@ err:
     return -1;
 }
 
-static int json_print(cJSON *jpayload)
+static bool json_request(const char *func, const uint8_t *param, unsigned param_len)
 {
-    cJSON *jroot = NULL;
-    char *jstr = NULL;
-
-    if (jpayload == NULL)
-    {
-        goto err;
-    }
-
-    jroot = cJSON_CreateObject();
-    if (jroot == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddStringOrNullToObject(jroot, "type", "apdu") == NULL)
-    {
-        goto err;
-    }
-
-    if (cJSON_AddItemReferenceToObject(jroot, "payload", jpayload) == 0)
-    {
-        goto err;
-    }
-
-    jstr = cJSON_PrintUnformatted(jroot);
-
-    if (jstr == NULL)
-    {
-        goto err;
-    }
-    cJSON_Delete(jroot);
-
-    fprintf(stdout, "%s\n", jstr);
-    fflush(stdout);
-
-    free(jstr);
-    jstr = NULL;
-
-    return 0;
-
-err:
-    cJSON_Delete(jroot);
-    free(jstr);
-    return -1;
-}
-
-static int json_request(const char *func, const uint8_t *param, unsigned param_len)
-{
-    int fret = 0;
-    char *param_hex = NULL;
-    cJSON *jpayload = NULL;
+    _cleanup_free_ char *param_hex = NULL;
+    _cleanup_cjson_ cJSON *jpayload = NULL;
 
     if (param && param_len)
     {
         param_hex = malloc((2 * param_len) + 1);
         if (param_hex == NULL)
         {
-            goto err;
+            return false;
         }
         if (euicc_hexutil_bin2hex(param_hex, (2 * param_len) + 1, param, param_len) < 0)
         {
-            goto err;
+            return false;
         }
     }
     else
@@ -127,37 +79,25 @@ static int json_request(const char *func, const uint8_t *param, unsigned param_l
     jpayload = cJSON_CreateObject();
     if (jpayload == NULL)
     {
-        goto err;
+        return false;
     }
     if (cJSON_AddStringOrNullToObject(jpayload, "func", func) == NULL)
     {
-        goto err;
+        return false;
     }
     if (cJSON_AddStringOrNullToObject(jpayload, "param", param_hex) == NULL)
     {
-        goto err;
+        return false;
     }
-    free(param_hex);
-    param_hex = NULL;
 
-    fret = json_print(jpayload);
-    cJSON_Delete(jpayload);
-    jpayload = NULL;
-    goto exit;
-
-err:
-    fret = -1;
-exit:
-    cJSON_Delete(jpayload);
-    free(param_hex);
-    return fret;
+    return json_print("apdu", jpayload);
 }
 
 static int json_response(int *ecode, uint8_t **data, uint32_t *data_len)
 {
     int fret = 0;
-    char *data_json;
-    cJSON *data_jroot;
+    _cleanup_free_ char *data_json;
+    _cleanup_cjson_ cJSON *data_jroot;
     cJSON *data_payload;
     cJSON *jtmp;
 
@@ -172,8 +112,6 @@ static int json_response(int *ecode, uint8_t **data, uint32_t *data_len)
     }
 
     data_jroot = cJSON_Parse(data_json);
-    free(data_json);
-    data_json = NULL;
     if (data_jroot == NULL)
     {
         return -1;
@@ -245,8 +183,6 @@ err:
     }
     *ecode = -1;
 exit:
-    free(data_json);
-    cJSON_Delete(data_jroot);
     return fret;
 }
 

@@ -8,6 +8,7 @@
 
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
+#include <lpac/utils.h>
 
 #include "helpers.h"
 
@@ -15,7 +16,7 @@ static int _process_single(uint32_t seqNumber, uint8_t autoremove)
 {
     int ret;
     char str_seqNumber[11];
-    struct es10b_pending_notification notification;
+    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
 
     snprintf(str_seqNumber, sizeof(str_seqNumber), "%u", seqNumber);
 
@@ -34,8 +35,6 @@ static int _process_single(uint32_t seqNumber, uint8_t autoremove)
         jprint_error("es9p_handle_notification", NULL);
         return -1;
     }
-
-    es10b_pending_notification_free(&notification);
 
     if (!autoremove)
     {
@@ -94,7 +93,7 @@ static int applet_main(int argc, char **argv)
 
     if (all)
     {
-        struct es10b_notification_metadata_list *notifications, *rptr;
+        _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
 
         jprint_progress("es10b_list_notification", NULL);
         if (es10b_list_notification(&euicc_ctx, &notifications))
@@ -113,8 +112,6 @@ static int applet_main(int argc, char **argv)
             }
             rptr = rptr->next;
         }
-
-        es10b_notification_metadata_list_free_all(notifications);
     }
     else
     {
