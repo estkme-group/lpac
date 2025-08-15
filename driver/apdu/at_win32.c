@@ -1,8 +1,14 @@
 #include "at_win32.h"
+#include "at_common.h"
+
 #include <cjson/cJSON_ex.h>
-#include <devguid.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
+#include <lpac/utils.h>
+
+#include <windows.h>
+// windows.h MUST before other Windows headers
+#include <devguid.h>
 #include <initguid.h>
 #include <inttypes.h>
 #include <regstr.h>
@@ -10,10 +16,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
-
-#include "at_common.h"
-#include <lpac/utils.h>
 
 #pragma comment(lib, "setupapi.lib")
 
