@@ -1,6 +1,10 @@
 #pragma once
 
+#include <stdint.h>
+
 #include "euicc.h"
+
+struct euicc_ctx;
 
 enum es10b_profile_management_operation {
     ES10B_PROFILE_MANAGEMENT_OPERATION_NULL = -1,
