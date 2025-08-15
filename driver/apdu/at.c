@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "at_common.h"
 
@@ -15,6 +16,28 @@
 static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
+
+static void enumerate_serial_device_linux(cJSON *data) {
+    const char *dir_path = "/dev/serial/by-id";
+    DIR *dir = opendir(dir_path);
+    if (dir == NULL) return;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        size_t path_len = strlen(dir_path) + 1 /* SEP */ + strlen(entry->d_name) + 1 /* NUL */;
+        _cleanup_free_ char *full_path = malloc(path_len);
+        snprintf(full_path, path_len, "%s/%s", dir_path, entry->d_name);
+
+        cJSON *item = cJSON_CreateObject();
+        cJSON_AddStringToObject(item, "env", full_path);
+        cJSON_AddStringToObject(item, "name", entry->d_name);
+        cJSON_AddItemToArray(data, item);
+    }
+    closedir(dir);
+}
 
 static int at_expect(char **response, const char *expected)
 {
@@ -222,8 +245,25 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     return 0;
 }
 
-static int libapduinterface_main(int argc, char **argv)
-{
+static int libapduinterface_main(const int argc, char **argv) {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <list>\n", argv[0]);
+        return -1;
+    }
+
+    if (strcmp(argv[1], "list") == 0) {
+        _cleanup_cjson_ cJSON *data = cJSON_CreateArray();
+
+#ifdef __linux__
+        enumerate_serial_device_linux(data);
+#else
+        fprintf(stderr, "Serial device enumeration not implemented on this platform.\n");
+        fflush(stderr);
+#endif
+
+        jprint_enumerate_devices(data);
+    }
+
     return 0;
 }
 
