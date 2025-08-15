@@ -3,7 +3,8 @@ version = 1
 [[annotations]]
 path = [
     "src/**",
-    "driver/**"
+    "driver/**",
+    "utils/**",
 ]
 SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
 SPDX-License-Identifier = "AGPL-3.0-only"
