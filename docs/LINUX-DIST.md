@@ -6,7 +6,7 @@
 
 ## OpenWrt
 
-> Minimum available release: Snapshot
+> Minimum available release: [24.10.2](https://downloads.openwrt.org/releases/24.10.2/targets/)
 > (Added on 2024-05-15)
 
 ```shell
