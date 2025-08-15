@@ -7,6 +7,7 @@
 #include <main.h>
 
 #include <euicc/es10b.h>
+#include <lpac/utils.h>
 
 static int _delete_single(uint32_t seqNumber)
 {
@@ -62,7 +63,7 @@ static int applet_main(int argc, char **argv)
 
     if (all)
     {
-        struct es10b_notification_metadata_list *notifications, *rptr;
+        _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
 
         jprint_progress("es10b_list_notification", NULL);
         if (es10b_list_notification(&euicc_ctx, &notifications))
@@ -81,8 +82,6 @@ static int applet_main(int argc, char **argv)
             }
             rptr = rptr->next;
         }
-
-        es10b_notification_metadata_list_free_all(notifications);
     }
     else
     {

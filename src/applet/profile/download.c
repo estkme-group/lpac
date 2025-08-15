@@ -15,6 +15,7 @@
 #include <euicc/es9p.h>
 #include <euicc/es8p.h>
 #include <euicc/tostr.h>
+#include <lpac/utils.h>
 
 static const char *opt_string = "s:m:i:c:a:ph?";
 
@@ -72,7 +73,7 @@ static int applet_main(int argc, char **argv)
 {
     int fret;
     const char *error_function_name = NULL;
-    const char *error_detail = NULL;
+    _cleanup_free_ const char *error_detail = NULL;
 
     int opt;
 
@@ -83,11 +84,11 @@ static int applet_main(int argc, char **argv)
     char *activation_code = NULL;
     int interactive_preview = 0;
 
-    struct es10a_euicc_configured_addresses configured_addresses = {0};
+    _cleanup_(es10a_euicc_configured_addresses_free) struct es10a_euicc_configured_addresses configured_addresses = {0};
     struct es10b_load_bound_profile_package_result download_result = {0};
 
     cJSON *jmetadata = NULL;
-    struct es8p_metadata *profile_metadata = NULL;
+    _cleanup_(es8p_metadata_free) struct es8p_metadata *profile_metadata = NULL;
 
     while ((opt = getopt(argc, argv, opt_string)) != -1)
     {
@@ -332,10 +333,7 @@ err:
     {
         jprint_error("cancelled", NULL);
     }
-    free((void *)error_detail);
 exit:
-    es8p_metadata_free(&profile_metadata);
-    es10a_euicc_configured_addresses_free(&configured_addresses);
     euicc_http_cleanup(&euicc_ctx);
     return fret;
 }

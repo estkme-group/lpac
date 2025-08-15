@@ -8,6 +8,7 @@
 
 #include <euicc/es10b.h>
 #include <euicc/es10c.h>
+#include <lpac/utils.h>
 
 #include "helpers.h"
 #include "euicc/es9p.h"
@@ -91,13 +92,12 @@ static int applet_main(const int argc, char **argv) {
         return -1;
     }
 
-    cJSON *jroot;
     size_t n;
 
-    struct es10b_pending_notification notification;
+    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
 
     while (getline(&input, &n, stdin) != -1) {
-        jroot = cJSON_ParseWithLength(input, n);
+        _cleanup_cjson_ cJSON *jroot = cJSON_ParseWithLength(input, n);
         if (jroot == NULL) {
             jprint_error("cJSON_ParseWithLength", NULL);
             goto error;
@@ -110,10 +110,7 @@ static int applet_main(const int argc, char **argv) {
             jprint_error("handle_notification", NULL);
             goto error;
         }
-        cJSON_Delete(jroot);
     }
-
-    es10b_pending_notification_free(&notification);
 
     jprint_success(NULL);
 

@@ -5,12 +5,13 @@
 
 #include <euicc/es10b.h>
 #include <euicc/tostr.h>
+#include <lpac/utils.h>
 
 #include "helpers.h"
 
 static int applet_main(int argc, char **argv)
 {
-    struct es10b_notification_metadata_list *notifications, *rptr;
+    _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
     cJSON *jdata = NULL;
 
     if (es10b_list_notification(&euicc_ctx, &notifications))
@@ -34,7 +35,6 @@ static int applet_main(int argc, char **argv)
 
         rptr = rptr->next;
     }
-    es10b_notification_metadata_list_free_all(notifications);
 
     jprint_success(jdata);
 

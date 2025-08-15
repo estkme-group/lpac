@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <lpac/utils.h>
 
 void jprint_error(const char *function_name, const char *detail)
 {
-    cJSON *jroot = NULL;
+    _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
-    char *jstr = NULL;
+    _cleanup_free_ char *jstr = NULL;
 
     if (detail == NULL)
     {
@@ -24,18 +25,16 @@ void jprint_error(const char *function_name, const char *detail)
     cJSON_AddItemToObject(jroot, "payload", jpayload);
 
     jstr = cJSON_PrintUnformatted(jroot);
-    cJSON_Delete(jroot);
 
     printf("%s\n", jstr);
     fflush(stdout);
-    free(jstr);
 }
 
 void jprint_progress(const char *function_name, const char *detail)
 {
-    cJSON *jroot = NULL;
+    _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
-    char *jstr = NULL;
+    _cleanup_free_ char *jstr = NULL;
 
     jroot = cJSON_CreateObject();
     cJSON_AddStringOrNullToObject(jroot, "type", "progress");
@@ -46,18 +45,16 @@ void jprint_progress(const char *function_name, const char *detail)
     cJSON_AddItemToObject(jroot, "payload", jpayload);
 
     jstr = cJSON_PrintUnformatted(jroot);
-    cJSON_Delete(jroot);
 
     printf("%s\n", jstr);
     fflush(stdout);
-    free(jstr);
 }
 
 void jprint_progress_obj(const char *function_name, cJSON *jdata)
 {
-    cJSON *jroot = NULL;
+    _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
-    char *jstr = NULL;
+    _cleanup_free_ char *jstr = NULL;
 
     jroot = cJSON_CreateObject();
     cJSON_AddStringOrNullToObject(jroot, "type", "progress");
@@ -75,18 +72,16 @@ void jprint_progress_obj(const char *function_name, cJSON *jdata)
     cJSON_AddItemToObject(jroot, "payload", jpayload);
 
     jstr = cJSON_PrintUnformatted(jroot);
-    cJSON_Delete(jroot);
 
     printf("%s\n", jstr);
     fflush(stdout);
-    free(jstr);
 }
 
 void jprint_success(cJSON *jdata)
 {
-    cJSON *jroot = NULL;
+    _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
-    char *jstr = NULL;
+    _cleanup_free_ char *jstr = NULL;
 
     jroot = cJSON_CreateObject();
     cJSON_AddStringOrNullToObject(jroot, "type", "lpa");
@@ -104,9 +99,7 @@ void jprint_success(cJSON *jdata)
     cJSON_AddItemToObject(jroot, "payload", jpayload);
 
     jstr = cJSON_PrintUnformatted(jroot);
-    cJSON_Delete(jroot);
 
     printf("%s\n", jstr);
     fflush(stdout);
-    free(jstr);
 }

@@ -9,27 +9,24 @@
 
 #include <euicc/es10b.h>
 #include <euicc/es10c.h>
+#include <lpac/utils.h>
 
 #include "helpers.h"
 
 static bool retrieve_notification(const char *eid, const uint32_t seqNumber) {
-    struct es10b_pending_notification notification;
+    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
 
     if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber)) {
         jprint_error("es10b_retrieve_notifications_list", NULL);
         return false;
     }
 
-    cJSON *jroot = build_notification(eid, seqNumber, &notification);
+    _cleanup_cjson_ cJSON *jroot = build_notification(eid, seqNumber, &notification);
     if (jroot == NULL) return false;
 
-    es10b_pending_notification_free(&notification);
-
-    char *jstr = cJSON_PrintUnformatted(jroot);
-    cJSON_Delete(jroot);
+    _cleanup_free_ char *jstr = cJSON_PrintUnformatted(jroot);
     printf("%s\n", jstr);
     fflush(stdout);
-    free(jstr);
 
     return true;
 }
@@ -63,7 +60,7 @@ static int applet_main(const int argc, char **argv) {
     }
 
     if (all) {
-        struct es10b_notification_metadata_list *notifications, *rptr;
+        _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
 
         if (es10b_list_notification(&euicc_ctx, &notifications)) {
             jprint_error("es10b_list_notification", NULL);
@@ -79,7 +76,6 @@ static int applet_main(const int argc, char **argv) {
             rptr = rptr->next;
         }
 
-        es10b_notification_metadata_list_free_all(notifications);
     } else {
         for (int i = optind; i < argc; i++) {
             errno = 0;

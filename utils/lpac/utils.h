@@ -1,5 +1,8 @@
 #pragma once
-#include "cjson/cJSON.h"
+#include <cjson/cJSON.h>
+#include <euicc/es9p.h>
+#include <euicc/es10b.h>
+#include <euicc/es10c.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -17,6 +20,18 @@
 
 DEFINE_TRIVIAL_CLEANUP_FUNC(cJSON*, cJSON_Delete);
 #define _cleanup_cjson_ _cleanup_(cJSON_Deletep)
+
+DEFINE_TRIVIAL_CLEANUP_FUNC(struct es10b_notification_metadata_list*, es10b_notification_metadata_list_free_all);
+#define _cleanup_es10b_notification_metadata_list_ _cleanup_(es10b_notification_metadata_list_free_allp)
+
+DEFINE_TRIVIAL_CLEANUP_FUNC(struct es10b_rat*, es10b_rat_list_free_all);
+#define _cleanup_es10b_rat_list_ _cleanup_(es10b_rat_list_free_allp)
+
+DEFINE_TRIVIAL_CLEANUP_FUNC(struct es10c_profile_info_list*, es10c_profile_info_list_free_all);
+#define _cleanup_es10c_profile_info_list_ _cleanup_(es10c_profile_info_list_free_allp)
+
+DEFINE_TRIVIAL_CLEANUP_FUNC(char**, es11_smdp_list_free_all);
+#define _cleanup_es11_smdp_list_ _cleanup_(es11_smdp_list_free_allp)
 
 static inline void freep(void *p) {
     free(*(void**) p);
