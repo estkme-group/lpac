@@ -15,6 +15,7 @@
 #include <driver.h>
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
+#include <logger.h>
 #include <lpac/utils.h>
 
 #ifdef WIN32
@@ -25,6 +26,9 @@
 #    include <shellapi.h>
 #    include <stringapiset.h>
 #endif
+
+#define ENV_DEBUG_APDU "LIBEUICC_DEBUG_APDU"
+#define ENV_DEBUG_HTTP "LIBEUICC_DEBUG_HTTP"
 
 #define ENV_ISD_R_AID CUSTOM_ENV_NAME(ISD_R_AID)
 #define ISD_R_AID_MAX_LENGTH 16
@@ -101,6 +105,14 @@ static int setup_mss(uint8_t *mss) {
     return 0;
 }
 
+static int setup_logger(struct euicc_logger **logger) {
+    // TODO: needs a new debug env name, e.g: LPAC_APDU_DEBUG, LPAC_HTTP_DEBUG
+    const bool apdu_debug = getenv(ENV_DEBUG_APDU) != NULL;
+    const bool http_debug = getenv(ENV_DEBUG_HTTP) != NULL;
+    *logger = build_euicc_logger(stderr, apdu_debug, http_debug);
+    return 0;
+}
+
 int main_init_euicc() {
     if (setup_aid(&euicc_ctx.aid, &euicc_ctx.aid_len)) {
         jprint_error("euicc_init", "invalid custom ISD-R applet id given");
@@ -110,6 +122,7 @@ int main_init_euicc() {
         jprint_error("euicc_init", "invalid custom ES10x MSS given");
         return -1;
     }
+    setup_logger(&euicc_ctx.logger);
     if (euicc_init(&euicc_ctx)) {
         jprint_error("euicc_init", NULL);
         return -1;

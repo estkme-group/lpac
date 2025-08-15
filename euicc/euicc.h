@@ -1,13 +1,24 @@
 #pragma once
 
+#include "derutil.h"
 #include "es10b.h"
 #include "interface.h"
 
 #include <inttypes.h>
+#include <stdio.h>
 
 #ifdef interface
 #    undef interface
 #endif
+
+struct euicc_logger {
+    void (*apdu_request)(const struct euicc_logger *logger, const uint8_t *tx, uint32_t tx_len);
+    void (*apdu_response)(const struct euicc_logger *logger, const uint8_t *rx, uint32_t rx_len);
+    void (*http_request)(const struct euicc_logger *logger, const char *url, const char *tx, uint32_t tx_len);
+    void (*http_response)(const struct euicc_logger *logger, uint32_t rcode, const uint8_t *rx, uint32_t rx_len);
+    void (*unknown_asn1_tag)(const struct euicc_logger *logger, const struct euicc_derutil_node *node);
+    void *userdata;
+};
 
 struct euicc_ctx {
     const uint8_t *aid;
@@ -47,6 +58,7 @@ struct euicc_ctx {
         } _internal;
     } http;
     void *userdata;
+    struct euicc_logger *logger;
 };
 
 int euicc_init(struct euicc_ctx *ctx);

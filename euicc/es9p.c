@@ -49,16 +49,16 @@ static int es9p_trans_ex(struct euicc_ctx *ctx, const char *url, const char *url
     strcat(full_url, url);
     strcat(full_url, url_postfix);
 
-    if (getenv("LIBEUICC_DEBUG_HTTP")) {
-        fprintf(stderr, "[DEBUG] [HTTP] [TX] url: %s, data: %s\n", full_url, str_tx);
+    if (ctx->logger != NULL && ctx->logger->http_request != NULL) {
+        ctx->logger->http_request(ctx->logger, full_url, str_tx, strlen(str_tx));
     }
     if (ctx->http.interface->transmit(ctx, full_url, &rcode_mearged, &rbuf, &rlen, (const uint8_t *)str_tx,
                                       strlen(str_tx), lpa_header)
         < 0) {
         goto err;
     }
-    if (getenv("LIBEUICC_DEBUG_HTTP")) {
-        fprintf(stderr, "[DEBUG] [HTTP] [RX] rcode: %d, data: %s\n", rcode_mearged, rbuf);
+    if (ctx->logger != NULL && ctx->logger->http_response != NULL) {
+        ctx->logger->http_response(ctx->logger, rcode_mearged, (const uint8_t *)rbuf, rlen);
     }
 
     free(full_url);
