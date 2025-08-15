@@ -6,12 +6,12 @@
 #include <main.h>
 #include <stdlib.h>
 
+#include <euicc/es9p.h>
 #include <euicc/es10b.h>
 #include <euicc/es10c.h>
 #include <lpac/utils.h>
 
 #include "helpers.h"
-#include "euicc/es9p.h"
 
 #ifdef _WIN32
 ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
