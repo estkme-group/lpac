@@ -13,7 +13,7 @@
 #include <regstr.h>
 
 #include "at_common.h"
-#include "helpers.h"
+#include <lpac/utils.h>
 
 #pragma comment(lib, "setupapi.lib")
 

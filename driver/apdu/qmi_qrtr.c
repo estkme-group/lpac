@@ -12,8 +12,8 @@
 #include <stdbool.h>
 
 #include <libqrtr-glib.h>
-#include <helpers.h>
 #include <euicc/interface.h>
+#include <lpac/utils.h>
 
 static QrtrBus *bus = NULL;
 

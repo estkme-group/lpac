@@ -7,10 +7,10 @@
 #include <unistd.h>
 
 #include "at_common.h"
-#include "helpers.h"
 
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <lpac/utils.h>
 
 static FILE *fuart;
 static int logic_channel = 0;

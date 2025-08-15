@@ -9,7 +9,7 @@
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
 #include <euicc/hexutil.h>
-#include "helpers.h"
+#include <lpac/utils.h>
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp)

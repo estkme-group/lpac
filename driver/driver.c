@@ -1,10 +1,9 @@
 #include "driver.h"
 #include "driver.private.h"
 
-#include "helpers.h"
-
 #include <stdio.h>
 #include <string.h>
+#include <lpac/utils.h>
 
 #ifdef LPAC_WITH_APDU_GBINDER
 #include "driver/apdu/gbinder_hidl.h"
