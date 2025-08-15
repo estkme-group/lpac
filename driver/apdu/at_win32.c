@@ -32,28 +32,44 @@ static void enumerate_com_ports(cJSON *data) {
     SP_DEVINFO_DATA devInfoData;
     DWORD i;
 
-    hDevInfo = SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
+    hDevInfo = SetupDiGetClassDevsW(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
     if (hDevInfo == INVALID_HANDLE_VALUE)
         return;
 
     devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
     for (i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, &devInfoData); i++) {
+        wchar_t portName[256] = {0};
+        wchar_t friendlyName[256] = {0};
+        char portNameMB[256] = {0};
+        char friendlyNameMB[256] = {0};
+        DWORD size = sizeof(portName);
+
         HKEY hKey = SetupDiOpenDevRegKey(hDevInfo, &devInfoData,
                                          DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
-        if (hKey == INVALID_HANDLE_VALUE)
-            continue;
+        if (hKey != INVALID_HANDLE_VALUE) {
+            DWORD type;
+            if (RegQueryValueExW(hKey, L"PortName", NULL, &type, (LPBYTE)portName, &size) != ERROR_SUCCESS || type != REG_SZ) {
+                portName[0] = L'\0';
+            }
+        }
 
-        char portName[256];
-        DWORD size = sizeof(portName);
-        DWORD type;
-        if (RegQueryValueExA(hKey, "PortName", NULL, &type, (LPBYTE)portName, &size) == ERROR_SUCCESS) {
-            if (type == REG_SZ && starts_with(portName, "COM")) {
-                cJSON *item = cJSON_CreateObject();
-                if (item && cJSON_AddStringToObject(item, "env", portName)) {
-                    cJSON_AddItemToArray(data, item);
-                } else {
-                    cJSON_Delete(item);
-                }
+        if (!SetupDiGetDeviceRegistryPropertyW(hDevInfo, &devInfoData,
+                                               SPDRP_FRIENDLYNAME, NULL,
+                                               (PBYTE)friendlyName, sizeof(friendlyName), NULL)) {
+            friendlyName[0] = L'\0';
+        }
+
+        WideCharToMultiByte(CP_ACP, 0, portName, -1, portNameMB, sizeof(portNameMB), NULL, NULL);
+        WideCharToMultiByte(CP_ACP, 0, friendlyName, -1, friendlyNameMB, sizeof(friendlyNameMB), NULL, NULL);
+
+        if (starts_with(portNameMB, "COM")) {
+            cJSON *item = cJSON_CreateObject();
+            if (item) {
+                cJSON_AddStringToObject(item, "env", portNameMB);
+                cJSON_AddStringToObject(item, "name", friendlyNameMB[0] ? friendlyNameMB : portNameMB);
+                cJSON_AddItemToArray(data, item);
+            } else {
+                cJSON_Delete(item);
             }
         }
         RegCloseKey(hKey);
@@ -189,6 +205,11 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
         return -1;
     }
 
+    if (at_write_command("AT\r\n") || at_expect(NULL, NULL)) {
+        fprintf(stderr, "Device missing AT command support\n");
+        CloseHandle(hComm);
+        return -1;
+    }
     if (at_write_command("AT+CCHO=?\r\n") || at_expect(NULL, NULL)) {
         fprintf(stderr, "Device missing AT+CCHO support\n");
         CloseHandle(hComm);
