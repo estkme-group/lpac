@@ -1,7 +1,6 @@
 #pragma once
 
-struct applet_entry
-{
+struct applet_entry {
     const char *name;
     int (*main)(int argc, char **argv);
 };

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <stdbool.h>
-
 #include <cjson/cJSON.h>
 #include <euicc/es10b.h>
+
+#include <stdbool.h>
 
 char *notification_strstrip(char *input);
 

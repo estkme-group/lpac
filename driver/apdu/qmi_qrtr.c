@@ -5,20 +5,19 @@
 #include "qmi_qrtr.h"
 #include "qmi_common.h"
 
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-
-#include <libqrtr-glib.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
+#include <libqrtr-glib.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 static QrtrBus *bus = NULL;
 
-static int apdu_interface_connect(struct euicc_ctx *ctx)
-{
+static int apdu_interface_connect(struct euicc_ctx *ctx) {
     struct qmi_data *qmi_priv = ctx->apdu.interface->userdata;
     g_autoptr(GError) error = NULL;
     QrtrNode *node = NULL;
@@ -29,47 +28,40 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     qmi_priv->context = g_main_context_new();
 
     bus = qrtr_bus_new_sync(qmi_priv->context, &error);
-    if (bus == NULL)
-    {
+    if (bus == NULL) {
         fprintf(stderr, "error: connect to QRTR bus failed: %s\n", error->message);
         return -1;
     }
 
     /* Find QRTR node for UIM service */
-    for (GList *l = qrtr_bus_peek_nodes(bus); l != NULL; l = l->next)
-    {
+    for (GList *l = qrtr_bus_peek_nodes(bus); l != NULL; l = l->next) {
         node = l->data;
 
-        if (node && qrtr_node_lookup_port(node, QMI_SERVICE_UIM) >= 0)
-        {
+        if (node && qrtr_node_lookup_port(node, QMI_SERVICE_UIM) >= 0) {
             found = true;
             break;
         }
     }
 
-    if (!found)
-    {
+    if (!found) {
         fprintf(stderr, "error: find QRTR node with UIM service failed\n");
         return -1;
     }
 
     device = qmi_device_new_from_node_sync(node, qmi_priv->context, &error);
-    if (!device)
-    {
+    if (!device) {
         fprintf(stderr, "error: create QMI device from QRTR node failed: %s\n", error->message);
         return -1;
     }
 
     qmi_device_open_sync(device, QMI_DEVICE_OPEN_FLAGS_NONE, qmi_priv->context, &error);
-    if (error)
-    {
+    if (error) {
         fprintf(stderr, "error: open QMI device failed: %s\n", error->message);
         return -1;
     }
 
     client = qmi_device_allocate_client_sync(device, qmi_priv->context, &error);
-    if (!client)
-    {
+    if (!client) {
         fprintf(stderr, "error: allocate QMI client failed: %s\n", error->message);
         return -1;
     }
@@ -79,14 +71,13 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     return 0;
 }
 
-static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
-{
+static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     set_deprecated_env_name(ENV_UIM_SLOT, "UIM_SLOT");
 
     struct qmi_data *qmi_priv;
 
     qmi_priv = malloc(sizeof(struct qmi_data));
-    if(!qmi_priv) {
+    if (!qmi_priv) {
         fprintf(stderr, "Failed allocating memory\n");
         return -1;
     }
@@ -103,20 +94,16 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
      * Allow the user to select the SIM card slot via environment variable.
      * Use the primary SIM slot if not set.
      */
-    qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int) 1);
+    qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int)1);
 
     ifstruct->userdata = qmi_priv;
 
     return 0;
 }
 
-static int libapduinterface_main(int argc, char **argv)
-{
-    return 0;
-}
+static int libapduinterface_main(int argc, char **argv) { return 0; }
 
-static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
-{
+static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     struct qmi_data *qmi_priv = ifstruct->userdata;
 
     qmi_cleanup(qmi_priv);

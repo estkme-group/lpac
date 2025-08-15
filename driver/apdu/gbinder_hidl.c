@@ -1,10 +1,10 @@
-// vim: expandtab sw=4 ts=4:
 #include "gbinder_hidl.h"
 
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
+
 #include <gbinder.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,14 +50,10 @@ struct sim_apdu {
     GBinderHidlString data;
 };
 
-static const GBinderWriterField sim_apdu_f[] = {
-    GBINDER_WRITER_FIELD_HIDL_STRING(struct sim_apdu, data),
-    GBINDER_WRITER_FIELD_END()
-};
+static const GBinderWriterField sim_apdu_f[] = {GBINDER_WRITER_FIELD_HIDL_STRING(struct sim_apdu, data),
+                                                GBINDER_WRITER_FIELD_END()};
 
-static const GBinderWriterType sim_apdu_t = {
-    GBINDER_WRITER_STRUCT_NAME_AND_SIZE(struct sim_apdu), sim_apdu_f
-};
+static const GBinderWriterType sim_apdu_t = {GBINDER_WRITER_STRUCT_NAME_AND_SIZE(struct sim_apdu), sim_apdu_f};
 
 static GBinderServiceManager *sm;
 // IRadioResponse
@@ -72,35 +68,31 @@ static int lastIntResp = -1;
 static int lastRadioErr = 0;
 static struct icc_io_result lastIccIoResult = {0};
 
-static GBinderLocalReply *radio_response_transact(
-        GBinderLocalObject *obj,
-        GBinderRemoteRequest *req,
-        guint code, guint flags, int *status, void *user_data)
-{
+static GBinderLocalReply *radio_response_transact(GBinderLocalObject *obj, GBinderRemoteRequest *req, guint code,
+                                                  guint flags, int *status, void *user_data) {
     GBinderReader reader;
 
     gbinder_remote_request_init_reader(req, &reader);
-    const struct radio_response_info *resp =
-        gbinder_reader_read_hidl_struct(&reader, struct radio_response_info);
+    const struct radio_response_info *resp = gbinder_reader_read_hidl_struct(&reader, struct radio_response_info);
     lastRadioErr = resp->error;
 
     if (lastRadioErr != 0)
         goto out;
 
     switch (code) {
-        case HIDL_SERVICE_ICC_OPEN_LOGICAL_CHANNEL_CALLBACK:
-            gbinder_reader_read_int32(&reader, &lastIntResp);
-            break;
-        case HIDL_SERVICE_ICC_TRANSMIT_APDU_LOGICAL_CHANNEL_CALLBACK: {
-            const struct icc_io_result *icc_io_res = gbinder_reader_read_hidl_struct(&reader, struct icc_io_result);
-            // We cannot rely on the *req pointer being valid after we return
-            lastIccIoResult.sw1 = icc_io_res->sw1;
-            lastIccIoResult.sw2 = icc_io_res->sw2;
-            lastIccIoResult.simResponse.data.str = strndup(icc_io_res->simResponse.data.str, icc_io_res->simResponse.len);
-            lastIccIoResult.simResponse.len = icc_io_res->simResponse.len;
-            lastIccIoResult.simResponse.owns_buffer = TRUE;
-            break;
-        }
+    case HIDL_SERVICE_ICC_OPEN_LOGICAL_CHANNEL_CALLBACK:
+        gbinder_reader_read_int32(&reader, &lastIntResp);
+        break;
+    case HIDL_SERVICE_ICC_TRANSMIT_APDU_LOGICAL_CHANNEL_CALLBACK: {
+        const struct icc_io_result *icc_io_res = gbinder_reader_read_hidl_struct(&reader, struct icc_io_result);
+        // We cannot rely on the *req pointer being valid after we return
+        lastIccIoResult.sw1 = icc_io_res->sw1;
+        lastIccIoResult.sw2 = icc_io_res->sw2;
+        lastIccIoResult.simResponse.data.str = strndup(icc_io_res->simResponse.data.str, icc_io_res->simResponse.len);
+        lastIccIoResult.simResponse.len = icc_io_res->simResponse.len;
+        lastIccIoResult.simResponse.owns_buffer = TRUE;
+        break;
+    }
     }
 
 out:
@@ -108,8 +100,7 @@ out:
     return NULL;
 }
 
-static void cleanup_channel(int id)
-{
+static void cleanup_channel(int id) {
     GBinderLocalRequest *req = gbinder_client_new_request(client);
     GBinderWriter writer;
     gbinder_local_request_init_writer(req, &writer);
@@ -120,8 +111,7 @@ static void cleanup_channel(int id)
     g_main_loop_run(binder_loop);
 }
 
-static void cleanup(void)
-{
+static void cleanup(void) {
     if (lastChannelId != -1) {
         fprintf(stderr, "Cleaning up leaked APDU channel %d\n", lastChannelId);
         cleanup_channel(lastChannelId);
@@ -129,14 +119,12 @@ static void cleanup(void)
     }
 }
 
-static void sighandler(int sig)
-{
+static void sighandler(int sig) {
     // This would trigger atexit() hooks
     exit(0);
 }
 
-static int try_open_slot(int slotId, const uint8_t *aid, uint32_t aid_len)
-{
+static int try_open_slot(int slotId, const uint8_t *aid, uint32_t aid_len) {
     // First, try to connect to the HIDL service for this slot
     char fqname[255];
     snprintf(fqname, 255, "%s/slot%d", HIDL_SERVICE_IFACE, slotId);
@@ -144,8 +132,7 @@ static int try_open_slot(int slotId, const uint8_t *aid, uint32_t aid_len)
 
     int status = 0;
     sm = gbinder_servicemanager_new(HIDL_SERVICE_DEVICE);
-    remote = gbinder_remote_object_ref(
-            gbinder_servicemanager_get_service_sync(sm, fqname, &status));
+    remote = gbinder_remote_object_ref(gbinder_servicemanager_get_service_sync(sm, fqname, &status));
     client = gbinder_client_new(remote, HIDL_SERVICE_IFACE);
 
     if (!client) {
@@ -156,8 +143,8 @@ static int try_open_slot(int slotId, const uint8_t *aid, uint32_t aid_len)
         return -1;
     }
 
-    response_callback = gbinder_servicemanager_new_local_object(
-            sm, HIDL_SERVICE_IFACE_CALLBACK, radio_response_transact, NULL);
+    response_callback =
+        gbinder_servicemanager_new_local_object(sm, HIDL_SERVICE_IFACE_CALLBACK, radio_response_transact, NULL);
 
     GBinderLocalRequest *req = gbinder_client_new_request(client);
     GBinderWriter writer;
@@ -200,18 +187,11 @@ static int try_open_slot(int slotId, const uint8_t *aid, uint32_t aid_len)
     return lastIntResp;
 }
 
-static int apdu_interface_connect(struct euicc_ctx *ctx)
-{
-    return 0;
-}
+static int apdu_interface_connect(struct euicc_ctx *ctx) { return 0; }
 
-static void apdu_interface_disconnect(struct euicc_ctx *ctx)
-{
-    cleanup();
-}
+static void apdu_interface_disconnect(struct euicc_ctx *ctx) { cleanup(); }
 
-static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
-{
+static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len) {
     // We only start to use gbinder connection here, because only now can we detect whether
     // a given slot is a valid eSIM slot. This way we can automatically fall back in the case
     // where a device has only one eSIM -- we don't want to force the user to choose in this case.
@@ -223,8 +203,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     return res;
 }
 
-static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel)
-{
+static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
     cleanup_channel(channel);
     if (lastChannelId == channel)
         lastChannelId = -1;
@@ -235,8 +214,8 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
     gbinder_servicemanager_unref(sm);
 }
 
-static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
-{
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
+                                   uint32_t tx_len) {
     GBinderLocalRequest *req = gbinder_client_new_request(client);
     GBinderWriter writer;
     gbinder_local_request_init_writer(req, &writer);
@@ -255,13 +234,12 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
         .p1 = tx[2],
         .p2 = tx[3],
         .p3 = tx[4],
-        .data = {
-            .data = {
-                .str = (const char *) tx_hex
+        .data =
+            {
+                .data = {.str = (const char *)tx_hex},
+                .len = strlen(tx_hex) + 1,
+                .owns_buffer = FALSE,
             },
-            .len = strlen(tx_hex) + 1,
-            .owns_buffer = FALSE,
-        },
     };
     gbinder_writer_append_struct(&writer, &apdu, &sim_apdu_t, NULL);
     int status = gbinder_client_transact_sync_oneway(client, HIDL_SERVICE_ICC_TRANSMIT_APDU_LOGICAL_CHANNEL, req);
@@ -279,7 +257,8 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     }
 
     if (getenv_or_default(ENV_DEBUG, false))
-        fprintf(stderr, "APDU resp: %d%d %d %s\n", lastIccIoResult.sw1, lastIccIoResult.sw2, lastIccIoResult.simResponse.len, lastIccIoResult.simResponse.data.str);
+        fprintf(stderr, "APDU resp: %d%d %d %s\n", lastIccIoResult.sw1, lastIccIoResult.sw2,
+                lastIccIoResult.simResponse.len, lastIccIoResult.simResponse.data.str);
 
     *rx_len = lastIccIoResult.simResponse.len / 2 + 2;
     *rx = calloc(*rx_len, sizeof(uint8_t));
@@ -288,13 +267,12 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     (*rx)[*rx_len - 1] = lastIccIoResult.sw2;
 
     // see radio_response_transact -- this is our buffer.
-    free((void *) lastIccIoResult.simResponse.data.str);
+    free((void *)lastIccIoResult.simResponse.data.str);
 
     return 0;
 }
 
-static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
-{
+static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     set_deprecated_env_name(ENV_DEBUG, "GBINDER_APDU_DEBUG");
 
     ifstruct->connect = apdu_interface_connect;
@@ -313,19 +291,14 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     return 0;
 }
 
-static int libapduinterface_main(int argc, char **argv)
-{
-    return 0;
-}
+static int libapduinterface_main(int argc, char **argv) { return 0; }
 
-static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
-{
-}
+static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {}
 
 const struct euicc_driver driver_apdu_gbinder_hidl = {
     .type = DRIVER_APDU,
     .name = "gbinder_hidl",
-    .init = (int (*)(void *)) libapduinterface_init,
+    .init = (int (*)(void *))libapduinterface_init,
     .main = libapduinterface_main,
-    .fini = (void (*)(void *)) libapduinterface_fini,
+    .fini = (void (*)(void *))libapduinterface_fini,
 };

@@ -1,40 +1,34 @@
 #include "nickname.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <main.h>
+#include "main.h"
 
 #include <euicc/es10c.h>
 
-static int applet_main(int argc, char **argv)
-{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+static int applet_main(int argc, char **argv) {
     int ret;
     const char *iccid;
     const char *new_name;
 
-    if (argc < 2)
-    {
+    if (argc < 2) {
         printf("Usage: %s [iccid] [new_name]\n", argv[0]);
         printf("\t[new_name]: optional\n");
         return -1;
     }
 
     iccid = argv[1];
-    if (argc > 2)
-    {
+    if (argc > 2) {
         new_name = argv[2];
-    }
-    else
-    {
+    } else {
         new_name = "";
     }
 
-    if ((ret = es10c_set_nickname(&euicc_ctx, iccid, new_name)))
-    {
+    if ((ret = es10c_set_nickname(&euicc_ctx, iccid, new_name))) {
         const char *reason;
-        switch (ret)
-        {
+        switch (ret) {
         case 1:
             reason = "iccid not found";
             break;

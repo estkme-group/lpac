@@ -1,17 +1,16 @@
+#include "helpers.h"
 #include "process.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <main.h>
-#include <errno.h>
 
 #include <euicc/es10b.h>
 #include <euicc/es10c.h>
 #include <lpac/utils.h>
 
-#include "helpers.h"
+#include <errno.h>
+#include <main.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 static bool retrieve_notification(const char *eid, const uint32_t seqNumber) {
     _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
@@ -22,7 +21,8 @@ static bool retrieve_notification(const char *eid, const uint32_t seqNumber) {
     }
 
     _cleanup_cjson_ cJSON *jroot = build_notification(eid, seqNumber, &notification);
-    if (jroot == NULL) return false;
+    if (jroot == NULL)
+        return false;
 
     _cleanup_free_ char *jstr = cJSON_PrintUnformatted(jroot);
     printf("%s\n", jstr);
@@ -41,16 +41,16 @@ static int applet_main(const int argc, char **argv) {
 
     while ((opt = getopt(argc, argv, opt_string)) != -1) {
         switch (opt) {
-            case 'a':
-                all = 1;
-                break;
-            case 'h':
-            case '?':
-                printf("Usage: %s [OPTIONS] [seqNumber_0] [seqNumber_1]...\n", argv[0]);
-                printf("\t -a All notifications\n");
-                return -1;
-            default:
-                break;
+        case 'a':
+            all = 1;
+            break;
+        case 'h':
+        case '?':
+            printf("Usage: %s [OPTIONS] [seqNumber_0] [seqNumber_1]...\n", argv[0]);
+            printf("\t -a All notifications\n");
+            return -1;
+        default:
+            break;
         }
     }
 

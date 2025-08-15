@@ -7,39 +7,34 @@
 #include <unistd.h>
 
 #include <cjson/cJSON_ex.h>
-#include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <euicc/interface.h>
 #include <lpac/utils.h>
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
-static int afgets(char **obuf, FILE *fp)
-{
+static int afgets(char **obuf, FILE *fp) {
     uint32_t len = 0;
     char buffer[2];
     char *obuf_new = NULL;
 
     *obuf = malloc(1);
-    if ((*obuf) == NULL)
-    {
+    if ((*obuf) == NULL) {
         goto err;
     }
     (*obuf)[0] = '\0';
 
-    while (fgets(buffer, sizeof(buffer), fp) != NULL)
-    {
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
         uint32_t fgets_len = strlen(buffer);
 
         len += fgets_len + 1;
         obuf_new = realloc(*obuf, len);
-        if (obuf_new == NULL)
-        {
+        if (obuf_new == NULL) {
             goto err;
         }
         *obuf = obuf_new;
         strcat(*obuf, buffer);
 
-        if (buffer[fgets_len - 1] == '\n')
-        {
+        if (buffer[fgets_len - 1] == '\n') {
             break;
         }
     }
@@ -54,115 +49,92 @@ err:
     return -1;
 }
 
-static bool json_request(const char *func, const uint8_t *param, unsigned param_len)
-{
+static bool json_request(const char *func, const uint8_t *param, unsigned param_len) {
     _cleanup_free_ char *param_hex = NULL;
     _cleanup_cjson_ cJSON *jpayload = NULL;
 
-    if (param && param_len)
-    {
+    if (param && param_len) {
         param_hex = malloc((2 * param_len) + 1);
-        if (param_hex == NULL)
-        {
+        if (param_hex == NULL) {
             return false;
         }
-        if (euicc_hexutil_bin2hex(param_hex, (2 * param_len) + 1, param, param_len) < 0)
-        {
+        if (euicc_hexutil_bin2hex(param_hex, (2 * param_len) + 1, param, param_len) < 0) {
             return false;
         }
-    }
-    else
-    {
+    } else {
         param_hex = NULL;
     }
 
     jpayload = cJSON_CreateObject();
-    if (jpayload == NULL)
-    {
+    if (jpayload == NULL) {
         return false;
     }
-    if (cJSON_AddStringOrNullToObject(jpayload, "func", func) == NULL)
-    {
+    if (cJSON_AddStringOrNullToObject(jpayload, "func", func) == NULL) {
         return false;
     }
-    if (cJSON_AddStringOrNullToObject(jpayload, "param", param_hex) == NULL)
-    {
+    if (cJSON_AddStringOrNullToObject(jpayload, "param", param_hex) == NULL) {
         return false;
     }
 
     return json_print("apdu", jpayload);
 }
 
-static int json_response(int *ecode, uint8_t **data, uint32_t *data_len)
-{
+static int json_response(int *ecode, uint8_t **data, uint32_t *data_len) {
     int fret = 0;
     _cleanup_free_ char *data_json;
     _cleanup_cjson_ cJSON *data_jroot;
     cJSON *data_payload;
     cJSON *jtmp;
 
-    if (data)
-    {
+    if (data) {
         *data = NULL;
     }
 
-    if (afgets(&data_json, stdin) < 0)
-    {
+    if (afgets(&data_json, stdin) < 0) {
         return -1;
     }
 
     data_jroot = cJSON_Parse(data_json);
-    if (data_jroot == NULL)
-    {
+    if (data_jroot == NULL) {
         return -1;
     }
 
     jtmp = cJSON_GetObjectItem(data_jroot, "type");
-    if (!jtmp)
-    {
+    if (!jtmp) {
         goto err;
     }
-    if (!cJSON_IsString(jtmp))
-    {
+    if (!cJSON_IsString(jtmp)) {
         goto err;
     }
-    if (strcmp("apdu", jtmp->valuestring) != 0)
-    {
+    if (strcmp("apdu", jtmp->valuestring) != 0) {
         goto err;
     }
 
     data_payload = cJSON_GetObjectItem(data_jroot, "payload");
-    if (!data_payload)
-    {
+    if (!data_payload) {
         goto err;
     }
-    if (!cJSON_IsObject(data_payload))
-    {
+    if (!cJSON_IsObject(data_payload)) {
         goto err;
     }
 
     jtmp = cJSON_GetObjectItem(data_payload, "ecode");
-    if (!jtmp)
-    {
+    if (!jtmp) {
         goto err;
     }
-    if (!cJSON_IsNumber(jtmp))
-    {
+    if (!cJSON_IsNumber(jtmp)) {
         goto err;
     }
     *ecode = jtmp->valueint;
 
     jtmp = cJSON_GetObjectItem(data_payload, "data");
-    if (jtmp && cJSON_IsString(jtmp) && data && data_len)
-    {
+    if (jtmp && cJSON_IsString(jtmp) && data && data_len) {
         *data_len = strlen(jtmp->valuestring) / 2;
         *data = malloc(*data_len);
-        if (!*data)
-        {
+        if (!*data) {
             goto err;
         }
-        if (euicc_hexutil_hex2bin_r(*data, *data_len, jtmp->valuestring, strlen(jtmp->valuestring)) < 0)
-        {
+        if (euicc_hexutil_hex2bin_r(*data, *data_len, jtmp->valuestring, strlen(jtmp->valuestring)) < 0) {
             goto err;
         }
     }
@@ -173,12 +145,10 @@ static int json_response(int *ecode, uint8_t **data, uint32_t *data_len)
 err:
     fret = -1;
     free(*data);
-    if (data)
-    {
+    if (data) {
         *data = NULL;
     }
-    if (data_len)
-    {
+    if (data_len) {
         *data_len = 0;
     }
     *ecode = -1;
@@ -187,17 +157,14 @@ exit:
 }
 
 // {"type":"apdu","payload":{"ecode":0}}
-static int apdu_interface_connect(struct euicc_ctx *ctx)
-{
+static int apdu_interface_connect(struct euicc_ctx *ctx) {
     int ecode;
 
-    if (json_request("connect", NULL, 0))
-    {
+    if (json_request("connect", NULL, 0)) {
         return -1;
     }
 
-    if (json_response(&ecode, NULL, NULL))
-    {
+    if (json_response(&ecode, NULL, NULL)) {
         return -1;
     }
 
@@ -205,8 +172,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
 }
 
 // {"type":"apdu","payload":{"ecode":0}}
-static void apdu_interface_disconnect(struct euicc_ctx *ctx)
-{
+static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
     int ecode;
 
     json_request("disconnect", NULL, 0);
@@ -214,17 +180,14 @@ static void apdu_interface_disconnect(struct euicc_ctx *ctx)
 }
 
 // {"type":"apdu","payload":{"ecode":1}}
-static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
-{
+static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len) {
     int ecode;
 
-    if (json_request("logic_channel_open", aid, aid_len))
-    {
+    if (json_request("logic_channel_open", aid, aid_len)) {
         return -1;
     }
 
-    if (json_response(&ecode, NULL, NULL))
-    {
+    if (json_response(&ecode, NULL, NULL)) {
         return -1;
     }
 
@@ -232,8 +195,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 }
 
 // {"type":"apdu","payload":{"ecode":0}}
-static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel)
-{
+static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
     int ecode;
 
     json_request("logic_channel_close", &channel, sizeof(channel));
@@ -243,25 +205,22 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
 // {"type":"apdu","payload":{"ecode":0,"data":"BF3E125A10890490320010012345000123456789019000"}}
 // {"type":"apdu","payload":{"ecode":0,"data":"BF3C17811574657374726F6F74736D64732E67736D612E636F6D9000"}}
 // {"type":"apdu","payload":{"ecode":0,"data":"BF2281C6810302010082030202008303040600840F8101008204000628248304000019228504067F36C08603090200870302030088020490A916041481370F5125D0B1D408D4C3B232E6D25E795BEBFBAA16041481370F5125D0B1D408D4C3B232E6D25E795BEBFB990206C004030000010C0D47492D42412D55502D30343139AC48801F312E322E3834302E313233343536372F6D79506C6174666F726D4C6162656C812568747470733A2F2F6D79636F6D70616E792E636F6D2F6D79444C4F415265676973747261729000"}}
-static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
-{
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
+                                   uint32_t tx_len) {
     int ecode;
 
-    if (json_request("transmit", tx, tx_len))
-    {
+    if (json_request("transmit", tx, tx_len)) {
         return -1;
     }
 
-    if (json_response(&ecode, rx, rx_len))
-    {
+    if (json_response(&ecode, rx, rx_len)) {
         return -1;
     }
 
     return ecode;
 }
 
-static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
-{
+static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = apdu_interface_disconnect;
     ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
@@ -271,14 +230,9 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     return 0;
 }
 
-static int libapduinterface_main(int argc, char **argv)
-{
-    return 0;
-}
+static int libapduinterface_main(int argc, char **argv) { return 0; }
 
-static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
-{
-}
+static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {}
 
 const struct euicc_driver driver_apdu_stdio = {
     .type = DRIVER_APDU,

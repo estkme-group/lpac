@@ -1,19 +1,18 @@
 #include "delete.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <main.h>
+#include "main.h"
 
 #include <euicc/es10c.h>
 
-static int applet_main(int argc, char **argv)
-{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+static int applet_main(int argc, char **argv) {
     int ret;
     const char *param;
 
-    if (argc < 2)
-    {
+    if (argc < 2) {
         printf("Usage: %s [iccid/aid]\n", argv[0]);
         return -1;
     }
@@ -22,11 +21,9 @@ static int applet_main(int argc, char **argv)
 
     ret = es10c_delete_profile(&euicc_ctx, param);
 
-    if (ret)
-    {
+    if (ret) {
         const char *reason;
-        switch (ret)
-        {
+        switch (ret) {
         case 1:
             reason = "iccid or aid not found";
             break;

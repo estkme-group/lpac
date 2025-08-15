@@ -1,17 +1,16 @@
-#include "euicc.private.h"
 #include "es10a.h"
 
-#include "hexutil.h"
 #include "derutil.h"
+#include "euicc.private.h"
+#include "hexutil.h"
 
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
-int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, struct es10a_euicc_configured_addresses *address)
-{
+int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, struct es10a_euicc_configured_addresses *address) {
     int fret = 0;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF3C, // EuiccConfiguredAddressesRequest
@@ -25,36 +24,29 @@ int es10a_get_euicc_configured_addresses(struct euicc_ctx *ctx, struct es10a_eui
     memset(address, 0, sizeof(*address));
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_Response, n_request.tag, respbuf, resplen))
-    {
+    if (euicc_derutil_unpack_find_tag(&n_Response, n_request.tag, respbuf, resplen)) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, n_Response.value, n_Response.length) == 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, n_Response.value, n_Response.length) == 0) {
         address->defaultDpAddress = malloc(tmpnode.length + 1);
-        if (address->defaultDpAddress)
-        {
+        if (address->defaultDpAddress) {
             memcpy(address->defaultDpAddress, tmpnode.value, tmpnode.length);
             address->defaultDpAddress[tmpnode.length] = '\0';
         }
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x81, n_Response.value, n_Response.length) == 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x81, n_Response.value, n_Response.length) == 0) {
         address->rootDsAddress = malloc(tmpnode.length + 1);
-        if (address->rootDsAddress)
-        {
+        if (address->rootDsAddress) {
             memcpy(address->rootDsAddress, tmpnode.value, tmpnode.length);
             address->rootDsAddress[tmpnode.length] = '\0';
         }
@@ -74,18 +66,19 @@ exit:
     return fret;
 }
 
-int es10a_set_default_dp_address(struct euicc_ctx *ctx, const char *smdp)
-{
+int es10a_set_default_dp_address(struct euicc_ctx *ctx, const char *smdp) {
     int fret = 0;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF3F, // SetDefaultDpAddressRequest
-        .pack = {
-            .child = &(struct euicc_derutil_node){
-                .tag = 0x80,
-                .length = strlen(smdp),
-                .value = (const uint8_t *)smdp,
+        .pack =
+            {
+                .child =
+                    &(struct euicc_derutil_node){
+                        .tag = 0x80,
+                        .length = strlen(smdp),
+                        .value = (const uint8_t *)smdp,
+                    },
             },
-        },
     };
     uint32_t reqlen;
     uint8_t *respbuf = NULL;
@@ -94,23 +87,19 @@ int es10a_set_default_dp_address(struct euicc_ctx *ctx, const char *smdp)
     struct euicc_derutil_node tmpnode;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0) {
         goto err;
     }
 
@@ -126,10 +115,8 @@ exit:
     return fret;
 }
 
-void es10a_euicc_configured_addresses_free(struct es10a_euicc_configured_addresses *address)
-{
-    if (!address)
-    {
+void es10a_euicc_configured_addresses_free(struct es10a_euicc_configured_addresses *address) {
+    if (!address) {
         return;
     }
     free(address->defaultDpAddress);

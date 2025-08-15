@@ -1,19 +1,18 @@
 #include "process.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <main.h>
+#include "helpers.h"
 
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
 #include <lpac/utils.h>
 
-#include "helpers.h"
+#include <errno.h>
+#include <main.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-static int _process_single(uint32_t seqNumber, uint8_t autoremove)
-{
+static int _process_single(uint32_t seqNumber, uint8_t autoremove) {
     int ret;
     char str_seqNumber[11];
     _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
@@ -21,8 +20,7 @@ static int _process_single(uint32_t seqNumber, uint8_t autoremove)
     snprintf(str_seqNumber, sizeof(str_seqNumber), "%u", seqNumber);
 
     jprint_progress("es10b_retrieve_notifications_list", str_seqNumber);
-    if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber))
-    {
+    if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber)) {
         jprint_error("es10b_retrieve_notifications_list", NULL);
         return -1;
     }
@@ -30,23 +28,19 @@ static int _process_single(uint32_t seqNumber, uint8_t autoremove)
     euicc_ctx.http.server_address = notification_strstrip(notification.notificationAddress);
 
     jprint_progress("es9p_handle_notification", str_seqNumber);
-    if (es9p_handle_notification(&euicc_ctx, notification.b64_PendingNotification))
-    {
+    if (es9p_handle_notification(&euicc_ctx, notification.b64_PendingNotification)) {
         jprint_error("es9p_handle_notification", NULL);
         return -1;
     }
 
-    if (!autoremove)
-    {
+    if (!autoremove) {
         return 0;
     }
 
     jprint_progress("es10b_remove_notification_from_list", str_seqNumber);
-    if ((ret = es10b_remove_notification_from_list(&euicc_ctx, seqNumber)))
-    {
+    if ((ret = es10b_remove_notification_from_list(&euicc_ctx, seqNumber))) {
         const char *reason;
-        switch (ret)
-        {
+        switch (ret) {
         case 1:
             reason = "seqNumber not found";
             break;
@@ -61,8 +55,7 @@ static int _process_single(uint32_t seqNumber, uint8_t autoremove)
     return 0;
 }
 
-static int applet_main(int argc, char **argv)
-{
+static int applet_main(int argc, char **argv) {
     static const char *opt_string = "arh?";
 
     int fret = 0;
@@ -70,10 +63,8 @@ static int applet_main(int argc, char **argv)
     int autoremove = 0;
     int opt = 0;
 
-    while ((opt = getopt(argc, argv, opt_string)) != -1)
-    {
-        switch (opt)
-        {
+    while ((opt = getopt(argc, argv, opt_string)) != -1) {
+        switch (opt) {
         case 'a':
             all = 1;
             break;
@@ -91,32 +82,25 @@ static int applet_main(int argc, char **argv)
         }
     }
 
-    if (all)
-    {
+    if (all) {
         _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
 
         jprint_progress("es10b_list_notification", NULL);
-        if (es10b_list_notification(&euicc_ctx, &notifications))
-        {
+        if (es10b_list_notification(&euicc_ctx, &notifications)) {
             jprint_error("es10b_list_notification", NULL);
             return -1;
         }
 
         rptr = notifications;
-        while (rptr)
-        {
-            if (_process_single(rptr->seqNumber, autoremove))
-            {
+        while (rptr) {
+            if (_process_single(rptr->seqNumber, autoremove)) {
                 fret = -1;
                 break;
             }
             rptr = rptr->next;
         }
-    }
-    else
-    {
-        for (int i = optind; i < argc; i++)
-        {
+    } else {
+        for (int i = optind; i < argc; i++) {
             unsigned long seqNumber;
 
             errno = 0;
@@ -125,20 +109,17 @@ static int applet_main(int argc, char **argv)
             // Although POSIX said user should check errno instead of return value,
             // but errno may not be set when no conversion is performed according to C99.
             // Check nptr is same as str_end to ensure there is no conversion.
-            if ((seqNumber == 0 && strcmp(argv[i], str_end)) || errno != 0)
-            {
+            if ((seqNumber == 0 && strcmp(argv[i], str_end)) || errno != 0) {
                 continue;
             }
-            if (_process_single(seqNumber, autoremove))
-            {
+            if (_process_single(seqNumber, autoremove)) {
                 fret = -1;
                 break;
             }
         }
     }
 
-    if (fret == 0)
-    {
+    if (fret == 0) {
         jprint_success(NULL);
     }
 

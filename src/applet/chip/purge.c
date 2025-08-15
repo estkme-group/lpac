@@ -1,34 +1,30 @@
 #include "purge.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <main.h>
 
+#include "main.h"
 #include <euicc/es10c.h>
 
-static int applet_main(int argc, char **argv)
-{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+static int applet_main(int argc, char **argv) {
     int ret;
 
-    if (argc < 2)
-    {
+    if (argc < 2) {
         printf("Usage: %s [yes|other]\n", argv[0]);
         printf("\t\tConfirm purge eUICC, all data will lost!\n");
         return -1;
     }
 
-    if (strcmp(argv[1], "yes") != 0)
-    {
+    if (strcmp(argv[1], "yes") != 0) {
         printf("Purge canceled\n");
         return -1;
     }
 
-    if ((ret = es10c_euicc_memory_reset(&euicc_ctx)))
-    {
+    if ((ret = es10c_euicc_memory_reset(&euicc_ctx))) {
         const char *reason;
-        switch (ret)
-        {
+        switch (ret) {
         case 1:
             reason = "nothing to delete";
             break;
