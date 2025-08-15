@@ -1,9 +1,7 @@
 #include "tostr.h"
 
-const char *euicc_profilestate2str(enum es10c_profile_state value)
-{
-    switch (value)
-    {
+const char *euicc_profilestate2str(enum es10c_profile_state value) {
+    switch (value) {
     case ES10C_PROFILE_STATE_NULL:
         return NULL;
     case ES10C_PROFILE_STATE_DISABLED:
@@ -16,10 +14,8 @@ const char *euicc_profilestate2str(enum es10c_profile_state value)
     return "(no_str_available)";
 }
 
-const char *euicc_profileclass2str(enum es10c_profile_class value)
-{
-    switch (value)
-    {
+const char *euicc_profileclass2str(enum es10c_profile_class value) {
+    switch (value) {
     case ES10C_PROFILE_CLASS_NULL:
         return NULL;
     case ES10C_PROFILE_CLASS_TEST:
@@ -34,10 +30,8 @@ const char *euicc_profileclass2str(enum es10c_profile_class value)
     return "(no_str_available)";
 }
 
-const char *euicc_icontype2str(enum es10c_icon_type value)
-{
-    switch (value)
-    {
+const char *euicc_icontype2str(enum es10c_icon_type value) {
+    switch (value) {
     case ES10C_ICON_TYPE_NULL:
         return NULL;
     case ES10C_ICON_TYPE_JPEG:
@@ -50,10 +44,8 @@ const char *euicc_icontype2str(enum es10c_icon_type value)
     return "(no_str_available)";
 }
 
-const char *euicc_profilemanagementoperation2str(enum es10b_profile_management_operation value)
-{
-    switch (value)
-    {
+const char *euicc_profilemanagementoperation2str(enum es10b_profile_management_operation value) {
+    switch (value) {
     case ES10B_PROFILE_MANAGEMENT_OPERATION_NULL:
         return NULL;
     case ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL:
@@ -70,10 +62,8 @@ const char *euicc_profilemanagementoperation2str(enum es10b_profile_management_o
     return "(no_str_available)";
 }
 
-const char *euicc_bppcommandid2str(enum es10b_bpp_command_id value)
-{
-    switch (value)
-    {
+const char *euicc_bppcommandid2str(enum es10b_bpp_command_id value) {
+    switch (value) {
     case ES10B_BPP_COMMAND_ID_INITIALISE_SECURE_CHANNEL:
         return "initialise_secure_channel";
     case ES10B_BPP_COMMAND_ID_CONFIGURE_ISDP:
@@ -92,10 +82,8 @@ const char *euicc_bppcommandid2str(enum es10b_bpp_command_id value)
     return "(no_str_available)";
 }
 
-const char *euicc_errorreason2str(enum es10b_error_reason value)
-{
-    switch (value)
-    {
+const char *euicc_errorreason2str(enum es10b_error_reason value) {
+    switch (value) {
     case ES10B_ERROR_REASON_INCORRECT_INPUT_VALUES:
         return "incorrect_input_values";
     case ES10B_ERROR_REASON_INVALID_SIGNATURE:

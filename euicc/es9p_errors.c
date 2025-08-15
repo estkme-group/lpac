@@ -1,5 +1,6 @@
-#include <string.h>
 #include "es9p_errors.h"
+
+#include <string.h>
 
 struct es9p_error {
     const char *subject_code;
@@ -7,6 +8,7 @@ struct es9p_error {
     const char *description;
 };
 
+// clang-format off
 static const struct es9p_error es9p_errors[] = {
     {"8.1",    "4.8", "eUICC does not have sufficient space for this Profile"},
     {"8.1",    "6.1", "eUICC signature is invalid or serverChallenge is invalid"},
@@ -53,15 +55,13 @@ static const struct es9p_error es9p_errors[] = {
     {"8.10.1", "3.9", "The RSP session identified by the TransactionID is unknown"},
     {"8.11.1", "3.9", "Unknown CI Public Key. The CI used by the EUM Certificate is not a trusted root."},
 };
+// clang-format on
 
-const char *es9p_error_message(const char *subject_code, const char *reason_code)
-{
+const char *es9p_error_message(const char *subject_code, const char *reason_code) {
     struct es9p_error error;
-    for (int i = 0; i < sizeof(es9p_errors) / sizeof(es9p_errors[0]); i++)
-    {
+    for (int i = 0; i < sizeof(es9p_errors) / sizeof(es9p_errors[0]); i++) {
         error = es9p_errors[i];
-        if (strcmp(error.subject_code, subject_code) == 0 && strcmp(error.reason_code, reason_code) == 0)
-        {
+        if (strcmp(error.subject_code, subject_code) == 0 && strcmp(error.reason_code, reason_code) == 0) {
             return error.description;
         }
     }

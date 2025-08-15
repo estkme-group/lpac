@@ -1,29 +1,28 @@
 #include "download.h"
-
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <string.h>
-#include <getopt.h>
-#include <main.h>
-#include <signal.h>
+#include "main.h"
 
 #include <euicc/es10a.h>
 #include <euicc/es10b.h>
-#include <euicc/es9p.h>
 #include <euicc/es8p.h>
+#include <euicc/es9p.h>
 #include <euicc/tostr.h>
 #include <lpac/utils.h>
+
+#include <ctype.h>
+#include <getopt.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 static const char *opt_string = "s:m:i:c:a:ph?";
 
 static volatile int cancelled = 0;
 
 #define CANCELPOINT() \
-    if (cancelled)    \
-    {                 \
+    if (cancelled) {  \
         goto err;     \
     }
 
@@ -31,7 +30,8 @@ static volatile int cancelled = 0;
 // https://stackoverflow.com/a/58244503
 char *strsep(char **stringp, const char *__delim) {
     char *rv = *stringp;
-    if (!rv) return rv;
+    if (!rv)
+        return rv;
     *stringp += strcspn(*stringp, __delim);
     if (**stringp)
         *(*stringp)++ = '\0';
@@ -44,33 +44,28 @@ char *strsep(char **stringp, const char *__delim) {
 static bool is_strict_matching_id(const char *token) {
     const size_t n = strlen(token);
     for (int i = 0; i < n; i++) {
-        if (isalnum(token[i]) || token[i] == '-') continue;
+        if (isalnum(token[i]) || token[i] == '-')
+            continue;
         return false;
     }
     return true;
 }
 
-static void sigint_handler(int x)
-{
-    cancelled = 1;
-}
+static void sigint_handler(int x) { cancelled = 1; }
 
-static cJSON *build_download_result_json(const struct es10b_load_bound_profile_package_result *result)
-{
+static cJSON *build_download_result_json(const struct es10b_load_bound_profile_package_result *result) {
     cJSON *jdata = cJSON_CreateObject();
-    if (jdata == NULL)
-    {
+    if (jdata == NULL) {
         // Memory allocation failed, return NULL to indicate error
         return NULL;
     }
-    cJSON_AddNumberToObject(jdata, "seqNumber", (double) result->seqNumber);
+    cJSON_AddNumberToObject(jdata, "seqNumber", (double)result->seqNumber);
     cJSON_AddStringToObject(jdata, "bppCommandId", euicc_bppcommandid2str(result->bppCommandId));
     cJSON_AddStringToObject(jdata, "errorReason", euicc_errorreason2str(result->errorReason));
     return jdata;
 }
 
-static int applet_main(int argc, char **argv)
-{
+static int applet_main(int argc, char **argv) {
     int fret;
     const char *error_function_name = NULL;
     _cleanup_free_ char *error_detail = NULL;
@@ -90,10 +85,8 @@ static int applet_main(int argc, char **argv)
     cJSON *jmetadata = NULL;
     _cleanup_(es8p_metadata_free) struct es8p_metadata *profile_metadata = NULL;
 
-    while ((opt = getopt(argc, argv, opt_string)) != -1)
-    {
-        switch (opt)
-        {
+    while ((opt = getopt(argc, argv, opt_string)) != -1) {
+        switch (opt) {
         case 's':
             smdp = strdup(optarg);
             break;
@@ -108,8 +101,7 @@ static int applet_main(int argc, char **argv)
             break;
         case 'a':
             activation_code = strdup(optarg);
-            if (strncmp(activation_code, "LPA:", 4) == 0)
-            {
+            if (strncmp(activation_code, "LPA:", 4) == 0) {
                 activation_code += 4; // ignore uri scheme
             }
             break;
@@ -132,21 +124,17 @@ static int applet_main(int argc, char **argv)
         }
     }
 
-    if (activation_code != NULL)
-    {
+    if (activation_code != NULL) {
         // SGP.22 v2.2.2; Page 111
         // Section: 4.1 (Activation Code)
 
         const char *token = NULL;
         int index = 0;
 
-        while ((token = strsep(&activation_code, "$")) != NULL)
-        {
-            switch (index)
-            {
+        while ((token = strsep(&activation_code, "$")) != NULL) {
+            switch (index) {
             case 0: // Activation Code Format
-                if (strncmp(token, "1", strlen(token)) != 0)
-                {
+                if (strncmp(token, "1", strlen(token)) != 0) {
                     error_function_name = "activation_code";
                     error_detail = strdup("invalid");
                     goto err;
@@ -167,8 +155,7 @@ static int applet_main(int argc, char **argv)
                 // ignored; this function is not implemented
                 break;
             case 4: // Confirmation Code Required Flag
-                if (strncmp(token, "1", strlen(token)) == 0 && confirmation_code == NULL)
-                {
+                if (strncmp(token, "1", strlen(token)) == 0 && confirmation_code == NULL) {
                     error_function_name = "confirmation_code";
                     error_detail = strdup("required");
                     goto err;
@@ -181,23 +168,18 @@ static int applet_main(int argc, char **argv)
         }
     }
 
-    if (smdp == NULL)
-    {
+    if (smdp == NULL) {
         jprint_progress("es10a_get_euicc_configured_addresses", NULL);
-        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses))
-        {
+        if (es10a_get_euicc_configured_addresses(&euicc_ctx, &configured_addresses)) {
             error_function_name = "es10a_get_euicc_configured_addresses";
             error_detail = NULL;
             goto err;
-        }
-        else
-        {
+        } else {
             smdp = configured_addresses.defaultDpAddress;
         }
     }
 
-    if (!smdp || (strlen(smdp) == 0))
-    {
+    if (!smdp || (strlen(smdp) == 0)) {
         error_function_name = "smdp";
         error_detail = strdup("empty");
         goto err;
@@ -209,8 +191,7 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es10b_get_euicc_challenge_and_info", smdp);
-    if (es10b_get_euicc_challenge_and_info(&euicc_ctx))
-    {
+    if (es10b_get_euicc_challenge_and_info(&euicc_ctx)) {
         error_function_name = "es10b_get_euicc_challenge_and_info";
         error_detail = NULL;
         goto err;
@@ -218,8 +199,7 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es9p_initiate_authentication", smdp);
-    if (es9p_initiate_authentication(&euicc_ctx))
-    {
+    if (es9p_initiate_authentication(&euicc_ctx)) {
         error_function_name = "es9p_initiate_authentication";
         error_detail = strdup(euicc_ctx.http.status.message);
         goto err;
@@ -227,8 +207,7 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es10b_authenticate_server", smdp);
-    if (es10b_authenticate_server(&euicc_ctx, matchingId, imei))
-    {
+    if (es10b_authenticate_server(&euicc_ctx, matchingId, imei)) {
         error_function_name = "es10b_authenticate_server";
         error_detail = NULL;
         goto err;
@@ -236,19 +215,17 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es9p_authenticate_client", smdp);
-    if (es9p_authenticate_client(&euicc_ctx))
-    {
+    if (es9p_authenticate_client(&euicc_ctx)) {
         error_function_name = "es9p_authenticate_client";
         error_detail = strdup(euicc_ctx.http.status.message);
         goto err;
     }
 
     // preview here
-    if (euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)
-    {
+    if (euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata) {
         CANCELPOINT();
-        if (es8p_metadata_parse(&profile_metadata, euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata))
-        {
+        if (es8p_metadata_parse(&profile_metadata,
+                                euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)) {
             error_function_name = "es8p_meatadata_parse";
             error_detail = NULL;
             goto err;
@@ -261,17 +238,16 @@ static int applet_main(int argc, char **argv)
         cJSON_AddStringOrNullToObject(jmetadata, "profileName", profile_metadata->profileName);
         cJSON_AddStringOrNullToObject(jmetadata, "iconType", euicc_icontype2str(profile_metadata->iconType));
         cJSON_AddStringOrNullToObject(jmetadata, "icon", profile_metadata->icon);
-        cJSON_AddStringOrNullToObject(jmetadata, "profileClass", euicc_profileclass2str(profile_metadata->profileClass));
+        cJSON_AddStringOrNullToObject(jmetadata, "profileClass",
+                                      euicc_profileclass2str(profile_metadata->profileClass));
 
         jprint_progress_obj("es8p_meatadata_parse", jmetadata);
 
-        if (interactive_preview)
-        {
+        if (interactive_preview) {
             char c;
             jprint_progress("preview", "y/n");
             c = getchar();
-            if (c != 'y' && c != 'Y')
-            {
+            if (c != 'y' && c != 'Y') {
                 cancelled = 1;
             }
         }
@@ -279,8 +255,7 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es10b_prepare_download", smdp);
-    if (es10b_prepare_download(&euicc_ctx, confirmation_code))
-    {
+    if (es10b_prepare_download(&euicc_ctx, confirmation_code)) {
         error_function_name = "es10b_prepare_download";
         error_detail = NULL;
         goto err;
@@ -288,8 +263,7 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es9p_get_bound_profile_package", smdp);
-    if (es9p_get_bound_profile_package(&euicc_ctx))
-    {
+    if (es9p_get_bound_profile_package(&euicc_ctx)) {
         error_function_name = "es9p_get_bound_profile_package";
         error_detail = strdup(euicc_ctx.http.status.message);
         goto err;
@@ -297,13 +271,13 @@ static int applet_main(int argc, char **argv)
 
     CANCELPOINT();
     jprint_progress("es10b_load_bound_profile_package", smdp);
-    if (es10b_load_bound_profile_package(&euicc_ctx, &download_result))
-    {
+    if (es10b_load_bound_profile_package(&euicc_ctx, &download_result)) {
         jprint_progress_obj("es10b_load_bound_profile_package:result", build_download_result_json(&download_result));
 
         char buffer[256];
 
-        snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId), euicc_errorreason2str(download_result.errorReason));
+        snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId),
+                 euicc_errorreason2str(download_result.errorReason));
         error_function_name = "es10b_load_bound_profile_package";
         error_detail = strdup(buffer);
 
@@ -321,12 +295,9 @@ err:
     es10b_cancel_session(&euicc_ctx, ES10B_CANCEL_SESSION_REASON_ENDUSERREJECTION);
     jprint_progress("es9p_cancel_session", smdp);
     es9p_cancel_session(&euicc_ctx);
-    if (!cancelled)
-    {
+    if (!cancelled) {
         jprint_error(error_function_name, error_detail);
-    }
-    else
-    {
+    } else {
         jprint_error("cancelled", NULL);
     }
 exit:

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <jprint.h>
 #include <euicc/euicc.h>
+#include <jprint.h>
 
 extern struct euicc_ctx euicc_ctx;
 

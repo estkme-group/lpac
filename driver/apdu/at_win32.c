@@ -1,16 +1,16 @@
 #include "at_win32.h"
-#include <inttypes.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <windows.h>
-#include <euicc/interface.h>
-#include <euicc/hexutil.h>
 #include <cjson/cJSON_ex.h>
-#include <setupapi.h>
-#include <initguid.h>
 #include <devguid.h>
+#include <euicc/hexutil.h>
+#include <euicc/interface.h>
+#include <initguid.h>
+#include <inttypes.h>
 #include <regstr.h>
+#include <setupapi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <windows.h>
 
 #include "at_common.h"
 #include <lpac/utils.h>
@@ -45,18 +45,17 @@ static void enumerate_com_ports(cJSON *data) {
         char friendlyNameMB[256] = {0};
         DWORD size = sizeof(portName);
 
-        HKEY hKey = SetupDiOpenDevRegKey(hDevInfo, &devInfoData,
-                                         DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
+        HKEY hKey = SetupDiOpenDevRegKey(hDevInfo, &devInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
         if (hKey != INVALID_HANDLE_VALUE) {
             DWORD type;
-            if (RegQueryValueExW(hKey, L"PortName", NULL, &type, (LPBYTE)portName, &size) != ERROR_SUCCESS || type != REG_SZ) {
+            if (RegQueryValueExW(hKey, L"PortName", NULL, &type, (LPBYTE)portName, &size) != ERROR_SUCCESS
+                || type != REG_SZ) {
                 portName[0] = L'\0';
             }
         }
 
-        if (!SetupDiGetDeviceRegistryPropertyW(hDevInfo, &devInfoData,
-                                               SPDRP_FRIENDLYNAME, NULL,
-                                               (PBYTE)friendlyName, sizeof(friendlyName), NULL)) {
+        if (!SetupDiGetDeviceRegistryPropertyW(hDevInfo, &devInfoData, SPDRP_FRIENDLYNAME, NULL, (PBYTE)friendlyName,
+                                               sizeof(friendlyName), NULL)) {
             friendlyName[0] = L'\0';
         }
 
@@ -79,26 +78,25 @@ static void enumerate_com_ports(cJSON *data) {
     SetupDiDestroyDeviceInfoList(hDevInfo);
 }
 
-static int at_expect(char **response, const char *expected)
-{
+static int at_expect(char **response, const char *expected) {
     char line[AT_BUFFER_SIZE];
     DWORD bytes_read;
-    char* found_response_data = NULL;
+    char *found_response_data = NULL;
     int result = -1;
 
     if (response)
         *response = NULL;
 
-    while (1)
-    {
+    while (1) {
         char *newline = memchr(at_read_buffer, '\n', at_read_buffer_len);
         if (!newline) {
             if (at_read_buffer_len >= sizeof(at_read_buffer)) {
-                 fprintf(stderr, "AT response line too long or buffer full\n");
-                 at_read_buffer_len = 0;
-                 return -1;
+                fprintf(stderr, "AT response line too long or buffer full\n");
+                at_read_buffer_len = 0;
+                return -1;
             }
-            if (!ReadFile(hComm, at_read_buffer + at_read_buffer_len, sizeof(at_read_buffer) - at_read_buffer_len, &bytes_read, NULL)) {
+            if (!ReadFile(hComm, at_read_buffer + at_read_buffer_len, sizeof(at_read_buffer) - at_read_buffer_len,
+                          &bytes_read, NULL)) {
                 fprintf(stderr, "ReadFile error: %lu\n", GetLastError());
                 return -1;
             }
@@ -128,18 +126,13 @@ static int at_expect(char **response, const char *expected)
         if (getenv_or_default(ENV_AT_DEBUG, false))
             fprintf(stderr, "AT_DEBUG_RX: %s\n", line);
 
-        if (strcmp(line, "ERROR") == 0)
-        {
+        if (strcmp(line, "ERROR") == 0) {
             result = -1;
             goto end;
-        }
-        else if (strcmp(line, "OK") == 0)
-        {
+        } else if (strcmp(line, "OK") == 0) {
             result = 0;
             goto end;
-        }
-        else if (expected && strncmp(line, expected, strlen(expected)) == 0)
-        {
+        } else if (expected && strncmp(line, expected, strlen(expected)) == 0) {
             free(found_response_data);
             found_response_data = strdup(line + strlen(expected));
         }
@@ -170,8 +163,7 @@ static int at_write_command(const char *cmd) {
     return 0;
 }
 
-static int apdu_interface_connect(struct euicc_ctx *ctx)
-{
+static int apdu_interface_connect(struct euicc_ctx *ctx) {
     const char *device = getenv_or_default(ENV_AT_DEVICE, "COM3");
     DCB dcb = {0};
 
@@ -183,16 +175,9 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     wchar_t devname[64];
     mbstowcs(devname, dev_ascii, sizeof(devname) / sizeof(wchar_t));
 
-    hComm = CreateFileW(devname,
-                        GENERIC_READ | GENERIC_WRITE,
-                        0,
-                        NULL,
-                        OPEN_EXISTING,
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL);
+    hComm = CreateFileW(devname, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    if (hComm == INVALID_HANDLE_VALUE)
-    {
+    if (hComm == INVALID_HANDLE_VALUE) {
         fprintf(stderr, "Failed to open device: %s, error: %lu\n", dev_ascii, GetLastError());
         return -1;
     }
@@ -230,8 +215,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     return 0;
 }
 
-static void apdu_interface_disconnect(struct euicc_ctx *ctx)
-{
+static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
     if (hComm != INVALID_HANDLE_VALUE) {
         CloseHandle(hComm);
         hComm = INVALID_HANDLE_VALUE;
@@ -239,8 +223,8 @@ static void apdu_interface_disconnect(struct euicc_ctx *ctx)
     logic_channel = 0;
 }
 
-static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
-{
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
+                                   uint32_t tx_len) {
     int fret = 0;
     int ret;
     _cleanup_free_ char *response = NULL;
@@ -249,51 +233,43 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     *rx = NULL;
     *rx_len = 0;
 
-    if (!logic_channel)
-    {
+    if (!logic_channel) {
         return -1;
     }
 
     size_t cmd_len = snprintf(at_cmd_buffer, AT_BUFFER_SIZE, "AT+CGLA=%d,%u,\"", logic_channel, tx_len * 2);
-    char* p = at_cmd_buffer + cmd_len;
-    for (uint32_t i = 0; i < tx_len; i++)
-    {
+    char *p = at_cmd_buffer + cmd_len;
+    for (uint32_t i = 0; i < tx_len; i++) {
         sprintf(p, "%02X", tx[i]);
         p += 2;
     }
     sprintf(p, "\"\r\n");
 
-    if (at_write_command(at_cmd_buffer) || at_expect(&response, "+CGLA: "))
-    {
+    if (at_write_command(at_cmd_buffer) || at_expect(&response, "+CGLA: ")) {
         goto err;
     }
-    if (response == NULL)
-    {
+    if (response == NULL) {
         goto err;
     }
 
     strtok(response, ",");
     hexstr = strtok(NULL, ",");
-    if (!hexstr)
-    {
+    if (!hexstr) {
         goto err;
     }
-    if (hexstr[0] == '"')
-    {
+    if (hexstr[0] == '"') {
         hexstr++;
     }
     hexstr[strcspn(hexstr, "\"")] = '\0';
 
     *rx_len = strlen(hexstr) / 2;
     *rx = malloc(*rx_len);
-    if (!*rx)
-    {
+    if (!*rx) {
         goto err;
     }
 
     ret = euicc_hexutil_hex2bin_r(*rx, *rx_len, hexstr, strlen(hexstr));
-    if (ret < 0)
-    {
+    if (ret < 0) {
         goto err;
     }
     *rx_len = ret;
@@ -309,47 +285,39 @@ exit:
     return fret;
 }
 
-static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
-{
+static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len) {
     _cleanup_free_ char *response = NULL;
 
-    if (logic_channel)
-    {
+    if (logic_channel) {
         return logic_channel;
     }
 
-    for (int i = 1; i <= 4; i++)
-    {
+    for (int i = 1; i <= 4; i++) {
         snprintf(at_cmd_buffer, AT_BUFFER_SIZE, "AT+CCHC=%d\r\n", i);
         at_write_command(at_cmd_buffer);
         at_expect(NULL, NULL);
     }
 
     size_t cmd_len = snprintf(at_cmd_buffer, AT_BUFFER_SIZE, "AT+CCHO=\"");
-    char* p = at_cmd_buffer + cmd_len;
-    for (int i = 0; i < aid_len; i++)
-    {
+    char *p = at_cmd_buffer + cmd_len;
+    for (int i = 0; i < aid_len; i++) {
         sprintf(p, "%02X", aid[i]);
         p += 2;
     }
     sprintf(p, "\"\r\n");
 
-    if (at_write_command(at_cmd_buffer) || at_expect(&response, "+CCHO: "))
-    {
+    if (at_write_command(at_cmd_buffer) || at_expect(&response, "+CCHO: ")) {
         return -1;
     }
-    if (response == NULL)
-    {
+    if (response == NULL) {
         return -1;
     }
     logic_channel = atoi(response);
     return logic_channel;
 }
 
-static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel)
-{
-    if (!logic_channel)
-    {
+static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
+    if (!logic_channel) {
         return;
     }
     snprintf(at_cmd_buffer, AT_BUFFER_SIZE, "AT+CCHC=%d\r\n", logic_channel);
@@ -358,8 +326,7 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t ch
     logic_channel = 0;
 }
 
-static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
-{
+static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     set_deprecated_env_name(ENV_AT_DEBUG, "AT_DEBUG");
     set_deprecated_env_name(ENV_AT_DEVICE, "AT_DEVICE");
 
@@ -372,8 +339,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     ifstruct->transmit = apdu_interface_transmit;
 
     at_cmd_buffer = malloc(AT_BUFFER_SIZE);
-    if (!at_cmd_buffer)
-    {
+    if (!at_cmd_buffer) {
         fprintf(stderr, "Failed to allocate memory\n");
         return -1;
     }
@@ -382,16 +348,13 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     return 0;
 }
 
-static int libapduinterface_main(int argc, char **argv)
-{
-    if (argc < 2)
-    {
+static int libapduinterface_main(int argc, char **argv) {
+    if (argc < 2) {
         fprintf(stderr, "Usage: %s <list>\n", argv[0]);
         return -1;
     }
 
-    if (strcmp(argv[1], "list") == 0)
-    {
+    if (strcmp(argv[1], "list") == 0) {
         cJSON *data = cJSON_CreateArray();
 
         enumerate_com_ports(data);
@@ -404,8 +367,7 @@ static int libapduinterface_main(int argc, char **argv)
     return 0;
 }
 
-static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
-{
+static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     free(at_cmd_buffer);
     if (hComm != INVALID_HANDLE_VALUE) {
         CloseHandle(hComm);

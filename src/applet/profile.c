@@ -1,34 +1,28 @@
 #include "profile.h"
+
+#include "main.h"
+#include "profile/delete.h"
+#include "profile/disable.h"
+#include "profile/discovery.h"
+#include "profile/download.h"
+#include "profile/enable.h"
+#include "profile/list.h"
+#include "profile/nickname.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-
-#include <main.h>
-
-#include "profile/list.h"
-#include "profile/enable.h"
-#include "profile/disable.h"
-#include "profile/nickname.h"
-#include "profile/delete.h"
-#include "profile/download.h"
-#include "profile/discovery.h"
+#include <unistd.h>
 
 static const struct applet_entry *applets[] = {
-    &applet_profile_list,
-    &applet_profile_enable,
-    &applet_profile_disable,
-    &applet_profile_nickname,
-    &applet_profile_delete,
-    &applet_profile_download,
-    &applet_profile_discovery,
-    NULL,
+    &applet_profile_list,   &applet_profile_enable,   &applet_profile_disable,   &applet_profile_nickname,
+    &applet_profile_delete, &applet_profile_download, &applet_profile_discovery, NULL,
 };
 
-static int applet_main(const int argc, char **argv)
-{
+static int applet_main(const int argc, char **argv) {
     const int ret = main_init_euicc();
-    if (ret != 0) return ret;
+    if (ret != 0)
+        return ret;
     return applet_entry(argc, argv, applets);
 }
 

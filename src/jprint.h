@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cjson/cJSON_ex.h>
 
 void jprint_error(const char *function_name, const char *detail);

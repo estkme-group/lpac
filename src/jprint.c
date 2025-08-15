@@ -1,18 +1,18 @@
 #include "jprint.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
+
 #include <lpac/utils.h>
 
-void jprint_error(const char *function_name, const char *detail)
-{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+void jprint_error(const char *function_name, const char *detail) {
     _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
     _cleanup_free_ char *jstr = NULL;
 
-    if (detail == NULL)
-    {
+    if (detail == NULL) {
         detail = "";
     }
 
@@ -30,8 +30,7 @@ void jprint_error(const char *function_name, const char *detail)
     fflush(stdout);
 }
 
-void jprint_progress(const char *function_name, const char *detail)
-{
+void jprint_progress(const char *function_name, const char *detail) {
     _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
     _cleanup_free_ char *jstr = NULL;
@@ -50,8 +49,7 @@ void jprint_progress(const char *function_name, const char *detail)
     fflush(stdout);
 }
 
-void jprint_progress_obj(const char *function_name, cJSON *jdata)
-{
+void jprint_progress_obj(const char *function_name, cJSON *jdata) {
     _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
     _cleanup_free_ char *jstr = NULL;
@@ -61,12 +59,9 @@ void jprint_progress_obj(const char *function_name, cJSON *jdata)
     jpayload = cJSON_CreateObject();
     cJSON_AddNumberToObject(jpayload, "code", 0);
     cJSON_AddStringOrNullToObject(jpayload, "message", function_name);
-    if (jdata)
-    {
+    if (jdata) {
         cJSON_AddItemToObject(jpayload, "data", jdata);
-    }
-    else
-    {
+    } else {
         cJSON_AddNullToObject(jpayload, "data");
     }
     cJSON_AddItemToObject(jroot, "payload", jpayload);
@@ -77,8 +72,7 @@ void jprint_progress_obj(const char *function_name, cJSON *jdata)
     fflush(stdout);
 }
 
-void jprint_success(cJSON *jdata)
-{
+void jprint_success(cJSON *jdata) {
     _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
     _cleanup_free_ char *jstr = NULL;
@@ -88,12 +82,9 @@ void jprint_success(cJSON *jdata)
     jpayload = cJSON_CreateObject();
     cJSON_AddNumberToObject(jpayload, "code", 0);
     cJSON_AddStringOrNullToObject(jpayload, "message", "success");
-    if (jdata)
-    {
+    if (jdata) {
         cJSON_AddItemToObject(jpayload, "data", jdata);
-    }
-    else
-    {
+    } else {
         cJSON_AddNullToObject(jpayload, "data");
     }
     cJSON_AddItemToObject(jroot, "payload", jpayload);

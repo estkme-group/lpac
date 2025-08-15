@@ -1,18 +1,16 @@
 #include "applet.h"
+
 #include <stdio.h>
 #include <string.h>
 
-static void applet_usage(const char *selfname, const struct applet_entry **entries)
-{
+static void applet_usage(const char *selfname, const struct applet_entry **entries) {
     const struct applet_entry *entry;
 
     printf("Usage: %s <", selfname);
 
-    while ((entry = *entries))
-    {
+    while ((entry = *entries)) {
         printf("%s", entry->name);
-        if (*(++entries))
-        {
+        if (*(++entries)) {
             printf("|");
         }
     }
@@ -20,23 +18,19 @@ static void applet_usage(const char *selfname, const struct applet_entry **entri
     printf(">\n");
 }
 
-int applet_entry(int argc, char **argv, const struct applet_entry **entries)
-{
+int applet_entry(int argc, char **argv, const struct applet_entry **entries) {
     const struct applet_entry **entries_cpy;
     const struct applet_entry *entry;
 
     entries_cpy = entries;
 
-    if (argc < 2)
-    {
+    if (argc < 2) {
         applet_usage(argv[0], entries);
         return -1;
     }
 
-    while ((entry = *entries_cpy++))
-    {
-        if (strcmp(argv[1], entry->name) == 0)
-        {
+    while ((entry = *entries_cpy++)) {
+        if (strcmp(argv[1], entry->name) == 0) {
             return entry->main(argc - 1, argv + 1);
         }
     }

@@ -1,22 +1,21 @@
 #include "list.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <main.h>
+#include "main.h"
 
 #include <euicc/es10c.h>
 #include <euicc/tostr.h>
 #include <lpac/utils.h>
 
-static int applet_main(int argc, char **argv)
-{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+static int applet_main(int argc, char **argv) {
     _cleanup_es10c_profile_info_list_ struct es10c_profile_info_list *profiles;
     struct es10c_profile_info_list *rptr;
     cJSON *jdata = NULL;
 
-    if (es10c_get_profiles_info(&euicc_ctx, &profiles))
-    {
+    if (es10c_get_profiles_info(&euicc_ctx, &profiles)) {
         jprint_error("es10c_get_profiles_info", NULL);
         return -1;
     }
@@ -24,8 +23,7 @@ static int applet_main(int argc, char **argv)
     jdata = cJSON_CreateArray();
     rptr = profiles;
 
-    while (rptr)
-    {
+    while (rptr) {
         cJSON *jprofile = NULL;
 
         jprofile = cJSON_CreateObject();

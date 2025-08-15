@@ -1,6 +1,6 @@
 #include "at_common.h"
 
-#include "cjson/cJSON_ex.h"
+#include <cjson/cJSON_ex.h>
 
 bool jprint_enumerate_devices(cJSON *data) {
     cJSON *payload = cJSON_CreateObject();

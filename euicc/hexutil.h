@@ -1,4 +1,5 @@
 #pragma once
+
 #include <inttypes.h>
 
 int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len);

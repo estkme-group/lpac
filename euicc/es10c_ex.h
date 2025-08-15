@@ -2,13 +2,11 @@
 
 #include "euicc.h"
 
-struct es10c_ex_euiccinfo2
-{
+struct es10c_ex_euiccinfo2 {
     char *profileVersion;
     char *svn;
     char *euiccFirmwareVer;
-    struct
-    {
+    struct {
         uint32_t installedApplication;
         uint32_t freeNonVolatileMemory;
         uint32_t freeVolatileMemory;
@@ -23,8 +21,7 @@ struct es10c_ex_euiccinfo2
     const char **forbiddenProfilePolicyRules;
     char *ppVersion;
     char *sasAcreditationNumber;
-    struct
-    {
+    struct {
         char *platformLabel;
         char *discoveryBaseURL;
     } certificationDataObject;

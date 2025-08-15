@@ -2,8 +2,7 @@
 
 #include "euicc.h"
 
-struct es10a_euicc_configured_addresses
-{
+struct es10a_euicc_configured_addresses {
     char *defaultDpAddress;
     char *rootDsAddress;
 };

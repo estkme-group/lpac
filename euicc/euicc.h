@@ -1,44 +1,38 @@
 #pragma once
 
-#include <inttypes.h>
-#include "interface.h"
 #include "es10b.h"
+#include "interface.h"
+
+#include <inttypes.h>
 
 #ifdef interface
-#  undef interface
+#    undef interface
 #endif
 
-struct euicc_ctx
-{
+struct euicc_ctx {
     const uint8_t *aid;
     uint8_t aid_len;
     uint8_t es10x_mss;
-    struct
-    {
+    struct {
         const struct euicc_apdu_interface *interface;
-        struct
-        {
+        struct {
             int logic_channel;
-            struct
-            {
+            struct {
                 uint8_t apdu_header[5];
                 uint8_t body[255];
             } __attribute__((packed)) request_buffer;
         } _internal;
     } apdu;
-    struct
-    {
+    struct {
         const struct euicc_http_interface *interface;
         const char *server_address;
-        struct
-        {
+        struct {
             char subjectCode[8 + 1];
             char reasonCode[8 + 1];
             char subjectIdentifier[128 + 1];
             char message[128 + 1];
         } status;
-        struct
-        {
+        struct {
             char *transaction_id_http;
             uint8_t *transaction_id_bin;
             uint32_t transaction_id_bin_len;

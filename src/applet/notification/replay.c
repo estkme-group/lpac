@@ -1,17 +1,16 @@
+#include "helpers.h"
 #include "process.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <main.h>
-#include <stdlib.h>
-
-#include <euicc/es9p.h>
 #include <euicc/es10b.h>
 #include <euicc/es10c.h>
+#include <euicc/es9p.h>
 #include <lpac/utils.h>
 
-#include "helpers.h"
+#include <main.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
@@ -23,7 +22,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     size_t initial_size = 128;
     if (*lineptr == NULL || *n == 0) {
         *n = initial_size;
-        *lineptr = (char *) malloc(*n);
+        *lineptr = (char *)malloc(*n);
         if (*lineptr == NULL) {
             return -1; // Memory allocation failed
         }
@@ -36,7 +35,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
         if (len + 1 >= *n) {
             // +1 for null terminator
             size_t new_size = *n * 2;
-            char *new_ptr = (char *) realloc(*lineptr, new_size);
+            char *new_ptr = (char *)realloc(*lineptr, new_size);
             if (new_ptr == NULL) {
                 return -1; // Memory reallocation failed
             }
@@ -44,7 +43,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
             *n = new_size;
         }
 
-        (*lineptr)[len++] = (char) c;
+        (*lineptr)[len++] = (char)c;
 
         if (c == '\n') {
             break; // End of line

@@ -1,19 +1,20 @@
-#include "euicc.private.h"
 #include "es10b.h"
+#include "euicc.private.h"
 
+#include "base64.h"
 #include "derutil.h"
 #include "hexutil.h"
-#include "base64.h"
 #include "sha256.h"
 
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
-int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse, struct es10b_prepare_download_param *param, struct es10b_prepare_download_param_user *param_user)
-{
+int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadResponse,
+                             struct es10b_prepare_download_param *param,
+                             struct es10b_prepare_download_param_user *param_user) {
     int fret = 0;
     uint8_t *reqbuf = NULL;
     uint32_t reqlen;
@@ -25,7 +26,8 @@ int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadRe
 
     uint8_t *smdpSigned2 = NULL, *smdpSignature2 = NULL, *smdpCertificate = NULL;
     int smdpSigned2_len, smdpSignature2_len, smdpCertificate_len;
-    struct euicc_derutil_node n_request, n_smdpSigned2, n_smdpSignature2, n_smdpCertificate, n_hashCc, n_transactionId, n_ccRequiredFlag;
+    struct euicc_derutil_node n_request, n_smdpSigned2, n_smdpSignature2, n_smdpCertificate, n_hashCc, n_transactionId,
+        n_ccRequiredFlag;
 
     *b64_PrepareDownloadResponse = NULL;
 
@@ -36,60 +38,49 @@ int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadRe
     memset(&n_hashCc, 0, sizeof(n_hashCc));
 
     smdpSigned2 = malloc(euicc_base64_decode_len(param->b64_smdpSigned2));
-    if (!smdpSigned2)
-    {
+    if (!smdpSigned2) {
         goto err;
     }
 
     smdpSignature2 = malloc(euicc_base64_decode_len(param->b64_smdpSignature2));
-    if (!smdpSignature2)
-    {
+    if (!smdpSignature2) {
         goto err;
     }
 
     smdpCertificate = malloc(euicc_base64_decode_len(param->b64_smdpCertificate));
-    if (!smdpCertificate)
-    {
+    if (!smdpCertificate) {
         goto err;
     }
 
-    if ((smdpSigned2_len = euicc_base64_decode(smdpSigned2, param->b64_smdpSigned2)) < 0)
-    {
+    if ((smdpSigned2_len = euicc_base64_decode(smdpSigned2, param->b64_smdpSigned2)) < 0) {
         goto err;
     }
 
-    if ((smdpSignature2_len = euicc_base64_decode(smdpSignature2, param->b64_smdpSignature2)) < 0)
-    {
+    if ((smdpSignature2_len = euicc_base64_decode(smdpSignature2, param->b64_smdpSignature2)) < 0) {
         goto err;
     }
 
-    if ((smdpCertificate_len = euicc_base64_decode(smdpCertificate, param->b64_smdpCertificate)) < 0)
-    {
+    if ((smdpCertificate_len = euicc_base64_decode(smdpCertificate, param->b64_smdpCertificate)) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_smdpSigned2, 0x30, smdpSigned2, smdpSigned2_len) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_smdpSigned2, 0x30, smdpSigned2, smdpSigned2_len) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_smdpSignature2, 0x5F37, smdpSignature2, smdpSignature2_len) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_smdpSignature2, 0x5F37, smdpSignature2, smdpSignature2_len) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_smdpCertificate, 0x30, smdpCertificate, smdpCertificate_len) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_smdpCertificate, 0x30, smdpCertificate, smdpCertificate_len) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_transactionId, 0x80, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_transactionId, 0x80, n_smdpSigned2.value, n_smdpSigned2.length) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_ccRequiredFlag, 0x01, n_smdpSigned2.value, n_smdpSigned2.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_ccRequiredFlag, 0x01, n_smdpSigned2.value, n_smdpSigned2.length) < 0) {
         goto err;
     }
 
@@ -97,16 +88,15 @@ int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadRe
     n_request.pack.child = &n_smdpSigned2;
     n_smdpSigned2.pack.next = &n_smdpSignature2;
 
-    if (euicc_derutil_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length))
-    {
-        if ((!param_user->confirmationCode) || (strlen(param_user->confirmationCode) == 0))
-        {
+    if (euicc_derutil_convert_bin2long(n_ccRequiredFlag.value, n_ccRequiredFlag.length)) {
+        if ((!param_user->confirmationCode) || (strlen(param_user->confirmationCode) == 0)) {
             goto err;
         }
 
         memset(&sha256ctx, 0, sizeof(sha256ctx));
         euicc_sha256_init(&sha256ctx);
-        euicc_sha256_update(&sha256ctx, (const uint8_t *)param_user->confirmationCode, strlen(param_user->confirmationCode));
+        euicc_sha256_update(&sha256ctx, (const uint8_t *)param_user->confirmationCode,
+                            strlen(param_user->confirmationCode));
         euicc_sha256_final(&sha256ctx, hashCC);
 
         memset(&sha256ctx, 0, sizeof(sha256ctx));
@@ -121,14 +111,11 @@ int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadRe
 
         n_smdpSignature2.pack.next = &n_hashCc;
         n_hashCc.pack.next = &n_smdpCertificate;
-    }
-    else
-    {
+    } else {
         n_smdpSignature2.pack.next = &n_smdpCertificate;
     }
 
-    if (euicc_derutil_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
-    {
+    if (euicc_derutil_pack_alloc(&reqbuf, &reqlen, &n_request) < 0) {
         goto err;
     }
 
@@ -139,8 +126,7 @@ int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadRe
     free(smdpCertificate);
     smdpCertificate = NULL;
 
-    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqlen) < 0) {
         goto err;
     }
 
@@ -148,13 +134,11 @@ int es10b_prepare_download_r(struct euicc_ctx *ctx, char **b64_PrepareDownloadRe
     reqbuf = NULL;
 
     *b64_PrepareDownloadResponse = malloc(euicc_base64_encode_len(resplen));
-    if (!(*b64_PrepareDownloadResponse))
-    {
+    if (!(*b64_PrepareDownloadResponse)) {
         goto err;
     }
 
-    if (euicc_base64_encode(*b64_PrepareDownloadResponse, respbuf, resplen) < 0)
-    {
+    if (euicc_base64_encode(*b64_PrepareDownloadResponse, respbuf, resplen) < 0) {
         goto err;
     }
 
@@ -180,8 +164,9 @@ exit:
     return fret;
 }
 
-static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const uint8_t *reqbuf, int reqbuf_len)
-{
+static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx,
+                                               struct es10b_load_bound_profile_package_result *result,
+                                               const uint8_t *reqbuf, int reqbuf_len) {
     int fret = 0;
     uint8_t *respbuf = NULL;
     unsigned resplen;
@@ -190,13 +175,11 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
     result->bppCommandId = ES10B_BPP_COMMAND_ID_UNDEFINED;
     result->errorReason = ES10B_ERROR_REASON_UNDEFINED;
 
-    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqbuf_len) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqbuf_len) < 0) {
         goto err;
     }
 
-    if (resplen > 0)
-    {
+    if (resplen > 0) {
         struct euicc_derutil_node tmpnode, n_notificationMetadata, n_sequenceNumber, n_finalResult;
 
         if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF37, respbuf, resplen) < 0) // ProfileInstallationResult
@@ -204,12 +187,15 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
             goto err;
         }
 
-        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, tmpnode.value, tmpnode.length) < 0) // ProfileInstallationResultData
+        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, tmpnode.value, tmpnode.length)
+            < 0) // ProfileInstallationResultData
         {
             goto err;
         }
 
-        if (euicc_derutil_unpack_find_tag(&n_notificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) < 0) // NotificationMetadata
+        if (euicc_derutil_unpack_find_tag(&n_notificationMetadata, 0xBF2F, tmpnode.value,
+                                          tmpnode.length)
+            < 0) // NotificationMetadata
         {
             goto err;
         }
@@ -219,32 +205,28 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
             goto err;
         }
 
-        if (euicc_derutil_unpack_first(&n_finalResult, tmpnode.value, tmpnode.length) < 0)
-        {
+        if (euicc_derutil_unpack_first(&n_finalResult, tmpnode.value, tmpnode.length) < 0) {
             goto err;
         }
 
-        if (euicc_derutil_unpack_find_tag(&n_sequenceNumber, 0x80, n_notificationMetadata.value, n_notificationMetadata.length) == 0)
-        {
+        if (euicc_derutil_unpack_find_tag(&n_sequenceNumber, 0x80, n_notificationMetadata.value,
+                                          n_notificationMetadata.length)
+            == 0) {
             result->seqNumber = euicc_derutil_convert_bin2long(n_sequenceNumber.value, n_sequenceNumber.length);
         }
 
-        switch (n_finalResult.tag)
-        {
+        switch (n_finalResult.tag) {
         case 0xA0: // SuccessResult
             break;
         case 0xA1: // ErrorResult
             tmpnode.self.ptr = n_finalResult.value;
             tmpnode.self.length = 0;
-            while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_finalResult.value, n_finalResult.length) == 0)
-            {
+            while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_finalResult.value, n_finalResult.length) == 0) {
                 long tmpint;
-                switch (tmpnode.tag)
-                {
+                switch (tmpnode.tag) {
                 case 0x80:
                     tmpint = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
-                    switch (tmpint)
-                    {
+                    switch (tmpint) {
                     case ES10B_BPP_COMMAND_ID_INITIALISE_SECURE_CHANNEL:
                     case ES10B_BPP_COMMAND_ID_CONFIGURE_ISDP:
                     case ES10B_BPP_COMMAND_ID_STORE_METADATA:
@@ -260,8 +242,7 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx, struct es1
                     break;
                 case 0x81:
                     tmpint = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
-                    switch (tmpint)
-                    {
+                    switch (tmpint) {
                     case ES10B_ERROR_REASON_INCORRECT_INPUT_VALUES:
                     case ES10B_ERROR_REASON_INVALID_SIGNATURE:
                     case ES10B_ERROR_REASON_INVALID_TRANSACTION_ID:
@@ -306,8 +287,8 @@ exit:
     return fret;
 }
 
-int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result, const char *b64_BoundProfilePackage)
-{
+int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result,
+                                       const char *b64_BoundProfilePackage) {
     int fret = 0;
 
     uint8_t *bpp = NULL;
@@ -319,107 +300,91 @@ int es10b_load_bound_profile_package_r(struct euicc_ctx *ctx, struct es10b_load_
     struct euicc_derutil_node tmpnode, tmpchildnode, n_BoundProfilePackage;
 
     bpp = malloc(euicc_base64_decode_len(b64_BoundProfilePackage));
-    if (!bpp)
-    {
+    if (!bpp) {
         goto err;
     }
-    if ((bpp_len = euicc_base64_decode(bpp, b64_BoundProfilePackage)) < 0)
-    {
-        goto err;
-    }
-
-    if (euicc_derutil_unpack_find_tag(&n_BoundProfilePackage, 0xBF36, bpp, bpp_len) < 0)
-    {
+    if ((bpp_len = euicc_base64_decode(bpp, b64_BoundProfilePackage)) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF23, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_BoundProfilePackage, 0xBF36, bpp, bpp_len) < 0) {
+        goto err;
+    }
+
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF23, n_BoundProfilePackage.value, n_BoundProfilePackage.length)
+        < 0) {
         goto err;
     }
 
     reqbuf = n_BoundProfilePackage.self.ptr;
     reqbuf_len = tmpnode.self.ptr - n_BoundProfilePackage.self.ptr + tmpnode.self.length;
 
-    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
-    {
+    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0) {
         goto err;
     }
 
     reqbuf = tmpnode.self.ptr;
     reqbuf_len = tmpnode.self.length;
 
-    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
-    {
+    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA1, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA1, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0) {
         goto err;
     }
 
     reqbuf = tmpnode.self.ptr;
     reqbuf_len = tmpnode.value - tmpnode.self.ptr;
 
-    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
-    {
+    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0) {
         goto err;
     }
 
     tmpchildnode.self.ptr = tmpnode.value;
     tmpchildnode.self.length = 0;
 
-    while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0)
-    {
+    while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0) {
         reqbuf = tmpchildnode.self.ptr;
         reqbuf_len = tmpchildnode.self.length;
 
-        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
-        {
+        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0) {
             goto err;
         }
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA2, n_BoundProfilePackage.value, n_BoundProfilePackage.length) == 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA2, n_BoundProfilePackage.value, n_BoundProfilePackage.length) == 0) {
         reqbuf = tmpnode.self.ptr;
         reqbuf_len = tmpnode.self.length;
 
-        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
-        {
+        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0) {
             goto err;
         }
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA3, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA3, n_BoundProfilePackage.value, n_BoundProfilePackage.length) < 0) {
         goto err;
     }
 
     reqbuf = tmpnode.self.ptr;
     reqbuf_len = tmpnode.value - tmpnode.self.ptr;
 
-    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
-    {
+    if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0) {
         goto err;
     }
 
     tmpchildnode.self.ptr = tmpnode.value;
     tmpchildnode.self.length = 0;
 
-    while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0)
-    {
+    while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, tmpnode.value, tmpnode.length) == 0) {
         reqbuf = tmpchildnode.self.ptr;
         reqbuf_len = tmpchildnode.self.length;
 
-        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0)
-        {
+        if (es10b_load_bound_profile_package_tx(ctx, result, reqbuf, reqbuf_len) < 0) {
             goto err;
         }
     }
@@ -434,8 +399,7 @@ exit:
     return fret;
 }
 
-int es10b_get_euicc_challenge_r(struct euicc_ctx *ctx, char **b64_euiccChallenge)
-{
+int es10b_get_euicc_challenge_r(struct euicc_ctx *ctx, char **b64_euiccChallenge) {
     int fret = 0;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF2E, // GetEuiccDataRequest
@@ -447,33 +411,27 @@ int es10b_get_euicc_challenge_r(struct euicc_ctx *ctx, char **b64_euiccChallenge
     struct euicc_derutil_node tmpnode;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen)) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length))
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length)) {
         goto err;
     }
 
     *b64_euiccChallenge = malloc(euicc_base64_encode_len(tmpnode.length));
-    if (!(*b64_euiccChallenge))
-    {
+    if (!(*b64_euiccChallenge)) {
         goto err;
     }
-    if (euicc_base64_encode(*b64_euiccChallenge, tmpnode.value, tmpnode.length) < 0)
-    {
+    if (euicc_base64_encode(*b64_euiccChallenge, tmpnode.value, tmpnode.length) < 0) {
         goto err;
     }
 
@@ -489,8 +447,7 @@ exit:
     return fret;
 }
 
-int es10b_get_euicc_info_r(struct euicc_ctx *ctx, char **b64_EUICCInfo1)
-{
+int es10b_get_euicc_info_r(struct euicc_ctx *ctx, char **b64_EUICCInfo1) {
     int fret = 0;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF20, // GetEuiccInfo1Request
@@ -502,28 +459,23 @@ int es10b_get_euicc_info_r(struct euicc_ctx *ctx, char **b64_EUICCInfo1)
     struct euicc_derutil_node tmpnode;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen)) {
         goto err;
     }
 
     *b64_EUICCInfo1 = malloc(euicc_base64_encode_len(tmpnode.self.length));
-    if (!(*b64_EUICCInfo1))
-    {
+    if (!(*b64_EUICCInfo1)) {
         goto err;
     }
-    if (euicc_base64_encode(*b64_EUICCInfo1, tmpnode.self.ptr, tmpnode.self.length) < 0)
-    {
+    if (euicc_base64_encode(*b64_EUICCInfo1, tmpnode.self.ptr, tmpnode.self.length) < 0) {
         goto err;
     }
 
@@ -539,8 +491,9 @@ exit:
     return fret;
 }
 
-int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id, uint32_t *transaction_id_len, char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param, struct es10b_authenticate_server_param_user *param_user)
-{
+int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id, uint32_t *transaction_id_len,
+                                char **b64_AuthenticateServerResponse, struct es10b_authenticate_server_param *param,
+                                struct es10b_authenticate_server_param_user *param_user) {
     int fret = 0;
     uint8_t *reqbuf = NULL;
     uint32_t reqlen;
@@ -550,7 +503,8 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id,
     uint8_t imei[8];
     uint8_t *serverSigned1 = NULL, *serverSignature1 = NULL, *euiccCiPKIdToBeUsed = NULL, *serverCertificate = NULL;
     int serverSigned1_len, serverSignature1_len, euiccCiPKIdToBeUsed_len, serverCertificate_len;
-    struct euicc_derutil_node n_request, n_serverSigned1, n_transactionId, n_serverSignature1, n_euiccCiPKIdToBeUsed, n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
+    struct euicc_derutil_node n_request, n_serverSigned1, n_transactionId, n_serverSignature1, n_euiccCiPKIdToBeUsed,
+        n_serverCertificate, n_CtxParams1, n_matchingId, n_deviceInfo, n_tac, n_deviceCapabilities, n_imei;
 
     *transaction_id = NULL;
     *transaction_id_len = 0;
@@ -569,78 +523,64 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id,
     memset(&n_imei, 0, sizeof(n_imei));
 
     serverSigned1 = malloc(euicc_base64_decode_len(param->b64_serverSigned1));
-    if (!serverSigned1)
-    {
+    if (!serverSigned1) {
         goto err;
     }
 
     serverSignature1 = malloc(euicc_base64_decode_len(param->b64_serverSignature1));
-    if (!serverSignature1)
-    {
+    if (!serverSignature1) {
         goto err;
     }
 
     euiccCiPKIdToBeUsed = malloc(euicc_base64_decode_len(param->b64_euiccCiPKIdToBeUsed));
-    if (!euiccCiPKIdToBeUsed)
-    {
+    if (!euiccCiPKIdToBeUsed) {
         goto err;
     }
 
     serverCertificate = malloc(euicc_base64_decode_len(param->b64_serverCertificate));
-    if (!serverCertificate)
-    {
+    if (!serverCertificate) {
         goto err;
     }
 
-    if ((serverSigned1_len = euicc_base64_decode(serverSigned1, param->b64_serverSigned1)) < 0)
-    {
+    if ((serverSigned1_len = euicc_base64_decode(serverSigned1, param->b64_serverSigned1)) < 0) {
         goto err;
     }
 
-    if ((serverSignature1_len = euicc_base64_decode(serverSignature1, param->b64_serverSignature1)) < 0)
-    {
+    if ((serverSignature1_len = euicc_base64_decode(serverSignature1, param->b64_serverSignature1)) < 0) {
         goto err;
     }
 
-    if ((euiccCiPKIdToBeUsed_len = euicc_base64_decode(euiccCiPKIdToBeUsed, param->b64_euiccCiPKIdToBeUsed)) < 0)
-    {
+    if ((euiccCiPKIdToBeUsed_len = euicc_base64_decode(euiccCiPKIdToBeUsed, param->b64_euiccCiPKIdToBeUsed)) < 0) {
         goto err;
     }
 
-    if ((serverCertificate_len = euicc_base64_decode(serverCertificate, param->b64_serverCertificate)) < 0)
-    {
+    if ((serverCertificate_len = euicc_base64_decode(serverCertificate, param->b64_serverCertificate)) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_serverSigned1, 0x30, serverSigned1, serverSigned1_len) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_serverSigned1, 0x30, serverSigned1, serverSigned1_len) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_transactionId, 0x80, n_serverSigned1.value, n_serverSigned1.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_transactionId, 0x80, n_serverSigned1.value, n_serverSigned1.length) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_serverSignature1, 0x5F37, serverSignature1, serverSignature1_len) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_serverSignature1, 0x5F37, serverSignature1, serverSignature1_len) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_euiccCiPKIdToBeUsed, 0x04, euiccCiPKIdToBeUsed, euiccCiPKIdToBeUsed_len) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_euiccCiPKIdToBeUsed, 0x04, euiccCiPKIdToBeUsed, euiccCiPKIdToBeUsed_len) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_serverCertificate, 0x30, serverCertificate, serverCertificate_len) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_serverCertificate, 0x30, serverCertificate, serverCertificate_len) < 0) {
         goto err;
     }
 
     *transaction_id_len = n_transactionId.length;
     *transaction_id = malloc(n_transactionId.length);
-    if (!(*transaction_id))
-    {
+    if (!(*transaction_id)) {
         goto err;
     }
     memcpy(*transaction_id, n_transactionId.value, n_transactionId.length);
@@ -660,13 +600,11 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id,
     n_tac.length = 4;
     n_tac.pack.next = &n_deviceCapabilities;
     n_deviceCapabilities.tag = 0xA1;
-    if (param_user->imei)
-    {
+    if (param_user->imei) {
         int imei_len;
 
         imei_len = euicc_hexutil_gsmbcd2bin(imei, sizeof(imei), param_user->imei, 0);
-        if (imei_len < 0)
-        {
+        if (imei_len < 0) {
             goto err;
         }
 
@@ -674,27 +612,21 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id,
         n_imei.tag = 0x82;
         n_imei.value = imei;
         n_imei.length = imei_len;
-    }
-    else
-    {
+    } else {
         memcpy(imei, (uint8_t[]){0x35, 0x29, 0x06, 0x11}, 4);
     }
 
-    if (param_user->matchingId)
-    {
+    if (param_user->matchingId) {
         n_CtxParams1.pack.child = &n_matchingId;
         n_matchingId.tag = 0x80;
         n_matchingId.value = (const uint8_t *)param_user->matchingId;
         n_matchingId.length = strlen(param_user->matchingId);
         n_matchingId.pack.next = &n_deviceInfo;
-    }
-    else
-    {
+    } else {
         n_CtxParams1.pack.child = &n_deviceInfo;
     }
 
-    if (euicc_derutil_pack_alloc(&reqbuf, &reqlen, &n_request) < 0)
-    {
+    if (euicc_derutil_pack_alloc(&reqbuf, &reqlen, &n_request) < 0) {
         goto err;
     }
 
@@ -707,8 +639,7 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id,
     free(serverCertificate);
     serverCertificate = NULL;
 
-    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqlen) < 0) {
         goto err;
     }
 
@@ -716,13 +647,11 @@ int es10b_authenticate_server_r(struct euicc_ctx *ctx, uint8_t **transaction_id,
     reqbuf = NULL;
 
     *b64_AuthenticateServerResponse = malloc(euicc_base64_encode_len(resplen));
-    if (!(*b64_AuthenticateServerResponse))
-    {
+    if (!(*b64_AuthenticateServerResponse)) {
         goto err;
     }
 
-    if (euicc_base64_encode(*b64_AuthenticateServerResponse, respbuf, resplen) < 0)
-    {
+    if (euicc_base64_encode(*b64_AuthenticateServerResponse, respbuf, resplen) < 0) {
         goto err;
     }
 
@@ -753,8 +682,8 @@ exit:
     return fret;
 }
 
-int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionResponse, struct es10b_cancel_session_param *param)
-{
+int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionResponse,
+                           struct es10b_cancel_session_param *param) {
     int fret = 0;
     struct euicc_derutil_node n_request, n_transactionId, n_reason;
     uint8_t reason_buf[sizeof(enum es10b_cancel_session_reason)];
@@ -765,8 +694,7 @@ int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionRespon
 
     struct euicc_derutil_node tmpnode;
 
-    if (euicc_derutil_convert_long2bin(reason_buf, &reason_buf_len, param->reason) < 0)
-    {
+    if (euicc_derutil_convert_long2bin(reason_buf, &reason_buf_len, param->reason) < 0) {
         goto err;
     }
 
@@ -787,28 +715,23 @@ int es10b_cancel_session_r(struct euicc_ctx *ctx, char **b64_CancelSessionRespon
     n_reason.length = reason_buf_len;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen))
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen)) {
         goto err;
     }
 
     *b64_CancelSessionResponse = malloc(euicc_base64_encode_len(tmpnode.self.length));
-    if (!(*b64_CancelSessionResponse))
-    {
+    if (!(*b64_CancelSessionResponse)) {
         goto err;
     }
-    if (euicc_base64_encode(*b64_CancelSessionResponse, tmpnode.self.ptr, tmpnode.self.length) < 0)
-    {
+    if (euicc_base64_encode(*b64_CancelSessionResponse, tmpnode.self.ptr, tmpnode.self.length) < 0) {
         goto err;
     }
 
@@ -824,10 +747,8 @@ exit:
     return fret;
 }
 
-void es10b_prepare_download_param_free(struct es10b_prepare_download_param *param)
-{
-    if (!param)
-    {
+void es10b_prepare_download_param_free(struct es10b_prepare_download_param *param) {
+    if (!param) {
         return;
     }
 
@@ -839,10 +760,8 @@ void es10b_prepare_download_param_free(struct es10b_prepare_download_param *para
     memset(param, 0x00, sizeof(*param));
 }
 
-void es10b_authenticate_server_param_free(struct es10b_authenticate_server_param *param)
-{
-    if (!param)
-    {
+void es10b_authenticate_server_param_free(struct es10b_authenticate_server_param *param) {
+    if (!param) {
         return;
     }
 
@@ -854,27 +773,24 @@ void es10b_authenticate_server_param_free(struct es10b_authenticate_server_param
     memset(param, 0x00, sizeof(*param));
 }
 
-int es10b_prepare_download(struct euicc_ctx *ctx, const char *confirmationCode)
-{
+int es10b_prepare_download(struct euicc_ctx *ctx, const char *confirmationCode) {
     int fret;
 
     struct es10b_prepare_download_param_user param_user = {
         .confirmationCode = confirmationCode,
     };
 
-    if (ctx->http._internal.b64_prepare_download_response)
-    {
+    if (ctx->http._internal.b64_prepare_download_response) {
         return -1;
     }
 
-    if (ctx->http._internal.prepare_download_param == NULL)
-    {
+    if (ctx->http._internal.prepare_download_param == NULL) {
         return -1;
     }
 
-    fret = es10b_prepare_download_r(ctx, &ctx->http._internal.b64_prepare_download_response, ctx->http._internal.prepare_download_param, &param_user);
-    if (fret < 0)
-    {
+    fret = es10b_prepare_download_r(ctx, &ctx->http._internal.b64_prepare_download_response,
+                                    ctx->http._internal.prepare_download_param, &param_user);
+    if (fret < 0) {
         ctx->http._internal.b64_prepare_download_response = NULL;
         return fret;
     }
@@ -886,18 +802,15 @@ int es10b_prepare_download(struct euicc_ctx *ctx, const char *confirmationCode)
     return fret;
 }
 
-int es10b_load_bound_profile_package(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result)
-{
+int es10b_load_bound_profile_package(struct euicc_ctx *ctx, struct es10b_load_bound_profile_package_result *result) {
     int fret;
 
-    if (ctx->http._internal.b64_bound_profile_package == NULL)
-    {
+    if (ctx->http._internal.b64_bound_profile_package == NULL) {
         return -1;
     }
 
     fret = es10b_load_bound_profile_package_r(ctx, result, ctx->http._internal.b64_bound_profile_package);
-    if (fret < 0)
-    {
+    if (fret < 0) {
         return fret;
     }
 
@@ -907,29 +820,24 @@ int es10b_load_bound_profile_package(struct euicc_ctx *ctx, struct es10b_load_bo
     return fret;
 }
 
-int es10b_get_euicc_challenge_and_info(struct euicc_ctx *ctx)
-{
+int es10b_get_euicc_challenge_and_info(struct euicc_ctx *ctx) {
     int fret;
 
-    if (ctx->http._internal.b64_euicc_challenge)
-    {
+    if (ctx->http._internal.b64_euicc_challenge) {
         return -1;
     }
 
-    if (ctx->http._internal.b64_euicc_info_1)
-    {
+    if (ctx->http._internal.b64_euicc_info_1) {
         return -1;
     }
 
     fret = es10b_get_euicc_challenge_r(ctx, &ctx->http._internal.b64_euicc_challenge);
-    if (fret < 0)
-    {
+    if (fret < 0) {
         goto err;
     }
 
     fret = es10b_get_euicc_info_r(ctx, &ctx->http._internal.b64_euicc_info_1);
-    if (fret < 0)
-    {
+    if (fret < 0) {
         goto err;
     }
 
@@ -944,8 +852,7 @@ err:
     return -1;
 }
 
-int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, const char *imei)
-{
+int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, const char *imei) {
     int fret;
 
     struct es10b_authenticate_server_param_user param_user = {
@@ -953,19 +860,19 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, con
         .imei = imei,
     };
 
-    if (ctx->http._internal.b64_authenticate_server_response)
-    {
+    if (ctx->http._internal.b64_authenticate_server_response) {
         return -1;
     }
 
-    if (ctx->http._internal.authenticate_server_param == NULL)
-    {
+    if (ctx->http._internal.authenticate_server_param == NULL) {
         return -1;
     }
 
-    fret = es10b_authenticate_server_r(ctx, &ctx->http._internal.transaction_id_bin, &ctx->http._internal.transaction_id_bin_len, &ctx->http._internal.b64_authenticate_server_response, ctx->http._internal.authenticate_server_param, &param_user);
-    if (fret < 0)
-    {
+    fret = es10b_authenticate_server_r(ctx, &ctx->http._internal.transaction_id_bin,
+                                       &ctx->http._internal.transaction_id_bin_len,
+                                       &ctx->http._internal.b64_authenticate_server_response,
+                                       ctx->http._internal.authenticate_server_param, &param_user);
+    if (fret < 0) {
         ctx->http._internal.b64_authenticate_server_response = NULL;
         return fret;
     }
@@ -977,8 +884,7 @@ int es10b_authenticate_server(struct euicc_ctx *ctx, const char *matchingId, con
     return fret;
 }
 
-int es10b_cancel_session(struct euicc_ctx *ctx, enum es10b_cancel_session_reason reason)
-{
+int es10b_cancel_session(struct euicc_ctx *ctx, enum es10b_cancel_session_reason reason) {
     int fret;
 
     struct es10b_cancel_session_param param = {
@@ -987,33 +893,28 @@ int es10b_cancel_session(struct euicc_ctx *ctx, enum es10b_cancel_session_reason
         .reason = reason,
     };
 
-    if (ctx->http._internal.transaction_id_bin == NULL)
-    {
+    if (ctx->http._internal.transaction_id_bin == NULL) {
         return -1;
     }
 
-    if (ctx->http._internal.transaction_id_bin_len == 0)
-    {
+    if (ctx->http._internal.transaction_id_bin_len == 0) {
         return -1;
     }
 
-    if (ctx->http._internal.b64_cancel_session_response)
-    {
+    if (ctx->http._internal.b64_cancel_session_response) {
         return -1;
     }
 
     fret = es10b_cancel_session_r(ctx, &ctx->http._internal.b64_cancel_session_response, &param);
 
-    if (fret < 0)
-    {
+    if (fret < 0) {
         ctx->http._internal.b64_cancel_session_response = NULL;
     }
 
     return fret;
 }
 
-int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList)
-{
+int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_metadata_list **notificationMetadataList) {
     int fret = 0;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF28, // ListNotificationRequest
@@ -1029,41 +930,36 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
     *notificationMetadataList = NULL;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&n_notificationMetadataList, 0xA0, tmpnode.value, tmpnode.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&n_notificationMetadataList, 0xA0, tmpnode.value, tmpnode.length) < 0) {
         goto err;
     }
 
     n_NotificationMetadata.self.ptr = n_notificationMetadataList.value;
     n_NotificationMetadata.self.length = 0;
 
-    while (euicc_derutil_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value, n_notificationMetadataList.length) == 0)
-    {
+    while (euicc_derutil_unpack_next(&n_NotificationMetadata, &n_NotificationMetadata, n_notificationMetadataList.value,
+                                     n_notificationMetadataList.length)
+           == 0) {
         struct es10b_notification_metadata_list *p;
 
-        if (n_NotificationMetadata.tag != 0xBF2F)
-        {
+        if (n_NotificationMetadata.tag != 0xBF2F) {
             continue;
         }
 
         p = malloc(sizeof(struct es10b_notification_metadata_list));
-        if (!p)
-        {
+        if (!p) {
             goto err;
         }
 
@@ -1072,18 +968,16 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
         tmpnode.self.ptr = n_NotificationMetadata.value;
         tmpnode.self.length = 0;
         p->profileManagementOperation = ES10B_PROFILE_MANAGEMENT_OPERATION_NULL;
-        while (euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_NotificationMetadata.value, n_NotificationMetadata.length) == 0)
-        {
-            switch (tmpnode.tag)
-            {
+        while (
+            euicc_derutil_unpack_next(&tmpnode, &tmpnode, n_NotificationMetadata.value, n_NotificationMetadata.length)
+            == 0) {
+            switch (tmpnode.tag) {
             case 0x80:
                 p->seqNumber = euicc_derutil_convert_bin2long(tmpnode.value, tmpnode.length);
                 break;
             case 0x81:
-                if (tmpnode.length >= 2)
-                {
-                    switch (tmpnode.value[1])
-                    {
+                if (tmpnode.length >= 2) {
+                    switch (tmpnode.value[1]) {
                     case ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL:
                     case ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE:
                     case ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE:
@@ -1098,18 +992,16 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
                 break;
             case 0x0C:
                 p->notificationAddress = malloc(tmpnode.length + 1);
-                if (p->notificationAddress)
-                {
+                if (p->notificationAddress) {
                     memcpy(p->notificationAddress, tmpnode.value, tmpnode.length);
                     p->notificationAddress[tmpnode.length] = '\0';
                 }
                 break;
             case 0x5A:
                 p->iccid = malloc((tmpnode.length * 2) + 1);
-                if (p->iccid)
-                {
-                    if (euicc_hexutil_bin2gsmbcd(p->iccid, (tmpnode.length * 2) + 1, tmpnode.value, tmpnode.length) < 0)
-                    {
+                if (p->iccid) {
+                    if (euicc_hexutil_bin2gsmbcd(p->iccid, (tmpnode.length * 2) + 1, tmpnode.value, tmpnode.length)
+                        < 0) {
                         free(p->iccid);
                         p->iccid = NULL;
                     }
@@ -1118,12 +1010,9 @@ int es10b_list_notification(struct euicc_ctx *ctx, struct es10b_notification_met
             }
         }
 
-        if (*notificationMetadataList == NULL)
-        {
+        if (*notificationMetadataList == NULL) {
             *notificationMetadataList = p;
-        }
-        else
-        {
+        } else {
             list_wptr->next = p;
         }
 
@@ -1141,8 +1030,8 @@ exit:
     return fret;
 }
 
-int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification, unsigned long seqNumber)
-{
+int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pending_notification *PendingNotification,
+                                      unsigned long seqNumber) {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
     uint32_t seqNumber_buf_len = sizeof(seqNumber_buf);
@@ -1155,8 +1044,7 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
 
     memset(PendingNotification, 0, sizeof(struct es10b_pending_notification));
 
-    if (euicc_derutil_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
-    {
+    if (euicc_derutil_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0) {
         goto err;
     }
 
@@ -1175,71 +1063,66 @@ int es10b_retrieve_notifications_list(struct euicc_ctx *ctx, struct es10b_pendin
     n_seqNumber.value = seqNumber_buf;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, tmpnode.value, tmpnode.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, tmpnode.value, tmpnode.length) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_alias_tags(&n_PendingNotification, (uint16_t[]){0xBF37, 0x30}, 2, tmpnode.value, tmpnode.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_alias_tags(&n_PendingNotification, (uint16_t[]){0xBF37, 0x30}, 2, tmpnode.value,
+                                             tmpnode.length)
+        < 0) {
         goto err;
     }
 
-    switch (n_PendingNotification.tag)
-    {
+    switch (n_PendingNotification.tag) {
     case 0xBF37: // profileInstallationResult
-        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, n_PendingNotification.value, n_PendingNotification.length) < 0)
-        {
+        if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF27, n_PendingNotification.value, n_PendingNotification.length)
+            < 0) {
             goto err;
         }
-        if (euicc_derutil_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) < 0)
-        {
+        if (euicc_derutil_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, tmpnode.value, tmpnode.length) < 0) {
             goto err;
         }
         break;
     case 0x30: // otherSignedNotification
-        if (euicc_derutil_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, n_PendingNotification.value, n_PendingNotification.length) < 0)
-        {
+        if (euicc_derutil_unpack_find_tag(&n_NotificationMetadata, 0xBF2F, n_PendingNotification.value,
+                                          n_PendingNotification.length)
+            < 0) {
             goto err;
         }
         break;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x0C, n_NotificationMetadata.value, n_NotificationMetadata.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x0C, n_NotificationMetadata.value, n_NotificationMetadata.length)
+        < 0) {
         goto err;
     }
 
     PendingNotification->notificationAddress = malloc(tmpnode.length + 1);
-    if (!PendingNotification->notificationAddress)
-    {
+    if (!PendingNotification->notificationAddress) {
         goto err;
     }
     memcpy(PendingNotification->notificationAddress, tmpnode.value, tmpnode.length);
     PendingNotification->notificationAddress[tmpnode.length] = '\0';
 
     PendingNotification->b64_PendingNotification = malloc(euicc_base64_encode_len(n_PendingNotification.self.length));
-    if (!PendingNotification->b64_PendingNotification)
-    {
+    if (!PendingNotification->b64_PendingNotification) {
         goto err;
     }
-    if (euicc_base64_encode(PendingNotification->b64_PendingNotification, n_PendingNotification.self.ptr, n_PendingNotification.self.length) < 0)
-    {
+    if (euicc_base64_encode(PendingNotification->b64_PendingNotification, n_PendingNotification.self.ptr,
+                            n_PendingNotification.self.length)
+        < 0) {
         goto err;
     }
 
@@ -1256,8 +1139,7 @@ exit:
     return fret;
 }
 
-int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber)
-{
+int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seqNumber) {
     int fret = 0;
     uint8_t seqNumber_buf[sizeof(seqNumber)];
     uint32_t seqNumber_buf_len = sizeof(seqNumber_buf);
@@ -1268,8 +1150,7 @@ int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seq
 
     struct euicc_derutil_node tmpnode;
 
-    if (euicc_derutil_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0)
-    {
+    if (euicc_derutil_convert_long2bin(seqNumber_buf, &seqNumber_buf_len, seqNumber) < 0) {
         goto err;
     }
 
@@ -1284,23 +1165,19 @@ int es10b_remove_notification_from_list(struct euicc_ctx *ctx, unsigned long seq
     n_seqNumber.value = seqNumber_buf;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, n_request.tag, respbuf, resplen) < 0) {
         goto err;
     }
 
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0x80, tmpnode.value, tmpnode.length) < 0) {
         goto err;
     }
 
@@ -1316,10 +1193,8 @@ exit:
     return fret;
 }
 
-void es10b_notification_metadata_list_free_all(struct es10b_notification_metadata_list *notificationMetadataList)
-{
-    while (notificationMetadataList)
-    {
+void es10b_notification_metadata_list_free_all(struct es10b_notification_metadata_list *notificationMetadataList) {
+    while (notificationMetadataList) {
         struct es10b_notification_metadata_list *next = notificationMetadataList->next;
         free(notificationMetadataList->notificationAddress);
         free(notificationMetadataList->iccid);
@@ -1328,15 +1203,13 @@ void es10b_notification_metadata_list_free_all(struct es10b_notification_metadat
     }
 }
 
-void es10b_pending_notification_free(struct es10b_pending_notification *PendingNotification)
-{
+void es10b_pending_notification_free(struct es10b_pending_notification *PendingNotification) {
     free(PendingNotification->notificationAddress);
     free(PendingNotification->b64_PendingNotification);
     memset(PendingNotification, 0, sizeof(struct es10b_pending_notification));
 }
 
-int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
-{
+int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList) {
     int fret;
     struct euicc_derutil_node n_request = {
         .tag = 0xBF43, // GetRatRequest
@@ -1351,30 +1224,25 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
     *ratList = NULL;
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
-    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request))
-    {
+    if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
         goto err;
     }
 
-    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0)
-    {
+    if (es10x_command(ctx, &respbuf, &resplen, ctx->apdu._internal.request_buffer.body, reqlen) < 0) {
         goto err;
     }
 
-    if (resplen == 0)
-    {
+    if (resplen == 0) {
         goto err;
     }
 
     // GetRatResponse
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF43, respbuf, resplen) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF43, respbuf, resplen) < 0) {
         goto err;
     }
 
     // RulesAuthorisationTable
-    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, tmpnode.value, tmpnode.length) < 0)
-    {
+    if (euicc_derutil_unpack_find_tag(&tmpnode, 0xA0, tmpnode.value, tmpnode.length) < 0) {
         goto err;
     }
 
@@ -1382,37 +1250,30 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
     n_profile.self.length = 0;
 
     // ProfilePolicyAuthorisationRule
-    while (euicc_derutil_unpack_next(&n_profile, &n_profile, tmpnode.value, tmpnode.length) == 0)
-    {
+    while (euicc_derutil_unpack_next(&n_profile, &n_profile, tmpnode.value, tmpnode.length) == 0) {
         struct es10b_rat *rat;
 
         tmpchildnode.self.ptr = n_profile.value;
         tmpchildnode.self.length = 0;
 
         rat = malloc(sizeof(struct es10b_rat));
-        if (!rat)
-        {
+        if (!rat) {
             goto err;
         }
 
         memset(rat, 0, sizeof(*rat));
 
-        while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, n_profile.value, n_profile.length) == 0)
-        {
-            switch (tmpchildnode.tag)
-            {
+        while (euicc_derutil_unpack_next(&tmpchildnode, &tmpchildnode, n_profile.value, n_profile.length) == 0) {
+            switch (tmpchildnode.tag) {
             case 0x80: // ppr ids
             {
                 static const char *desc[] = {"pprUpdateControl", "ppr1", "ppr2", "ppr3", NULL};
 
-                if (euicc_derutil_convert_bin2bits_str(&rat->pprIds, tmpchildnode.value, tmpchildnode.length, desc))
-                {
+                if (euicc_derutil_convert_bin2bits_str(&rat->pprIds, tmpchildnode.value, tmpchildnode.length, desc)) {
                     goto err;
                 }
-            }
-            break;
-            case 0xA1: // allowed operators
-            {
+            } break;
+            case 0xA1: { // allowed operators
                 struct euicc_derutil_node n_allowed_operator, n_operator;
                 struct es10b_operation_id *operations_wptr = NULL;
                 struct es10b_operation_id *p;
@@ -1420,11 +1281,11 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
                 n_allowed_operator.self.ptr = tmpchildnode.value;
                 n_allowed_operator.self.length = 0;
 
-                while (euicc_derutil_unpack_next(&n_allowed_operator, &n_allowed_operator, tmpchildnode.value, tmpchildnode.length) == 0)
-                {
+                while (euicc_derutil_unpack_next(&n_allowed_operator, &n_allowed_operator, tmpchildnode.value,
+                                                 tmpchildnode.length)
+                       == 0) {
                     p = malloc(sizeof(struct es10b_operation_id));
-                    if (!p)
-                    {
+                    if (!p) {
                         goto err;
                     }
                     memset(p, 0, sizeof(*p));
@@ -1432,60 +1293,52 @@ int es10b_get_rat(struct euicc_ctx *ctx, struct es10b_rat **ratList)
                     n_operator.self.ptr = n_allowed_operator.value;
                     n_operator.self.length = 0;
 
-                    while (euicc_derutil_unpack_next(&n_operator, &n_operator, n_allowed_operator.value, n_allowed_operator.length) == 0)
-                    {
-                        if (n_operator.length == 0)
-                        {
+                    while (euicc_derutil_unpack_next(&n_operator, &n_operator, n_allowed_operator.value,
+                                                     n_allowed_operator.length)
+                           == 0) {
+                        if (n_operator.length == 0) {
                             continue;
                         }
-                        switch (n_operator.tag)
-                        {
+                        switch (n_operator.tag) {
                         case 0x80: // mcc_mnc
                             p->plmn = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->plmn, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->plmn, (n_operator.length * 2) + 1, n_operator.value,
+                                                  n_operator.length);
                             break;
                         case 0x81: // gid1
                             p->gid1 = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->gid1, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->gid1, (n_operator.length * 2) + 1, n_operator.value,
+                                                  n_operator.length);
                             break;
                         case 0x82: // gid2
                             p->gid2 = malloc((n_operator.length * 2) + 1);
-                            euicc_hexutil_bin2hex(p->gid2, (n_operator.length * 2) + 1, n_operator.value, n_operator.length);
+                            euicc_hexutil_bin2hex(p->gid2, (n_operator.length * 2) + 1, n_operator.value,
+                                                  n_operator.length);
                             break;
                         }
                     }
-                    if (operations_wptr == NULL)
-                    {
+                    if (operations_wptr == NULL) {
                         operations_wptr = p;
-                    }
-                    else
-                    {
+                    } else {
                         operations_wptr->next = p;
                     }
                 }
 
                 rat->allowedOperators = operations_wptr;
-            }
-            break;
-            case 0x82: // ppr flags
-            {
+            } break;
+            case 0x82: { // ppr flags
                 static const char *desc[] = {"consentRequired", NULL};
 
-                if (euicc_derutil_convert_bin2bits_str(&rat->pprFlags, tmpchildnode.value, tmpchildnode.length, desc))
-                {
+                if (euicc_derutil_convert_bin2bits_str(&rat->pprFlags, tmpchildnode.value, tmpchildnode.length, desc)) {
                     goto err;
                 }
-            }
-            break;
+            } break;
             }
         }
 
-        if (*ratList == NULL)
-        {
+        if (*ratList == NULL) {
             *ratList = rat;
-        }
-        else
-        {
+        } else {
             rat_list_wptr->next = rat;
         }
 
@@ -1504,17 +1357,14 @@ exit:
     return fret;
 }
 
-void es10b_rat_list_free_all(struct es10b_rat *ratList)
-{
+void es10b_rat_list_free_all(struct es10b_rat *ratList) {
     struct es10b_rat *next_rat;
     struct es10b_operation_id *next_operation_id;
 
-    while (ratList)
-    {
+    while (ratList) {
         next_rat = ratList->next;
         free(ratList->pprIds);
-        while (ratList->allowedOperators)
-        {
+        while (ratList->allowedOperators) {
             next_operation_id = ratList->allowedOperators->next;
             free(ratList->allowedOperators->plmn);
             free(ratList->allowedOperators->gid1);

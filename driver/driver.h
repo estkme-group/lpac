@@ -1,7 +1,9 @@
 #pragma once
-#include <stddef.h>
-#include <inttypes.h>
+
 #include <euicc/interface.h>
+
+#include <inttypes.h>
+#include <stddef.h>
 
 extern struct euicc_apdu_interface euicc_driver_interface_apdu;
 extern struct euicc_http_interface euicc_driver_interface_http;

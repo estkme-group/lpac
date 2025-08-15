@@ -1,26 +1,27 @@
 #include "curl.h"
+
+#include <euicc/interface.h>
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <euicc/interface.h>
-
 #ifndef _WIN32
-#include <curl/curl.h>
+#    include <curl/curl.h>
 #else
-#include <dlfcn-win32/dlfcn.h>
-#define CURL_GLOBAL_DEFAULT ((1 << 0) | (1 << 1))
-#define CURLE_OK 0
-#define CURLOPT_URL 10002
-#define CURLOPT_WRITEFUNCTION 20011
-#define CURLOPT_WRITEDATA 10001
-#define CURLOPT_SSL_VERIFYPEER 64
-#define CURLOPT_SSL_VERIFYHOST 81
-#define CURLOPT_HTTPHEADER 10023
-#define CURLOPT_POSTFIELDS 10015
-#define CURLOPT_POSTFIELDSIZE 60
-#define CURLINFO_RESPONSE_CODE 2097154
+#    include <dlfcn-win32/dlfcn.h>
+#    define CURL_GLOBAL_DEFAULT ((1 << 0) | (1 << 1))
+#    define CURLE_OK 0
+#    define CURLOPT_URL 10002
+#    define CURLOPT_WRITEFUNCTION 20011
+#    define CURLOPT_WRITEDATA 10001
+#    define CURLOPT_SSL_VERIFYPEER 64
+#    define CURLOPT_SSL_VERIFYHOST 81
+#    define CURLOPT_HTTPHEADER 10023
+#    define CURLOPT_POSTFIELDS 10015
+#    define CURLOPT_POSTFIELDSIZE 60
+#    define CURLINFO_RESPONSE_CODE 2097154
 
 typedef void CURL;
 typedef int CURLcode;
@@ -30,14 +31,12 @@ typedef int CURLINFO;
 static void *libcurl_interface_dlhandle = NULL;
 #endif
 
-struct http_trans_response_data
-{
+struct http_trans_response_data {
     uint8_t *data;
     size_t size;
 };
 
-static struct libcurl_interface
-{
+static struct libcurl_interface {
     CURLcode (*_curl_global_init)(long flags);
     CURL *(*_curl_easy_init)(void);
     CURLcode (*_curl_easy_setopt)(CURL *curl, CURLoption option, ...);
@@ -50,14 +49,12 @@ static struct libcurl_interface
     void (*_curl_slist_free_all)(struct curl_slist *list);
 } libcurl;
 
-static size_t http_trans_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
-{
+static size_t http_trans_write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
     struct http_trans_response_data *mem = (struct http_trans_response_data *)userp;
 
     mem->data = realloc(mem->data, mem->size + realsize + 1);
-    if (mem->data == NULL)
-    {
+    if (mem->data == NULL) {
         /* out of memory! */
         printf("not enough memory (realloc returned NULL)\n");
         return 0;
@@ -70,8 +67,8 @@ static size_t http_trans_write_callback(void *contents, size_t size, size_t nmem
     return realsize;
 }
 
-static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **h)
-{
+static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
+                                   uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **h) {
     int fret = 0;
     CURL *curl;
     CURLcode res;
@@ -83,8 +80,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     (*rcode) = 0;
 
     curl = libcurl._curl_easy_init();
-    if (!curl)
-    {
+    if (!curl) {
         goto err;
     }
 
@@ -93,27 +89,23 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     libcurl._curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&responseData);
     libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-    for (int i = 0; h[i] != NULL; i++)
-    {
+    for (int i = 0; h[i] != NULL; i++) {
         nheaders = libcurl._curl_slist_append(headers, h[i]);
-        if (nheaders == NULL)
-        {
+        if (nheaders == NULL) {
             goto err;
         }
         headers = nheaders;
     }
     libcurl._curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-    if (tx != NULL)
-    {
+    if (tx != NULL) {
         libcurl._curl_easy_setopt(curl, CURLOPT_POSTFIELDS, tx);
         libcurl._curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, tx_len);
     }
 
     res = libcurl._curl_easy_perform(curl);
 
-    if (res != CURLE_OK)
-    {
+    if (res != CURLE_OK) {
         fprintf(stderr, "curl_easy_perform() failed: %s\n", libcurl._curl_easy_strerror(res));
         goto err;
     }
@@ -135,11 +127,9 @@ exit:
     return fret;
 }
 
-static int _init_libcurl(void)
-{
+static int _init_libcurl(void) {
 #ifdef _WIN32
-    if (!(libcurl_interface_dlhandle = dlopen("libcurl.dll", RTLD_LAZY)))
-    {
+    if (!(libcurl_interface_dlhandle = dlopen("libcurl.dll", RTLD_LAZY))) {
         fprintf(stderr, "libcurl init err: %s\n", dlerror());
         return -1;
     }
@@ -168,17 +158,14 @@ static int _init_libcurl(void)
     return 0;
 }
 
-static int libhttpinterface_init(struct euicc_http_interface *ifstruct)
-{
+static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
     memset(ifstruct, 0, sizeof(struct euicc_http_interface));
 
-    if (_init_libcurl() != 0)
-    {
+    if (_init_libcurl() != 0) {
         return -1;
     }
 
-    if (libcurl._curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK)
-    {
+    if (libcurl._curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) {
         return -1;
     }
 
@@ -187,14 +174,9 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct)
     return 0;
 }
 
-static int libhttpinterface_main(int argc, char **argv)
-{
-    return 0;
-}
+static int libhttpinterface_main(int argc, char **argv) { return 0; }
 
-static void libhttpinterface_fini(struct euicc_http_interface *ifstruct)
-{
-}
+static void libhttpinterface_fini(struct euicc_http_interface *ifstruct) {}
 
 const struct euicc_driver driver_http_curl = {
     .type = DRIVER_HTTP,

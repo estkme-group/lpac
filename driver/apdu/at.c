@@ -1,17 +1,16 @@
 #include "at.h"
-
-#include <inttypes.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <dirent.h>
-
 #include "at_common.h"
 
-#include <euicc/interface.h>
 #include <euicc/hexutil.h>
+#include <euicc/interface.h>
 #include <lpac/utils.h>
+
+#include <dirent.h>
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 static FILE *fuart;
 static int logic_channel = 0;
@@ -20,7 +19,8 @@ static char *buffer;
 static void enumerate_serial_device_linux(cJSON *data) {
     const char *dir_path = "/dev/serial/by-id";
     DIR *dir = opendir(dir_path);
-    if (dir == NULL) return;
+    if (dir == NULL)
+        return;
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
@@ -39,29 +39,22 @@ static void enumerate_serial_device_linux(cJSON *data) {
     closedir(dir);
 }
 
-static int at_expect(char **response, const char *expected)
-{
+static int at_expect(char **response, const char *expected) {
     memset(buffer, 0, AT_BUFFER_SIZE);
 
     if (response)
         *response = NULL;
 
-    while (1)
-    {
+    while (1) {
         fgets(buffer, AT_BUFFER_SIZE, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
         if (getenv_or_default(ENV_AT_DEBUG, false))
             printf("AT_DEBUG: %s\n", buffer);
-        if (strcmp(buffer, "ERROR") == 0)
-        {
+        if (strcmp(buffer, "ERROR") == 0) {
             return -1;
-        }
-        else if (strcmp(buffer, "OK") == 0)
-        {
+        } else if (strcmp(buffer, "OK") == 0) {
             return 0;
-        }
-        else if (expected && strncmp(buffer, expected, strlen(expected)) == 0)
-        {
+        } else if (expected && strncmp(buffer, expected, strlen(expected)) == 0) {
             if (response)
                 *response = strdup(buffer + strlen(expected));
         }
@@ -69,35 +62,30 @@ static int at_expect(char **response, const char *expected)
     return 0;
 }
 
-static int apdu_interface_connect(struct euicc_ctx *ctx)
-{
+static int apdu_interface_connect(struct euicc_ctx *ctx) {
     const char *device = getenv_or_default(ENV_AT_DEVICE, "/dev/ttyUSB0");
 
     logic_channel = 0;
 
     fuart = fopen(device, "r+");
-    if (fuart == NULL)
-    {
+    if (fuart == NULL) {
         fprintf(stderr, "Failed to open device: %s\n", device);
         return -1;
     }
     setbuf(fuart, NULL);
 
     fprintf(fuart, "AT+CCHO=?\r\n");
-    if (at_expect(NULL, NULL))
-    {
+    if (at_expect(NULL, NULL)) {
         fprintf(stderr, "Device missing AT+CCHO support\n");
         return -1;
     }
     fprintf(fuart, "AT+CCHC=?\r\n");
-    if (at_expect(NULL, NULL))
-    {
+    if (at_expect(NULL, NULL)) {
         fprintf(stderr, "Device missing AT+CCHC support\n");
         return -1;
     }
     fprintf(fuart, "AT+CGLA=?\r\n");
-    if (at_expect(NULL, NULL))
-    {
+    if (at_expect(NULL, NULL)) {
         fprintf(stderr, "Device missing AT+CGLA support\n");
         return -1;
     }
@@ -105,15 +93,14 @@ static int apdu_interface_connect(struct euicc_ctx *ctx)
     return 0;
 }
 
-static void apdu_interface_disconnect(struct euicc_ctx *ctx)
-{
+static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
     fclose(fuart);
     fuart = NULL;
     logic_channel = 0;
 }
 
-static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len)
-{
+static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
+                                   uint32_t tx_len) {
     int fret = 0;
     int ret;
     _cleanup_free_ char *response = NULL;
@@ -122,48 +109,40 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     *rx = NULL;
     *rx_len = 0;
 
-    if (!logic_channel)
-    {
+    if (!logic_channel) {
         return -1;
     }
 
     fprintf(fuart, "AT+CGLA=%d,%u,\"", logic_channel, tx_len * 2);
-    for (uint32_t i = 0; i < tx_len; i++)
-    {
+    for (uint32_t i = 0; i < tx_len; i++) {
         fprintf(fuart, "%02X", (uint8_t)(tx[i] & 0xFF));
     }
     fprintf(fuart, "\"\r\n");
-    if (at_expect(&response, "+CGLA:"))
-    {
+    if (at_expect(&response, "+CGLA:")) {
         goto err;
     }
-    if (response == NULL)
-    {
+    if (response == NULL) {
         goto err;
     }
 
     strtok(response, ",");
     hexstr = strtok(NULL, ",");
-    if (!hexstr)
-    {
+    if (!hexstr) {
         goto err;
     }
-    if (hexstr[0] == '"')
-    {
+    if (hexstr[0] == '"') {
         hexstr++;
     }
     hexstr[strcspn(hexstr, "\"")] = '\0';
 
     *rx_len = strlen(hexstr) / 2;
     *rx = malloc(*rx_len);
-    if (!*rx)
-    {
+    if (!*rx) {
         goto err;
     }
 
     ret = euicc_hexutil_hex2bin_r(*rx, *rx_len, hexstr, strlen(hexstr));
-    if (ret < 0)
-    {
+    if (ret < 0) {
         goto err;
     }
     *rx_len = ret;
@@ -179,32 +158,26 @@ exit:
     return fret;
 }
 
-static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len)
-{
+static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len) {
     char *response;
 
-    if (logic_channel)
-    {
+    if (logic_channel) {
         return logic_channel;
     }
 
-    for (int i = 1; i <= 4; i++)
-    {
+    for (int i = 1; i <= 4; i++) {
         fprintf(fuart, "AT+CCHC=%d\r\n", i);
         at_expect(NULL, NULL);
     }
     fprintf(fuart, "AT+CCHO=\"");
-    for (int i = 0; i < aid_len; i++)
-    {
+    for (int i = 0; i < aid_len; i++) {
         fprintf(fuart, "%02X", (uint8_t)(aid[i] & 0xFF));
     }
     fprintf(fuart, "\"\r\n");
-    if (at_expect(&response, "+CCHO: "))
-    {
+    if (at_expect(&response, "+CCHO: ")) {
         return -1;
     }
-    if (response == NULL)
-    {
+    if (response == NULL) {
         return -1;
     }
     logic_channel = atoi(response);
@@ -212,18 +185,15 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     return logic_channel;
 }
 
-static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel)
-{
-    if (!logic_channel)
-    {
+static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
+    if (!logic_channel) {
         return;
     }
     fprintf(fuart, "AT+CCHC=%d\r\n", logic_channel);
     at_expect(NULL, NULL);
 }
 
-static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
-{
+static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     set_deprecated_env_name(ENV_AT_DEBUG, "AT_DEBUG");
     set_deprecated_env_name(ENV_AT_DEVICE, "AT_DEVICE");
 
@@ -236,8 +206,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct)
     ifstruct->transmit = apdu_interface_transmit;
 
     buffer = malloc(AT_BUFFER_SIZE);
-    if (!buffer)
-    {
+    if (!buffer) {
         fprintf(stderr, "Failed to allocate memory\n");
         return -1;
     }
@@ -267,10 +236,7 @@ static int libapduinterface_main(const int argc, char **argv) {
     return 0;
 }
 
-static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct)
-{
-    free(buffer);
-}
+static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) { free(buffer); }
 
 const struct euicc_driver driver_apdu_at = {
     .type = DRIVER_APDU,
