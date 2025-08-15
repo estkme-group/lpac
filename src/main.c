@@ -17,11 +17,12 @@
 #include <euicc/hexutil.h>
 
 #ifdef WIN32
+#    include <windef.h>
+// windef.h MUST before other Windows headers
 #    include <processenv.h>
 #    include <processthreadsapi.h>
 #    include <shellapi.h>
 #    include <stringapiset.h>
-#    include <windef.h>
 #endif
 
 #define ENV_ISD_R_AID "LPAC_CUSTOM_ISD_R_AID"
