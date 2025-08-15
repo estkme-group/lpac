@@ -21,15 +21,13 @@ static void enumerate_serial_device_linux(cJSON *data) {
     DIR *dir = opendir(dir_path);
     if (dir == NULL) return;
     struct dirent *entry;
-    char *full_path = NULL;
-    size_t path_len = 0;
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
 
-        path_len = strlen(dir_path) + 1 /* SEP */ + strlen(entry->d_name) + 1 /* NUL */;
-        full_path = malloc(path_len);
+        size_t path_len = strlen(dir_path) + 1 /* SEP */ + strlen(entry->d_name) + 1 /* NUL */;
+        char *full_path = malloc(path_len);
         snprintf(full_path, path_len, "%s/%s", dir_path, entry->d_name);
 
         cJSON *item = cJSON_CreateObject();
