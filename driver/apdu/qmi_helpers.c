@@ -232,3 +232,76 @@ qmi_client_uim_send_apdu_sync(
 
     return qmi_client_uim_send_apdu_finish(client, result, error);
 }
+
+QmiMessageUimGetSlotStatusOutput *
+qmi_client_uim_get_slot_status_sync(
+    QmiClientUim *client,
+    GMainContext *context,
+    GError **error)
+{
+    g_autoptr(GMainContextPusher) pusher = NULL;
+    g_autoptr(GAsyncResult) result = NULL;
+
+    pusher = g_main_context_pusher_new(context);
+
+    qmi_client_uim_get_slot_status(client,
+                                   NULL,
+                                   10,
+                                   NULL,
+                                   async_result_ready,
+                                   &result);
+
+    while (result == NULL)
+        g_main_context_iteration(context, TRUE);
+
+    return qmi_client_uim_get_slot_status_finish(client, result, error);
+}
+
+QmiMessageUimSwitchSlotOutput *
+qmi_client_uim_switch_slot_sync(
+    QmiClientUim *client,
+    QmiMessageUimSwitchSlotInput *input,
+    GMainContext *context,
+    GError **error)
+{
+    g_autoptr(GMainContextPusher) pusher = NULL;
+    g_autoptr(GAsyncResult) result = NULL;
+
+    pusher = g_main_context_pusher_new(context);
+
+    qmi_client_uim_switch_slot(client,
+                               input,
+                               10,
+                               NULL,
+                               async_result_ready,
+                               &result);
+
+    while (result == NULL)
+        g_main_context_iteration(context, TRUE);
+
+    return qmi_client_uim_switch_slot_finish(client, result, error);
+}
+
+QmiMessageUimGetCardStatusOutput *
+qmi_client_uim_get_card_status_sync(
+    QmiClientUim *client,
+    GMainContext *context,
+    GError **error)
+{
+    g_autoptr(GMainContextPusher) pusher = NULL;
+    g_autoptr(GAsyncResult) result = NULL;
+
+    pusher = g_main_context_pusher_new(context);
+
+    qmi_client_uim_get_card_status(client,
+                                   NULL,
+                                   10,
+                                   NULL,
+                                   async_result_ready,
+                                   &result);
+
+    while (result == NULL)
+        g_main_context_iteration(context, TRUE);
+
+    return qmi_client_uim_get_card_status_finish(client, result, error);
+}
