@@ -56,7 +56,6 @@ err:
 
 static bool json_request(const char *func, const uint8_t *param, unsigned param_len)
 {
-    bool fret = true;
     _cleanup_free_ char *param_hex = NULL;
     _cleanup_cjson_ cJSON *jpayload = NULL;
 
@@ -65,11 +64,11 @@ static bool json_request(const char *func, const uint8_t *param, unsigned param_
         param_hex = malloc((2 * param_len) + 1);
         if (param_hex == NULL)
         {
-            goto err;
+            return false;
         }
         if (euicc_hexutil_bin2hex(param_hex, (2 * param_len) + 1, param, param_len) < 0)
         {
-            goto err;
+            return false;
         }
     }
     else
@@ -80,24 +79,18 @@ static bool json_request(const char *func, const uint8_t *param, unsigned param_
     jpayload = cJSON_CreateObject();
     if (jpayload == NULL)
     {
-        goto err;
+        return false;
     }
     if (cJSON_AddStringOrNullToObject(jpayload, "func", func) == NULL)
     {
-        goto err;
+        return false;
     }
     if (cJSON_AddStringOrNullToObject(jpayload, "param", param_hex) == NULL)
     {
-        goto err;
+        return false;
     }
 
-    fret = json_print("apdu", jpayload);
-    goto exit;
-
-err:
-    fret = false;
-exit:
-    return fret;
+    return json_print("apdu", jpayload);
 }
 
 static int json_response(int *ecode, uint8_t **data, uint32_t *data_len)

@@ -82,7 +82,6 @@ static int applet_main(const int argc, char **argv) {
         return -1;
     }
 
-    int fret = 0;
     char *input = NULL;
     char *eid = NULL;
     uint32_t seqNumber = 0;
@@ -100,26 +99,21 @@ static int applet_main(const int argc, char **argv) {
         _cleanup_cjson_ cJSON *jroot = cJSON_ParseWithLength(input, n);
         if (jroot == NULL) {
             jprint_error("cJSON_ParseWithLength", NULL);
-            goto error;
+            return -1;
         }
         if (parse_notification(jroot, eid, &seqNumber, &notification) != 0) {
             jprint_error("parse_notification", NULL);
-            goto error;
+            return -1;
         }
         if (handle_notification(seqNumber, notification) != 0) {
             jprint_error("handle_notification", NULL);
-            goto error;
+            return -1;
         }
     }
 
     jprint_success(NULL);
 
-    goto exit;
-
-error:
-    fret = -1;
-exit:
-    return fret;
+    return 0;
 }
 
 struct applet_entry applet_notification_replay = {

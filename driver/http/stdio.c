@@ -56,7 +56,6 @@ err:
 
 static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers)
 {
-    bool fret = true;
     _cleanup_free_ char *tx_hex = NULL;
     _cleanup_cjson_ cJSON *jpayload = NULL;
     cJSON *jheaders = NULL;
@@ -64,31 +63,31 @@ static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, co
     tx_hex = malloc((2 * tx_len) + 1);
     if (tx_hex == NULL)
     {
-        goto err;
+        return false;
     }
     if (euicc_hexutil_bin2hex(tx_hex, (2 * tx_len) + 1, tx, tx_len) < 0)
     {
-        goto err;
+        return false;
     }
 
     jpayload = cJSON_CreateObject();
     if (jpayload == NULL)
     {
-        goto err;
+        return false;
     }
     if (cJSON_AddStringOrNullToObject(jpayload, "url", url) == NULL)
     {
-        goto err;
+        return false;
     }
     if (cJSON_AddStringOrNullToObject(jpayload, "tx", tx_hex) == NULL)
     {
-        goto err;
+        return false;
     }
 
     jheaders = cJSON_AddArrayToObject(jpayload, "headers");
     if (jheaders == NULL)
     {
-        goto err;
+        return false;
     }
 
     for (int i = 0; headers[i] != NULL; i++)
@@ -96,18 +95,12 @@ static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, co
         cJSON *jh = cJSON_CreateString(headers[i]);
         if (jh == NULL)
         {
-            goto err;
+            return false;
         }
         cJSON_AddItemToArray(jheaders, jh);
     }
 
-    fret = json_print("http", jpayload);
-    goto exit;
-
-err:
-    fret = false;
-exit:
-    return fret;
+    return json_print("http", jpayload);
 }
 
 // {"type":"http","payload":{"rcode":404,"rx":"333435"}}
