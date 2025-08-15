@@ -259,7 +259,7 @@ static int libapduinterface_main(const int argc, char **argv) {
 #ifdef __linux__
         enumerate_serial_device_linux(data);
 #else
-        fprintf(stderr, "Only Linux platform is supported for serial device enumeration.\n");
+        fprintf(stderr, "Serial device enumeration not implemented on this platform.\n");
         fflush(stderr);
 #endif
 
