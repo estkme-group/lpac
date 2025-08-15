@@ -16,7 +16,7 @@ static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
 
-static void enumerate_serial_devices_linux(cJSON *data) {
+static void enumerate_serial_device_linux(cJSON *data) {
     const char *dir_path = "/dev/serial/by-id";
     DIR *dir = opendir(dir_path);
     if (dir == NULL) return;
@@ -259,7 +259,7 @@ static int libapduinterface_main(const int argc, char **argv) {
         cJSON *data = cJSON_CreateArray();
 
 #ifdef __linux__
-        enumerate_serial_devices_linux(data);
+        enumerate_serial_device_linux(data);
 #endif
 
         jprint_enumerate_devices(data);
