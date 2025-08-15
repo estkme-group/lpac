@@ -4,7 +4,7 @@
  */
 #pragma once
 #include <libqmi-glib.h>
-#include <helpers.h>
+#include <lpac/utils.h>
 
 #define ENV_UIM_SLOT APDU_ENV_NAME(QMI, UIM_SLOT)
 #define ENV_DEVICE APDU_ENV_NAME(QMI, DEVICE)

@@ -4,11 +4,11 @@
  */
 #include "mbim.h"
 
-#include <helpers.h>
 #include <libmbim-glib.h>
 #include <stdio.h>
 #include <euicc/interface.h>
 #include <euicc/euicc.h>
+#include <lpac/utils.h>
 #include "mbim_helpers.h"
 
 #define ENV_UIM_SLOT APDU_ENV_NAME(MBIM, UIM_SLOT)

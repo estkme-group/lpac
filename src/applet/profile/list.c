@@ -7,10 +7,12 @@
 
 #include <euicc/es10c.h>
 #include <euicc/tostr.h>
+#include <lpac/utils.h>
 
 static int applet_main(int argc, char **argv)
 {
-    struct es10c_profile_info_list *profiles, *rptr;
+    _cleanup_es10c_profile_info_list_ struct es10c_profile_info_list *profiles;
+    struct es10c_profile_info_list *rptr;
     cJSON *jdata = NULL;
 
     if (es10c_get_profiles_info(&euicc_ctx, &profiles))
@@ -40,7 +42,6 @@ static int applet_main(int argc, char **argv)
 
         rptr = rptr->next;
     }
-    es10c_profile_info_list_free_all(profiles);
 
     jprint_success(jdata);
 

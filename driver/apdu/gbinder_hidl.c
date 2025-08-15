@@ -1,10 +1,10 @@
 // vim: expandtab sw=4 ts=4:
 #include "gbinder_hidl.h"
 
-#include <helpers.h>
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
+#include <lpac/utils.h>
 #include <gbinder.h>
 #include <stdio.h>
 #include <stdlib.h>

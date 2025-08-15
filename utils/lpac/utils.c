@@ -1,4 +1,4 @@
-#include "helpers.h"
+#include "utils.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -54,9 +54,9 @@ void set_deprecated_env_name(const char *name, const char *deprecated_name) {
 #endif
 }
 
-bool json_print(cJSON *jpayload) {
-    cJSON *jroot = NULL;
-    char *jstr = NULL;
+bool json_print(char *type, cJSON *jpayload) {
+    _cleanup_cjson_ cJSON *jroot = NULL;
+    _cleanup_free_ char *jstr = NULL;
 
     if (jpayload == NULL) {
         goto err;
@@ -67,7 +67,7 @@ bool json_print(cJSON *jpayload) {
         goto err;
     }
 
-    if (cJSON_AddStringOrNullToObject(jroot, "type", "driver") == NULL) {
+    if (cJSON_AddStringOrNullToObject(jroot, "type", type) == NULL) {
         goto err;
     }
 
@@ -80,18 +80,12 @@ bool json_print(cJSON *jpayload) {
     if (jstr == NULL) {
         goto err;
     }
-    cJSON_Delete(jroot);
 
     fprintf(stdout, "%s\n", jstr);
     fflush(stdout);
 
-    free(jstr);
-    jstr = NULL;
-
     return true;
 
 err:
-    cJSON_Delete(jroot);
-    free(jstr);
     return false;
 }

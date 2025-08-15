@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
-#include <helpers.h>
+#include <lpac/utils.h>
 
 #define AT_BUFFER_SIZE 20480
 #define AT_READ_BUFFER_SIZE 4096

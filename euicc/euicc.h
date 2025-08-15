@@ -4,6 +4,10 @@
 #include "interface.h"
 #include "es10b.h"
 
+#ifdef interface
+#  undef interface
+#endif
+
 struct euicc_ctx
 {
     const uint8_t *aid;

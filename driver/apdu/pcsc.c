@@ -5,8 +5,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "helpers.h"
-
 #ifdef _WIN32
 #include <winscard.h>
 #include "pcsc_win32.h"
@@ -15,9 +13,9 @@
 #include <PCSC/winscard.h>
 #endif
 
-#include <helpers.h>
 #include <cjson/cJSON_ex.h>
 #include <euicc/interface.h>
+#include <lpac/utils.h>
 
 #define ENV_DRV_IFID APDU_ENV_NAME(PCSC, DRV_IFID)
 #define ENV_DRV_NAME APDU_ENV_NAME(PCSC, DRV_NAME)
@@ -424,7 +422,7 @@ static int libapduinterface_main(int argc, char **argv)
             return -1;
         }
 
-        json_print(payload);
+        json_print("driver", payload);
 
         return 0;
     }
