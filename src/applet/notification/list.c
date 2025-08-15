@@ -1,7 +1,7 @@
 #include "list.h"
 
-#include "helpers.h"
 #include "main.h"
+#include "notification_common.h"
 
 #include <euicc/es10b.h>
 #include <euicc/tostr.h>

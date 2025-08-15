@@ -1,5 +1,5 @@
 #include "process.h"
-#include "helpers.h"
+#include "notification_common.h"
 
 #include <euicc/es10b.h>
 #include <euicc/es9p.h>
