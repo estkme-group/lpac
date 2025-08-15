@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <limits.h>
 
 #include "at_common.h"
 
@@ -18,7 +17,7 @@ static int logic_channel = 0;
 static char *buffer;
 
 static void enumerate_serial_devices_linux(cJSON *data) {
-    const char *dir_path = "/dev/serial/by-path";
+    const char *dir_path = "/dev/serial/by-id";
     DIR *dir = opendir(dir_path);
     if (dir == NULL) return;
     struct dirent *entry;
@@ -254,7 +253,9 @@ static int libapduinterface_main(const int argc, char **argv) {
     if (strcmp(argv[1], "list") == 0) {
         cJSON *data = cJSON_CreateArray();
 
+#ifdef __linux__
         enumerate_serial_devices_linux(data);
+#endif
 
         jprint_enumerate_devices(data);
     }
