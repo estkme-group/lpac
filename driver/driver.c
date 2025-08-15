@@ -111,8 +111,8 @@ int euicc_driver_list(int argc, char **argv) {
             cJSON_AddItemToArray(http_drivers, driver_name);
         }
     }
-    cJSON_AddItemToObject(payload, "LPAC_APDU", apdu_drivers);
-    cJSON_AddItemToObject(payload, "LPAC_HTTP", http_drivers);
+    cJSON_AddItemToObject(payload, ENV_APDU_DRIVER, apdu_drivers);
+    cJSON_AddItemToObject(payload, ENV_HTTP_DRIVER, http_drivers);
 
     json_print("driver", payload);
     return 0;
