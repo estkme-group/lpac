@@ -1,20 +1,20 @@
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required(VERSION 3.15)
 
-project (lpac
-    VERSION 2.1.0
-    HOMEPAGE_URL "https://github.com/estkme-group/lpac"
-    DESCRIPTION "C-based eUICC LPA."
-    LANGUAGES C)
+project(lpac
+        VERSION 2.1.0
+        HOMEPAGE_URL "https://github.com/estkme-group/lpac"
+        DESCRIPTION "C-based eUICC LPA."
+        LANGUAGES C)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(LPAC_CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH ${LPAC_CMAKE_MODULE_PATH})
 
-if(NOT PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
-  # Git auto-ignore out-of-source build directory
-  file(GENERATE OUTPUT .gitignore CONTENT "*")
-endif()
+if (NOT PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+    # Git auto-ignore out-of-source build directory
+    file(GENERATE OUTPUT .gitignore CONTENT "*")
+endif ()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -23,33 +23,33 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Enable LTO when possible.
 include(CheckIPOSupported)
 check_ipo_supported(RESULT result OUTPUT output)
-if(result)
-    if(NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+if (result)
+    if (NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    endif()
-else()
+    endif ()
+else ()
     message(INFO "IPO is not supported: ${output}")
-endif()
+endif ()
 
 if (APPLE)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
-endif()
+endif ()
 
-if(UNIX)
+if (UNIX)
     include(GNUInstallDirs)
-    if(NOT CMAKE_INSTALL_RPATH)
+    if (NOT CMAKE_INSTALL_RPATH)
         set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}/lpac")
-    endif()
-endif()
+    endif ()
+endif ()
 
-if(WIN32)
+if (WIN32)
     add_subdirectory(dlfcn-win32)
     set(DL_LIBRARY dlfcn-win32)
-else()
+else ()
     set(DL_LIBRARY dl)
-endif()
+endif ()
 
-if(CPACK_GENERATOR)
+if (CPACK_GENERATOR)
     set(CPACK_PACKAGE_VENDOR "eSTK.me Group")
 
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "eSTK.me Group")
@@ -63,7 +63,7 @@ if(CPACK_GENERATOR)
     set(CPACK_RPM_PACKAGE_REQUIRES "libcurl, libpcsclite, pcscd")
 
     include(CPack)
-endif()
+endif ()
 
 add_subdirectory(cjson)
 add_subdirectory(euicc)
