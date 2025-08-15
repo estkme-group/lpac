@@ -26,6 +26,8 @@ path = [
     "README.md",
     # Config for other tools
     ".editorconfig",
+    ".clang-format",
+    ".git-blame-ignore-revs",
     ".gitignore"
 ]
 SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
