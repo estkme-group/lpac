@@ -16,6 +16,7 @@ static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
 
+#ifdef __linux__
 static void enumerate_serial_devices_linux(cJSON *data) {
     const char *dir_path = "/dev/serial/by-id";
     DIR *dir = opendir(dir_path);
@@ -36,6 +37,7 @@ static void enumerate_serial_devices_linux(cJSON *data) {
     }
     closedir(dir);
 }
+#endif
 
 static int at_expect(char **response, const char *expected)
 {
