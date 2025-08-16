@@ -289,7 +289,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     }
 
     mbim_priv->uim_slot = uim_slot;
-    mbim_priv->use_proxy = getenv_or_default(ENV_USE_PROXY, false);
+    mbim_priv->use_proxy = getenv_or_default(ENV_USE_PROXY, (bool)false);
     mbim_priv->device_path = getenv_or_default(ENV_DEVICE, "/dev/cdc-wdm0");
 
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));

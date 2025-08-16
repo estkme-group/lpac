@@ -125,7 +125,7 @@ static int at_expect(char **response, const char *expected) {
             continue;
         }
 
-        if (getenv_or_default(ENV_AT_DEBUG, false))
+        if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
             fprintf(stderr, "AT_DEBUG_RX: %s\n", line);
 
         if (strcmp(line, "ERROR") == 0) {
@@ -155,7 +155,7 @@ end:
 
 static int at_write_command(const char *cmd) {
     DWORD bytes_written;
-    if (getenv_or_default(ENV_AT_DEBUG, false))
+    if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
         fprintf(stderr, "AT_DEBUG_TX: %s", cmd);
 
     if (!WriteFile(hComm, cmd, strlen(cmd), &bytes_written, NULL)) {
