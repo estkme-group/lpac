@@ -17,6 +17,10 @@
 #    include <PCSC/wintypes.h>
 #endif
 
+#ifdef interface
+#    undef interface
+#endif
+
 #define ENV_DRV_IFID APDU_ENV_NAME(PCSC, DRV_IFID)
 #define ENV_DRV_NAME APDU_ENV_NAME(PCSC, DRV_NAME)
 #define ENV_DRV_IGNORE_NAME APDU_ENV_NAME(PCSC, DRV_IGNORE_NAME)
@@ -29,9 +33,11 @@
 #define APDU_CLOSELOGICCHANNEL "\x00\x70\x80\xFF\x00"
 #define APDU_SELECT_HEADER "\x00\xA4\x04\x00\xFF"
 
-static SCARDCONTEXT pcsc_ctx;
-static SCARDHANDLE pcsc_hCard;
-static LPSTR pcsc_mszReaders;
+struct pcsc_userdata {
+    SCARDCONTEXT ctx;
+    SCARDHANDLE hCard;
+    LPSTR mszReaders;
+};
 
 static void pcsc_error(const char *method, const int32_t code) {
     fprintf(stderr, "%s failed: %08X (%s)\n", method, code, pcsc_stringify_error(code));
@@ -50,15 +56,14 @@ static bool is_ignored_reader_name(const char *reader) {
     return false;
 }
 
-static int pcsc_ctx_open(void) {
-    int ret;
+static int pcsc_ctx_open(struct pcsc_userdata *userdata) {
     DWORD dwReaders;
 
-    pcsc_ctx = 0;
-    pcsc_hCard = 0;
-    pcsc_mszReaders = NULL;
+    userdata->ctx = 0;
+    userdata->hCard = 0;
+    userdata->mszReaders = NULL;
 
-    ret = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &pcsc_ctx);
+    int ret = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &userdata->ctx);
     if (ret != SCARD_S_SUCCESS) {
         pcsc_error("SCardEstablishContext()", ret);
         return -1;
@@ -66,21 +71,21 @@ static int pcsc_ctx_open(void) {
 
 #ifdef SCARD_AUTOALLOCATE
     dwReaders = SCARD_AUTOALLOCATE;
-    ret = SCardListReaders(pcsc_ctx, NULL, (LPSTR)&pcsc_mszReaders, &dwReaders);
+    ret = SCardListReaders(userdata->ctx, NULL, (LPSTR)&userdata->mszReaders, &dwReaders);
 #else
     // macOS does not support SCARD_AUTOALLOCATE, so we need to call SCardListReaders twice.
     // First call to get the size of the buffer, second call to get the actual data.
-    ret = SCardListReaders(pcsc_ctx, NULL, NULL, &dwReaders);
+    ret = SCardListReaders(userdata->ctx, NULL, NULL, &dwReaders);
     if (ret != SCARD_S_SUCCESS) {
         pcsc_error("SCardListReaders()", ret);
         return -1;
     }
-    pcsc_mszReaders = malloc(sizeof(char) * dwReaders);
-    if (pcsc_mszReaders == NULL) {
+    userdata->mszReaders = malloc(sizeof(char) * dwReaders);
+    if (userdata->mszReaders == NULL) {
         fprintf(stderr, "malloc: not enough memory\n");
         return -1;
     }
-    ret = SCardListReaders(pcsc_ctx, NULL, pcsc_mszReaders, &dwReaders);
+    ret = SCardListReaders(userdata->ctx, NULL, userdata->mszReaders, &dwReaders);
 #endif
     if (ret != SCARD_S_SUCCESS) {
         pcsc_error("SCardListReaders()", ret);
@@ -90,30 +95,25 @@ static int pcsc_ctx_open(void) {
     return 0;
 }
 
-static int pcsc_iter_reader(int (*callback)(int index, const char *reader, void *userdata), void *userdata) {
-    int ret;
-    LPSTR psReader;
-
-    psReader = pcsc_mszReaders;
-    for (int i = 0, n = 0;; i++) {
-        char *p = pcsc_mszReaders + i;
-        if (*p == '\0') {
-            ret = callback(n, psReader, userdata);
-            if (ret < 0)
-                return -1;
-            if (ret > 0)
-                return 0;
-            if (*(p + 1) == '\0') {
-                break;
-            }
-            psReader = p + 1;
-            n++;
-        }
+static int pcsc_iter_reader(struct pcsc_userdata *userdata,
+                            int (*callback)(struct pcsc_userdata *userdata, int index, const char *reader,
+                                            void *context),
+                            void *context) {
+    int index = 0;
+    LPSTR pReader = userdata->mszReaders;
+    while (*pReader != '\0') {
+        const int ret = callback(userdata, index, pReader, context);
+        if (ret < 0)
+            return -1;
+        if (ret > 0)
+            return 0;
+        pReader += strlen(pReader) + 1;
+        index++;
     }
     return -1;
 }
 
-static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata) {
+static int pcsc_open_hCard_iter(struct pcsc_userdata *userdata, const int index, const char *reader, void *context) {
     DWORD dwActiveProtocol;
 
     const int id = getenv_or_default(ENV_DRV_IFID, (int)-1);
@@ -128,8 +128,8 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata) {
         return 0; // skip ignored reader names
     }
 
-    const int ret =
-        SCardConnect(pcsc_ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &pcsc_hCard, &dwActiveProtocol);
+    const int ret = SCardConnect(userdata->ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &userdata->hCard,
+                                 &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS) {
         pcsc_error("SCardConnect()", ret);
         // see <https://blog.apdu.fr/posts/2024/12/gnupg-and-pcsc-conflicts-episode-3/>
@@ -141,36 +141,36 @@ static int pcsc_open_hCard_iter(int index, const char *reader, void *userdata) {
     return 1;
 }
 
-static int pcsc_open_hCard(void) { return pcsc_iter_reader(pcsc_open_hCard_iter, NULL); }
+static int pcsc_open_hCard(struct pcsc_userdata *userdata) {
+    return pcsc_iter_reader(userdata, pcsc_open_hCard_iter, NULL);
+}
 
-static void pcsc_close(void) {
-    if (pcsc_mszReaders) {
+static void pcsc_close(const struct pcsc_userdata *userdata) {
+    if (userdata->mszReaders != NULL) {
 // macOS does not support SCARD_AUTOALLOCATE, so we need to free the buffer manually.
 #ifdef SCARD_AUTOALLOCATE
-        SCardFreeMemory(pcsc_ctx, pcsc_mszReaders);
+        SCardFreeMemory(userdata->ctx, userdata->mszReaders);
 #else
-        // on macOS, pcsc_mszReaders is allocated by malloc()
-        free(pcsc_mszReaders);
+        // on macOS, mszReaders is allocated by malloc()
+        free(userdata->mszReaders);
 #endif
     }
 
-    if (pcsc_hCard) {
-        SCardDisconnect(pcsc_hCard, SCARD_UNPOWER_CARD);
+    if (userdata->hCard) {
+        SCardDisconnect(userdata->hCard, SCARD_UNPOWER_CARD);
     }
-    if (pcsc_ctx) {
-        SCardReleaseContext(pcsc_ctx);
+    if (userdata->ctx) {
+        SCardReleaseContext(userdata->ctx);
     }
-    pcsc_ctx = 0;
-    pcsc_hCard = 0;
-    pcsc_mszReaders = NULL;
 }
 
-static int pcsc_transmit_lowlevel(uint8_t *rx, uint32_t *rx_len, const uint8_t *tx, const uint8_t tx_len) {
+static int pcsc_transmit_lowlevel(const struct pcsc_userdata *userdata, uint8_t *rx, uint32_t *rx_len,
+                                  const uint8_t *tx, const uint8_t tx_len) {
     int ret;
     DWORD rx_len_merged;
 
     rx_len_merged = *rx_len;
-    ret = SCardTransmit(pcsc_hCard, SCARD_PCI_T0, tx, tx_len, NULL, rx, &rx_len_merged);
+    ret = SCardTransmit(userdata->hCard, SCARD_PCI_T0, tx, tx_len, NULL, rx, &rx_len_merged);
     if (ret != SCARD_S_SUCCESS) {
         pcsc_error("SCardTransmit()", ret);
         return -1;
@@ -180,7 +180,7 @@ static int pcsc_transmit_lowlevel(uint8_t *rx, uint32_t *rx_len, const uint8_t *
     return 0;
 }
 
-static void pcsc_logic_channel_close(uint8_t channel) {
+static void pcsc_logic_channel_close(const struct pcsc_userdata *userdata, const uint8_t channel) {
     uint8_t tx[sizeof(APDU_CLOSELOGICCHANNEL) - 1];
     uint8_t rx[EUICC_INTERFACE_BUFSZ];
     uint32_t rx_len;
@@ -190,10 +190,10 @@ static void pcsc_logic_channel_close(uint8_t channel) {
 
     rx_len = sizeof(rx);
 
-    pcsc_transmit_lowlevel(rx, &rx_len, tx, sizeof(tx));
+    pcsc_transmit_lowlevel(userdata, rx, &rx_len, tx, sizeof(tx));
 }
 
-static int pcsc_logic_channel_open(const uint8_t *aid, uint8_t aid_len) {
+static int pcsc_logic_channel_open(const struct pcsc_userdata *userdata, const uint8_t *aid, uint8_t aid_len) {
     int channel = 0;
     uint8_t tx[EUICC_INTERFACE_BUFSZ];
     uint8_t *tx_wptr;
@@ -205,7 +205,8 @@ static int pcsc_logic_channel_open(const uint8_t *aid, uint8_t aid_len) {
     }
 
     rx_len = sizeof(rx);
-    if (pcsc_transmit_lowlevel(rx, &rx_len, (const uint8_t *)APDU_OPENLOGICCHANNEL, sizeof(APDU_OPENLOGICCHANNEL) - 1)
+    if (pcsc_transmit_lowlevel(userdata, rx, &rx_len, (const uint8_t *)APDU_OPENLOGICCHANNEL,
+                               sizeof(APDU_OPENLOGICCHANNEL) - 1)
         < 0) {
         goto err;
     }
@@ -230,7 +231,7 @@ static int pcsc_logic_channel_open(const uint8_t *aid, uint8_t aid_len) {
     tx[4] = aid_len;
 
     rx_len = sizeof(rx);
-    if (pcsc_transmit_lowlevel(rx, &rx_len, tx, tx_wptr - tx) < 0) {
+    if (pcsc_transmit_lowlevel(userdata, rx, &rx_len, tx, tx_wptr - tx) < 0) {
         goto err;
     }
 
@@ -248,31 +249,37 @@ static int pcsc_logic_channel_open(const uint8_t *aid, uint8_t aid_len) {
 
 err:
     if (channel) {
-        pcsc_logic_channel_close(channel);
+        pcsc_logic_channel_close(userdata, channel);
     }
 
     return -1;
 }
 
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
+    struct pcsc_userdata *userdata = ctx->apdu.interface->userdata;
+
     uint8_t rx[EUICC_INTERFACE_BUFSZ];
     uint32_t rx_len;
 
-    if (pcsc_open_hCard() < 0) {
+    if (pcsc_open_hCard(userdata) < 0) {
         return -1;
     }
 
     rx_len = sizeof(rx);
-    pcsc_transmit_lowlevel(rx, &rx_len, (const uint8_t *)APDU_TERMINAL_CAPABILITIES,
+    pcsc_transmit_lowlevel(userdata, rx, &rx_len, (const uint8_t *)APDU_TERMINAL_CAPABILITIES,
                            sizeof(APDU_TERMINAL_CAPABILITIES) - 1);
 
     return 0;
 }
 
-static void apdu_interface_disconnect(struct euicc_ctx *ctx) { pcsc_close(); }
+static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
+    const struct pcsc_userdata *userdata = ctx->apdu.interface->userdata;
+    pcsc_close(userdata);
+}
 
 static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
                                    uint32_t tx_len) {
+    const struct pcsc_userdata *userdata = ctx->apdu.interface->userdata;
     *rx = malloc(EUICC_INTERFACE_BUFSZ);
     if (!*rx) {
         fprintf(stderr, "SCardTransmit() RX buffer alloc failed\n");
@@ -280,7 +287,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     }
     *rx_len = EUICC_INTERFACE_BUFSZ;
 
-    if (pcsc_transmit_lowlevel(*rx, rx_len, tx, tx_len) < 0) {
+    if (pcsc_transmit_lowlevel(userdata, *rx, rx_len, tx, tx_len) < 0) {
         free(*rx);
         *rx_len = 0;
         return -1;
@@ -290,21 +297,22 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
 }
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len) {
-    return pcsc_logic_channel_open(aid, aid_len);
+    const struct pcsc_userdata *userdata = ctx->apdu.interface->userdata;
+    return pcsc_logic_channel_open(userdata, aid, aid_len);
 }
 
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
-    pcsc_logic_channel_close(channel);
+    const struct pcsc_userdata *userdata = ctx->apdu.interface->userdata;
+    pcsc_logic_channel_close(userdata, channel);
 }
 
-static int pcsc_list_iter(int index, const char *reader, void *userdata) {
-    cJSON *json = userdata;
-    cJSON *jreader;
+static int pcsc_list_iter(struct pcsc_userdata *userdata, const int index, const char *reader, void *context) {
+    cJSON *json = context;
     char index_str[16];
 
     snprintf(index_str, sizeof(index_str), "%d", index);
 
-    jreader = cJSON_CreateObject();
+    cJSON *jreader = cJSON_CreateObject();
     if (!jreader) {
         return -1;
     }
@@ -328,9 +336,14 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     set_deprecated_env_name(ENV_DRV_IFID, "DRIVER_IFID");
     set_deprecated_env_name(ENV_DRV_NAME, "DRIVER_NAME");
 
+    struct pcsc_userdata *userdata = malloc(sizeof(struct pcsc_userdata));
+    if (userdata == NULL)
+        return -1;
+    memset(userdata, 0, sizeof(struct pcsc_userdata));
+
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
-    if (pcsc_ctx_open() < 0) {
+    if (pcsc_ctx_open(userdata) < 0) {
         return -1;
     }
 
@@ -339,21 +352,26 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
     ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
     ifstruct->transmit = apdu_interface_transmit;
+    ifstruct->userdata = userdata;
 
     return 0;
 }
 
-static int libapduinterface_main(int argc, char **argv) {
+static int libapduinterface_main(const struct euicc_apdu_interface *ifstruct, int argc, char **argv) {
+    struct pcsc_userdata *userdata = ifstruct->userdata;
+
+    if (userdata == NULL) {
+        fprintf(stderr, "No userdata set\n");
+        return -1;
+    }
+
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <list>\n", argv[0]);
         return -1;
     }
 
     if (strcmp(argv[1], "list") == 0) {
-        cJSON *payload;
-        cJSON *data;
-
-        payload = cJSON_CreateObject();
+        cJSON *payload = cJSON_CreateObject();
         if (!payload) {
             return -1;
         }
@@ -362,12 +380,12 @@ static int libapduinterface_main(int argc, char **argv) {
             return -1;
         }
 
-        data = cJSON_CreateArray();
+        cJSON *data = cJSON_CreateArray();
         if (!data) {
             return -1;
         }
 
-        pcsc_iter_reader(pcsc_list_iter, data);
+        pcsc_iter_reader(userdata, pcsc_list_iter, data);
 
         if (!cJSON_AddItemToObject(payload, "data", data)) {
             return -1;
@@ -381,12 +399,15 @@ static int libapduinterface_main(int argc, char **argv) {
     return 0;
 }
 
-static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {}
+static void libapduinterface_fini(const struct euicc_apdu_interface *ifstruct) {
+    struct pcsc_userdata *userdata = ifstruct->userdata;
+    free(userdata);
+}
 
 const struct euicc_driver driver_apdu_pcsc = {
     .type = DRIVER_APDU,
     .name = "pcsc",
     .init = (int (*)(void *))libapduinterface_init,
-    .main = libapduinterface_main,
+    .main = (int (*)(void *, int, char **))libapduinterface_main,
     .fini = (void (*)(void *))libapduinterface_fini,
 };

@@ -214,7 +214,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-static int libapduinterface_main(const int argc, char **argv) {
+static int libapduinterface_main(const struct euicc_apdu_interface *ifstruct, int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <list>\n", argv[0]);
         return -1;
@@ -242,6 +242,6 @@ const struct euicc_driver driver_apdu_at = {
     .type = DRIVER_APDU,
     .name = "at",
     .init = (int (*)(void *))libapduinterface_init,
-    .main = libapduinterface_main,
+    .main = (int (*)(void *, int, char **))libapduinterface_main,
     .fini = (void (*)(void *))libapduinterface_fini,
 };

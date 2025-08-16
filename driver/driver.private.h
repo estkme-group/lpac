@@ -9,6 +9,6 @@ struct euicc_driver {
     enum euicc_driver_type type;
     const char *name;
     int (*init)(void *interface);
-    int (*main)(int argc, char **argv);
+    int (*main)(void *interface, int argc, char **argv);
     void (*fini)(void *interface);
 };
