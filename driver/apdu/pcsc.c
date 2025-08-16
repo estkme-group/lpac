@@ -99,21 +99,16 @@ static int pcsc_iter_reader(struct pcsc_userdata *userdata,
                             int (*callback)(struct pcsc_userdata *userdata, int index, const char *reader,
                                             void *context),
                             void *context) {
-    LPSTR psReader = userdata->mszReaders;
-    for (int i = 0, n = 0;; i++) {
-        char *p = userdata->mszReaders + i;
-        if (*p == '\0') {
-            const int ret = callback(userdata, n, psReader, context);
-            if (ret < 0)
-                return -1;
-            if (ret > 0)
-                return 0;
-            if (*(p + 1) == '\0') {
-                break;
-            }
-            psReader = p + 1;
-            n++;
-        }
+    int index = 0;
+    LPSTR pReader = userdata->mszReaders;
+    while (*pReader != '\0') {
+        const int ret = callback(userdata, index, pReader, context);
+        if (ret < 0)
+            return -1;
+        if (ret > 0)
+            return 0;
+        pReader += strlen(pReader) + 1;
+        index++;
     }
     return -1;
 }
