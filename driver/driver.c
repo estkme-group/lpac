@@ -70,8 +70,6 @@ static const struct euicc_driver *_driver_http = NULL;
 
 struct euicc_apdu_interface euicc_driver_interface_apdu;
 struct euicc_http_interface euicc_driver_interface_http;
-int (*euicc_driver_main_apdu)(int argc, char **argv) = NULL;
-int (*euicc_driver_main_http)(int argc, char **argv) = NULL;
 
 static const struct euicc_driver *find_driver(const enum euicc_driver_type type, const char *name) {
     for (int i = 0; drivers[i] != NULL; i++) {
@@ -141,9 +139,6 @@ int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name
         return -1;
     }
 
-    euicc_driver_main_apdu = _driver_apdu->main;
-    euicc_driver_main_http = _driver_http->main;
-
     return 0;
 }
 
@@ -154,4 +149,28 @@ void euicc_driver_fini() {
     if (_driver_http != NULL) {
         _driver_http->fini(&euicc_driver_interface_http);
     }
+}
+
+int euicc_driver_main_apdu(const int argc, char **argv) {
+    if (_driver_apdu == NULL) {
+        fprintf(stderr, "No APDU driver found\n");
+        return -1;
+    }
+    if (_driver_apdu->main == NULL) {
+        fprintf(stderr, "The APDU driver '%s' does not support main function\n", _driver_apdu->name);
+        return -1;
+    }
+    return _driver_apdu->main(&euicc_driver_interface_apdu, argc, argv);
+}
+
+int euicc_driver_main_http(const int argc, char **argv) {
+    if (_driver_apdu == NULL) {
+        fprintf(stderr, "No HTTP driver found\n");
+        return -1;
+    }
+    if (_driver_apdu->main == NULL) {
+        fprintf(stderr, "The HTTP driver '%s' does not support main function\n", _driver_apdu->name);
+        return -1;
+    }
+    return _driver_http->main(&euicc_driver_interface_http, argc, argv);
 }

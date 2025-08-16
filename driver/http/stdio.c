@@ -175,7 +175,7 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
     return 0;
 }
 
-static int libhttpinterface_main(int argc, char **argv) { return 0; }
+static int libhttpinterface_main(struct euicc_http_interface *ifstruct, int argc, char **argv) { return 0; }
 
 static void libhttpinterface_fini(struct euicc_http_interface *ifstruct) {}
 
@@ -183,6 +183,6 @@ const struct euicc_driver driver_http_stdio = {
     .type = DRIVER_HTTP,
     .name = "stdio",
     .init = (int (*)(void *))libhttpinterface_init,
-    .main = libhttpinterface_main,
+    .main = (int (*)(void *, int, char **))libhttpinterface_main,
     .fini = (void (*)(void *))libhttpinterface_fini,
 };
