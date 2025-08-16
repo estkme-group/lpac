@@ -27,8 +27,8 @@
 #    include <stringapiset.h>
 #endif
 
-#define ENV_DEBUG_APDU "LIBEUICC_DEBUG_APDU"
-#define ENV_DEBUG_HTTP "LIBEUICC_DEBUG_HTTP"
+#define ENV_DEBUG_APDU ENV_APDU_DRIVER "_DEBUG"
+#define ENV_DEBUG_HTTP ENV_HTTP_DRIVER "_DEBUG"
 
 #define ENV_ISD_R_AID CUSTOM_ENV_NAME(ISD_R_AID)
 #define ISD_R_AID_MAX_LENGTH 16
@@ -106,9 +106,11 @@ static int setup_mss(uint8_t *mss) {
 }
 
 static int setup_logger(struct euicc_logger **logger) {
-    // TODO: needs a new debug env name, e.g: LPAC_APDU_DEBUG, LPAC_HTTP_DEBUG
-    const bool apdu_debug = getenv(ENV_DEBUG_APDU) != NULL;
-    const bool http_debug = getenv(ENV_DEBUG_HTTP) != NULL;
+    set_deprecated_env_name(ENV_DEBUG_APDU, "LIBEUICC_DEBUG_APDU");
+    set_deprecated_env_name(ENV_DEBUG_HTTP, "LIBEUICC_DEBUG_HTTP");
+
+    const bool apdu_debug = getenv_or_default(ENV_DEBUG_APDU, (bool)false);
+    const bool http_debug = getenv_or_default(ENV_DEBUG_HTTP, (bool)false);
     *logger = build_euicc_logger(stderr, apdu_debug, http_debug);
     return 0;
 }
