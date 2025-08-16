@@ -35,40 +35,35 @@ static void enumerate_com_ports(cJSON *data) {
     SP_DEVINFO_DATA devInfoData;
     DWORD i;
 
-    hDevInfo = SetupDiGetClassDevsW(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
+    hDevInfo = SetupDiGetClassDevsA(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
     if (hDevInfo == INVALID_HANDLE_VALUE)
         return;
 
     devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
     for (i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, &devInfoData); i++) {
-        wchar_t portName[256] = {0};
-        wchar_t friendlyName[256] = {0};
-        char portNameMB[256] = {0};
-        char friendlyNameMB[256] = {0};
+        char portName[256] = {0};
+        char friendlyName[256] = {0};
         DWORD size = sizeof(portName);
 
         HKEY hKey = SetupDiOpenDevRegKey(hDevInfo, &devInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
         if (hKey != INVALID_HANDLE_VALUE) {
             DWORD type;
-            if (RegQueryValueExW(hKey, L"PortName", NULL, &type, (LPBYTE)portName, &size) != ERROR_SUCCESS
+            if (RegQueryValueExA(hKey, "PortName", NULL, &type, (LPBYTE)portName, &size) != ERROR_SUCCESS
                 || type != REG_SZ) {
                 portName[0] = L'\0';
             }
         }
 
-        if (!SetupDiGetDeviceRegistryPropertyW(hDevInfo, &devInfoData, SPDRP_FRIENDLYNAME, NULL, (PBYTE)friendlyName,
+        if (!SetupDiGetDeviceRegistryPropertyA(hDevInfo, &devInfoData, SPDRP_FRIENDLYNAME, NULL, (PBYTE)friendlyName,
                                                sizeof(friendlyName), NULL)) {
             friendlyName[0] = L'\0';
         }
 
-        WideCharToMultiByte(CP_UTF8, 0, portName, -1, portNameMB, sizeof(portNameMB), NULL, NULL);
-        WideCharToMultiByte(CP_UTF8, 0, friendlyName, -1, friendlyNameMB, sizeof(friendlyNameMB), NULL, NULL);
-
-        if (starts_with(portNameMB, "COM")) {
+        if (starts_with(portName, "COM")) {
             cJSON *item = cJSON_CreateObject();
             if (item) {
-                cJSON_AddStringToObject(item, "env", portNameMB);
-                cJSON_AddStringToObject(item, "name", friendlyNameMB[0] ? friendlyNameMB : portNameMB);
+                cJSON_AddStringToObject(item, "env", portName);
+                cJSON_AddStringToObject(item, "name", friendlyName[0] ? friendlyName : portName);
                 cJSON_AddItemToArray(data, item);
             } else {
                 cJSON_Delete(item);
@@ -171,16 +166,13 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
 
     logic_channel = 0;
 
-    char dev_ascii[64];
-    snprintf(dev_ascii, sizeof(dev_ascii), "\\\\.\\%s", device);
+    char devname[64];
+    snprintf(devname, sizeof(devname), "\\\\.\\%s", device);
 
-    wchar_t devname[64];
-    mbstowcs(devname, dev_ascii, sizeof(devname) / sizeof(wchar_t));
-
-    hComm = CreateFileW(devname, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    hComm = CreateFile(devname, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
     if (hComm == INVALID_HANDLE_VALUE) {
-        fprintf(stderr, "Failed to open device: %s, error: %lu\n", dev_ascii, GetLastError());
+        fprintf(stderr, "Failed to open device: %s, error: %lu\n", devname, GetLastError());
         return -1;
     }
 
