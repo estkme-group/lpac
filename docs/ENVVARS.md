@@ -27,6 +27,8 @@
 * `LPAC_APDU_MBIM_UIM_SLOT`: specify which UIM slot will be used by MBIM APDU backend. (default: 1, slot number starts from 1)
 * `LPAC_APDU_MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. (boolean)
 * `LPAC_APDU_MBIM_DEVICE`: specify which MBIM device will be used by MBIM APDU backend. (default: `/dev/cdc-wdm0`)
+* `LPAC_APDU_STDIO_TYPE`: specify codec type as `hexify` or `base64` (default: `hexify`).
+* `LPAC_HTTP_STDIO_TYPE`: specify codec type as `hexify` or `base64` (default: `hexify`).
 
 ## Debug
 
