@@ -48,7 +48,7 @@ static int at_expect(char **response, const char *expected) {
     while (1) {
         fgets(buffer, AT_BUFFER_SIZE, fuart);
         buffer[strcspn(buffer, "\r\n")] = 0;
-        if (getenv_or_default(ENV_AT_DEBUG, false))
+        if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
             printf("AT_DEBUG: %s\n", buffer);
         if (strcmp(buffer, "ERROR") == 0) {
             return -1;
