@@ -1,5 +1,7 @@
 #include "stdio.h"
 
+#include "euicc/base64.h"
+
 #include <cjson/cJSON_ex.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
@@ -10,6 +12,29 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#define ENV_STDIO_HTTP_TYPE HTTP_ENV_NAME(STDIO, TYPE)
+
+struct stdio_userdata {
+    int (*encode)(char *encoded, const unsigned char *tx, int tx_len);
+    int (*encode_len)(int input);
+    int (*decode)(uint8_t *rx, const char *encoded);
+    int (*decode_len)(const char *encoded);
+};
+
+static int hexify_encode_len(const int input) {
+    return (input * 2) + 1; // +1 for the null terminator
+}
+
+static int hexify_encode(char *encoded, const unsigned char *tx, const int tx_len) {
+    return euicc_hexutil_bin2hex(encoded, hexify_encode_len(tx_len), tx, tx_len);
+}
+
+static int hexify_decode_len(const char *encoded) { return (int)(strlen(encoded) / 2); }
+
+static int hexify_decode(uint8_t *rx, const char *encoded) {
+    return euicc_hexutil_hex2bin(rx, hexify_decode_len(encoded), encoded);
+}
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
 static int afgets(char **obuf, FILE *fp) {
@@ -49,16 +74,17 @@ err:
     return -1;
 }
 
-static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers) {
-    _cleanup_free_ char *tx_hex = NULL;
+static bool json_request(const struct stdio_userdata *userdata, const char *url, const uint8_t *tx,
+                         const uint32_t tx_len, const char **headers) {
+    _cleanup_free_ char *tx_encoded = NULL;
     _cleanup_cjson_ cJSON *jpayload = NULL;
     cJSON *jheaders = NULL;
 
-    tx_hex = malloc((2 * tx_len) + 1);
-    if (tx_hex == NULL) {
+    tx_encoded = malloc(userdata->encode_len((int)tx_len));
+    if (tx_encoded == NULL) {
         return false;
     }
-    if (euicc_hexutil_bin2hex(tx_hex, (2 * tx_len) + 1, tx, tx_len) < 0) {
+    if (userdata->encode(tx_encoded, tx, (int)tx_len) < 0) {
         return false;
     }
 
@@ -69,7 +95,7 @@ static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, co
     if (cJSON_AddStringOrNullToObject(jpayload, "url", url) == NULL) {
         return false;
     }
-    if (cJSON_AddStringOrNullToObject(jpayload, "tx", tx_hex) == NULL) {
+    if (cJSON_AddStringOrNullToObject(jpayload, "tx", tx_encoded) == NULL) {
         return false;
     }
 
@@ -92,6 +118,8 @@ static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, co
 // {"type":"http","payload":{"rcode":404,"rx":"333435"}}
 static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
                                    uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers) {
+    const struct stdio_userdata *userdata = ctx->http.interface->userdata;
+
     int fret = 0;
     _cleanup_free_ char *rx_json;
     _cleanup_cjson_ cJSON *rx_jroot;
@@ -100,7 +128,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
 
     *rx = NULL;
 
-    json_request(url, tx, tx_len, headers);
+    json_request(userdata, url, tx, tx_len, headers);
     if (afgets(&rx_json, stdin) < 0) {
         return -1;
     }
@@ -145,12 +173,12 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     if (!cJSON_IsString(jtmp)) {
         goto err;
     }
-    *rx_len = strlen(jtmp->valuestring) / 2;
+    *rx_len = userdata->decode_len(jtmp->valuestring);
     *rx = malloc(*rx_len);
     if (!*rx) {
         goto err;
     }
-    if (euicc_hexutil_hex2bin_r(*rx, *rx_len, jtmp->valuestring, strlen(jtmp->valuestring)) < 0) {
+    if (userdata->decode(*rx, jtmp->valuestring) < 0) {
         goto err;
     }
 
@@ -170,7 +198,29 @@ exit:
 static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
     memset(ifstruct, 0, sizeof(struct euicc_http_interface));
 
+    const char *http_type = getenv_or_default(ENV_STDIO_HTTP_TYPE, "hexify");
+
+    struct stdio_userdata *userdata = malloc(sizeof(struct stdio_userdata));
+    memset(userdata, 0, sizeof(struct stdio_userdata));
+
+    if (strcmp(http_type, "hexify") == 0) {
+        userdata->encode = hexify_encode;
+        userdata->encode_len = hexify_encode_len;
+        userdata->decode = hexify_decode;
+        userdata->decode_len = hexify_decode_len;
+    } else if (strcmp(http_type, "base64") == 0) {
+        userdata->encode = euicc_base64_encode;
+        userdata->encode_len = euicc_base64_encode_len;
+        userdata->decode = euicc_base64_decode;
+        userdata->decode_len = euicc_base64_decode_len;
+    } else {
+        fprintf(stderr, "Unknown HTTP type: %s\n", http_type);
+        free(userdata);
+        return -1;
+    }
+
     ifstruct->transmit = http_interface_transmit;
+    ifstruct->userdata = userdata;
 
     return 0;
 }
