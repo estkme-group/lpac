@@ -61,8 +61,8 @@ static void enumerate_com_ports(cJSON *data) {
             friendlyName[0] = L'\0';
         }
 
-        WideCharToMultiByte(CP_ACP, 0, portName, -1, portNameMB, sizeof(portNameMB), NULL, NULL);
-        WideCharToMultiByte(CP_ACP, 0, friendlyName, -1, friendlyNameMB, sizeof(friendlyNameMB), NULL, NULL);
+        WideCharToMultiByte(CP_UTF8, 0, portName, -1, portNameMB, sizeof(portNameMB), NULL, NULL);
+        WideCharToMultiByte(CP_UTF8, 0, friendlyName, -1, friendlyNameMB, sizeof(friendlyNameMB), NULL, NULL);
 
         if (starts_with(portNameMB, "COM")) {
             cJSON *item = cJSON_CreateObject();
