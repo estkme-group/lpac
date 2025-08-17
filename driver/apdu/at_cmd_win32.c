@@ -22,40 +22,37 @@ struct at_userdata {
 };
 
 static int enumerate_com_ports(cJSON *devices) {
-    SP_DEVINFO_DATA devInfoData;
-
     const HDEVINFO hDevInfo = SetupDiGetClassDevsA(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
     if (hDevInfo == INVALID_HANDLE_VALUE)
         return -1;
 
-    devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
-    for (DWORD i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, &devInfoData); i++) {
-        char portName[256] = {0};
-        char friendlyName[256] = {0};
-        DWORD size = sizeof(portName);
+    char portName[256];
+    char friendlyName[256];
+    SP_DEVINFO_DATA devInfoData = {.cbSize = sizeof(SP_DEVINFO_DATA)};
+    for (DWORD index = 0; SetupDiEnumDeviceInfo(hDevInfo, index, &devInfoData); index++) {
+        memset(portName, 0, sizeof(portName));
+        memset(friendlyName, 0, sizeof(friendlyName));
 
         HKEY hKey = SetupDiOpenDevRegKey(hDevInfo, &devInfoData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
         if (hKey != INVALID_HANDLE_VALUE) {
             DWORD type;
+            DWORD size = sizeof(portName);
             const LONG ret = RegQueryValueExA(hKey, "PortName", NULL, &type, (LPBYTE)portName, &size);
             if (ret != ERROR_SUCCESS || type != REG_SZ)
                 portName[0] = '\0';
             RegCloseKey(hKey);
         }
 
-        const WINBOOL hasProperty = SetupDiGetDeviceRegistryPropertyA(hDevInfo, &devInfoData, SPDRP_FRIENDLYNAME, NULL,
-                                                                      (PBYTE)friendlyName, sizeof(friendlyName), NULL);
-        if (!hasProperty)
-            friendlyName[0] = '\0';
+        if (strncmp(portName, "COM", 3) != 0)
+            continue;
 
-        if (strncmp(portName, "COM", 3) == 0) {
-            cJSON *device = cJSON_CreateObject();
-            if (device == NULL)
-                continue;
-            cJSON_AddStringToObject(device, "env", portName);
-            cJSON_AddStringToObject(device, "name", friendlyName[0] ? friendlyName : portName);
-            cJSON_AddItemToArray(devices, device);
-        }
+        const WINBOOL hasFriendlyName = SetupDiGetDeviceRegistryPropertyA(
+            hDevInfo, &devInfoData, SPDRP_FRIENDLYNAME, NULL, (PBYTE)friendlyName, sizeof(friendlyName), NULL);
+
+        cJSON *device = cJSON_CreateObject();
+        cJSON_AddStringToObject(device, "env", portName);
+        cJSON_AddStringToObject(device, "name", hasFriendlyName ? friendlyName : portName);
+        cJSON_AddItemToArray(devices, device);
     }
 
     SetupDiDestroyDeviceInfoList(hDevInfo);
@@ -153,6 +150,7 @@ end:
 
 int at_device_open(struct at_userdata *userdata, const char *device_name) {
     char dev_name[64];
+    // https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#win32-device-namespaces
     snprintf(dev_name, sizeof(dev_name), "\\\\.\\%s", device_name);
 
     userdata->hComm = CreateFile(dev_name,                     // lpFileName
