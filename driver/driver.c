@@ -164,12 +164,12 @@ int euicc_driver_main_apdu(const int argc, char **argv) {
 }
 
 int euicc_driver_main_http(const int argc, char **argv) {
-    if (_driver_apdu == NULL) {
+    if (_driver_http == NULL) {
         fprintf(stderr, "No HTTP driver found\n");
         return -1;
     }
-    if (_driver_apdu->main == NULL) {
-        fprintf(stderr, "The HTTP driver '%s' does not support main function\n", _driver_apdu->name);
+    if (_driver_http->main == NULL) {
+        fprintf(stderr, "The HTTP driver '%s' does not support main function\n", _driver_http->name);
         return -1;
     }
     return _driver_http->main(&euicc_driver_interface_http, argc, argv);
