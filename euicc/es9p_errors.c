@@ -59,7 +59,7 @@ static const struct es9p_error es9p_errors[] = {
 
 const char *es9p_error_message(const char *subject_code, const char *reason_code) {
     struct es9p_error error;
-    for (int i = 0; i < sizeof(es9p_errors) / sizeof(es9p_errors[0]); i++) {
+    for (size_t i = 0; i < sizeof(es9p_errors) / sizeof(es9p_errors[0]); i++) {
         error = es9p_errors[i];
         if (strcmp(error.subject_code, subject_code) == 0 && strcmp(error.reason_code, reason_code) == 0) {
             return error.description;
