@@ -67,38 +67,11 @@ int (*enumerate_serial_device)(cJSON *) = enumerate_com_ports;
 
 char *get_at_default_device(struct at_userdata *userdata) { return userdata->default_device; }
 
-int at_write_command(struct at_userdata *userdata, const char *fmt, ...) {
-    va_list args, args_cloned;
-    va_start(args, fmt);
-    va_copy(args_cloned, args);
-    const int n = vsnprintf(NULL, 0, fmt, args_cloned);
-    va_end(args_cloned);
-
-    char *formatted = calloc(n + 3, 1);
-    if (formatted == NULL) {
-        va_end(args);
-        return -1;
-    }
-
-    vsnprintf(formatted, n + 1, fmt, args);
-    va_end(args);
-
-    formatted[n + 0] = '\r'; // CR
-    formatted[n + 1] = '\n'; // LF
-    formatted[n + 2] = '\0'; // NUL terminator
-
-    int fret = 0;
-
-    if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
-        fprintf(stderr, "AT_DEBUG_TX: %s", formatted);
-
-    if (!WriteFile(userdata->hComm, formatted, n + 2, NULL, NULL)) {
-        fret = -1;
-        fprintf(stderr, "Failed to write to port, error: %lu\n", GetLastError());
-    }
-
-    free(formatted);
-    return fret;
+int at_write_command(struct at_userdata *userdata, const char *command) {
+    if (WriteFile(userdata->hComm, command, strlen(command), NULL, NULL))
+        return 0;
+    fprintf(stderr, "Failed to write to port, error: %lu\n", GetLastError());
+    return -1;
 }
 
 int at_expect(struct at_userdata *userdata, char **response, const char *expected) {

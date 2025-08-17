@@ -14,7 +14,7 @@ extern int (*enumerate_serial_device)(cJSON *);
 
 char *get_at_default_device(struct at_userdata *userdata);
 
-int at_write_command(struct at_userdata *userdata, const char *fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
+int at_write_command(struct at_userdata *userdata, const char *command);
 
 int at_expect(struct at_userdata *userdata, char **response, const char *expected);
 

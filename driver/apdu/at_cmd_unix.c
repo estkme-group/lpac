@@ -46,29 +46,7 @@ int (*enumerate_serial_device)(cJSON *) = NULL;
 
 char *get_at_default_device(struct at_userdata *userdata) { return userdata->default_device; }
 
-int at_write_command(struct at_userdata *userdata, const char *fmt, ...) {
-    va_list args, args_cloned;
-    va_start(args, fmt);
-    va_copy(args_cloned, args);
-    const int n = vsnprintf(NULL, 0, fmt, args_cloned);
-    va_end(args_cloned);
-    char *formatted = calloc(n + 2 /* CR+LF */ + 1, 1);
-    if (formatted == NULL)
-        return -1;
-    vsnprintf(formatted, n + 1, fmt, args);
-    va_end(args);
-
-    formatted[n + 0] = '\r'; // CR
-    formatted[n + 1] = '\n'; // LF
-    formatted[n + 2] = '\0'; // NUL terminator
-
-    if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
-        fprintf(stderr, "AT_DEBUG_TX: %s\n", formatted);
-
-    const int ret = fputs(formatted, userdata->fuart);
-    free(formatted);
-    return ret;
-}
+int at_write_command(struct at_userdata *userdata, const char *command) { return fputs(command, userdata->fuart); }
 
 int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
     FILE *fuart = userdata->fuart;

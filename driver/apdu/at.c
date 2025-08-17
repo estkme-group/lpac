@@ -6,9 +6,39 @@
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+static int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+
+static int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
+    va_list args, args_length;
+    va_start(args, fmt);
+
+    va_copy(args_length, args);
+    const int n = vsnprintf(NULL, 0, fmt, args_length);
+    va_end(args_length);
+
+    char *formatted = calloc(n + 2 /* CR+LF */ + 1, 1);
+    if (formatted == NULL) {
+        va_end(args);
+        return -1;
+    }
+
+    vsnprintf(formatted, n + 1, fmt, args);
+    va_end(args);
+
+    formatted[n + 0] = '\r'; // CR
+    formatted[n + 1] = '\n'; // LF
+    formatted[n + 2] = '\0'; // NUL
+
+    if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
+        fprintf(stderr, "AT_DEBUG_TX: %s", formatted);
+
+    return at_write_command(userdata, formatted);
+}
 
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
@@ -24,14 +54,14 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     // TS 127 007, 8.46 Close logical channel +CCHC
     static const char *commands[] = {"AT+CCHO", "AT+CCHC", "AT+CGLA", NULL};
 
-    at_write_command(userdata, "AT");
+    at_emit_command(userdata, "AT");
     if (at_expect(userdata, NULL, NULL) != 0) {
         fprintf(stderr, "Device not responding to AT commands\n");
         return false;
     }
 
     for (int index = 0; commands[index] != NULL; index++) {
-        at_write_command(userdata, "%s=?", commands[index]);
+        at_emit_command(userdata, "%s=?", commands[index]);
         if (at_expect(userdata, NULL, NULL) == 0)
             continue;
         fprintf(stderr, "Device missing %s support\n", commands[index]);
@@ -64,7 +94,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     euicc_hexutil_bin2hex(encoded, tx_len * 2 + 1, tx, tx_len);
 
     // AT+CGLA=<channel>,<length>,<command>
-    at_write_command(userdata, "AT+CGLA=%d,%u,\"%s\"", logic_channel, tx_len * 2, encoded);
+    at_emit_command(userdata, "AT+CGLA=%d,%u,\"%s\"", logic_channel, tx_len * 2, encoded);
     // +CGLA: <length>,<response>
     if (at_expect(userdata, &response, "+CGLA: ") != 0 || response == NULL)
         goto err;
@@ -104,7 +134,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
 
     for (int channel = 1; channel <= 20; channel++) {
-        at_write_command(userdata, "AT+CCHC=%d", channel);
+        at_emit_command(userdata, "AT+CCHC=%d", channel);
         at_expect(userdata, NULL, NULL);
     }
 
@@ -112,7 +142,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     euicc_hexutil_bin2hex(aid_hex, aid_len * 2 + 1, aid, aid_len);
 
     // AT+CCHO: Open logical channel
-    at_write_command(userdata, "AT+CCHO=\"%s\"", aid_hex);
+    at_emit_command(userdata, "AT+CCHO=\"%s\"", aid_hex);
     // +CCHO: <channel>
     _cleanup_free_ char *response = NULL;
     if (at_expect(userdata, &response, "+CCHO: ") != 0 || response == NULL)
@@ -123,7 +153,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint8_t channel) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
 
-    at_write_command(userdata, "AT+CCHC=%d", channel);
+    at_emit_command(userdata, "AT+CCHC=%d", channel);
     at_expect(userdata, NULL, NULL);
 }
 
