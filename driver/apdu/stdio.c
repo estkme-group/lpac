@@ -230,14 +230,12 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-static int libapduinterface_main(const struct euicc_apdu_interface *ifstruct, int argc, char **argv) { return 0; }
-
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {}
 
 const struct euicc_driver driver_apdu_stdio = {
     .type = DRIVER_APDU,
     .name = "stdio",
     .init = (int (*)(void *))libapduinterface_init,
-    .main = (int (*)(void *, int, char **))libapduinterface_main,
+    .main = NULL,
     .fini = (void (*)(void *))libapduinterface_fini,
 };

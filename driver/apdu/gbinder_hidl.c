@@ -291,14 +291,12 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-static int libapduinterface_main(int argc, char **argv) { return 0; }
-
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {}
 
 const struct euicc_driver driver_apdu_gbinder_hidl = {
     .type = DRIVER_APDU,
     .name = "gbinder_hidl",
     .init = (int (*)(void *))libapduinterface_init,
-    .main = libapduinterface_main,
+    .main = NULL,
     .fini = (void (*)(void *))libapduinterface_fini,
 };

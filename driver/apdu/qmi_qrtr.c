@@ -101,8 +101,6 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-static int libapduinterface_main(int argc, char **argv) { return 0; }
-
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     struct qmi_data *qmi_priv = ifstruct->userdata;
 
@@ -115,6 +113,6 @@ const struct euicc_driver driver_apdu_qmi_qrtr = {
     .type = DRIVER_APDU,
     .name = "qmi_qrtr",
     .init = (int (*)(void *))libapduinterface_init,
-    .main = libapduinterface_main,
+    .main = NULL,
     .fini = (void (*)(void *))libapduinterface_fini,
 };
