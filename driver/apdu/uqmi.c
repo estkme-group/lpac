@@ -26,23 +26,20 @@ struct uqmi_userdata {
     char *device_path;
 };
 
-static int merge_argv(char *required_argv[], char *user_argv[], char **merged_argv[]) {
-    int required_argc = 0, user_argc = 0;
-
+static bool merge_argv(char *required_argv[], char *user_argv[], char **merged_argv[]) {
+    size_t required_argc = 0;
+    size_t user_argc = 0;
     while (required_argv[required_argc] != NULL)
         required_argc++;
     while (user_argv[user_argc] != NULL)
         user_argc++;
-
     *merged_argv = calloc(required_argc + user_argc + 1, sizeof(char *));
     if (*merged_argv == NULL)
-        return -1;
-
-    for (int i = 0; i < required_argc; i++)
-        (*merged_argv)[i] = required_argv[i];
-    for (int i = 0; i < user_argc; i++)
-        (*merged_argv)[required_argc + i] = user_argv[i];
-    return 0;
+        return false;
+    memcpy(*merged_argv, required_argv, required_argc);
+    memcpy(*merged_argv + required_argc, required_argv, user_argc);
+    (*merged_argv)[required_argc + user_argc + 1] = NULL;
+    return true;
 }
 
 static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf, char *argv[]) {
