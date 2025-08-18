@@ -16,9 +16,9 @@
 #include <unistd.h>
 
 #define ENV_UQMI_PROGRAM APDU_ENV_NAME(UQMI, PROGRAM)
-#define ENV_UQMI_DEBUG APDU_ENV_NAME(UQMI, DEBUG)
-#define ENV_UQMI_DEVICE APDU_ENV_NAME(UQMI, DEVICE)
-#define ENV_UQMI_SLOT APDU_ENV_NAME(UQMI, SLOT)
+#define ENV_UQMI_DEBUG APDU_ENV_NAME(QMI, DEBUG)
+#define ENV_QMI_DEVICE APDU_ENV_NAME(QMI, DEVICE)
+#define ENV_QMI_UIM_SLOT APDU_ENV_NAME(QMI, UIM_SLOT)
 
 struct uqmi_userdata {
     char *program;
@@ -243,8 +243,8 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
 
     struct uqmi_userdata *userdata = malloc(sizeof(struct uqmi_userdata));
     userdata->program = (char *)getenv_or_default(ENV_UQMI_PROGRAM, "uqmi");
-    userdata->device_path = getenv(ENV_UQMI_DEVICE);
-    userdata->uim_slot = (char *)getenv_or_default(ENV_UQMI_SLOT, "1");
+    userdata->device_path = getenv(ENV_QMI_DEVICE);
+    userdata->uim_slot = (char *)getenv_or_default(ENV_QMI_UIM_SLOT, "1");
     userdata->client_id = NULL;
 
     ifstruct->connect = apdu_interface_connect;
