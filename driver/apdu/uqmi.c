@@ -2,12 +2,10 @@
 /* Copyright (c) 2024 David Bauer <david.bauer@uniberg.com> */
 #include "uqmi.h"
 
-#include <cjson/cJSON_ex.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
-#include <inttypes.h>
 #include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
