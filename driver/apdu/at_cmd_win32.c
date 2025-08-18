@@ -96,7 +96,7 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
                           sizeof(userdata->at_read_buffer) - *at_read_buffer_len_ptr, &bytes_read, NULL)) {
                 fprintf(stderr, "ReadFile error: %lu\n", GetLastError());
                 result = -1;
-                goto end; // FIX: 错误路径也需要跳转到end进行清理
+                goto end;
             }
 
             if (bytes_read == 0) {
@@ -196,9 +196,10 @@ int at_device_close(struct at_userdata *userdata) {
 int at_setup_userdata(struct at_userdata **userdata) {
     if (userdata == NULL)
         return -1;
-    *userdata = calloc(1, sizeof(struct at_userdata)); // 使用 calloc 初始化为0
+    *userdata = malloc(sizeof(struct at_userdata));
     if (*userdata == NULL)
         return -1;
+    memset(userdata, 0, sizeof(struct at_userdata));
     (*userdata)->default_device = "COM3";
     (*userdata)->hComm = INVALID_HANDLE_VALUE;
     (*userdata)->at_cmd_buffer = calloc(AT_BUFFER_SIZE, 1);
