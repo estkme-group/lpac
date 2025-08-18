@@ -256,7 +256,7 @@ int es9p_initiate_authentication_r(struct euicc_ctx *ctx, char **transaction_id,
                                    struct es10b_authenticate_server_param *resp, const char *server_address,
                                    const char *b64_euicc_challenge, const char *b64_euicc_info_1) {
     const char *ikey[] = {"smdpAddress", "euiccChallenge", "euiccInfo1", NULL};
-    const char *idata[] = {ctx->http.server_address, b64_euicc_challenge, b64_euicc_info_1, NULL};
+    const char *idata[] = {server_address, b64_euicc_challenge, b64_euicc_info_1, NULL};
     const char *okey[] = {"transactionId",       "serverSigned1",     "serverSignature1",
                           "euiccCiPKIdToBeUsed", "serverCertificate", NULL};
     const char oobj[] = {0, 0, 0, 0, 0};
@@ -267,8 +267,8 @@ int es9p_initiate_authentication_r(struct euicc_ctx *ctx, char **transaction_id,
                      (void **)&resp->b64_serverCertificate,
                      NULL};
 
-    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/initiateAuthentication", ikey, idata, okey,
-                        oobj, optr)) {
+    if (es9p_trans_json(ctx, server_address, "/gsma/rsp2/es9plus/initiateAuthentication", ikey, idata, okey, oobj,
+                        optr)) {
         return -1;
     }
 
@@ -289,8 +289,8 @@ int es9p_get_bound_profile_package_r(struct euicc_ctx *ctx, char **b64_bound_pro
     const char oobj[] = {0};
     void **optr[] = {(void **)b64_bound_profile_package, NULL};
 
-    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/getBoundProfilePackage", ikey, idata, okey,
-                        oobj, optr)) {
+    if (es9p_trans_json(ctx, server_address, "/gsma/rsp2/es9plus/getBoundProfilePackage", ikey, idata, okey, oobj,
+                        optr)) {
         return -1;
     }
 
@@ -309,8 +309,7 @@ int es9p_authenticate_client_r(struct euicc_ctx *ctx, struct es10b_prepare_downl
     void **optr[] = {(void **)&resp->b64_profileMetadata, (void **)&resp->b64_smdpSigned2,
                      (void **)&resp->b64_smdpSignature2, (void **)&resp->b64_smdpCertificate, NULL};
 
-    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj,
-                        optr)) {
+    if (es9p_trans_json(ctx, server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr)) {
         return -1;
     }
 
@@ -327,8 +326,7 @@ int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, con
     const char *ikey[] = {"transactionId", "cancelSessionResponse", NULL};
     const char *idata[] = {transaction_id, b64_cancel_session_response, NULL};
 
-    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/cancelSession", ikey, idata, NULL, NULL,
-                        NULL)) {
+    if (es9p_trans_json(ctx, server_address, "/gsma/rsp2/es9plus/cancelSession", ikey, idata, NULL, NULL, NULL)) {
         return -1;
     }
 
@@ -346,8 +344,7 @@ int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const c
     const char oobj[] = {1};
     void **optr[] = {(void **)&j_eventEntries, NULL};
 
-    if (es9p_trans_json(ctx, ctx->http.server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj,
-                        optr)) {
+    if (es9p_trans_json(ctx, server_address, "/gsma/rsp2/es9plus/authenticateClient", ikey, idata, okey, oobj, optr)) {
         return -1;
     }
 

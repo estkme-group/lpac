@@ -125,13 +125,13 @@ int euicc_hexutil_bin2gsmbcd(char *output, uint32_t output_len, const uint8_t *b
     }
 
     length = strlen(output);
-    for (int i = 0; i < length - 1; i += 2) {
+    for (size_t i = 0; i < length - 1; i += 2) {
         char temp = output[i];
         output[i] = output[i + 1];
         output[i + 1] = temp;
     }
 
-    for (int i = length - 1; i >= 0; i--) {
+    for (uint32_t i = length - 1; i > 0; i--) {
         if (output[i] != 'f') {
             break;
         }
