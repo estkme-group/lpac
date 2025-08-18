@@ -203,13 +203,23 @@ int at_setup_userdata(struct at_userdata **userdata) {
     *userdata = malloc(sizeof(struct at_userdata));
     if (*userdata == NULL)
         return -1;
-    memset(userdata, 0, sizeof(struct at_userdata));
+    memset(*userdata, 0, sizeof(struct at_userdata));
     (*userdata)->default_device = "COM3";
     (*userdata)->hComm = INVALID_HANDLE_VALUE;
     (*userdata)->at_cmd_buffer = calloc(AT_BUFFER_SIZE, 1);
+    if ((*userdata)->at_cmd_buffer == NULL)
+        goto err;
     (*userdata)->at_read_buffer_len = 0;
-    (*userdata)->channels = calloc(21, sizeof(char *));
+    (*userdata)->channels = calloc(AT_MAX_LOGICAL_CHANNELS, sizeof(char *));
+    if ((*userdata)->channels == NULL)
+        goto err;
+
     return 0;
+err:
+    if ((*userdata)->at_cmd_buffer != NULL)
+        free((*userdata)->at_cmd_buffer);
+    free(*userdata);
+    return -1;
 }
 
 void at_cleanup_userdata(struct at_userdata **userdata) {
