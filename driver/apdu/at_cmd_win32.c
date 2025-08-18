@@ -19,6 +19,8 @@ struct at_userdata {
     char at_read_buffer[AT_READ_BUFFER_SIZE];
     DWORD at_read_buffer_len;
     char *default_device;
+
+    char **channels;
 };
 
 static int enumerate_com_ports(cJSON *devices) {
@@ -63,6 +65,8 @@ static int enumerate_com_ports(cJSON *devices) {
 int (*enumerate_serial_device)(cJSON *) = enumerate_com_ports;
 
 char *get_at_default_device(struct at_userdata *userdata) { return userdata->default_device; }
+
+char **at_channels(struct at_userdata *userdata) { return userdata->channels; }
 
 int at_write_command(struct at_userdata *userdata, const char *command) {
     if (WriteFile(userdata->hComm, command, strlen(command), NULL, NULL))
@@ -204,6 +208,7 @@ int at_setup_userdata(struct at_userdata **userdata) {
     (*userdata)->hComm = INVALID_HANDLE_VALUE;
     (*userdata)->at_cmd_buffer = calloc(AT_BUFFER_SIZE, 1);
     (*userdata)->at_read_buffer_len = 0;
+    (*userdata)->channels = calloc(21, sizeof(char *));
     return 0;
 }
 
@@ -211,6 +216,9 @@ void at_cleanup_userdata(struct at_userdata **userdata) {
     if (userdata == NULL || *userdata == NULL)
         return;
     at_device_close(*userdata);
+    for (int index = 0; index < 20; index++)
+        free((*userdata)->channels[index]);
+    free((*userdata)->channels);
     free(*userdata);
     *userdata = NULL;
 }

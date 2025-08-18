@@ -12,6 +12,8 @@ struct at_userdata {
     char *default_device;
     FILE *fuart;
     char *buffer;
+
+    char **channels;
 };
 
 static int enumerate_serial_device_for_linux(cJSON *devices) {
@@ -45,6 +47,8 @@ int (*enumerate_serial_device)(cJSON *) = NULL;
 #endif
 
 char *get_at_default_device(struct at_userdata *userdata) { return userdata->default_device; }
+
+char **at_channels(struct at_userdata *userdata) { return userdata->channels; }
 
 int at_write_command(struct at_userdata *userdata, const char *command) { return fputs(command, userdata->fuart); }
 
@@ -121,6 +125,7 @@ int at_setup_userdata(struct at_userdata **userdata) {
     (*userdata)->default_device = "/dev/ttyUSB0";
     (*userdata)->fuart = NULL;
     (*userdata)->buffer = NULL;
+    (*userdata)->channels = calloc(21, sizeof(char *));
     return 0;
 }
 
@@ -128,6 +133,9 @@ void at_cleanup_userdata(struct at_userdata **userdata) {
     if (userdata == NULL || *userdata == NULL)
         return;
     at_device_close(*userdata);
+    for (int index = 0; index < 20; index++)
+        free((*userdata)->channels[index]);
+    free((*userdata)->channels);
     free(*userdata);
     *userdata = NULL;
 }

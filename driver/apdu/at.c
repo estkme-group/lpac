@@ -11,6 +11,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+static char *at_channel_get(struct at_userdata *userdata, const int index) {
+    if (index < 0 || index > 20)
+        return NULL;
+    char **channels = at_channels(userdata);
+    return channels[index];
+}
+
+static int at_channel_set(struct at_userdata *userdata, const int index, const char *identifier) {
+    if (index < 0 || index > 20)
+        return -1;
+    char **channels = at_channels(userdata);
+    channels[index] = strdup(identifier);
+    return 0;
+}
+
+static int at_channel_next_id(struct at_userdata *userdata) {
+    int index = 1;
+    char **channels = at_channels(userdata);
+    while (channels[index] != NULL)
+        index++;
+    return index + 1;
+}
+
 static int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
 static int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
@@ -79,7 +102,7 @@ static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
 static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
                                    const uint32_t tx_len) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
-    const int logic_channel = ctx->apdu._internal.logic_channel;
+    const char *logic_channel = at_channel_get(userdata, ctx->apdu._internal.logic_channel);
 
     int fret = 0;
     char *response = NULL;
@@ -94,7 +117,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     euicc_hexutil_bin2hex(encoded, tx_len * 2 + 1, tx, tx_len);
 
     // AT+CGLA=<channel>,<length>,<command>
-    at_emit_command(userdata, "AT+CGLA=%d,%u,\"%s\"", logic_channel, tx_len * 2, encoded);
+    at_emit_command(userdata, "AT+CGLA=%s,%u,\"%s\"", logic_channel, tx_len * 2, encoded);
     // +CGLA: <length>,<response>
     if (at_expect(userdata, &response, "+CGLA: ") != 0 || response == NULL)
         goto err;
@@ -132,9 +155,12 @@ exit:
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, const uint8_t aid_len) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
+    char **channels = at_channels(userdata);
 
-    for (int channel = 1; channel <= 20; channel++) {
-        at_emit_command(userdata, "AT+CCHC=%d", channel);
+    for (int index = 0; index < 20; index++) {
+        if (channels[index] == NULL)
+            continue;
+        at_emit_command(userdata, "AT+CCHC=%s", channels[index]);
         at_expect(userdata, NULL, NULL);
     }
 
@@ -147,14 +173,25 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     _cleanup_free_ char *response = NULL;
     if (at_expect(userdata, &response, "+CCHO: ") != 0 || response == NULL)
         return -1;
-    return (int)strtol(response, NULL, 10);
+
+    const int channel_id = at_channel_next_id(userdata);
+    if (at_channel_set(userdata, channel_id, response) != 0) {
+        fprintf(stderr, "Failed to register channel %d with identifier '%s'\n", channel_id, response);
+        return -1;
+    }
+    return channel_id;
 }
 
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint8_t channel) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
 
     at_emit_command(userdata, "AT+CCHC=%d", channel);
-    at_expect(userdata, NULL, NULL);
+    if (at_expect(userdata, NULL, NULL) != 0) {
+        fprintf(stderr, "Failed to close logical channel %d\n", channel);
+        return;
+    }
+
+    at_channel_set(userdata, channel, NULL);
 }
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
