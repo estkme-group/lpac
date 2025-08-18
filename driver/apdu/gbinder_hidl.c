@@ -77,8 +77,8 @@ struct gbinder_userdata {
     struct icc_io_result lastIccIoResult;
 };
 
-static GBinderLocalReply *radio_response_transact(GBinderLocalObject *obj, GBinderRemoteRequest *req, const guint code,
-                                                  guint flags, int *status, void *user_data) {
+static GBinderLocalReply *gbinder_radio_response_transact(GBinderLocalObject *obj, GBinderRemoteRequest *req,
+                                                          const guint code, guint flags, int *status, void *user_data) {
     struct gbinder_userdata *userdata = user_data;
 
     GBinderReader reader;
@@ -114,7 +114,7 @@ out:
     return NULL;
 }
 
-static void cleanup_channel(const struct gbinder_userdata *userdata, const int id) {
+static void gbinder_cleanup_channel(const struct gbinder_userdata *userdata, const int id) {
     GBinderLocalRequest *req = gbinder_client_new_request(userdata->client);
     GBinderWriter writer;
     gbinder_local_request_init_writer(req, &writer);
@@ -125,16 +125,16 @@ static void cleanup_channel(const struct gbinder_userdata *userdata, const int i
     g_main_loop_run(userdata->binder_loop);
 }
 
-static void cleanup(struct gbinder_userdata *userdata) {
+static void gbinder_cleanup(struct gbinder_userdata *userdata) {
     if (userdata->lastChannelId == -1)
         return;
     fprintf(stderr, "Cleaning up leaked APDU channel %d\n", userdata->lastChannelId);
-    cleanup_channel(userdata, userdata->lastChannelId);
+    gbinder_cleanup_channel(userdata, userdata->lastChannelId);
     userdata->lastChannelId = -1;
 }
 
-static int try_open_slot(struct gbinder_userdata *userdata, const int slotId, const uint8_t *aid,
-                         const uint32_t aid_len) {
+static int gbinder_try_open_slot(struct gbinder_userdata *userdata, const int slotId, const uint8_t *aid,
+                                 const uint32_t aid_len) {
     // First, try to connect to the HIDL service for this slot
     char fqname[255];
     snprintf(fqname, 255, "%s/slot%d", HIDL_SERVICE_IFACE, slotId);
@@ -155,7 +155,7 @@ static int try_open_slot(struct gbinder_userdata *userdata, const int slotId, co
     }
 
     userdata->response_callback = gbinder_servicemanager_new_local_object(userdata->sm, HIDL_SERVICE_IFACE_CALLBACK,
-                                                                          radio_response_transact, userdata);
+                                                                          gbinder_radio_response_transact, userdata);
 
     GBinderLocalRequest *req = gbinder_client_new_request(userdata->client);
     GBinderWriter writer;
@@ -203,7 +203,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) { return 0; }
 static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
     struct gbinder_userdata *userdata = ctx->apdu.interface->userdata;
 
-    cleanup(userdata);
+    gbinder_cleanup(userdata);
 }
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, const uint8_t aid_len) {
@@ -212,9 +212,9 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     // We only start to use gbinder connection here, because only now can we detect whether
     // a given slot is a valid eSIM slot. This way we can automatically fall back in the case
     // where a device has only one eSIM -- we don't want to force the user to choose in this case.
-    int res = try_open_slot(userdata, 1, aid, aid_len);
+    int res = gbinder_try_open_slot(userdata, 1, aid, aid_len);
     if (res < 0)
-        res = try_open_slot(userdata, 2, aid, aid_len);
+        res = gbinder_try_open_slot(userdata, 2, aid, aid_len);
     if (res >= 0)
         userdata->lastChannelId = res;
     return res;
@@ -223,7 +223,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
     struct gbinder_userdata *userdata = ctx->apdu.interface->userdata;
 
-    cleanup_channel(userdata, channel);
+    gbinder_cleanup_channel(userdata, channel);
     if (userdata->lastChannelId == channel)
         userdata->lastChannelId = -1;
 
@@ -321,7 +321,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     struct gbinder_userdata *userdata = ifstruct->userdata;
 
-    cleanup(userdata);
+    gbinder_cleanup(userdata);
 }
 
 const struct euicc_driver driver_apdu_gbinder_hidl = {
