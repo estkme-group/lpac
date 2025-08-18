@@ -26,19 +26,12 @@ function setup-mingw-woarm64() {
     echo "$SAVED_DIR/bin" >> "$GITHUB_PATH"
 }
 
-function setup-gbinder() {
-    apt install libgbinder-dev
-}
-
 case "${1:-}" in
 woa-mingw)
     setup-mingw-woarm64
     ;;
 make-qmi)
     exec "$SCRIPT_DIR/setup-qmi.sh"
-    ;;
-make-gbinder)
-    setup-gbinder
     ;;
 mingw)
     apt install -y gcc-mingw-w64 g++-mingw-w64

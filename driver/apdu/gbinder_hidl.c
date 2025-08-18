@@ -171,7 +171,7 @@ static int try_open_slot(struct gbinder_userdata *userdata, const int slotId, co
     }
 
     // Now, try to open the AID
-    char *aid_hex = calloc(aid_len * 2 + 1, 1);
+    _cleanup_free_ char *aid_hex = calloc(aid_len * 2 + 1, 1);
     euicc_hexutil_bin2hex(aid_hex, aid_len * 2 + 1, aid, aid_len);
 
     req = gbinder_client_new_request(userdata->client);
