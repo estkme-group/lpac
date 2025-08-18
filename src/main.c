@@ -101,7 +101,7 @@ static int setup_mss(uint8_t *mss) {
     return 0;
 }
 
-int main_init_euicc() {
+int main_init_euicc(void) {
     if (setup_aid(&euicc_ctx.aid, &euicc_ctx.aid_len)) {
         jprint_error("euicc_init", "invalid custom ISD-R applet id given");
         return -1;
@@ -118,7 +118,7 @@ int main_init_euicc() {
     return 0;
 }
 
-void main_fini_euicc() {
+void main_fini_euicc(void) {
     if (!euicc_ctx_inited) {
         return;
     }
