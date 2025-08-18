@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define ENV_UQMI_PROGRAM APDU_ENV_NAME(UQMI, PROGRAM)
@@ -58,10 +59,7 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
         fprintf(stderr, "\n");
     }
 
-    pid_t pid;
-    posix_spawn_file_actions_t file_actions;
-    int fret = 0;
-
+    _cleanup_(posix_spawn_file_actions_destroy) posix_spawn_file_actions_t file_actions;
     int pipefd[2];
     pipe(pipefd);
 
@@ -69,12 +67,25 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
     posix_spawn_file_actions_adddup2(&file_actions, pipefd[1], STDOUT_FILENO);
     posix_spawn_file_actions_addclose(&file_actions, pipefd[0]);
 
-    if (posix_spawnp(&pid, userdata->program, &file_actions, NULL, merged_argv, NULL) != 0)
-        goto err;
-    if (waitpid(pid, &fret, 0) != 0)
-        goto exit;
-    if (!WIFEXITED(fret) || buf == NULL)
-        goto exit;
+#ifdef HAVE_PIDFD
+    int pidfd;
+    siginfo_t info;
+    if (pidfd_spawnp(&pidfd, userdata->program, &file_actions, NULL, merged_argv, NULL) != 0)
+        return -1;
+    if (waitid(P_PIDFD, pidfd, &info, WEXITED) != 0)
+        return 0;
+    if (!WIFEXITED(info.si_status) || buf == NULL)
+        return 0;
+#else
+    pid_t pid;
+    int pstatus = 0;
+    if (pidfd_spawnp(&pid, userdata->program, &file_actions, NULL, merged_argv, NULL) != 0)
+        return -1;
+    if (waitpid(pid, &pstatus, 0) != 0)
+        return 0;
+    if (!WIFEXITED(pstatus) || buf == NULL)
+        return 0;
+#endif
 
     char buffer[1024];
     ssize_t bytes_read = 0;
@@ -91,12 +102,7 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
     if (getenv_or_default(ENV_UQMI_DEBUG, (bool)false))
         fprintf(stderr, "UQMI_DEBUG_RX: %s\n", *buf);
 
-    goto exit;
-err:
-    fret = -1;
-exit:
-    posix_spawn_file_actions_destroy(&file_actions);
-    return fret;
+    return 0;
 }
 
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
