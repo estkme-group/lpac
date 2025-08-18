@@ -64,7 +64,6 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
     pid_t pid;
     posix_spawn_file_actions_t file_actions;
     int fret = 0;
-    int status;
 
     int pipefd[2];
     pipe(pipefd);
@@ -75,31 +74,31 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
 
     if (posix_spawnp(&pid, userdata->program, &file_actions, NULL, merged_argv, NULL) != 0)
         goto err;
-    if (waitpid(pid, &status, 0) == -1)
-        goto err;
+    if (waitpid(pid, &fret, 0) != 0)
+        goto exit;
+    if (!WIFEXITED(fret) || buf == NULL)
+        goto exit;
 
-    if (WIFEXITED(status) && buf != NULL) {
-        char buffer[1024];
-        ssize_t bytes_read = 0;
-        ssize_t bytes_written = 0;
-        *buf = malloc(bytes_read);
-        while (true) {
-            bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1);
-            if (bytes_read == -1)
-                break;
-            *buf = realloc(*buf, bytes_written + bytes_read);
-            memcpy(*buf + bytes_written, buffer, bytes_read);
-            bytes_written += bytes_read;
-        }
-        if (getenv_or_default(ENV_UQMI_DEBUG, (bool)false))
-            fprintf(stderr, "UQMI_DEBUG_RX: %s\n", *buf);
+    char buffer[1024];
+    ssize_t bytes_read = 0;
+    ssize_t bytes_written = 0;
+    *buf = malloc(bytes_read);
+    while (true) {
+        bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1);
+        if (bytes_read == -1)
+            break;
+        *buf = realloc(*buf, bytes_written + bytes_read);
+        memcpy(*buf + bytes_written, buffer, bytes_read);
+        bytes_written += bytes_read;
     }
+    if (getenv_or_default(ENV_UQMI_DEBUG, (bool)false))
+        fprintf(stderr, "UQMI_DEBUG_RX: %s\n", *buf);
 
     goto exit;
 err:
     fret = -1;
-    posix_spawn_file_actions_destroy(&file_actions);
 exit:
+    posix_spawn_file_actions_destroy(&file_actions);
     return fret;
 }
 
