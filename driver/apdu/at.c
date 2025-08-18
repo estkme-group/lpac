@@ -12,14 +12,14 @@
 #include <string.h>
 
 static char *at_channel_get(struct at_userdata *userdata, const int index) {
-    if (index < 0 || index > AT_MAX_LOGICAL_CHANNELS)
+    if (index < 0 || index > (AT_MAX_LOGICAL_CHANNELS - 1))
         return NULL;
     char **channels = at_channels(userdata);
     return channels[index];
 }
 
 static int at_channel_set(struct at_userdata *userdata, const int index, const char *identifier) {
-    if (index < 0 || index > AT_MAX_LOGICAL_CHANNELS)
+    if (index < 0 || index > (AT_MAX_LOGICAL_CHANNELS - 1))
         return -1;
     char **channels = at_channels(userdata);
     channels[index] = strdup(identifier);
@@ -27,11 +27,11 @@ static int at_channel_set(struct at_userdata *userdata, const int index, const c
 }
 
 static int at_channel_next_id(struct at_userdata *userdata) {
-    int index = 1;
+    int index = 0;
     char **channels = at_channels(userdata);
     while (channels[index] != NULL)
         index++;
-    return index + 1;
+    return index;
 }
 
 static int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
@@ -157,7 +157,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
     char **channels = at_channels(userdata);
 
-    for (int index = 0; index < 20; index++) {
+    for (int index = 0; index < AT_MAX_LOGICAL_CHANNELS; index++) {
         if (channels[index] == NULL)
             continue;
         at_emit_command(userdata, "AT+CCHC=%s", channels[index]);

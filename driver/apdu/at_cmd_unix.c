@@ -125,7 +125,7 @@ int at_setup_userdata(struct at_userdata **userdata) {
     (*userdata)->default_device = "/dev/ttyUSB0";
     (*userdata)->fuart = NULL;
     (*userdata)->buffer = NULL;
-    (*userdata)->channels = calloc(21, sizeof(char *));
+    (*userdata)->channels = calloc(AT_MAX_LOGICAL_CHANNELS, sizeof(char *));
     if ((*userdata)->channels == NULL)
         return -1;
     return 0;
