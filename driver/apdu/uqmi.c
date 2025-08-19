@@ -16,7 +16,7 @@
 #include <unistd.h>
 
 #define ENV_UQMI_PROGRAM APDU_ENV_NAME(UQMI, PROGRAM)
-#define ENV_UQMI_DEBUG APDU_ENV_NAME(QMI, DEBUG)
+#define ENV_QMI_DEBUG APDU_ENV_NAME(QMI, DEBUG)
 #define ENV_QMI_DEVICE APDU_ENV_NAME(QMI, DEVICE)
 #define ENV_QMI_UIM_SLOT APDU_ENV_NAME(QMI, UIM_SLOT)
 
@@ -52,7 +52,7 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
                argv,          // user provided arguments
                &merged_argv); // merged arguments
 
-    if (getenv_or_default(ENV_UQMI_DEBUG, (bool)false)) {
+    if (getenv_or_default(ENV_QMI_DEBUG, (bool)false)) {
         fprintf(stderr, "UQMI_DEBUG_TX:");
         for (int i = 0; merged_argv[i] != NULL; ++i)
             fprintf(stderr, " %s", merged_argv[i]);
@@ -99,7 +99,7 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
         memcpy(*buf + bytes_written, buffer, bytes_read);
         bytes_written += bytes_read;
     }
-    if (getenv_or_default(ENV_UQMI_DEBUG, (bool)false))
+    if (getenv_or_default(ENV_QMI_DEBUG, (bool)false))
         fprintf(stderr, "UQMI_DEBUG_RX: %s\n", *buf);
 
     return 0;
@@ -239,6 +239,9 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint
 }
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
+    set_deprecated_env_name(ENV_QMI_DEVICE, "LPAC_QMI_DEV");
+    set_deprecated_env_name(ENV_QMI_DEBUG, "LPAC_QMI_DEBUG");
+
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
     struct uqmi_userdata *userdata = malloc(sizeof(struct uqmi_userdata));
