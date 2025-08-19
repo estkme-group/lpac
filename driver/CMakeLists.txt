@@ -90,12 +90,12 @@ if (LPAC_WITH_APDU_QMI OR LPAC_WITH_APDU_QMI_QRTR)
 endif ()
 
 if (LPAC_WITH_APDU_QMI)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI")
+    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_QMI)
     target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi.c)
 endif ()
 
 if (LPAC_WITH_APDU_QMI_QRTR)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI_QRTR")
+    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_QMI_QRTR)
     target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_qrtr.c)
 
     if (LPAC_DYNAMIC_DRIVERS)
