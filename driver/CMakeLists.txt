@@ -75,35 +75,33 @@ if(LPAC_WITH_APDU_GBINDER)
     endif()
 endif()
 
-if(LPAC_WITH_APDU_QMI)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI")
+if (LPAC_WITH_APDU_QMI OR LPAC_WITH_APDU_QMI_QRTR)
     target_sources(euicc-drivers PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_helpers.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_common.c)
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_helpers.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_common.c)
+
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(QMI_GLIB REQUIRED IMPORTED_TARGET qmi-glib>=1.35.5)
     target_link_libraries(euicc-drivers PkgConfig::QMI_GLIB)
-    if(LPAC_DYNAMIC_DRIVERS)
-        list(APPEND LIBEUICC_DRIVERS_REQUIRES "qmi-glib")
-    endif()
-endif()
 
-if(LPAC_WITH_APDU_QMI_QRTR)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI_QRTR")
-    target_sources(euicc-drivers PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_qrtr.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_helpers.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_common.c)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(QRTR_GLIB REQUIRED IMPORTED_TARGET qrtr-glib)
-    pkg_check_modules(QMI_GLIB REQUIRED IMPORTED_TARGET qmi-glib>=1.35.5)
-    target_link_libraries(euicc-drivers PkgConfig::QRTR_GLIB PkgConfig::QMI_GLIB)
-    if(LPAC_DYNAMIC_DRIVERS)
-        list(APPEND LIBEUICC_DRIVERS_REQUIRES "qrtr-glib")
+    if (LPAC_DYNAMIC_DRIVERS)
         list(APPEND LIBEUICC_DRIVERS_REQUIRES "qmi-glib")
-    endif()
-endif()
+    endif ()
+endif ()
+
+if (LPAC_WITH_APDU_QMI)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI")
+    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi.c)
+endif ()
+
+if (LPAC_WITH_APDU_QMI_QRTR)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_QMI_QRTR")
+    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_qrtr.c)
+
+    if (LPAC_DYNAMIC_DRIVERS)
+        list(APPEND LIBEUICC_DRIVERS_REQUIRES "qrtr-glib")
+    endif ()
+endif ()
 
 if(LPAC_WITH_APDU_MBIM)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_MBIM")
