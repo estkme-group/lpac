@@ -12,9 +12,22 @@
 #define APDU_EUICC_HEADER 0x80, 0xE2
 #define APDU_CONTINUE_READ_HEADER 0x80, 0xC0, 0x00, 0x00
 
+/**
+ * Modifies the given CLA byte to encode the specified logical channel number.
+ *
+ * Follows GlobalPlatform Card Specification 2.2.0.7, section 11.1.4 (Class Byte Coding).
+ */
+static uint8_t set_channel_to_cla(const uint8_t cla, const uint8_t channel) {
+    if (channel < 4) // b7 = 0 indicates the first interindustry class byte coding
+        return (cla & 0x9C) | channel;
+    if (channel < 20) // b7 = 1 indicates the further interindustry class byte coding
+        return (cla & 0xB0) | 0x40 | (channel - 4);
+    return cla;
+}
+
 static int es10x_transmit(struct euicc_ctx *ctx, struct apdu_response *response, struct apdu_request *req,
-                          unsigned req_len) {
-    req->cla = (req->cla & 0xF0) | (ctx->apdu._internal.logic_channel & 0x0F);
+                          const unsigned int req_len) {
+    req->cla = set_channel_to_cla(req->cla, ctx->apdu._internal.logic_channel);
     return euicc_apdu_transmit(ctx, response, req, req_len);
 }
 
