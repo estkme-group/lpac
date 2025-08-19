@@ -69,6 +69,8 @@ char *get_at_default_device(struct at_userdata *userdata) { return userdata->def
 char **at_channels(struct at_userdata *userdata) { return userdata->channels; }
 
 int at_write_command(struct at_userdata *userdata, const char *command) {
+    if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
+        fprintf(stderr, "AT_DEBUG_TX: %s", command);
     if (WriteFile(userdata->hComm, command, strlen(command), NULL, NULL))
         return 0;
     fprintf(stderr, "Failed to write to port, error: %lu\n", GetLastError());

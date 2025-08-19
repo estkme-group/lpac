@@ -11,7 +11,7 @@
 struct at_userdata {
     char *default_device;
     FILE *fuart;
-    char *buffer;
+    char *command;
 
     char **channels;
 };
@@ -50,56 +50,69 @@ char *get_at_default_device(struct at_userdata *userdata) { return userdata->def
 
 char **at_channels(struct at_userdata *userdata) { return userdata->channels; }
 
-int at_write_command(struct at_userdata *userdata, const char *command) { return fputs(command, userdata->fuart); }
+int at_write_command(struct at_userdata *userdata, const char *command) {
+    userdata->command = strdup(command);
+    if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
+        fprintf(stderr, "AT_DEBUG_TX: %s", command);
+    return fputs(command, userdata->fuart);
+}
 
 int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
     FILE *fuart = userdata->fuart;
-    char *buffer = userdata->buffer;
+    char *line = NULL;
+    char *command = strdup(userdata->command);
+    size_t n = 0;
 
-    memset(buffer, 0, AT_BUFFER_SIZE);
-
-    if (response)
+    if (response != NULL)
         *response = NULL;
 
-    while (true) {
-        if (fgets(buffer, AT_BUFFER_SIZE, fuart) == NULL) {
-            return -1;
-        }
-        buffer[strcspn(buffer, "\r\n")] = 0;
-        if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
-            printf("AT_DEBUG_RX: %s\n", buffer);
+    command[strcspn(command, "\r\n")] = '\0';
 
-        if (strcmp(buffer, "ERROR") == 0)
-            return -1;
-        if (strcmp(buffer, "OK") == 0)
-            return 0;
-
-        if (expected != NULL && strncmp(buffer, expected, strlen(expected)) == 0) {
-            if (response == NULL || *response != NULL)
-                continue;
-            *response = strdup(buffer + strlen(expected));
-        }
+    while (getline(&line, &n, fuart) != -1) {
+        line[strcspn(line, "\r\n")] = '\0';
+        if (getenv_or_default(ENV_AT_DEBUG, (bool)false) && line[0] != '\0')
+            printf("AT_DEBUG_RX: %s\n", line);
+        if (strcmp(line, command) == 0)
+            break;
+        if (feof(fuart))
+            break;
     }
+
+    while (getline(&line, &n, fuart) != -1) {
+        line[strcspn(line, "\r\n")] = '\0';
+        if (getenv_or_default(ENV_AT_DEBUG, (bool)false) && line[0] != '\0')
+            printf("AT_DEBUG_RX: %s\n", line);
+        if (strcmp(line, "ERROR") == 0)
+            return -1;
+        if (strcmp(line, "OK") == 0)
+            return 0;
+        if (expected == NULL || strncmp(line, expected, strlen(expected)) != 0)
+            continue;
+        if (response == NULL || *response != NULL)
+            continue;
+        *response = strdup(line + strlen(expected));
+    }
+    return -1;
 }
 
 int at_device_open(struct at_userdata *userdata, const char *device_name) {
-    if (userdata->buffer != NULL || userdata->fuart != NULL) {
+    if (userdata->fuart != NULL) {
         at_device_close(userdata);
     }
 
-    userdata->buffer = calloc(AT_BUFFER_SIZE, 1);
-    if (userdata->buffer == NULL) {
-        fprintf(stderr, "Error allocating buffer\n");
-        return -1;
-    }
     userdata->fuart = fopen(device_name, "r+");
     if (userdata->fuart == NULL) {
         fprintf(stderr, "Failed to open device: %s\n", device_name);
-        free(userdata->buffer);
-        userdata->buffer = NULL;
         return -1;
     }
     setbuf(userdata->fuart, NULL);
+
+    at_write_command(userdata, "AT\r\n");
+    if (at_expect(userdata, NULL, NULL) != 0) {
+        fprintf(stderr, "Failed to write initial command to device: %s\n", device_name);
+        at_device_close(userdata);
+        return -1;
+    }
     return 0;
 }
 
@@ -107,10 +120,6 @@ int at_device_close(struct at_userdata *userdata) {
     if (userdata->fuart != NULL) {
         fclose(userdata->fuart);
         userdata->fuart = NULL;
-    }
-    if (userdata->buffer != NULL) {
-        free(userdata->buffer);
-        userdata->buffer = NULL;
     }
     return 0;
 }
@@ -124,7 +133,6 @@ int at_setup_userdata(struct at_userdata **userdata) {
     memset(*userdata, 0, sizeof(struct at_userdata));
     (*userdata)->default_device = "/dev/ttyUSB0";
     (*userdata)->fuart = NULL;
-    (*userdata)->buffer = NULL;
     (*userdata)->channels = calloc(AT_MAX_LOGICAL_CHANNELS, sizeof(char *));
     if ((*userdata)->channels == NULL)
         return -1;

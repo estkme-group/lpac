@@ -49,6 +49,7 @@ if (LPAC_WITH_APDU_AT)
     target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_AT)
 
     target_sources(euicc-drivers PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_common.c
             ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at.c
             ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_csim.c)
 

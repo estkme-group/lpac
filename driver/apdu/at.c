@@ -1,5 +1,6 @@
 #include "at.h"
 #include "at_cmd.h"
+#include "at_common.h"
 
 #include <cjson/cJSON_ex.h>
 #include <euicc/hexutil.h>
@@ -36,35 +37,6 @@ static int at_channel_next_id(struct at_userdata *userdata) {
     return index + 1; // Convert to 1-based index
 }
 
-static int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
-
-static int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
-    va_list args, args_length;
-    va_start(args, fmt);
-
-    va_copy(args_length, args);
-    const int n = vsnprintf(NULL, 0, fmt, args_length);
-    va_end(args_length);
-
-    char *formatted = calloc(n + 2 /* CR+LF */ + 1, 1);
-    if (formatted == NULL) {
-        va_end(args);
-        return -1;
-    }
-
-    vsnprintf(formatted, n + 1, fmt, args);
-    va_end(args);
-
-    formatted[n + 0] = '\r'; // CR
-    formatted[n + 1] = '\n'; // LF
-    formatted[n + 2] = '\0'; // NUL
-
-    if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
-        fprintf(stderr, "AT_DEBUG_TX: %s", formatted);
-
-    return at_write_command(userdata, formatted);
-}
-
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
 
@@ -74,31 +46,13 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
         return -1;
     }
 
-    // TS 127 007, 8.43 Generic UICC logical channel access +CGLA
-    // TS 127 007, 8.45 Open logical channel +CCHO
-    // TS 127 007, 8.46 Close logical channel +CCHC
-    static const char *commands[] = {"AT+CCHO", "AT+CCHC", "AT+CGLA", NULL};
-
-    at_emit_command(userdata, "AT");
-    if (at_expect(userdata, NULL, NULL) != 0) {
-        fprintf(stderr, "Device not responding to AT commands\n");
-        return false;
-    }
-
-    for (int index = 0; commands[index] != NULL; index++) {
-        at_emit_command(userdata, "%s=?", commands[index]);
-        if (at_expect(userdata, NULL, NULL) == 0)
-            continue;
-        fprintf(stderr, "Device missing %s support\n", commands[index]);
-        return false;
-    }
-    return true;
-}
-
-static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
-    struct at_userdata *userdata = ctx->apdu.interface->userdata;
-
-    at_device_close(userdata);
+    static const char *commands[] = {"AT+CCHO=?", // TS 127 007, 8.45 Open logical channel +CCHO
+                                     "AT+CCHC=?", // TS 127 007, 8.46 Close logical channel +CCHC
+                                     "AT+CGLA=?", // TS 127 007, 8.43 Generic UICC logical channel access +CGLA
+                                     NULL};
+    if (at_test_commands(userdata, commands) == false)
+        return -1;
+    return 0;
 }
 
 static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
@@ -195,7 +149,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
     ifstruct->connect = apdu_interface_connect;
-    ifstruct->disconnect = apdu_interface_disconnect;
+    ifstruct->disconnect = at_interface_disconnect;
     ifstruct->logic_channel_open = apdu_interface_logic_channel_open;
     ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
     ifstruct->transmit = apdu_interface_transmit;
@@ -204,39 +158,10 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return at_setup_userdata((struct at_userdata **)&ifstruct->userdata);
 }
 
-static int libapduinterface_main(const struct euicc_apdu_interface *ifstruct, const int argc, char **argv) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <list>\n", argv[0]);
-        return -1;
-    }
-
-    if (strcmp(argv[1], "list") == 0) {
-        cJSON *devices = cJSON_CreateArray();
-        if (enumerate_serial_device != NULL) {
-            enumerate_serial_device(devices);
-        } else {
-            fprintf(stderr, "Serial device enumeration not implemented on this platform.\n");
-            fflush(stderr);
-        }
-        cJSON *payload = cJSON_CreateObject();
-        cJSON_AddStringOrNullToObject(payload, "env", ENV_AT_DEVICE);
-        cJSON_AddItemToObject(payload, "data", devices);
-        json_print("driver", payload);
-    }
-
-    return 0;
-}
-
-static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
-    struct at_userdata *userdata = ifstruct->userdata;
-
-    at_cleanup_userdata(&userdata);
-}
-
 const struct euicc_driver driver_apdu_at = {
     .type = DRIVER_APDU,
     .name = "at",
     .init = (int (*)(void *))libapduinterface_init,
-    .main = (int (*)(void *, int, char **))libapduinterface_main,
-    .fini = (void (*)(void *))libapduinterface_fini,
+    .main = (int (*)(void *, int, char **))at_interface_main_entry,
+    .fini = (void (*)(void *))at_interface_finished,
 };
