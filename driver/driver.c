@@ -73,16 +73,11 @@ struct euicc_http_interface euicc_driver_interface_http;
 
 static const struct euicc_driver *find_driver(const enum euicc_driver_type type, const char *name) {
     for (int i = 0; drivers[i] != NULL; i++) {
-        const struct euicc_driver *d = drivers[i];
-        if (d->type != type) {
+        const struct euicc_driver *driver = drivers[i];
+        if (driver->type != type)
             continue;
-        }
-        if (name == NULL) {
-            return d;
-        }
-        if (strcmp(d->name, name) == 0) {
-            return d;
-        }
+        if (name == NULL || strcasecmp(driver->name, name) == 0)
+            return driver;
     }
     return NULL;
 }
