@@ -34,5 +34,5 @@
 * `LIBEUICC_DEBUG_APDU`: enable debug output for APDU.
 * `LIBEUICC_DEBUG_HTTP`: enable debug output for HTTP.
 * `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend. (boolean)
-* `LPAC_APDU_UQMI_DEBUG`: enable debug output for uQMI APDU backend. (boolean)
+* `LPAC_APDU_QMI_DEBUG`: enable debug output for QMI or uQMI APDU backend. (boolean)
 * `LPAC_APDU_GBINDER_DEBUG`: enable debug output for GBinder APDU backend. (boolean)
