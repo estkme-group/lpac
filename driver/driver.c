@@ -34,8 +34,7 @@
 #ifdef LPAC_WITH_APDU_AT_WIN32
 #    include "driver/apdu/at_win32.h"
 #endif
-#include "driver/apdu/stdio.h"
-#include "driver/http/stdio.h"
+#include "stdio/stdio.h"
 
 static const struct euicc_driver *drivers[] = {
 #ifdef LPAC_WITH_APDU_GBINDER

@@ -21,8 +21,10 @@ endif()
 target_link_libraries(euicc-drivers euicc cjson-static lpac-utils)
 target_include_directories(euicc-drivers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/stdio.c)
-target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/stdio.c)
+target_sources(euicc-drivers PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/stdio/stdio_helpers.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/stdio/stdio_apdu.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/stdio/stdio_http.c)
 
 if(LPAC_WITH_APDU_PCSC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_PCSC")
