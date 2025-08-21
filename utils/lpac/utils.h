@@ -60,3 +60,5 @@ long getenv_long_or_default(const char *name, long default_value);
 void set_deprecated_env_name(const char *name, const char *deprecated_name);
 
 bool json_print(char *type, cJSON *jpayload);
+
+uint8_t get_channel_from_cla(uint8_t cla);

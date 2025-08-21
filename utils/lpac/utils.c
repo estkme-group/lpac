@@ -95,3 +95,9 @@ bool json_print(char *type, cJSON *jpayload) {
 err:
     return false;
 }
+
+uint8_t get_channel_from_cla(const uint8_t cla) {
+    if ((cla & 0x40) == 0)
+        return cla & 0x03;
+    return (cla & 0x0F) + 4;
+}
