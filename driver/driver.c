@@ -31,9 +31,6 @@
 #ifdef LPAC_WITH_HTTP_CURL
 #    include "driver/http/curl.h"
 #endif
-#ifdef LPAC_WITH_APDU_AT_WIN32
-#    include "driver/apdu/at_win32.h"
-#endif
 #include "driver/apdu/stdio.h"
 #include "driver/http/stdio.h"
 
@@ -55,9 +52,6 @@ static const struct euicc_driver *drivers[] = {
 #endif
 #ifdef LPAC_WITH_APDU_AT
     &driver_apdu_at,
-#endif
-#ifdef LPAC_WITH_APDU_AT_WIN32
-    &driver_apdu_at_win32,
 #endif
 #ifdef LPAC_WITH_HTTP_CURL
     &driver_http_curl,
