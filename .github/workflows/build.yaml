@@ -28,8 +28,6 @@ jobs:
           - {os: ubuntu-24.04-arm, variant: debian, name: Debian ARM, artifact: debian-arm}
           - {os: ubuntu-24.04, variant: make-qmi, name: Linux with QMI, artifact: linux-qmi-x64}
           - {os: ubuntu-24.04-arm, variant: make-qmi, name: Linux ARM with QMI, artifact: linux-qmi-arm}
-          - {os: ubuntu-24.04, variant: make-openwrt, name: OpenWrt, artifact: openwrt-x64}
-          - {os: ubuntu-24.04-arm, variant: make-openwrt, name: OpenWrt ARM64, artifact: openwrt-arm64}
           - {os: ubuntu-24.04, variant: mingw, name: Windows with MinGW, artifact: windows-x64}
           - {os: ubuntu-24.04, variant: woa-mingw, name: Windows on ARM with MinGW, artifact: windows-arm64}
           - {os: macos-15, variant: make, name: macOS, artifact: macos-universal}
