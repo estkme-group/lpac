@@ -169,8 +169,10 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     uqmi_execute_command(userdata, &buf, argv);
 
     _cleanup_cjson_ cJSON *jroot = cJSON_Parse(buf);
-    if (jroot == NULL)
+    if (jroot == NULL) {
+        fprintf(stderr, "Failed to parse uqmi response\n\n%s", buf);
         return -1;
+    }
 
     _cleanup_cjson_ cJSON *jrx = cJSON_GetObjectItem(jroot, "response");
     if (jrx == NULL || !cJSON_IsString(jrx))
@@ -205,8 +207,10 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     char *buf = NULL;
     uqmi_execute_command(userdata, &buf, argv);
     _cleanup_cjson_ cJSON *jroot = cJSON_Parse(buf);
-    if (jroot == NULL)
+    if (jroot == NULL) {
+        fprintf(stderr, "Failed to parse uqmi response\n\n%s", buf);
         return -1;
+    }
     _cleanup_cjson_ cJSON *jchannelid = cJSON_GetObjectItem(jroot, "channel_id");
     if (!jchannelid || !cJSON_IsNumber(jchannelid))
         return -1;
