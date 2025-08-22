@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
-/*
- * Copyright (c) 2024, David Bauer <david.bauer@uniberg.com>
- */
+// SPDX-FileCopyrightText: 2024 David Bauer <david.bauer@uniberg.com>
 #include "uqmi.h"
 
 #include <euicc/hexutil.h>

@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
-/*
- * Copyright (c) 2024, David Bauer <david.bauer@uniberg.com>
- */
+// SPDX-FileCopyrightText: 2024 David Bauer <david.bauer@uniberg.com>
 #pragma once
 
 #include <driver.private.h>
