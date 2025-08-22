@@ -210,7 +210,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     _cleanup_cjson_ cJSON *jchannelid = cJSON_GetObjectItem(jroot, "channel_id");
     if (!jchannelid || !cJSON_IsNumber(jchannelid))
         return -1;
-    return cJSON_GetNumberValue(jchannelid);
+    return (int)cJSON_GetNumberValue(jchannelid);
 }
 
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint8_t channel) {
@@ -219,7 +219,7 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint
     const struct uqmi_userdata *userdata = ctx->apdu.interface->userdata;
 
     const int n = snprintf(NULL, 0, "%d", channel);
-    char *channel_str = calloc(n + 1, 1);
+    char channel_str[n + 1];
     snprintf(channel_str, n + 1, "%d", channel);
 
     // clang-format off
@@ -240,13 +240,19 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     set_deprecated_env_name(ENV_QMI_DEVICE, "LPAC_QMI_DEV");
     set_deprecated_env_name(ENV_QMI_DEBUG, "LPAC_QMI_DEBUG");
 
+    const uint8_t uim_slot = getenv_or_default(ENV_QMI_UIM_SLOT, (int)1);
+
     memset(ifstruct, 0, sizeof(struct euicc_apdu_interface));
 
     struct uqmi_userdata *userdata = malloc(sizeof(struct uqmi_userdata));
     userdata->program = (char *)getenv_or_default(ENV_UQMI_PROGRAM, "uqmi");
     userdata->device_path = getenv(ENV_QMI_DEVICE);
-    userdata->uim_slot = (char *)getenv_or_default(ENV_QMI_UIM_SLOT, "1");
     userdata->client_id = NULL;
+    {
+        const int n = snprintf(NULL, 0, "%d", uim_slot);
+        userdata->uim_slot = calloc(n + 1, sizeof(char));
+        snprintf(userdata->uim_slot, n + 1, "%d", uim_slot);
+    }
 
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = apdu_interface_disconnect;
@@ -258,7 +264,16 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {}
+static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
+    struct uqmi_userdata *userdata = ifstruct->userdata;
+    if (userdata == NULL)
+        return;
+    free(userdata->program);
+    free(userdata->uim_slot);
+    free(userdata->client_id);
+    free(userdata->device_path);
+    free(userdata);
+}
 
 const struct euicc_driver driver_apdu_uqmi = {
     .type = DRIVER_APDU,
