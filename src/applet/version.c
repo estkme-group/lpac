@@ -5,7 +5,7 @@
 #    define LPAC_VERSION "v0.0.0-unknown"
 #endif
 
-static int applet_main(int argc, char **argv) {
+static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
     jprint_success(cJSON_CreateString(LPAC_VERSION));
     return 0;
 }

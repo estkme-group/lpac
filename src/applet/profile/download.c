@@ -43,7 +43,7 @@ char *strsep(char **stringp, const char *__delim) {
 
 static bool is_strict_matching_id(const char *token) {
     const size_t n = strlen(token);
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         if (isalnum(token[i]) || token[i] == '-')
             continue;
         return false;
@@ -51,7 +51,7 @@ static bool is_strict_matching_id(const char *token) {
     return true;
 }
 
-static void sigint_handler(int x) { cancelled = 1; }
+static void sigint_handler(__attribute__((unused)) int x) { cancelled = 1; }
 
 static cJSON *build_download_result_json(const struct es10b_load_bound_profile_package_result *result) {
     cJSON *jdata = cJSON_CreateObject();

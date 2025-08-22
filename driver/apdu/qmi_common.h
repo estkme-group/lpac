@@ -6,7 +6,6 @@
 
 #include "qmi_helpers.h"
 
-#include <euicc/euicc.h>
 #include <euicc/interface.h>
 
 struct qmi_data {
@@ -14,6 +13,9 @@ struct qmi_data {
     int uimSlot;
     GMainContext *context;
     QmiClientUim *uimClient;
+#ifdef LPAC_WITH_APDU_QMI_QRTR
+    QrtrBus *qrtrBus;
+#endif
 };
 
 int qmi_apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,

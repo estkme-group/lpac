@@ -174,12 +174,10 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
     return 0;
 }
 
-static void libhttpinterface_fini(struct euicc_http_interface *ifstruct) {}
-
 const struct euicc_driver driver_http_curl = {
     .type = DRIVER_HTTP,
     .name = "curl",
     .init = (int (*)(void *))libhttpinterface_init,
     .main = NULL,
-    .fini = (void (*)(void *))libhttpinterface_fini,
+    .fini = NULL,
 };

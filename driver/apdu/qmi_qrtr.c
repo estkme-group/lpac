@@ -15,8 +15,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static QrtrBus *bus = NULL;
-
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
     struct qmi_data *qmi_priv = ctx->apdu.interface->userdata;
     g_autoptr(GError) error = NULL;
@@ -27,14 +25,14 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
 
     qmi_priv->context = g_main_context_new();
 
-    bus = qrtr_bus_new_sync(qmi_priv->context, &error);
-    if (bus == NULL) {
+    qmi_priv->qrtrBus = qrtr_bus_new_sync(qmi_priv->context, &error);
+    if (qmi_priv->qrtrBus == NULL) {
         fprintf(stderr, "error: connect to QRTR bus failed: %s\n", error->message);
         return -1;
     }
 
     /* Find QRTR node for UIM service */
-    for (GList *l = qrtr_bus_peek_nodes(bus); l != NULL; l = l->next) {
+    for (GList *l = qrtr_bus_peek_nodes(qmi_priv->qrtrBus); l != NULL; l = l->next) {
         node = l->data;
 
         if (node && qrtr_node_lookup_port(node, QMI_SERVICE_UIM) >= 0) {

@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-static int applet_main(int argc, char **argv) {
+static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
     _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
     cJSON *jdata = NULL;
 

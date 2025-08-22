@@ -7,6 +7,7 @@ else()
 endif()
 target_link_libraries(euicc cjson-static)
 target_include_directories(euicc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+target_compile_options(euicc PRIVATE -Wall -Wextra)
 if(LPAC_DYNAMIC_LIBEUICC)
     # Install headers
     file(GLOB ALL_HEADERS "*.h")
