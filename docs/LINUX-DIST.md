@@ -41,15 +41,16 @@ pacman -S lpac-git
 see <https://github.com/archlinuxcn/repo/blob/master/archlinuxcn/lpac/PKGBUILD> \
 see <https://github.com/archlinuxcn/repo/blob/master/archlinuxcn/lpac-git/PKGBUILD>
 
-## Nix OS
+## NixOS
 
-> Need to enable [NUR](https://github.com/nix-community/NUR#readme "Nix User Repository") first
+> Available in nixpkgs.
+> (Added on 2025-01-30)
 
 ```shell
-nix-env -i lpac
+nix-shell -p lpac
 ```
 
-see <https://github.com/nix-community/nur-combined/blob/master/repos/linyinfeng/pkgs/lpac/default.nix>
+see <https://github.com/NixOS/nixpkgs/blob/master/pkgs/by-name/lp/lpac/package.nix>
 
 ## Ubuntu and Debian/Devuan
 
