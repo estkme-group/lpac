@@ -161,7 +161,20 @@ int main(int argc, char **argv) {
 
     setlocale(LC_ALL, "C.UTF-8");
     atexit(main_fini_euicc);
-    signal(SIGINT, signal_handler);
+
+    // SIGINT handler
+    {
+#ifdef WIN32
+        signal(SIGINT, signal_handler);
+#else
+        struct sigaction sa;
+        sa.sa_handler = signal_handler;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_flags = 0;
+        if (sigaction(SIGINT, &sa, NULL) != 0)
+            return -1;
+#endif
+    }
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
