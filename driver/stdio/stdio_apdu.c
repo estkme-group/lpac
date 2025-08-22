@@ -175,12 +175,10 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
                                 getenv_or_default(ENV_STDIO_APDU_TYPE, "hexify"));
 }
 
-static void libapduinterface_fini(const struct euicc_apdu_interface *ifstruct) {}
-
 const struct euicc_driver driver_apdu_stdio = {
     .type = DRIVER_APDU,
     .name = "stdio",
     .init = (int (*)(void *))libapduinterface_init,
     .main = NULL,
-    .fini = (void (*)(void *))libapduinterface_fini,
+    .fini = NULL,
 };

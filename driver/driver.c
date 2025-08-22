@@ -142,10 +142,10 @@ int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name
 }
 
 void euicc_driver_fini() {
-    if (_driver_apdu != NULL) {
+    if (_driver_apdu != NULL && _driver_apdu->fini != NULL) {
         _driver_apdu->fini(&euicc_driver_interface_apdu);
     }
-    if (_driver_http != NULL) {
+    if (_driver_http != NULL && _driver_http->fini != NULL) {
         _driver_http->fini(&euicc_driver_interface_http);
     }
 }

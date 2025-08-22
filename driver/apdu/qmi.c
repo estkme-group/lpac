@@ -194,7 +194,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     }
 
     qmi_priv->uimClient = QMI_CLIENT_UIM(client);
-    if (select_sim_slot(qmi_priv) < 0) {
+    if (select_sim_slot(qmi_priv) == FALSE) {
         fprintf(stderr, "error: select SIM slot failed\n");
         return -1;
     }
