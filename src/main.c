@@ -7,6 +7,7 @@
 #include "applet/version.h"
 
 #include <locale.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -148,10 +149,19 @@ static char **warg_to_arg(const int wargc, wchar_t **wargv) {
 }
 #endif
 
+static void signal_handler(const int signal) {
+    if (signal != SIGINT)
+        return;
+    // This would trigger atexit() hooks
+    exit(0);
+}
+
 int main(int argc, char **argv) {
     int ret = 0;
 
     setlocale(LC_ALL, "C.UTF-8");
+    atexit(main_fini_euicc);
+    signal(SIGINT, signal_handler);
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
