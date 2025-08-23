@@ -96,8 +96,7 @@ int qmi_apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *
     return channel_id;
 }
 
-void qmi_apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
-    struct qmi_data *qmi_priv = ctx->apdu.interface->userdata;
+void qmi_apdu_interface_logic_channel_close(struct qmi_data *qmi_priv, const uint8_t channel) {
     g_autoptr(GError) error = NULL;
 
     QmiMessageUimLogicalChannelInput *input;
@@ -143,9 +142,9 @@ void qmi_apdu_interface_disconnect(struct euicc_ctx *ctx) {
 }
 
 void qmi_cleanup(struct qmi_data *qmi_priv) {
-    if (qmi_priv->lastChannelId > 0) {
-        fprintf(stderr, "Cleaning up leaked APDU channel %d\n", qmi_priv->lastChannelId);
-        qmi_apdu_interface_logic_channel_close(NULL, qmi_priv->lastChannelId);
-        qmi_priv->lastChannelId = -1;
-    }
+    if (qmi_priv->lastChannelId <= 0)
+        return;
+    fprintf(stderr, "Cleaning up leaked APDU channel %d\n", qmi_priv->lastChannelId);
+    qmi_apdu_interface_logic_channel_close(qmi_priv, qmi_priv->lastChannelId);
+    qmi_priv->lastChannelId = -1;
 }
