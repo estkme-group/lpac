@@ -35,9 +35,10 @@ static bool merge_argv(char *required_argv[], char *user_argv[], char **merged_a
     *merged_argv = calloc(required_argc + user_argc + 1, sizeof(char *));
     if (*merged_argv == NULL)
         return false;
-    memcpy(*merged_argv, required_argv, required_argc);
-    memcpy(*merged_argv + required_argc, required_argv, user_argc);
-    (*merged_argv)[required_argc + user_argc + 1] = NULL;
+    for (int i = 0; i < required_argc; ++i)
+        (*merged_argv)[i] = required_argv[i];
+    for (int i = 0; i < user_argc; ++i)
+        (*merged_argv)[i + required_argc] = user_argv[i];
     return true;
 }
 
@@ -85,12 +86,12 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
         return 0;
 #endif
 
-    char buffer[1024];
+    char buffer[BUFSIZ];
     ssize_t bytes_read = 0;
     ssize_t bytes_written = 0;
     *buf = malloc(bytes_read);
     while (true) {
-        bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1);
+        bytes_read = read(pipefd[0], buffer, BUFSIZ);
         if (bytes_read == -1)
             break;
         *buf = realloc(*buf, bytes_written + bytes_read);
@@ -115,12 +116,12 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     };
     // clang-format on
 
-    if (uqmi_execute_command(userdata, &client_id, argv) != 0)
+    if (uqmi_execute_command(userdata, &client_id, argv) != 0 || client_id == NULL)
         return -1;
 
-    const int n = snprintf(NULL, 0, "uim,%s", userdata->client_id);
-    userdata->client_id = calloc(n + 1, 1);
-    snprintf(userdata->client_id, n + 1, "uim,%s", userdata->client_id);
+    const int n = snprintf(NULL, 0, "uim,%s", client_id);
+    userdata->client_id = calloc(n + 1, sizeof(char));
+    snprintf(userdata->client_id, n + 1, "uim,%s", client_id);
     return 0;
 }
 
