@@ -35,8 +35,8 @@ static bool merge_argv(char *required_argv[], char *user_argv[], char **merged_a
     *merged_argv = calloc(required_argc + user_argc + 1, sizeof(char *));
     if (*merged_argv == NULL)
         return false;
-    memcpy(*merged_argv, required_argv, required_argc);
-    memcpy(*merged_argv + required_argc, required_argv, user_argc);
+    memcpy(*merged_argv, required_argv, required_argc * sizeof(char *));
+    memcpy(*merged_argv + required_argc, required_argv, user_argc * sizeof(char *));
     (*merged_argv)[required_argc + user_argc + 1] = NULL;
     return true;
 }
