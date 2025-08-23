@@ -77,7 +77,7 @@ static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf
 #else
     pid_t pid;
     int pstatus = 0;
-    if (pidfd_spawnp(&pid, userdata->program, &file_actions, NULL, merged_argv, NULL) != 0)
+    if (posix_spawnp(&pid, userdata->program, &file_actions, NULL, merged_argv, NULL) != 0)
         return -1;
     if (waitpid(pid, &pstatus, 0) != 0)
         return 0;
