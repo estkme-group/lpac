@@ -4,6 +4,8 @@ else()
     set(RPATH_BINARY_PATH "$ORIGIN")
 endif()
 
+set(LPAC_VERSION "" CACHE STRING "Set version string for lpac")
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} DIR_LPAC_SRCS)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet DIR_LPAC_SRCS)
@@ -20,7 +22,7 @@ add_custom_target(version
     ${CMAKE_COMMAND}
     -D SRC=${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
     -D DST=${CMAKE_CURRENT_SOURCE_DIR}/version.h
-    -D GIT_EXECUTABLE=${GIT_EXECUTABLE}
+    -D VERSION=${LPAC_VERSION}
     -P ${LPAC_CMAKE_MODULE_PATH}/git-version.cmake
 )
 add_dependencies(lpac version)

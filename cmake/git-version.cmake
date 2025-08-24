@@ -1,7 +1,10 @@
 # from https://github.com/nocnokneo/cmake-git-versioning-example
 
-if (DEFINED ENV{LPAC_VERSION})
-    set(LPAC_VERSION $ENV{LPAC_VERSION})
+find_package(Git)
+
+if (NOT "${VERSION}" STREQUAL "")
+    # Use the manually specified version string
+    set(LPAC_VERSION "${VERSION}")
 elseif (GIT_EXECUTABLE)
     get_filename_component(SRC_DIR ${SRC} DIRECTORY)
     # Generate a git-describe version string from Git repository tags
