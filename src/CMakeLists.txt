@@ -16,7 +16,6 @@ target_link_libraries(lpac euicc-drivers lpac-utils)
 target_include_directories(lpac PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_compile_options(lpac PRIVATE -Wall -Wextra)
 
-find_package(Git)
 add_custom_target(version
     ${CMAKE_COMMAND}
     -D SRC=${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
@@ -25,6 +24,7 @@ add_custom_target(version
     -P ${LPAC_CMAKE_MODULE_PATH}/git-version.cmake
 )
 add_dependencies(lpac version)
+
 set_target_properties(lpac PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output"
     BUILD_RPATH "${RPATH_BINARY_PATH}"
