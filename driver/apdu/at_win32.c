@@ -1,4 +1,4 @@
-#include "at_win32.h"
+#include "at.h"
 #include "at_common.h"
 
 #include <cjson/cJSON_ex.h>
@@ -11,7 +11,6 @@
 #include <devguid.h>
 #include <initguid.h>
 #include <inttypes.h>
-#include <regstr.h>
 #include <setupapi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -368,7 +367,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     }
 }
 
-const struct euicc_driver driver_apdu_at_win32 = {
+const struct euicc_driver driver_apdu_at = {
     .type = DRIVER_APDU,
     .name = "at",
     .init = (int (*)(void *))libapduinterface_init,
