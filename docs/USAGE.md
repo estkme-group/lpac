@@ -330,4 +330,80 @@ The following parameters can be used to customize the behavior of `notification 
 
 #### driver
 
-Now, there is only one command: `lpac driver apdu list` to get the list of card readers or AT devices (AT devices are available only on the AT backend on Windows).
+```plain
+Usage: driver <apdu|http|list>
+```
+
+##### View the backend list
+
+<details>
+
+<summary>Example</summary>
+
+```bash
+./lpac driver list
+```  
+
+###### Output
+
+```json
+{
+    "type": "driver",
+    "payload": {
+        "LPAC_APDU": [
+            "pcsc",
+            "at",
+            "at_csim",
+            "stdio"
+        ],
+        "LPAC_HTTP": [
+            "curl",
+            "stdio"
+        ]
+    }
+}
+```
+
+</details>
+
+##### View the list of APDU devices
+
+<details>
+
+<summary>Example</summary>
+
+```bash
+./lpac driver apdu list
+```  
+
+###### Output
+
+```json
+{
+    "type": "driver",
+    "payload": {
+        "env": "LPAC_APDU_AT_DEVICE",
+        "data": [
+            {
+                "env": "COM3",
+                "name": "Quectel USB AT Port (COM3)"
+            },
+            {
+                "env": "COM4",
+                "name": "Quectel USB NMEA Port (COM4)"
+            },
+            {
+                "env": "COM5",
+                "name": "Quectel USB DM Port (COM5)"
+            }
+        ]
+    }
+}
+```
+
+or
+
+```plain
+The APDU driver 'stdio' does not support main function
+```
+</details>
