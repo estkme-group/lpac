@@ -7,30 +7,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-static bool is_numeric(const char *value) {
-    if (value == NULL)
-        return false;
-    for (size_t i = strlen(value); i > 0; --i) {
-        if (isdigit(value[i]))
-            continue;
-        return false;
-    }
-    return true;
-}
-
 const char *getenv_str_or_default(const char *name, const char *default_value) {
     const char *value = getenv(name);
-    if (value == NULL)
+    if (value == NULL || strlen(value) == 0)
         return default_value;
     return value;
 }
 
 bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
-    if (value == NULL)
+    if (value == NULL || strlen(value) == 0)
         return default_value;
-    if (is_numeric(value))
-        return strcmp(value, "0") != 0;
+    if (isdigit(value[0]))
+        return strtol(value, NULL, 0) != 0;
     return strcasecmp(value, "y") == 0 || strcasecmp(value, "yes") == 0 || strcasecmp(value, "true") == 0;
 }
 
@@ -40,7 +29,7 @@ int getenv_int_or_default(const char *name, const int default_value) {
 
 long getenv_long_or_default(const char *name, const long default_value) {
     const char *value = getenv(name);
-    if (value == NULL)
+    if (value == NULL || strlen(value) == 0)
         return default_value;
     return strtol(value, NULL, 10);
 }
