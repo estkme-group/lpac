@@ -179,7 +179,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
         return -1;
 
     _cleanup_cjson_ cJSON *jroot = cJSON_Parse(buf);
-    if (jroot == NULL) {
+    if (jroot == NULL || !cJSON_IsObject(jroot)) {
         fprintf(stderr, "Failed to parse uqmi response\n\n%s\n", buf);
         return -1;
     }
@@ -220,7 +220,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
         return -1;
 
     _cleanup_cjson_ cJSON *jroot = cJSON_Parse(buf);
-    if (jroot == NULL) {
+    if (jroot == NULL || !cJSON_IsObject(jroot)) {
         fprintf(stderr, "Failed to parse uqmi response\n\n%s\n", buf);
         return -1;
     }
