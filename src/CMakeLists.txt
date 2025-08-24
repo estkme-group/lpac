@@ -4,7 +4,7 @@ else()
     set(RPATH_BINARY_PATH "$ORIGIN")
 endif()
 
-set(LPAC_VERSION "" CACHE STRING "Set version string for lpac")
+set(LPAC_VERSION "" STRING "Set version string for lpac")
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} DIR_LPAC_SRCS)
 
