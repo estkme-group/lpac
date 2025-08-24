@@ -22,7 +22,7 @@ add_custom_target(version
     ${CMAKE_COMMAND}
     -D SRC=${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
     -D DST=${CMAKE_CURRENT_SOURCE_DIR}/version.h
-    -D VERSION=${LPAC_VERSION}
+    -D LPAC_VERSION=${LPAC_VERSION}
     -P ${LPAC_CMAKE_MODULE_PATH}/git-version.cmake
 )
 add_dependencies(lpac version)

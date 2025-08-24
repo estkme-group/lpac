@@ -2,10 +2,7 @@
 
 find_package(Git)
 
-if (NOT "${VERSION}" STREQUAL "")
-    # Use the manually specified version string
-    set(LPAC_VERSION "${VERSION}")
-elseif (GIT_EXECUTABLE)
+if (DEFINED GIT_EXECUTABLE AND "${LPAC_VERSION}" STREQUAL "")
     get_filename_component(SRC_DIR ${SRC} DIRECTORY)
     # Generate a git-describe version string from Git repository tags
     execute_process(
