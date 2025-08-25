@@ -157,9 +157,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     char channel_str[16];
     snprintf(channel_str, sizeof(channel_str), "%d", ctx->apdu._internal.logic_channel);
 
-    char *tx_hex = calloc(tx_len * 2 + 1, 1);
-    if (tx_hex == NULL)
-        return -1;
+    char tx_hex[tx_len * 2 + 1];
     euicc_hexutil_bin2hex(tx_hex, tx_len * 2 + 1, tx, tx_len);
 
     char *buf = NULL;
@@ -201,7 +199,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     if (userdata->client_id == NULL)
         return -1;
 
-    char *aid_hex = calloc(aid_len * 2 + 1, 1);
+    char aid_hex[aid_len * 2 + 1];
     euicc_hexutil_bin2hex(aid_hex, aid_len * 2 + 1, aid, aid_len);
 
     // clang-format off
