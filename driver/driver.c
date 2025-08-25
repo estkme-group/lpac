@@ -22,6 +22,10 @@
 #    include "driver/apdu/qmi_qrtr.h"
 #endif
 
+#ifdef LPAC_WITH_APDU_UQMI
+#    include "driver/apdu/uqmi.h"
+#endif
+
 #ifdef LPAC_WITH_APDU_PCSC
 #    include "driver/apdu/pcsc.h"
 #endif
@@ -49,6 +53,9 @@ static const struct euicc_driver *drivers[] = {
 #endif
 #ifdef LPAC_WITH_APDU_QMI_QRTR
     &driver_apdu_qmi_qrtr,
+#endif
+#ifdef LPAC_WITH_APDU_UQMI
+    &driver_apdu_uqmi,
 #endif
 #ifdef LPAC_WITH_APDU_PCSC
     &driver_apdu_pcsc,
