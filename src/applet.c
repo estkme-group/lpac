@@ -1,10 +1,10 @@
 #include "applet.h"
 #include <driver.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <lpac/utils.h>
 #include <main.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static void applet_usage(const char *selfname, const struct applet_entry **entries) {
     const struct applet_entry *entry;

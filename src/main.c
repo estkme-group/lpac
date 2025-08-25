@@ -34,16 +34,8 @@
 #define ES10X_MSS_MAX_VALUE 255
 
 static const struct applet_entry *driver_applets[] = {
-    &(struct applet_entry){
-        .name = "apdu",
-        .main = euicc_driver_main_apdu,
-        .skip_init_euicc = true
-    },
-    &(struct applet_entry){
-        .name = "http",
-        .main = euicc_driver_main_http,
-        .skip_init_euicc = true
-    },
+    &(struct applet_entry){.name = "apdu", .main = euicc_driver_main_apdu, .skip_init_euicc = true},
+    &(struct applet_entry){.name = "http", .main = euicc_driver_main_http, .skip_init_euicc = true},
     &(struct applet_entry){
         .name = "list",
         .main = euicc_driver_list,
@@ -159,7 +151,6 @@ int main(int argc, char **argv) {
 
     euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
     euicc_ctx.http.interface = &euicc_driver_interface_http;
-
 
 #ifdef WIN32
     argv = warg_to_arg(argc, CommandLineToArgvW(GetCommandLineW(), &argc));

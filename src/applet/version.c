@@ -1,7 +1,7 @@
 #include "version.h"
-#include <stddef.h>
 #include <cjson/cJSON_ex.h>
 #include <jprint.h>
+#include <stddef.h>
 
 #ifndef LPAC_VERSION
 #    define LPAC_VERSION "v0.0.0-unknown"
