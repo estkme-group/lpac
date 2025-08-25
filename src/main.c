@@ -2,10 +2,10 @@
 
 #include "applet.h"
 #include "applet/chip.h"
+#include "applet/drivre.h"
 #include "applet/notification.h"
 #include "applet/profile.h"
 #include "applet/version.h"
-#include "applet/drivre.h"
 
 #include <locale.h>
 #include <stdio.h>
@@ -33,8 +33,6 @@
 #define ENV_ES10X_MSS CUSTOM_ENV_NAME(ES10X_MSS)
 #define ES10X_MSS_MIN_VALUE 6
 #define ES10X_MSS_MAX_VALUE 255
-
-
 
 static const struct applet_entry *applets[] = {
     &applet_driver, &applet_chip, &applet_profile, &applet_notification, &applet_version, NULL,
