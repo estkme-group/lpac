@@ -159,12 +159,13 @@ int main(int argc, char **argv) {
 
     const char *http_driver = getenv(ENV_HTTP_DRIVER);
 
-    if (euicc_driver_init(apdu_driver, http_driver)) {
-        return -1;
+    if (!(argc >= 3 && strcmp(argv[1], "driver") == 0 && strcmp(argv[2], "list") == 0)) {
+        if (euicc_driver_init(apdu_driver, http_driver)) {
+            return -1;
+        }
+        euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
+        euicc_ctx.http.interface = &euicc_driver_interface_http;
     }
-
-    euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
-    euicc_ctx.http.interface = &euicc_driver_interface_http;
 
 #ifdef WIN32
     argv = warg_to_arg(argc, CommandLineToArgvW(GetCommandLineW(), &argc));
