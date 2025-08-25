@@ -5,6 +5,7 @@
 #include "applet/notification.h"
 #include "applet/profile.h"
 #include "applet/version.h"
+#include "applet/drivre.h"
 
 #include <locale.h>
 #include <stdio.h>
@@ -33,26 +34,10 @@
 #define ES10X_MSS_MIN_VALUE 6
 #define ES10X_MSS_MAX_VALUE 255
 
-static const struct applet_entry *driver_applets[] = {
-    &(struct applet_entry){.name = "apdu", .main = euicc_driver_main_apdu, .skip_init_euicc = true},
-    &(struct applet_entry){.name = "http", .main = euicc_driver_main_http, .skip_init_euicc = true},
-    &(struct applet_entry){
-        .name = "list",
-        .main = euicc_driver_list,
-        .skip_init_driver = true,
-        .skip_init_euicc = true,
-    },
-    NULL,
-};
 
-struct applet_entry driver_applet = {
-    .name = "driver",
-    .main = NULL,
-    .subapplets = driver_applets,
-};
 
 static const struct applet_entry *applets[] = {
-    &driver_applet, &applet_chip, &applet_profile, &applet_notification, &applet_version, NULL,
+    &applet_driver, &applet_chip, &applet_profile, &applet_notification, &applet_version, NULL,
 };
 
 static int euicc_ctx_inited = 0;
