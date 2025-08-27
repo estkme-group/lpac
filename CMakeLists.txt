@@ -65,16 +65,43 @@ if(CPACK_GENERATOR)
     include(CPack)
 endif()
 
+include(FetchContent)
+FetchContent_Declare(
+    cjson
+    # FIXME: change back to DaveGamble/cJSON if upstream fix it
+    # https://github.com/DaveGamble/cJSON/pull/949
+    # https://github.com/DaveGamble/cJSON/pull/955
+    GIT_REPOSITORY https://github.com/CoelacanthusHex/cJSON
+    GIT_TAG 4818f043bda624b5738384eae3a0189b2bd1f5e1
+    GIT_PROGRESS ON
+    SOURCE_DIR cjson
+)
 if (NOT DEFINED USE_SYSTEM_DEPS)
     find_package(cJSON)
     if (NOT cJSON_FOUND)
-        add_subdirectory(cjson)
+        if (NOT NO_NETWORK)
+            set(CJSON_OVERRIDE_BUILD_SHARED_LIBS ON)
+            set(CJSON_BUILD_SHARED_LIBS OFF)
+            set(ENABLE_CJSON_TEST OFF)
+            set(ENABLE_CUSTOM_COMPILER_FLAGS OFF)
+            FetchContent_MakeAvailable(cjson)
+            set(CJSON_LIBRARY cjson)
+        else()
+            message(FATAL_ERROR "System cJSON is not found and network access is not permitted!")
+        endif()
     endif()
 else()
     if (USE_SYSTEM_DEPS)
         find_package(cJSON REQUIRED)
+    elseif(NOT NO_NETWORK)
+        set(CJSON_OVERRIDE_BUILD_SHARED_LIBS ON)
+        set(CJSON_BUILD_SHARED_LIBS OFF)
+        set(ENABLE_CJSON_TEST OFF)
+        set(ENABLE_CUSTOM_COMPILER_FLAGS OFF)
+        FetchContent_MakeAvailable(cjson)
+        set(CJSON_LIBRARY cjson)
     else()
-        add_subdirectory(cjson)
+        message(FATAL_ERROR "System cJSON is not found and network access is not permitted!")
     endif()
 endif()
 add_subdirectory(cjson-ext)
