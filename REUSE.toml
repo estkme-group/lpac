@@ -43,6 +43,14 @@ SPDX-FileContributor = [
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
+path = ["cjson-ext/**"]
+SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
+SPDX-FileContributor = [
+    "Celeste Liu",
+]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
 path = ["dlfcn-win32/**"]
 SPDX-FileCopyrightText = "2007 Ramiro Polla"
 SPDX-FileContributor = [

@@ -66,6 +66,7 @@ if(CPACK_GENERATOR)
 endif()
 
 add_subdirectory(cjson)
+add_subdirectory(cjson-ext)
 add_subdirectory(euicc)
 add_subdirectory(utils)
 add_subdirectory(driver)

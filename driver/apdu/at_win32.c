@@ -1,7 +1,7 @@
 #include "at_win32.h"
 #include "at_common.h"
 
-#include <cjson/cJSON_ex.h>
+#include <cjson-ext/cJSON_ex.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
