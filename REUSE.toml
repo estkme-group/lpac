@@ -34,15 +34,6 @@ SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
-path = ["cjson/**"]
-SPDX-FileCopyrightText = "2009-2017 Dave Gamble and cJSON contributors"
-SPDX-FileContributor = [
-    "ESTKME TECHNOLOGY LIMITED, Hong Kong",
-    "Celeste Liu"
-]
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
 path = ["cjson-ext/**"]
 SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
 SPDX-FileContributor = [
