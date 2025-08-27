@@ -1,4 +1,10 @@
 add_library(lpac-utils OBJECT lpac/utils.c)
 target_include_directories(lpac-utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(lpac-utils PRIVATE cjson-static euicc)
+target_link_libraries(lpac-utils PRIVATE euicc)
 target_compile_options(lpac-utils PRIVATE -Wall -Wextra)
+
+if (cJSON_FOUND)
+    target_link_libraries(lpac-utils PRIVATE cJSON)
+else ()
+    target_link_libraries(lpac-utils PRIVATE cjson-static)
+endif ()

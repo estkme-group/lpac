@@ -65,7 +65,11 @@ if(CPACK_GENERATOR)
     include(CPack)
 endif()
 
-add_subdirectory(cjson)
+find_package(cJSON REQUIRED)
+if (NOT cJSON_FOUND)
+    add_subdirectory(cjson)
+endif ()
+
 add_subdirectory(euicc)
 add_subdirectory(utils)
 add_subdirectory(driver)
