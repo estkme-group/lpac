@@ -2,7 +2,6 @@
 
 struct applet_entry {
     const char *name;
-    int (*init)(void);
     int (*main)(int argc, char **argv);
 };
 

@@ -23,13 +23,10 @@ int applet_entry(const int argc, char **argv, const struct applet_entry **entrie
         return -1;
     }
 
-    for (int i = 0, ret = 0; entries[i] != NULL; i++) {
+    for (int i = 0; entries[i] != NULL; i++) {
         const struct applet_entry *entry = entries[i];
         if (strcmp(argv[1], entry->name) != 0)
             continue;
-        if (entry->init != NULL)
-            if ((ret = entry->init()) != 0)
-                return ret;
         return entry->main(argc - 1, argv + 1);
     }
 
