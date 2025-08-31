@@ -35,6 +35,8 @@ bool getenv_bool_or_default(const char *name, const bool default_value) {
     if (test)
         return false;
     // clang-format on
+    fprintf(stderr, "WARNING: Invalid value '%s' for environment variable '%s', falling back to default (%s)\n", value,
+            name, default_value ? "true" : "false");
     return default_value;
 }
 
