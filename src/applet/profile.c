@@ -9,11 +9,6 @@
 #include "profile/list.h"
 #include "profile/nickname.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
 static const struct applet_entry *applets[] = {
     &applet_profile_list,   &applet_profile_enable,   &applet_profile_disable,   &applet_profile_nickname,
     &applet_profile_delete, &applet_profile_download, &applet_profile_discovery, NULL,
