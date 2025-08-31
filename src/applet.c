@@ -9,7 +9,7 @@ static void applet_usage(const char *selfname, const struct applet_entry **entri
 
     for (int i = 0; entries[i] != NULL; i++) {
         fputs(entries[i]->name, stdout);
-        if (entries[i + 1])
+        if (entries[i + 1] != NULL)
             fputc('|', stdout);
     }
 
