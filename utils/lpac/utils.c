@@ -18,23 +18,12 @@ bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
     if (value == NULL || strlen(value) == 0)
         return default_value;
-    // clang-format off
-    bool test = false;
-    test = strcasecmp(value, "1") == 0
-        || strcasecmp(value, "y") == 0
-        || strcasecmp(value, "on") == 0
-        || strcasecmp(value, "yes") == 0
-        || strcasecmp(value, "true") == 0;
-    if (test)
+    if (strcasecmp(value, "1") == 0 || strcasecmp(value, "y") == 0 || strcasecmp(value, "on") == 0
+        || strcasecmp(value, "yes") == 0 || strcasecmp(value, "true") == 0)
         return true;
-    test = strcasecmp(value, "0") == 0
-        || strcasecmp(value, "n") == 0
-        || strcasecmp(value, "off") == 0
-        || strcasecmp(value, "no") == 0
-        || strcasecmp(value, "false") == 0;
-    if (test)
+    if (strcasecmp(value, "0") == 0 || strcasecmp(value, "n") == 0 || strcasecmp(value, "off") == 0
+        || strcasecmp(value, "no") == 0 || strcasecmp(value, "false") == 0)
         return false;
-    // clang-format on
     fprintf(stderr, "WARNING: Invalid value '%s' for environment variable '%s', falling back to default (%s)\n", value,
             name, default_value ? "true" : "false");
     return default_value;
