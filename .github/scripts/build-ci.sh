@@ -25,7 +25,11 @@ make)
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE.zip" "$BUILD/output"
     ;;
 make-qmi)
-    cmake "$WORKSPACE" -DLPAC_WITH_APDU_QMI=ON -DLPAC_WITH_APDU_QMI_QRTR=ON -DLPAC_WITH_APDU_MBIM=ON
+    cmake "$WORKSPACE" \
+        -DLPAC_WITH_APDU_QMI=ON \
+        -DLPAC_WITH_APDU_QMI_QRTR=ON \
+        -DLPAC_WITH_APDU_UQMI=ON \
+        -DLPAC_WITH_APDU_MBIM=ON
     make -j
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
