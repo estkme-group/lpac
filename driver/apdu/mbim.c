@@ -253,7 +253,7 @@ static void mbim_apdu_interface_disconnect(struct euicc_ctx *ctx) {
 
     if (mbim_priv->last_channel_id > 0) {
         fprintf(stderr, "Cleaning up leaked APDU channel %d\n", mbim_priv->last_channel_id);
-        mbim_apdu_interface_logic_channel_close(NULL, mbim_priv->last_channel_id);
+        mbim_apdu_interface_logic_channel_close(ctx, mbim_priv->last_channel_id);
         mbim_priv->last_channel_id = -1;
     }
 

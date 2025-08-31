@@ -69,6 +69,11 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     return 0;
 }
 
+static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
+    struct qmi_data *qmi_priv = ctx->apdu.interface->userdata;
+    qmi_apdu_interface_logic_channel_close(qmi_priv, channel);
+}
+
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     set_deprecated_env_name(ENV_UIM_SLOT, "UIM_SLOT");
 
@@ -85,7 +90,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = qmi_apdu_interface_disconnect;
     ifstruct->logic_channel_open = qmi_apdu_interface_logic_channel_open;
-    ifstruct->logic_channel_close = qmi_apdu_interface_logic_channel_close;
+    ifstruct->logic_channel_close = apdu_interface_logic_channel_close;
     ifstruct->transmit = qmi_apdu_interface_transmit;
 
     /*

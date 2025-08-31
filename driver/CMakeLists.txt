@@ -46,9 +46,10 @@ endif()
 
 if (LPAC_WITH_APDU_AT)
     target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_AT)
-    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_helpers.c)
-    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_csim.c)
-    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at.c)
+    target_sources(euicc-drivers PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_helpers.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_csim.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at.c)
     if (UNIX)
         target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_cmd_unix.c)
     elseif (WIN32)

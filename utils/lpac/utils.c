@@ -7,31 +7,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-static bool is_numeric(const char *value) {
-    if (value == NULL)
-        return false;
-    for (size_t i = strlen(value); i > 0; --i) {
-        if (isdigit(value[i]))
-            continue;
-        return false;
-    }
-    return true;
-}
-
 const char *getenv_str_or_default(const char *name, const char *default_value) {
     const char *value = getenv(name);
-    if (value == NULL)
+    if (value == NULL || strlen(value) == 0)
         return default_value;
     return value;
 }
 
 bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
-    if (value == NULL)
+    if (value == NULL || strlen(value) == 0)
         return default_value;
-    if (is_numeric(value))
-        return strcmp(value, "0") != 0;
-    return strcasecmp(value, "y") == 0 || strcasecmp(value, "yes") == 0 || strcasecmp(value, "true") == 0;
+    if (strcasecmp(value, "1") == 0 || strcasecmp(value, "y") == 0 || strcasecmp(value, "on") == 0
+        || strcasecmp(value, "yes") == 0 || strcasecmp(value, "true") == 0)
+        return true;
+    if (strcasecmp(value, "0") == 0 || strcasecmp(value, "n") == 0 || strcasecmp(value, "off") == 0
+        || strcasecmp(value, "no") == 0 || strcasecmp(value, "false") == 0)
+        return false;
+    fprintf(stderr, "WARNING: Invalid value '%s' for environment variable '%s', falling back to default (%s)\n", value,
+            name, default_value ? "true" : "false");
+    return default_value;
 }
 
 int getenv_int_or_default(const char *name, const int default_value) {
@@ -40,7 +35,7 @@ int getenv_int_or_default(const char *name, const int default_value) {
 
 long getenv_long_or_default(const char *name, const long default_value) {
     const char *value = getenv(name);
-    if (value == NULL)
+    if (value == NULL || strlen(value) == 0)
         return default_value;
     return strtol(value, NULL, 10);
 }
