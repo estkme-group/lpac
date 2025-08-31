@@ -46,6 +46,9 @@
 #ifdef LPAC_WITH_DRIVER_APDU_QMI
 #    include "driver/apdu/qmi.h"
 #endif
+#ifdef LPAC_WITH_DRIVER_APDU_UQMI
+#    include "driver/apdu/uqmi.h"
+#endif
 
 #ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
 #    include "driver/apdu/qmi_qrtr.h"
@@ -75,6 +78,9 @@ static const struct euicc_driver *builtin_drivers[] = {
 #endif
 #ifdef LPAC_WITH_DRIVER_APDU_QMI
     &driver_apdu_qmi,
+#endif
+#ifdef LPAC_WITH_DRIVER_APDU_UQMI
+    &driver_apdu_uqmi,
 #endif
 #ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
     &driver_apdu_qmi_qrtr,
@@ -385,6 +391,7 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
         "mbim",
         "qmi",
         "qmi_qrtr",
+        "uqmi",
         "pcsc",
         "at",
         NULL
