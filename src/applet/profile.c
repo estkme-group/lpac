@@ -19,14 +19,10 @@ static const struct applet_entry *applets[] = {
     &applet_profile_delete, &applet_profile_download, &applet_profile_discovery, NULL,
 };
 
-static int applet_main(const int argc, char **argv) {
-    const int ret = main_init_euicc();
-    if (ret != 0)
-        return ret;
-    return applet_entry(argc, argv, applets);
-}
+static int applet_main(const int argc, char **argv) { return applet_entry(argc, argv, applets); }
 
 struct applet_entry applet_profile = {
     .name = "profile",
+    .init = main_init,
     .main = applet_main,
 };

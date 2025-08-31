@@ -5,11 +5,6 @@
 #include "chip/purge.h"
 #include "main.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
 static const struct applet_entry *applets[] = {
     &applet_chip_info,
     &applet_chip_defaultsmdp,
@@ -17,14 +12,10 @@ static const struct applet_entry *applets[] = {
     NULL,
 };
 
-static int applet_main(const int argc, char **argv) {
-    const int ret = main_init_euicc();
-    if (ret != 0)
-        return ret;
-    return applet_entry(argc, argv, applets);
-}
+static int applet_main(const int argc, char **argv) { return applet_entry(argc, argv, applets); }
 
 struct applet_entry applet_chip = {
     .name = "chip",
+    .init = main_init,
     .main = applet_main,
 };

@@ -101,6 +101,27 @@ static int setup_mss(uint8_t *mss) {
     return 0;
 }
 
+int main_init(void) {
+    int ret = 0;
+    if ((ret = main_init_driver()) != 0)
+        return ret;
+    if ((ret = main_init_euicc()) != 0)
+        return ret;
+    return 0;
+}
+
+int main_init_driver(void) {
+    const char *apdu_driver = getenv(ENV_APDU_DRIVER);
+    const char *http_driver = getenv(ENV_HTTP_DRIVER);
+
+    if (euicc_driver_init(apdu_driver, http_driver))
+        return -1;
+
+    euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
+    euicc_ctx.http.interface = &euicc_driver_interface_http;
+    return 0;
+}
+
 int main_init_euicc(void) {
     if (setup_aid(&euicc_ctx.aid, &euicc_ctx.aid_len)) {
         jprint_error("euicc_init", "invalid custom ISD-R applet id given");
@@ -119,9 +140,8 @@ int main_init_euicc(void) {
 }
 
 void main_fini_euicc(void) {
-    if (!euicc_ctx_inited) {
+    if (!euicc_ctx_inited)
         return;
-    }
     euicc_fini(&euicc_ctx);
     euicc_ctx_inited = 0;
 }
@@ -154,17 +174,6 @@ int main(int argc, char **argv) {
     setlocale(LC_ALL, "C.UTF-8");
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
-
-    const char *apdu_driver = getenv(ENV_APDU_DRIVER);
-
-    const char *http_driver = getenv(ENV_HTTP_DRIVER);
-
-    if (euicc_driver_init(apdu_driver, http_driver)) {
-        return -1;
-    }
-
-    euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
-    euicc_ctx.http.interface = &euicc_driver_interface_http;
 
 #ifdef WIN32
     argv = warg_to_arg(argc, CommandLineToArgvW(GetCommandLineW(), &argc));
