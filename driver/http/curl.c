@@ -1,8 +1,8 @@
 #include "curl.h"
 
 #include <euicc/interface.h>
-#include <lpac/utils.h>
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,8 +47,6 @@ static struct libcurl_interface {
 
     struct curl_slist *(*_curl_slist_append)(struct curl_slist *list, const char *data);
     void (*_curl_slist_free_all)(struct curl_slist *list);
-
-    char *(*_curl_version)(void);
 } libcurl;
 
 static size_t http_trans_write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
@@ -102,7 +100,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
 
     if (tx != NULL) {
         libcurl._curl_easy_setopt(curl, CURLOPT_POSTFIELDS, tx);
-        libcurl._curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)tx_len);
+        libcurl._curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, tx_len);
     }
 
     res = libcurl._curl_easy_perform(curl);
@@ -145,7 +143,6 @@ static int _init_libcurl(void) {
     libcurl._curl_easy_cleanup = dlsym(libcurl_interface_dlhandle, "curl_easy_cleanup");
     libcurl._curl_slist_append = dlsym(libcurl_interface_dlhandle, "curl_slist_append");
     libcurl._curl_slist_free_all = dlsym(libcurl_interface_dlhandle, "curl_slist_free_all");
-    libcurl._curl_version = dlsym(libcurl_interface_dlhandle, "curl_version");
 #else
     libcurl._curl_global_init = curl_global_init;
     libcurl._curl_easy_init = curl_easy_init;
@@ -156,7 +153,6 @@ static int _init_libcurl(void) {
     libcurl._curl_easy_cleanup = curl_easy_cleanup;
     libcurl._curl_slist_append = curl_slist_append;
     libcurl._curl_slist_free_all = curl_slist_free_all;
-    libcurl._curl_version = curl_version;
 #endif
 
     return 0;
@@ -178,23 +174,10 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
     return 0;
 }
 
-static int libapduinterface_main(const struct euicc_apdu_interface *ifstruct, int argc, char **argv) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <info>\n", argv[0]);
-        return -1;
-    }
-    if (strcmp(argv[1], "info") == 0) {
-        cJSON *payload = cJSON_CreateObject();
-        cJSON_AddStringToObject(payload, "curl_version", libcurl._curl_version());
-        json_print("driver", payload);
-    }
-    return 0;
-}
-
 const struct euicc_driver driver_http_curl = {
     .type = DRIVER_HTTP,
     .name = "curl",
     .init = (int (*)(void *))libhttpinterface_init,
-    .main = (int (*)(void *, int, char **))libapduinterface_main,
+    .main = NULL,
     .fini = NULL,
 };

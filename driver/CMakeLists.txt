@@ -2,10 +2,12 @@ include(CMakeDependentOption)
 cmake_dependent_option(LPAC_DYNAMIC_DRIVERS "Build lpac/libeuicc driver backends as a dynamic library" OFF "LPAC_DYNAMIC_LIBEUICC" OFF)
 
 option(LPAC_WITH_APDU_PCSC "Build APDU PCSC Backend (requires PCSC libraries)" ON)
-option(LPAC_WITH_APDU_AT "Build APDU AT Backend" ON)
+cmake_dependent_option(LPAC_WITH_APDU_AT "Build APDU AT Backend" ON UNIX OFF)
+cmake_dependent_option(LPAC_WITH_APDU_AT_WIN32 "Build APDU AT Backend for Win32" ON WIN32 OFF)
 option(LPAC_WITH_APDU_GBINDER "Build APDU Gbinder backend for libhybris devices (requires gbinder headers)" OFF)
 option(LPAC_WITH_APDU_QMI "Build QMI backend for Qualcomm devices (requires libqmi)" OFF)
 option(LPAC_WITH_APDU_QMI_QRTR "Build QMI-over-QRTR backend for Qualcomm devices (requires libqrtr and libqmi headers)" OFF)
+option(LPAC_WITH_APDU_UQMI "Build uQMI backend for Qualcomm devices (requires uqmi)" OFF)
 option(LPAC_WITH_APDU_MBIM "Build MBIM backend for MBIM devices (requires libmbim)" OFF)
 
 option(LPAC_WITH_HTTP_CURL "Build HTTP Curl interface" ON)
@@ -44,18 +46,22 @@ if(LPAC_WITH_APDU_PCSC)
     endif()
 endif()
 
-if (LPAC_WITH_APDU_AT)
-    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_AT)
-    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_common.c)
-    if (UNIX)
-        target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_unix.c)
-    elseif (WIN32)
-        target_link_libraries(euicc-drivers setupapi)
-        target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_win32.c)
-    else ()
-        message(FATAL_ERROR "LPAC_WITH_APDU_AT is only supported on Unix and Windows platforms.")
-    endif ()
-endif ()
+if(LPAC_WITH_APDU_AT)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_AT")
+    target_sources(euicc-drivers PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_common.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at.c
+    )
+endif()
+
+if(LPAC_WITH_APDU_AT_WIN32)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_AT_WIN32")
+    target_link_libraries(euicc-drivers setupapi)
+    target_sources(euicc-drivers PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_common.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_win32.c
+    )
+endif()
 
 if(LPAC_WITH_APDU_GBINDER)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_GBINDER")
@@ -95,6 +101,18 @@ if (LPAC_WITH_APDU_QMI_QRTR)
 
     if (LPAC_DYNAMIC_DRIVERS)
         list(APPEND LIBEUICC_DRIVERS_REQUIRES "qrtr-glib")
+    endif ()
+endif ()
+
+if (LPAC_WITH_APDU_UQMI)
+    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_UQMI)
+    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/uqmi.c)
+
+    include(CheckSymbolExists)
+    check_symbol_exists(pidfd_spawn "spawn.h" HAVE_PIDFD_SPAWN)
+    check_symbol_exists(P_PIDFD "linux/wait.h" HAVE_WAITID_PIDFD)
+    if (HAVE_PIDFD_SPAWN AND HAVE_WAITID_PIDFD)
+        target_compile_definitions(euicc-drivers PRIVATE HAVE_PIDFD)
     endif ()
 endif ()
 
