@@ -101,15 +101,6 @@ static int setup_mss(uint8_t *mss) {
     return 0;
 }
 
-int main_init(void) {
-    int ret = 0;
-    if ((ret = main_init_driver()) != 0)
-        return ret;
-    if ((ret = main_init_euicc()) != 0)
-        return ret;
-    return 0;
-}
-
 int main_init_driver(void) {
     const char *apdu_driver = getenv(ENV_APDU_DRIVER);
     const char *http_driver = getenv(ENV_HTTP_DRIVER);

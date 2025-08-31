@@ -5,8 +5,6 @@
 
 extern struct euicc_ctx euicc_ctx;
 
-int main_init(void);
-
 int main_init_driver(void);
 
 int main_init_euicc(void);

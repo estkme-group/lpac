@@ -13,8 +13,10 @@ static const struct applet_entry *applets[] = {
 };
 
 static int applet_main(const int argc, char **argv) {
-    const int ret = main_init();
-    if (ret != 0)
+    int ret = 0;
+    if ((ret = main_init_driver()) != 0)
+        return ret;
+    if ((ret = main_init_euicc()) != 0)
         return ret;
     return applet_entry(argc, argv, applets);
 }

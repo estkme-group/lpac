@@ -24,10 +24,9 @@ int applet_entry(const int argc, char **argv, const struct applet_entry **entrie
     }
 
     for (int i = 0; entries[i] != NULL; i++) {
-        const struct applet_entry *entry = entries[i];
-        if (strcmp(argv[1], entry->name) != 0)
+        if (strcmp(argv[1], entries[i]->name) != 0)
             continue;
-        return entry->main(argc - 1, argv + 1);
+        return entries[i]->main(argc - 1, argv + 1);
     }
 
     printf("Unknown command: %s\n", argv[1]);
