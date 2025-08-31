@@ -43,10 +43,8 @@
 
 A boolean type environment variable can be set to enable or disable a feature.
 
-The following values are recognized (case-insensitive):
+The following values are recognized as **enabled** (case-insensitive): `1`, `y`, `on`, `yes`, `true`
 
-- `1`
-- `y`
-- `on`
-- `yes`
-- `true`
+The following values are recognized as **disabled** (case-insensitive): `0`, `n`, `off`, `no`, `false`
+
+Any other value will result in the default being used.

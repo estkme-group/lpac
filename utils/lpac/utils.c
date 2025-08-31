@@ -19,12 +19,23 @@ bool getenv_bool_or_default(const char *name, const bool default_value) {
     if (value == NULL || strlen(value) == 0)
         return default_value;
     // clang-format off
-    return strcasecmp(value, "1") == 0
+    bool test = false;
+    test = strcasecmp(value, "1") == 0
         || strcasecmp(value, "y") == 0
         || strcasecmp(value, "on") == 0
         || strcasecmp(value, "yes") == 0
         || strcasecmp(value, "true") == 0;
+    if (test)
+        return true;
+    test = strcasecmp(value, "0") == 0
+        || strcasecmp(value, "n") == 0
+        || strcasecmp(value, "off") == 0
+        || strcasecmp(value, "no") == 0
+        || strcasecmp(value, "false") == 0;
+    if (test)
+        return false;
     // clang-format on
+    return default_value;
 }
 
 int getenv_int_or_default(const char *name, const int default_value) {
