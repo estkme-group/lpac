@@ -25,12 +25,28 @@
 * `LPAC_APDU_QMI_UIM_SLOT`: specify which UIM slot will be used by QMI APDU backend. (default: 1, slot number starts from 1)
 * `LPAC_APDU_QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
 * `LPAC_APDU_MBIM_UIM_SLOT`: specify which UIM slot will be used by MBIM APDU backend. (default: 1, slot number starts from 1)
-* `LPAC_APDU_MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. (boolean)
+* `LPAC_APDU_MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. ([boolean])
 * `LPAC_APDU_MBIM_DEVICE`: specify which MBIM device will be used by MBIM APDU backend. (default: `/dev/cdc-wdm0`)
 
 ## Debug
 
 * `LIBEUICC_DEBUG_APDU`: enable debug output for APDU.
 * `LIBEUICC_DEBUG_HTTP`: enable debug output for HTTP.
-* `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend. (boolean)
-* `LPAC_APDU_GBINDER_DEBUG`: enable debug output for GBinder APDU backend. (boolean)
+* `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend. ([boolean])
+* `LPAC_APDU_GBINDER_DEBUG`: enable debug output for GBinder APDU backend. ([boolean])
+
+## Data Types
+
+[boolean]: #boolean-type
+
+### Boolean Type
+
+A boolean type environment variable can be set to enable or disable a feature.
+
+The following values are recognized (case-insensitive):
+
+- `1`
+- `y`
+- `on`
+- `yes`
+- `true`

@@ -18,9 +18,13 @@ bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
     if (value == NULL || strlen(value) == 0)
         return default_value;
-    if (isdigit(value[0]))
-        return strtol(value, NULL, 0) != 0;
-    return strcasecmp(value, "y") == 0 || strcasecmp(value, "yes") == 0 || strcasecmp(value, "true") == 0;
+    // clang-format off
+    return strcasecmp(value, "1") == 0
+        || strcasecmp(value, "y") == 0
+        || strcasecmp(value, "on") == 0
+        || strcasecmp(value, "yes") == 0
+        || strcasecmp(value, "true") == 0;
+    // clang-format on
 }
 
 int getenv_int_or_default(const char *name, const int default_value) {
