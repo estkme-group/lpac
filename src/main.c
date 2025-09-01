@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include <driver.h>
+#include <errno.h>
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
 #include <lpac/utils.h>
@@ -31,7 +32,8 @@
 #define ENV_APDU_DEBUG ENV_APDU_DRIVER "_DEBUG"
 
 #define ENV_ISD_R_AID CUSTOM_ENV_NAME(ISD_R_AID)
-#define ISD_R_AID_MAX_LENGTH 16
+#define ISD_R_AID_MIN_LENGTH 2
+#define ISD_R_AID_MAX_LENGTH 32
 
 #define ENV_ES10X_MSS CUSTOM_ENV_NAME(ES10X_MSS)
 #define ES10X_MSS_MIN_VALUE 6
@@ -68,40 +70,30 @@ static const struct applet_entry *applets[] = {
 static int euicc_ctx_inited = 0;
 struct euicc_ctx euicc_ctx = {0};
 
-static int setup_aid(const uint8_t **aid, uint8_t *aid_len) {
+static int setup_isdr_aid(const uint8_t **aid, uint8_t *aid_len) {
     *aid = NULL;
     *aid_len = 0;
 
-    const char *value = getenv(ENV_ISD_R_AID);
-    if (value == NULL)
-        return 0;
-
-    uint8_t *parsed = malloc(ISD_R_AID_MAX_LENGTH);
-    const int n = euicc_hexutil_hex2bin(parsed, ISD_R_AID_MAX_LENGTH, value);
-    if (n < 1)
+    const char *value = getenv_or_default(ENV_ISD_R_AID, "A0000005591010FFFFFFFF8900000100");
+    const size_t n = strlen(value);
+    if (n % 2 != 0 || n < ISD_R_AID_MIN_LENGTH || n > ISD_R_AID_MAX_LENGTH)
         return -1;
 
-    *aid = parsed;
-    *aid_len = (uint8_t)n;
-    return 0;
+    *aid_len = (uint8_t)n / 2;
+    *aid = calloc(*aid_len, sizeof(uint8_t));
+    return euicc_hexutil_hex2bin_r((uint8_t *)*aid, *aid_len, value, n);
 }
 
-static int setup_mss(uint8_t *mss) {
+static int setup_es10x_mss(uint8_t *mss) {
     *mss = 0;
 
-    const char *value = getenv(ENV_ES10X_MSS);
-    if (value == NULL)
+    const long value = getenv_or_default(ENV_ES10X_MSS, (long)0);
+    if (value == 0)
         return 0;
-
-    const long parsed = strtol(value, NULL, 10);
-    if (parsed == 0)
-        return 0;
-    if (parsed < ES10X_MSS_MIN_VALUE)
-        return -1;
-    if (parsed > ES10X_MSS_MAX_VALUE)
+    if (errno == ERANGE || value < ES10X_MSS_MIN_VALUE || value > ES10X_MSS_MAX_VALUE)
         return -1;
 
-    *mss = (uint8_t)parsed;
+    *mss = (uint8_t)value;
     return 0;
 }
 
@@ -123,11 +115,11 @@ static int setup_logger(FILE **apdu_log_fp, FILE **http_log_fp) {
 }
 
 int main_init_euicc(void) {
-    if (setup_aid(&euicc_ctx.aid, &euicc_ctx.aid_len)) {
+    if (setup_isdr_aid(&euicc_ctx.aid, &euicc_ctx.aid_len) < 0) {
         jprint_error("euicc_init", "invalid custom ISD-R applet id given");
         return -1;
     }
-    if (setup_mss(&euicc_ctx.es10x_mss)) {
+    if (setup_es10x_mss(&euicc_ctx.es10x_mss) < 0) {
         jprint_error("euicc_init", "invalid custom ES10x MSS given");
         return -1;
     }
