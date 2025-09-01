@@ -26,6 +26,9 @@
 #    include <stringapiset.h>
 #endif
 
+#define ENV_HTTP_DEBUG ENV_HTTP_DRIVER "_DEBUG"
+#define ENV_APDU_DEBUG ENV_APDU_DRIVER "_DEBUG"
+
 #define ENV_ISD_R_AID CUSTOM_ENV_NAME(ISD_R_AID)
 #define ISD_R_AID_MAX_LENGTH 16
 
@@ -101,6 +104,23 @@ static int setup_mss(uint8_t *mss) {
     return 0;
 }
 
+int setup_logger(FILE **apdu_log_fp, FILE **http_log_fp) {
+    set_deprecated_env_name(ENV_HTTP_DEBUG, "LIBEUICC_DEBUG_APDU");
+    set_deprecated_env_name(ENV_HTTP_DEBUG, "LIBEUICC_DEBUG_HTTP");
+
+    *apdu_log_fp = NULL;
+    *http_log_fp = NULL;
+
+    if (stderr == NULL)
+        return -1;
+
+    if (getenv_or_default(ENV_APDU_DEBUG, (bool)false))
+        *apdu_log_fp = stderr;
+    if (getenv_or_default(ENV_HTTP_DEBUG, (bool)false))
+        *http_log_fp = stderr;
+    return 0;
+}
+
 int main_init_euicc(void) {
     if (setup_aid(&euicc_ctx.aid, &euicc_ctx.aid_len)) {
         jprint_error("euicc_init", "invalid custom ISD-R applet id given");
@@ -108,6 +128,10 @@ int main_init_euicc(void) {
     }
     if (setup_mss(&euicc_ctx.es10x_mss)) {
         jprint_error("euicc_init", "invalid custom ES10x MSS given");
+        return -1;
+    }
+    if (setup_logger(&euicc_ctx.apdu.log_fp, &euicc_ctx.http.log_fp)) {
+        jprint_error("euicc_init", "invalid log file given");
         return -1;
     }
     if (euicc_init(&euicc_ctx)) {
