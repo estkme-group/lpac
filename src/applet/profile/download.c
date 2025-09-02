@@ -101,9 +101,8 @@ static int applet_main(int argc, char **argv) {
             break;
         case 'a':
             activation_code = strdup(optarg);
-            if (strncmp(activation_code, "LPA:", 4) == 0) {
+            if (strncasecmp(activation_code, "LPA:", 4) == 0)
                 activation_code += 4; // ignore uri scheme
-            }
             break;
         case 'p':
             interactive_preview = 1;
