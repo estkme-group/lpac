@@ -14,8 +14,9 @@ static const struct applet_entry *applets[] = {
 };
 
 int applet_profile_main(const int argc, char **argv) {
-    const int ret = main_init_euicc();
-    if (ret != 0)
-        return ret;
+    if (main_init_driver() != 0)
+        return -1;
+    if (main_init_euicc() != 0)
+        return -1;
     return applet_entry(argc, argv, applets);
 }

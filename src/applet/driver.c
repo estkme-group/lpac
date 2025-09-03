@@ -1,8 +1,10 @@
 #include "driver.h"
 
 #include "driver/driver.h"
+#include "main.h"
 
 #include <applet.h>
+#include <string.h>
 
 static const struct applet_entry *applets[] = {
     &(struct applet_entry){.name = "apdu", .main = euicc_driver_main_apdu},
@@ -11,4 +13,11 @@ static const struct applet_entry *applets[] = {
     NULL,
 };
 
-int applet_driver_main(const int argc, char **argv) { return applet_entry(argc, argv, applets); }
+int applet_driver_main(const int argc, char **argv) {
+    if (strcmp(argv[1], "list") == 0)
+        goto skip_init;
+    if (main_init_driver() != 0)
+        return -1;
+skip_init:
+    return applet_entry(argc, argv, applets);
+}

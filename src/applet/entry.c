@@ -3,9 +3,11 @@
 #include <applet.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "chip/applet.h"
 #include "driver.h"
+#include "main.h"
 #include "notification/applet.h"
 #include "profile/applet.h"
 #include "version.h"
