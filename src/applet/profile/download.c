@@ -1,4 +1,5 @@
-#include "download.h"
+#include "applet.h"
+
 #include "main.h"
 
 #include <euicc/es10a.h>

@@ -1,18 +1,6 @@
-#include "profile.h"
+#include "applet.h"
 
 #include "main.h"
-#include "profile/delete.h"
-#include "profile/disable.h"
-#include "profile/discovery.h"
-#include "profile/download.h"
-#include "profile/enable.h"
-#include "profile/list.h"
-#include "profile/nickname.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 static const struct applet_entry *applets[] = {
     &applet_profile_list,   &applet_profile_enable,   &applet_profile_disable,   &applet_profile_nickname,

@@ -1,4 +1,5 @@
-#include "process.h"
+#include "applet.h"
+
 #include "notification_common.h"
 
 #include <euicc/es10b.h>

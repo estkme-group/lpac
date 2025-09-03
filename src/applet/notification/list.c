@@ -1,4 +1,4 @@
-#include "list.h"
+#include "applet.h"
 
 #include "main.h"
 #include "notification_common.h"

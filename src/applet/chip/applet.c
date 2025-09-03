@@ -1,14 +1,6 @@
-#include "chip.h"
+#include "applet.h"
 
-#include "chip/defaultsmdp.h"
-#include "chip/info.h"
-#include "chip/purge.h"
 #include "main.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 static const struct applet_entry *applets[] = {
     &applet_chip_info,

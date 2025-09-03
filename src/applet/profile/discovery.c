@@ -1,4 +1,5 @@
-#include "discovery.h"
+#include "applet.h"
+
 #include "main.h"
 
 #include <euicc/es10b.h>

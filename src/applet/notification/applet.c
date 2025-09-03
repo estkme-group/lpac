@@ -1,16 +1,6 @@
-#include "notification.h"
+#include "applet.h"
 
 #include "main.h"
-#include "notification/dump.h"
-#include "notification/list.h"
-#include "notification/process.h"
-#include "notification/remove.h"
-#include "notification/replay.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 static const struct applet_entry *applets[] = {
     &applet_notification_list, &applet_notification_process, &applet_notification_remove,

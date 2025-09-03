@@ -1,14 +1,13 @@
 #include "main.h"
 
 #include "applet.h"
-#include "applet/chip.h"
-#include "applet/notification.h"
-#include "applet/profile.h"
+#include "applet/chip/applet.h"
+#include "applet/notification/applet.h"
+#include "applet/profile/applet.h"
 #include "applet/version.h"
 
 #include <locale.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 

@@ -1,5 +1,5 @@
+#include "applet.h"
 #include "notification_common.h"
-#include "process.h"
 
 #include <euicc/es10b.h>
 #include <euicc/es10c.h>
