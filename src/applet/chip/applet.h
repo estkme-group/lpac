@@ -1,11 +1,9 @@
 #pragma once
 
-#include <applet.h>
+int applet_chip_main(int argc, char **argv);
 
-extern struct applet_entry applet_chip;
+int applet_chip_info_main(int argc, char **argv);
 
-extern struct applet_entry applet_chip_defaultsmdp;
+int applet_chip_default_smdp_main(int argc, char **argv);
 
-extern struct applet_entry applet_chip_info;
-
-extern struct applet_entry applet_chip_purge;
+int applet_chip_purge_main(int argc, char **argv);

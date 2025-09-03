@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
+int applet_notification_list_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
     _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
     cJSON *jdata = NULL;
 
@@ -40,8 +40,3 @@ static int applet_main(__attribute__((unused)) int argc, __attribute__((unused))
 
     return 0;
 }
-
-struct applet_entry applet_notification_list = {
-    .name = "list",
-    .main = applet_main,
-};

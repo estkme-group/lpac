@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
+int applet_chip_info_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
     _cleanup_free_ char *eid = NULL;
     _cleanup_(es10a_euicc_configured_addresses_free) struct es10a_euicc_configured_addresses addresses;
     _cleanup_es10b_rat_list_ struct es10b_rat *ratList;
@@ -156,8 +156,3 @@ static int applet_main(__attribute__((unused)) int argc, __attribute__((unused))
 
     return 0;
 }
-
-struct applet_entry applet_chip_info = {
-    .name = "info",
-    .main = applet_main,
-};

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
+int applet_profile_list_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
     _cleanup_es10c_profile_info_list_ struct es10c_profile_info_list *profiles;
     struct es10c_profile_info_list *rptr;
     cJSON *jdata = NULL;
@@ -45,8 +45,3 @@ static int applet_main(__attribute__((unused)) int argc, __attribute__((unused))
 
     return 0;
 }
-
-struct applet_entry applet_profile_list = {
-    .name = "list",
-    .main = applet_main,
-};

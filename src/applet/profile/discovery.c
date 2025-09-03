@@ -14,7 +14,7 @@
 
 static const char *opt_string = "s:i:h?";
 
-static int applet_main(int argc, char **argv) {
+int applet_profile_discovery_main(int argc, char **argv) {
     int fret;
 
     int opt;
@@ -102,8 +102,3 @@ exit:
     euicc_http_cleanup(&euicc_ctx);
     return fret;
 }
-
-struct applet_entry applet_profile_discovery = {
-    .name = "discovery",
-    .main = applet_main,
-};

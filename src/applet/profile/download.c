@@ -66,7 +66,7 @@ static cJSON *build_download_result_json(const struct es10b_load_bound_profile_p
     return jdata;
 }
 
-static int applet_main(int argc, char **argv) {
+int applet_profile_download_main(const int argc, char **argv) {
     int fret;
     const char *error_function_name = NULL;
     _cleanup_free_ char *error_detail = NULL;
@@ -304,8 +304,3 @@ exit:
     euicc_http_cleanup(&euicc_ctx);
     return fret;
 }
-
-struct applet_entry applet_profile_download = {
-    .name = "download",
-    .main = applet_main,
-};

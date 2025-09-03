@@ -34,7 +34,7 @@ static int _delete_single(uint32_t seqNumber) {
     return 0;
 }
 
-static int applet_main(int argc, char **argv) {
+int applet_notification_remove_main(int argc, char **argv) {
     static const char *opt_string = "ah?";
 
     int fret = 0;
@@ -100,8 +100,3 @@ static int applet_main(int argc, char **argv) {
 
     return fret;
 }
-
-struct applet_entry applet_notification_remove = {
-    .name = "remove",
-    .main = applet_main,
-};

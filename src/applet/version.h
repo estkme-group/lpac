@@ -1,5 +1,3 @@
 #pragma once
 
-#include <applet.h>
-
-extern struct applet_entry applet_version;
+int applet_version_main(int argc, char **argv);

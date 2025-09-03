@@ -2,14 +2,14 @@
 
 #include <applet.h>
 
-extern struct applet_entry applet_notification;
+int applet_notification_main(int argc, char **argv);
 
-extern struct applet_entry applet_notification_dump;
+int applet_notification_list_main(int argc, char **argv);
 
-extern struct applet_entry applet_notification_list;
+int applet_notification_process_main(int argc, char **argv);
 
-extern struct applet_entry applet_notification_process;
+int applet_notification_remove_main(int argc, char **argv);
 
-extern struct applet_entry applet_notification_remove;
+int applet_notification_dump_main(int argc, char **argv);
 
-extern struct applet_entry applet_notification_replay;
+int applet_notification_replay_main(int argc, char **argv);

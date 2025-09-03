@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-static int applet_main(int argc, char **argv) {
+int applet_profile_delete_main(const int argc, char **argv) {
     int ret;
     const char *param;
 
@@ -46,8 +46,3 @@ static int applet_main(int argc, char **argv) {
 
     return 0;
 }
-
-struct applet_entry applet_profile_delete = {
-    .name = "delete",
-    .main = applet_main,
-};

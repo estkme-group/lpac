@@ -75,7 +75,7 @@ static int handle_notification(const uint32_t seqNumber, const struct es10b_pend
     return 0;
 }
 
-static int applet_main(__attribute__((unused)) const int argc, __attribute__((unused)) char **argv) {
+int applet_notification_replay_main(__attribute__((unused)) const int argc, __attribute__((unused)) char **argv) {
     if (isatty(fileno(stdin))) {
         jprint_error("This applet must be run with input redirection from a file or pipe.", NULL);
         return -1;
@@ -114,8 +114,3 @@ static int applet_main(__attribute__((unused)) const int argc, __attribute__((un
 
     return 0;
 }
-
-struct applet_entry applet_notification_replay = {
-    .name = "replay",
-    .main = applet_main,
-};

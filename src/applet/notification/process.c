@@ -56,7 +56,7 @@ static int _process_single(uint32_t seqNumber, uint8_t autoremove) {
     return 0;
 }
 
-static int applet_main(int argc, char **argv) {
+int applet_notification_process_main(int argc, char **argv) {
     static const char *opt_string = "arh?";
 
     int fret = 0;
@@ -126,8 +126,3 @@ static int applet_main(int argc, char **argv) {
 
     return fret;
 }
-
-struct applet_entry applet_notification_process = {
-    .name = "process",
-    .main = applet_main,
-};

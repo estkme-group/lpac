@@ -2,18 +2,18 @@
 
 #include <applet.h>
 
-extern struct applet_entry applet_profile;
+int applet_profile_main(int argc, char **argv);
 
-extern struct applet_entry applet_profile_delete;
+int applet_profile_list_main(int argc, char **argv);
 
-extern struct applet_entry applet_profile_disable;
+int applet_profile_enable_main(int argc, char **argv);
 
-extern struct applet_entry applet_profile_discovery;
+int applet_profile_delete_main(int argc, char **argv);
 
-extern struct applet_entry applet_profile_download;
+int applet_profile_disable_main(int argc, char **argv);
 
-extern struct applet_entry applet_profile_enable;
+int applet_profile_nickname_main(int argc, char **argv);
 
-extern struct applet_entry applet_profile_list;
+int applet_profile_download_main(int argc, char **argv);
 
-extern struct applet_entry applet_profile_nickname;
+int applet_profile_discovery_main(int argc, char **argv);

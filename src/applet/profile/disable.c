@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static int applet_main(int argc, char **argv) {
+int applet_profile_disable_main(const int argc, char **argv) {
     int ret;
     const char *param;
     int refreshflag;
@@ -54,8 +54,3 @@ static int applet_main(int argc, char **argv) {
 
     return 0;
 }
-
-struct applet_entry applet_profile_disable = {
-    .name = "disable",
-    .main = applet_main,
-};
