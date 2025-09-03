@@ -14,7 +14,7 @@ static const struct applet_entry *applets[] = {
 };
 
 int applet_driver_main(const int argc, char **argv) {
-    if (strcmp(argv[1], "list") == 0)
+    if (argc > 1 && strcmp(argv[1], "list") == 0)
         goto skip_init;
     if (main_init_driver() != 0)
         return -1;

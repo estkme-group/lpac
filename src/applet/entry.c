@@ -12,6 +12,8 @@
 #include "profile/applet.h"
 #include "version.h"
 
+#include <stdio.h>
+
 static const struct applet_entry *applets[] = {
     &(struct applet_entry){.name = "driver", .main = applet_driver_main},
     &(struct applet_entry){.name = "chip", .main = applet_chip_main},
@@ -21,4 +23,9 @@ static const struct applet_entry *applets[] = {
     NULL,
 };
 
-int applet_main(const int argc, char **argv) { return applet_entry(argc, argv, applets); }
+int applet_main(const int argc, char **argv) {
+    const int ret = applet_entry(argc, argv, applets);
+    fflush(stdout);
+    fflush(stderr);
+    return ret;
+}
