@@ -42,13 +42,6 @@ if(UNIX)
     endif()
 endif()
 
-if(WIN32)
-    add_subdirectory(dlfcn-win32)
-    set(DL_LIBRARY dlfcn-win32)
-else()
-    set(DL_LIBRARY dl)
-endif()
-
 if(CPACK_GENERATOR)
     set(CPACK_PACKAGE_VENDOR "eSTK.me Group")
 
