@@ -3,13 +3,13 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BASH_RED "\033[0;31m"
-#define BASH_GREEN "\033[0;32m"
-#define BASH_CLEAR "\033[0m"
+#define BASH_RED 31
+#define BASH_GREEN 32
+#define BASH_CLEAR 0
 
-static void bash_colorize(FILE *fp, const char *color) {
+static void bash_colorize(FILE *fp, const int color) {
     if (isatty(fileno(fp)))
-        fputs(color, fp);
+        fprintf(fp, "\033[%dm", color);
 }
 
 static void print_hex(FILE *fp, const uint8_t *data, const uint32_t length) {
@@ -26,8 +26,7 @@ inline void euicc_apdu_request_print(FILE *fp, const struct apdu_request *req, c
     bash_colorize(fp, BASH_GREEN);
     fprintf(fp, "[DEBUG] [APDU] [TX] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X", req->cla, req->ins, req->p1,
             req->p2, req->length);
-    const uint32_t data_len = req_len - sizeof(struct apdu_request);
-    print_hex(fp, req->data, data_len);
+    print_hex(fp, req->data, req_len - sizeof(struct apdu_request));
     bash_colorize(fp, BASH_CLEAR);
     fputc('\n', fp);
 }
