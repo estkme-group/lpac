@@ -1,6 +1,6 @@
 #include "logger.h"
 
-void euicc_apdu_request_print(FILE *fp, const struct apdu_request *req, const uint32_t request_len) {
+inline void euicc_apdu_request_print(FILE *fp, const struct apdu_request *req, const uint32_t request_len) {
     if (fp == NULL)
         return;
     fprintf(fp, "[DEBUG] [APDU] [TX] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X, Data: ", req->cla, req->ins,
@@ -10,7 +10,7 @@ void euicc_apdu_request_print(FILE *fp, const struct apdu_request *req, const ui
     fprintf(fp, "\n");
 }
 
-void euicc_apdu_response_print(FILE *fp, const struct apdu_response *resp) {
+inline void euicc_apdu_response_print(FILE *fp, const struct apdu_response *resp) {
     if (fp == NULL)
         return;
     fprintf(fp, "[DEBUG] [APDU] [RX] SW1: %02X, SW2: %02X, Data: ", resp->sw1, resp->sw2);
@@ -19,19 +19,19 @@ void euicc_apdu_response_print(FILE *fp, const struct apdu_response *resp) {
     fprintf(fp, "\n");
 }
 
-void euicc_http_request_print(FILE *fp, const char *url, const char *tx) {
+inline void euicc_http_request_print(FILE *fp, const char *url, const char *tx) {
     if (fp == NULL)
         return;
     fprintf(fp, "[DEBUG] [HTTP] [TX] url: %s, data: %s\n", url, tx);
 }
 
-void euicc_http_response_print(FILE *fp, const uint32_t rcode, const char *rx) {
+inline void euicc_http_response_print(FILE *fp, const uint32_t rcode, const char *rx) {
     if (fp == NULL)
         return;
     fprintf(fp, "[DEBUG] [HTTP] [RX] rcode: %d, data: %s\n", rcode, rx);
 }
 
-void euicc_unhandled_tag(FILE *fp, const struct euicc_derutil_node *node) {
+inline void euicc_unhandled_tag(FILE *fp, const struct euicc_derutil_node *node) {
     if (fp == NULL)
         return;
     fprintf(fp, "\n[PLEASE REPORT][TODO][TAG %02X]: ", node->tag);
