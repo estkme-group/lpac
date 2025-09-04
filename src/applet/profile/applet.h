@@ -6,7 +6,7 @@ int applet_profile_main(int argc, char **argv);
 
 int applet_profile_list_main(int argc, char **argv);
 
-int applet_profile_enable_main(int argc, char **argv);
+int applet_profile_operation_main(int argc, char **argv);
 
 int applet_profile_delete_main(int argc, char **argv);
 
