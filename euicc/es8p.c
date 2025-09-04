@@ -5,8 +5,6 @@
 #include "hexutil.h"
 #include "logger.h"
 
-#include <inttypes.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

@@ -2,7 +2,6 @@
 #include "es9p_errors.h"
 #include "logger.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
