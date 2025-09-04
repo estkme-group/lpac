@@ -13,6 +13,9 @@ static void bash_colorize(FILE *fp, const char *color) {
 }
 
 static void print_hex(FILE *fp, const uint8_t *data, const uint32_t length) {
+    if (length == 0)
+        return;
+    fputs(", Data:", fp);
     for (uint32_t i = 0; i < length; i++)
         fprintf(fp, " %02X", data[i] & 0xFF);
 }
@@ -24,8 +27,6 @@ inline void euicc_apdu_request_print(FILE *fp, const struct apdu_request *req, c
     fprintf(fp, "[DEBUG] [APDU] [TX] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X", req->cla, req->ins, req->p1,
             req->p2, req->length);
     const uint32_t data_len = req_len - sizeof(struct apdu_request);
-    if (data_len > 0)
-        fputs(", Data:", fp);
     print_hex(fp, req->data, data_len);
     bash_colorize(fp, BASH_CLEAR);
     fputc('\n', fp);
@@ -36,8 +37,6 @@ inline void euicc_apdu_response_print(FILE *fp, const struct apdu_response *resp
         return;
     bash_colorize(fp, BASH_RED);
     fprintf(fp, "[DEBUG] [APDU] [RX] SW1: %02X, SW2: %02X", resp->sw1, resp->sw2);
-    if (resp->length > 0)
-        fputs(", Data:", fp);
     print_hex(fp, resp->data, resp->length);
     bash_colorize(fp, BASH_CLEAR);
     fputc('\n', fp);
