@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <cjson/cJSON_ex.h>
+#include <cjson-ext/cJSON_ex.h>
 
 static const char *lpa_header[] = {
     "User-Agent: gsma-rsp-lpad",
