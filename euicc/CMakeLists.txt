@@ -1,5 +1,10 @@
 option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" OFF)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} LIB_EUICC_SRCS)
+
+set(CMAKE_C_STANDARD 90)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS_DEFAULT OFF)
+
 if(LPAC_DYNAMIC_LIBEUICC)
     add_library(euicc SHARED ${LIB_EUICC_SRCS})
 else()

@@ -6,6 +6,8 @@
 
 int euicc_hexutil_bin2hex(char *output, uint32_t output_len, const uint8_t *bin, uint32_t bin_len) {
     const char hexDigits[] = "0123456789abcdef";
+    uint32_t i;
+    uint8_t byte;
 
     if (!bin || !output) {
         return -1;
@@ -15,8 +17,8 @@ int euicc_hexutil_bin2hex(char *output, uint32_t output_len, const uint8_t *bin,
         return -1;
     }
 
-    for (uint32_t i = 0; i < bin_len; ++i) {
-        char byte = bin[i];
+    for (i = 0; i < bin_len; ++i) {
+        byte = bin[i];
         output[2 * i] = hexDigits[(byte >> 4) & 0x0F];
         output[2 * i + 1] = hexDigits[byte & 0x0F];
     }
@@ -31,6 +33,7 @@ int euicc_hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *str)
 
 int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len) {
     uint32_t length;
+    uint32_t i;
 
     if (!str || !output || str_len % 2 != 0) {
         return -1;
@@ -41,7 +44,7 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *st
         return -1;
     }
 
-    for (uint32_t i = 0; i < length; ++i) {
+    for (i = 0; i < length; ++i) {
         char high = str[2 * i];
         char low = str[2 * i + 1];
 
@@ -74,6 +77,7 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *st
 int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *str, uint32_t padding_to) {
     uint32_t str_length;
     uint32_t idx = 0;
+    uint32_t i;
 
     str_length = strlen(str);
 
@@ -85,7 +89,7 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *s
         return -1;
     }
 
-    for (uint32_t i = 0; i < str_length; i += 2) {
+    for (i = 0; i < str_length; i += 2) {
         char high_nibble = (i + 1 < str_length) ? str[i + 1] : 'F';
         char low_nibble = str[i];
 
@@ -120,18 +124,20 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *s
 }
 
 int euicc_hexutil_bin2gsmbcd(char *output, uint32_t output_len, const uint8_t *binData, uint32_t length) {
+    size_t i;
+
     if (euicc_hexutil_bin2hex(output, output_len, binData, length)) {
         return -1;
     }
 
     length = strlen(output);
-    for (size_t i = 0; i < length - 1; i += 2) {
+    for (i = 0; i < length - 1; i += 2) {
         char temp = output[i];
         output[i] = output[i + 1];
         output[i + 1] = temp;
     }
 
-    for (uint32_t i = length - 1; i > 0; i--) {
+    for (i = length - 1; i > 0; i--) {
         if (output[i] != 'f') {
             break;
         }

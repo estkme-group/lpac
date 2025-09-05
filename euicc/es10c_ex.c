@@ -262,6 +262,8 @@ exit:
 }
 
 void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2) {
+    int i;
+
     if (!euiccinfo2) {
         return;
     }
@@ -274,13 +276,13 @@ void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2) {
     free(euiccinfo2->globalplatformVersion);
     free(euiccinfo2->rspCapability);
     if (euiccinfo2->euiccCiPKIdListForVerification) {
-        for (int i = 0; euiccinfo2->euiccCiPKIdListForVerification[i] != NULL; i++) {
+        for (i = 0; euiccinfo2->euiccCiPKIdListForVerification[i] != NULL; i++) {
             free(euiccinfo2->euiccCiPKIdListForVerification[i]);
         }
         free(euiccinfo2->euiccCiPKIdListForVerification);
     }
     if (euiccinfo2->euiccCiPKIdListForSigning) {
-        for (int i = 0; euiccinfo2->euiccCiPKIdListForSigning[i] != NULL; i++) {
+        for (i = 0; euiccinfo2->euiccCiPKIdListForSigning[i] != NULL; i++) {
             free(euiccinfo2->euiccCiPKIdListForSigning[i]);
         }
         free(euiccinfo2->euiccCiPKIdListForSigning);

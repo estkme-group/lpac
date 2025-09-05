@@ -90,6 +90,7 @@ exit:
 static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *api, const char *ikey[],
                            const char *idata[], const char *okey[], const char *oobj, void **optr[]) {
     int fret = 0;
+    int i;
     cJSON *sjroot = NULL;
     char *sbuf = NULL;
     uint32_t rcode;
@@ -101,11 +102,11 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
     strncpy(ctx->http.status.subjectIdentifier, "unknown", sizeof(ctx->http.status.subjectIdentifier));
     strncpy(ctx->http.status.message, "unknown", sizeof(ctx->http.status.message));
 
-    if (!(sjroot = cJSON_CreateObject())) {
+    if (!((sjroot = cJSON_CreateObject()))) {
         goto err;
     }
 
-    for (int i = 0; ikey[i] != NULL; i++) {
+    for (i = 0; ikey[i] != NULL; i++) {
         if (!cJSON_AddStringOrNullToObject(sjroot, ikey[i], idata[i])) {
             goto err;
         }
@@ -214,7 +215,7 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
         }
     }
 
-    for (int i = 0; okey[i] != NULL; i++) {
+    for (i = 0; okey[i] != NULL; i++) {
         cJSON *obj;
 
         obj = cJSON_GetObjectItem(rjroot, okey[i]);
@@ -336,6 +337,7 @@ int es9p_cancel_session_r(struct euicc_ctx *ctx, const char *server_address, con
 int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const char *server_address,
                                const char *transaction_id, const char *b64_authenticate_server_response) {
     int fret = 0;
+    int i;
     cJSON *j_eventEntries = NULL;
     int j_eventEntries_size = 0;
     const char *ikey[] = {"transactionId", "authenticateServerResponse", NULL};
@@ -361,7 +363,7 @@ int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const c
     }
     memset(*smdp_list, 0, sizeof(char *) * (j_eventEntries_size + 1));
 
-    for (int i = 0; i < j_eventEntries_size; i++) {
+    for (i = 0; i < j_eventEntries_size; i++) {
         cJSON *j_event = cJSON_GetArrayItem(j_eventEntries, i);
         cJSON *j_eventType = cJSON_GetObjectItem(j_event, "rspServerAddress");
 
@@ -378,7 +380,7 @@ int es11_authenticate_client_r(struct euicc_ctx *ctx, char ***smdp_list, const c
 
 err:
     if (*smdp_list) {
-        for (int i = 0; i < j_eventEntries_size; i++) {
+        for (i = 0; i < j_eventEntries_size; i++) {
             free((*smdp_list)[i]);
         }
         free(*smdp_list);
@@ -532,10 +534,12 @@ int es9p_handle_notification(struct euicc_ctx *ctx, const char *b64_PendingNotif
 }
 
 void es11_smdp_list_free_all(char **smdp_list) {
-    if (smdp_list) {
-        for (int i = 0; smdp_list[i] != NULL; i++) {
-            free(smdp_list[i]);
-        }
-        free(smdp_list);
+    int i;
+    if (!smdp_list) {
+        return;
     }
+    for (i = 0; smdp_list[i] != NULL; i++) {
+        free(smdp_list[i]);
+    }
+    free(smdp_list);
 }
