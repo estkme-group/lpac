@@ -2,7 +2,14 @@
 
 ## Coding Standard
 
-lpac is written with C99 and compatible with [SGP.22 version 2.2.2](https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf).
+[libeuicc] is written with [C89] and compatible with [SGP.22 version 2.2.2].
+
+other parts are written with [C99].
+
+[C89]: https://en.wikipedia.org/wiki/ANSI_C#C89
+[C99]: https://en.wikipedia.org/wiki/C99
+[libeuicc]: ../euicc
+[SGP.22 version 2.2.2]: https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
 
 ## How to Compile
 
