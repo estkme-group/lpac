@@ -43,10 +43,8 @@ function download {
 function copy-license {
     local OUTPUT="$1"
 
-    cp "$WORKSPACE/src/LICENSE" "$OUTPUT/LICENSE-lpac"
-    cp "$WORKSPACE/euicc/LICENSE" "$OUTPUT/LICENSE-libeuicc"
-    cp "$WORKSPACE/cjson/LICENSE" "$OUTPUT/LICENSE-cjson"
-    cp "$WORKSPACE/dlfcn-win32/LICENSE" "$OUTPUT/LICENSE-dlfcn-win32"
+    mkdir "$OUTPUT/LICENSES"
+    cp -r "$WORKSPACE/LICENSES" "$OUTPUT/LICENSES"
 }
 
 function copy-curl-woa {

@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#include <cjson/cJSON_ex.h>
+#include <cjson-ext/cJSON_ex.h>
 
 #include <ctype.h>
 #include <stdio.h>

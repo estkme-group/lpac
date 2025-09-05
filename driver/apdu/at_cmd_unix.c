@@ -1,6 +1,6 @@
 #include "at_cmd.h"
 
-#include <cjson/cJSON.h>
+#include <cjson-ext/cJSON.h>
 #include <lpac/utils.h>
 
 #include <dirent.h>
