@@ -1,142 +1,82 @@
 #include "hexutil.h"
 
-#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
-int euicc_hexutil_bin2hex(char *output, uint32_t output_len, const uint8_t *bin, uint32_t bin_len) {
-    const char hexDigits[] = "0123456789abcdef";
+inline int euicc_hexutil_hex2bin(uint8_t *output, const uint32_t output_len, const char *input) {
+    return euicc_hexutil_hex2bin_r(output, output_len, input, strlen(input));
+}
 
-    if (!bin || !output) {
+int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const char *input, const uint32_t input_len) {
+    if (output == NULL || input == NULL || (input_len % 2) != 0 || output_len < (input_len / 2)) {
         return -1;
     }
+    uint8_t c, msb = 0;
+    uint32_t bytes = 0;
+    memset(output, 0, output_len);
+    for (uint32_t i = 0; i < input_len; i++) {
+        c = input[i] | ' '; // to lower
+        if ((c < '0' || c > '9') && (c < 'a' || c > 'f')) {
+            return -1; // invalid character
+        }
+        c -= c > '9' ? 'a' - 10 : '0';
+        if (i % 2 == 0) {
+            msb = c;
+        } else {
+            output[bytes++] = msb << 4 | c;
+        }
+    }
+    return (int)bytes;
+}
 
-    if (output_len < 2 * bin_len + 1) {
+int euicc_hexutil_bin2hex(char *output, const uint32_t output_len, const uint8_t *bin, const uint32_t bin_len) {
+    if (output == NULL || bin == NULL || output_len < ((2 * bin_len) + 1)) {
         return -1;
     }
-
-    for (uint32_t i = 0; i < bin_len; ++i) {
-        char byte = bin[i];
-        output[2 * i] = hexDigits[(byte >> 4) & 0x0F];
-        output[2 * i + 1] = hexDigits[byte & 0x0F];
+    uint8_t msb, lsb;
+    memset(output, 0, output_len);
+    for (uint32_t i = 0, j = 0; i < bin_len; ++i) {
+        msb = bin[i] >> 4;
+        lsb = bin[i] & 0xf;
+        output[j++] = (char)(msb + (msb > 9 ? 'a' - 10 : '0'));
+        output[j++] = (char)(lsb + (lsb > 9 ? 'a' - 10 : '0'));
     }
-    output[2 * bin_len] = '\0';
-
     return 0;
 }
 
-int euicc_hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *str) {
-    return euicc_hexutil_hex2bin_r(output, output_len, str, strlen(str));
+int euicc_hexutil_gsmbcd2bin(uint8_t *output, const uint32_t output_len, const char *input, const uint32_t padding_to) {
+    if (output == NULL || input == NULL || output_len < padding_to) {
+        return -1;
+    }
+    uint32_t n = strlen(input);
+    char tmp[n + (n % 2)];
+    memcpy(tmp, input, n);
+    memset(tmp + n, 'f', n % 2); // pad with 'f' if odd
+    const int bytes = euicc_hexutil_hex2bin_r(output, output_len, tmp, n + (n % 2));
+    if (bytes == -1) {
+        return -1;
+    }
+    for (int i = 0; i < bytes; i++) {
+        output[i] = output[i] >> 4 | (output[i] & 0xf) << 4; // swap
+    }
+    memset(output + bytes, 0xff, padding_to - bytes);
+    return bytes;
 }
 
-int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len) {
-    uint32_t length;
-
-    if (!str || !output || str_len % 2 != 0) {
+int euicc_hexutil_bin2gsmbcd(char *output, const uint32_t output_len, const uint8_t *bin, const uint32_t bin_len) {
+    if (output == NULL || bin == NULL || output_len < ((2 * bin_len) + 1)) {
         return -1;
     }
-
-    length = str_len / 2;
-    if (length > output_len) {
+    uint32_t i;
+    uint8_t tmp[bin_len];
+    for (i = 0; i < bin_len; i++) {
+        tmp[i] = bin[i] >> 4 | (bin[i] & 0xf) << 4; // swap
+    }
+    if (euicc_hexutil_bin2hex(output, output_len, tmp, bin_len) != 0) {
         return -1;
     }
-
-    for (uint32_t i = 0; i < length; ++i) {
-        char high = str[2 * i];
-        char low = str[2 * i + 1];
-
-        if (high >= '0' && high <= '9') {
-            high -= '0';
-        } else if (high >= 'a' && high <= 'f') {
-            high = high - 'a' + 10;
-        } else if (high >= 'A' && high <= 'F') {
-            high = high - 'A' + 10;
-        } else {
-            return -1;
-        }
-
-        if (low >= '0' && low <= '9') {
-            low -= '0';
-        } else if (low >= 'a' && low <= 'f') {
-            low = low - 'a' + 10;
-        } else if (low >= 'A' && low <= 'F') {
-            low = low - 'A' + 10;
-        } else {
-            return -1;
-        }
-
-        output[i] = (high << 4) + low;
-    }
-
-    return length;
-}
-
-int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *str, uint32_t padding_to) {
-    uint32_t str_length;
-    uint32_t idx = 0;
-
-    str_length = strlen(str);
-
-    if (output_len < (str_length + 1) / 2) {
-        return -1;
-    }
-
-    if (output_len < padding_to) {
-        return -1;
-    }
-
-    for (uint32_t i = 0; i < str_length; i += 2) {
-        char high_nibble = (i + 1 < str_length) ? str[i + 1] : 'F';
-        char low_nibble = str[i];
-
-        uint8_t high_nibble_val = 0x0;
-        uint8_t low_nibble_val = 0x0;
-
-        if (low_nibble >= '0' && low_nibble <= '9') {
-            low_nibble_val = low_nibble - '0';
-        } else if (low_nibble == 'F' || low_nibble == 'f') {
-            low_nibble_val = 0x0F;
-        } else {
-            return -1;
-        }
-
-        if (high_nibble >= '0' && high_nibble <= '9') {
-            high_nibble_val = high_nibble - '0';
-        } else if (high_nibble == 'F' || high_nibble == 'f') {
-            high_nibble_val = 0xF;
-        } else {
-            return -1;
-        }
-
-        output[idx] = (high_nibble_val << 4) | low_nibble_val;
-        idx++;
-    }
-
-    for (; idx < padding_to; idx++) {
-        output[idx] = 0xFF;
-    }
-
-    return idx;
-}
-
-int euicc_hexutil_bin2gsmbcd(char *output, uint32_t output_len, const uint8_t *binData, uint32_t length) {
-    if (euicc_hexutil_bin2hex(output, output_len, binData, length)) {
-        return -1;
-    }
-
-    length = strlen(output);
-    for (size_t i = 0; i < length - 1; i += 2) {
-        char temp = output[i];
-        output[i] = output[i + 1];
-        output[i + 1] = temp;
-    }
-
-    for (uint32_t i = length - 1; i > 0; i--) {
-        if (output[i] != 'f') {
-            break;
-        }
-        output[i] = '\0';
-    }
-
+    for (i = (2 * bin_len) - 1; i > 0 && output[i] != 'f'; i--)
+        ;
+    output[i] = 0;
     return 0;
 }
