@@ -9,7 +9,6 @@
 
 #define ENV_AT_DEBUG APDU_ENV_NAME(AT, DEBUG)
 #define ENV_AT_DEVICE APDU_ENV_NAME(AT, DEVICE)
-#define ENV_AT_CSIM APDU_ENV_NAME(AT, CSIM)
 
 struct at_userdata;
 
