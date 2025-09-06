@@ -8,8 +8,14 @@
 #define BASH_CLEAR 0
 
 static void bash_colorize(FILE *fp, const int color) {
+#if _WIN32
+    // disable bash colorize on non-unix platform
+    (void)fp;
+    (void)color;
+#else
     if (isatty(fileno(fp)))
         fprintf(fp, "\033[%dm", color);
+#endif
 }
 
 static void euicc_hex_print(FILE *fp, const uint8_t *data, const uint32_t length) {
