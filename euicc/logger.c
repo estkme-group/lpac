@@ -1,74 +1,63 @@
 #include "logger.h"
 
+#include "hexutil.h"
+
+#include <string.h>
 #include <unistd.h>
 
 // Refs: https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-#define COLOR_RED 31
-#define COLOR_GREEN 32
-#define COLOR_CLEAR 0
+#define COLOR_RED "\x1b[0;31m"
+#define COLOR_GREEN "\x1b[0;32m"
+#define COLOR_MAGENTA "\x1b[0;35m"
+#define COLOR_CLEAR "\x1b[0m"
 
-static void colorize(FILE *fp, const int color) {
-#if _WIN32
-    // https://devblogs.microsoft.com/commandline/windows-command-line-introducing-the-windows-pseudo-console-conpty/
-    // Minimum supported version: Windows 10 version 1809
-    if (_isatty(_fileno(fp)))
-#else
-    if (isatty(fileno(fp)))
+#ifdef _WIN32
+#    define isatty _isatty
+#    define fileno _fileno
 #endif
-        fprintf(fp, "\033[0;%dm", color);
-}
 
-static void euicc_hex_print(FILE *fp, const uint8_t *data, const uint32_t length) {
-    for (uint32_t i = 0; i < length; i++)
-        fprintf(fp, " %02X", data[i] & 0xFF);
-}
+#define EMIT_LOG(fp, COLOR, format, ...)                         \
+    if (isatty(fileno(fp)))                                      \
+        fprintf(fp, COLOR format COLOR_CLEAR "\n", __VA_ARGS__); \
+    else                                                         \
+        fprintf(fp, format "\n", __VA_ARGS__);
 
 inline void euicc_apdu_request_print(FILE *fp, const struct apdu_request *req, const uint32_t req_len) {
     if (fp == NULL)
         return;
-    colorize(fp, COLOR_GREEN);
-    fprintf(fp, "[DEBUG] [APDU] [TX] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X, Data:", req->cla, req->ins,
-            req->p1, req->p2, req->length);
-    euicc_hex_print(fp, req->data, req_len - sizeof(struct apdu_request));
-    colorize(fp, COLOR_CLEAR);
-    fputc('\n', fp);
+    const size_t n = req_len - sizeof(struct apdu_request);
+    char output[(n * 2) + 1];
+    euicc_hexutil_bin2hex(output, (n * 2) + 1, req->data, n);
+    EMIT_LOG(fp, COLOR_GREEN, "[DEBUG] [APDU] [TX] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X, Data: %s",
+             req->cla, req->ins, req->p1, req->p2, req->length, output);
 }
 
 inline void euicc_apdu_response_print(FILE *fp, const struct apdu_response *resp) {
     if (fp == NULL)
         return;
-    colorize(fp, COLOR_RED);
-    fprintf(fp, "[DEBUG] [APDU] [RX] SW1: %02X, SW2: %02X, Data:", resp->sw1, resp->sw2);
-    euicc_hex_print(fp, resp->data, resp->length);
-    colorize(fp, COLOR_CLEAR);
-    fputc('\n', fp);
+    const size_t n = resp->length;
+    char output[(n * 2) + 1];
+    euicc_hexutil_bin2hex(output, (n * 2) + 1, resp->data, n);
+    EMIT_LOG(fp, COLOR_RED, "[DEBUG] [APDU] [RX] SW1: %02X, SW2: %02X, Data: %s", resp->sw1, resp->sw2, output);
 }
 
 inline void euicc_http_request_print(FILE *fp, const char *url, const char *tx) {
     if (fp == NULL)
         return;
-    colorize(fp, COLOR_GREEN);
-    fprintf(fp, "[DEBUG] [HTTP] [TX] URL: %s, Data: %s", url, tx);
-    colorize(fp, COLOR_CLEAR);
-    fputc('\n', fp);
+    EMIT_LOG(fp, COLOR_GREEN, "[DEBUG] [HTTP] [TX] URL: %s, Data: %s", url, tx);
 }
 
 inline void euicc_http_response_print(FILE *fp, const uint32_t rcode, const char *rx) {
     if (fp == NULL)
         return;
-    colorize(fp, COLOR_RED);
-    fprintf(fp, "[DEBUG] [HTTP] [RX] RCode: %d, Data: %s", rcode, rx);
-    colorize(fp, COLOR_CLEAR);
-    fputc('\n', fp);
+    EMIT_LOG(fp, COLOR_RED, "[DEBUG] [HTTP] [RX] RCode: %d, Data: %s", rcode, rx);
 }
 
 inline void euicc_unhandled_tag_print(FILE *fp, const struct euicc_derutil_node *node) {
     if (fp == NULL)
         return;
-    fputc('\n', fp);
-    colorize(fp, COLOR_RED);
-    fprintf(fp, "[PLEASE REPORT] [TODO] [TAG %02X]:", node->tag);
-    euicc_hex_print(fp, node->self.ptr, node->self.length);
-    colorize(fp, COLOR_CLEAR);
-    fputc('\n', fp);
+    const size_t n = node->self.length;
+    char output[(n * 2) + 1];
+    euicc_hexutil_bin2hex(output, (n * 2) + 1, node->self.ptr, n);
+    EMIT_LOG(fp, COLOR_MAGENTA, "[PLEASE REPORT] [TODO] [TAG %02X]: %s", node->tag, output);
 }
