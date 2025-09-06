@@ -10,7 +10,7 @@
 void jprint_error(const char *function_name, const char *detail) {
     _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
-    _cleanup_free_ char *jstr = NULL;
+    _cleanup_cjson_free_ char *jstr = NULL;
 
     if (detail == NULL) {
         detail = "";
@@ -33,7 +33,7 @@ void jprint_error(const char *function_name, const char *detail) {
 void jprint_progress(const char *function_name, const char *detail) {
     _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
-    _cleanup_free_ char *jstr = NULL;
+    _cleanup_cjson_free_ char *jstr = NULL;
 
     jroot = cJSON_CreateObject();
     cJSON_AddStringOrNullToObject(jroot, "type", "progress");
@@ -52,7 +52,7 @@ void jprint_progress(const char *function_name, const char *detail) {
 void jprint_progress_obj(const char *function_name, cJSON *jdata) {
     _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
-    _cleanup_free_ char *jstr = NULL;
+    _cleanup_cjson_free_ char *jstr = NULL;
 
     jroot = cJSON_CreateObject();
     cJSON_AddStringOrNullToObject(jroot, "type", "progress");
@@ -75,7 +75,7 @@ void jprint_progress_obj(const char *function_name, cJSON *jdata) {
 void jprint_success(cJSON *jdata) {
     _cleanup_cjson_ cJSON *jroot = NULL;
     cJSON *jpayload = NULL;
-    _cleanup_free_ char *jstr = NULL;
+    _cleanup_cjson_free_ char *jstr = NULL;
 
     jroot = cJSON_CreateObject();
     cJSON_AddStringOrNullToObject(jroot, "type", "lpa");
