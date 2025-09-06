@@ -6,6 +6,7 @@ option(LPAC_WITH_APDU_AT "Build APDU AT Backend" ON)
 option(LPAC_WITH_APDU_GBINDER "Build APDU Gbinder backend for libhybris devices (requires gbinder headers)" OFF)
 option(LPAC_WITH_APDU_QMI "Build QMI backend for Qualcomm devices (requires libqmi)" OFF)
 option(LPAC_WITH_APDU_QMI_QRTR "Build QMI-over-QRTR backend for Qualcomm devices (requires libqrtr and libqmi headers)" OFF)
+option(LPAC_WITH_APDU_UQMI "Build uQMI backend for Qualcomm devices (requires uqmi)" OFF)
 option(LPAC_WITH_APDU_MBIM "Build MBIM backend for MBIM devices (requires libmbim)" OFF)
 
 option(LPAC_WITH_HTTP_CURL "Build HTTP Curl interface" ON)
@@ -94,6 +95,18 @@ if (LPAC_WITH_APDU_QMI_QRTR)
 
     if (LPAC_DYNAMIC_DRIVERS)
         list(APPEND LIBEUICC_DRIVERS_REQUIRES "qrtr-glib")
+    endif ()
+endif ()
+
+if (LPAC_WITH_APDU_UQMI)
+    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_UQMI)
+    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/uqmi.c)
+
+    include(CheckSymbolExists)
+    check_symbol_exists(pidfd_spawn "spawn.h" HAVE_PIDFD_SPAWN)
+    check_symbol_exists(P_PIDFD "linux/wait.h" HAVE_WAITID_PIDFD)
+    if (HAVE_PIDFD_SPAWN AND HAVE_WAITID_PIDFD)
+        target_compile_definitions(euicc-drivers PRIVATE HAVE_PIDFD)
     endif ()
 endif ()
 
