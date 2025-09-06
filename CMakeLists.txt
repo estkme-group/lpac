@@ -8,6 +8,8 @@ project (lpac
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+option(USE_SYSTEM_DEPS "Use system-wide installed dependencies (cJSON)" OFF)
+
 set(LPAC_CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH ${LPAC_CMAKE_MODULE_PATH})
 
@@ -65,51 +67,33 @@ if(CPACK_GENERATOR)
     include(CPack)
 endif()
 
-include(FetchContent)
-FetchContent_Declare(
-    cjson
-    # FIXME: change back to DaveGamble/cJSON if upstream fix it
-    # https://github.com/DaveGamble/cJSON/pull/949
-    # https://github.com/DaveGamble/cJSON/pull/955
-    GIT_REPOSITORY https://github.com/CoelacanthusHex/cJSON
-    GIT_TAG 4818f043bda624b5738384eae3a0189b2bd1f5e1
-    GIT_PROGRESS ON
-    SOURCE_DIR cjson
-)
-if (NOT DEFINED USE_SYSTEM_DEPS)
-    find_package(cJSON)
-    if (NOT cJSON_FOUND)
-        if (NOT NO_NETWORK)
-            set(CJSON_OVERRIDE_BUILD_SHARED_LIBS ON)
-            set(CJSON_BUILD_SHARED_LIBS OFF)
-            set(ENABLE_CJSON_TEST OFF)
-            set(ENABLE_CUSTOM_COMPILER_FLAGS OFF)
-            FetchContent_MakeAvailable(cjson)
-            set(CJSON_LIBRARY cjson)
-            # Force cJSON dynamically link CRT although it's statuc library.
-            set_property(TARGET cjson PROPERTY
-                MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-        else()
-            message(FATAL_ERROR "System cJSON is not found and network access is not permitted!")
-        endif()
-    endif()
-else()
-    if (USE_SYSTEM_DEPS)
-        find_package(cJSON REQUIRED)
-    elseif(NOT NO_NETWORK)
-        set(CJSON_OVERRIDE_BUILD_SHARED_LIBS ON)
-        set(CJSON_BUILD_SHARED_LIBS OFF)
-        set(ENABLE_CJSON_TEST OFF)
-        set(ENABLE_CUSTOM_COMPILER_FLAGS OFF)
-        FetchContent_MakeAvailable(cjson)
-        set(CJSON_LIBRARY cjson)
-        # Force cJSON dynamically link CRT although it's statuc library.
-        set_property(TARGET cjson PROPERTY
+if (USE_SYSTEM_DEPS)
+    find_package(cJSON REQUIRED)
+elseif (NOT NO_NETWORK)
+    set(CJSON_OVERRIDE_BUILD_SHARED_LIBS ON)
+    set(CJSON_BUILD_SHARED_LIBS OFF)
+    set(ENABLE_CJSON_TEST OFF)
+    set(ENABLE_CUSTOM_COMPILER_FLAGS OFF)
+    include(FetchContent)
+    FetchContent_Declare(
+            cjson
+            # FIXME: change back to DaveGamble/cJSON if upstream fix it
+            # https://github.com/DaveGamble/cJSON/pull/949
+            # https://github.com/DaveGamble/cJSON/pull/955
+            GIT_REPOSITORY https://github.com/CoelacanthusHex/cJSON
+            GIT_TAG 4818f043bda624b5738384eae3a0189b2bd1f5e1
+            GIT_PROGRESS ON
+            SOURCE_DIR cjson
+    )
+    FetchContent_MakeAvailable(cjson)
+    set(CJSON_LIBRARY cjson)
+    # Force cJSON dynamically link CRT although it's statuc librgary.
+    set_property(TARGET cjson PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-    else()
-        message(FATAL_ERROR "System cJSON is not found and network access is not permitted!")
-    endif()
-endif()
+else ()
+    message(FATAL_ERROR "System cJSON is not found and network access is not permitted!")
+endif ()
+
 add_subdirectory(cjson-ext)
 add_subdirectory(euicc)
 add_subdirectory(utils)
