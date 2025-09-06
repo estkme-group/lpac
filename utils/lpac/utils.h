@@ -27,6 +27,9 @@
 DEFINE_TRIVIAL_CLEANUP_FUNC(cJSON *, cJSON_Delete);
 #define _cleanup_cjson_ _cleanup_(cJSON_Deletep)
 
+static inline void cJSON_freep(void *p) { cJSON_free(*(void **)p); }
+#define _cleanup_cjson_free_ _cleanup_(cJSON_freep)
+
 DEFINE_TRIVIAL_CLEANUP_FUNC(struct es10b_notification_metadata_list *, es10b_notification_metadata_list_free_all);
 #define _cleanup_es10b_notification_metadata_list_ _cleanup_(es10b_notification_metadata_list_free_allp)
 
