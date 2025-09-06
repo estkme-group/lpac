@@ -3,11 +3,11 @@
 #include <unistd.h>
 
 // Refs: https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-#define VT100_RED 31
-#define VT100_GREEN 32
-#define VT100_CLEAR 0
+#define COLOR_RED 31
+#define COLOR_GREEN 32
+#define COLOR_CLEAR 0
 
-static void vt100_colorize(FILE *fp, const int color) {
+static void colorize(FILE *fp, const int color) {
 #if _WIN32
     // https://devblogs.microsoft.com/commandline/windows-command-line-introducing-the-windows-pseudo-console-conpty/
     // Minimum supported version: Windows 10 version 1809
@@ -26,39 +26,39 @@ static void euicc_hex_print(FILE *fp, const uint8_t *data, const uint32_t length
 inline void euicc_apdu_request_print(FILE *fp, const struct apdu_request *req, const uint32_t req_len) {
     if (fp == NULL)
         return;
-    vt100_colorize(fp, VT100_GREEN);
+    colorize(fp, COLOR_GREEN);
     fprintf(fp, "[DEBUG] [APDU] [TX] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X, Data:", req->cla, req->ins,
             req->p1, req->p2, req->length);
     euicc_hex_print(fp, req->data, req_len - sizeof(struct apdu_request));
-    vt100_colorize(fp, VT100_CLEAR);
+    colorize(fp, COLOR_CLEAR);
     fputc('\n', fp);
 }
 
 inline void euicc_apdu_response_print(FILE *fp, const struct apdu_response *resp) {
     if (fp == NULL)
         return;
-    vt100_colorize(fp, VT100_RED);
+    colorize(fp, COLOR_RED);
     fprintf(fp, "[DEBUG] [APDU] [RX] SW1: %02X, SW2: %02X, Data:", resp->sw1, resp->sw2);
     euicc_hex_print(fp, resp->data, resp->length);
-    vt100_colorize(fp, VT100_CLEAR);
+    colorize(fp, COLOR_CLEAR);
     fputc('\n', fp);
 }
 
 inline void euicc_http_request_print(FILE *fp, const char *url, const char *tx) {
     if (fp == NULL)
         return;
-    vt100_colorize(fp, VT100_GREEN);
+    colorize(fp, COLOR_GREEN);
     fprintf(fp, "[DEBUG] [HTTP] [TX] URL: %s, Data: %s", url, tx);
-    vt100_colorize(fp, VT100_CLEAR);
+    colorize(fp, COLOR_CLEAR);
     fputc('\n', fp);
 }
 
 inline void euicc_http_response_print(FILE *fp, const uint32_t rcode, const char *rx) {
     if (fp == NULL)
         return;
-    vt100_colorize(fp, VT100_RED);
+    colorize(fp, COLOR_RED);
     fprintf(fp, "[DEBUG] [HTTP] [RX] RCode: %d, Data: %s", rcode, rx);
-    vt100_colorize(fp, VT100_CLEAR);
+    colorize(fp, COLOR_CLEAR);
     fputc('\n', fp);
 }
 
@@ -66,9 +66,9 @@ inline void euicc_unhandled_tag_print(FILE *fp, const struct euicc_derutil_node 
     if (fp == NULL)
         return;
     fputc('\n', fp);
-    vt100_colorize(fp, VT100_RED);
+    colorize(fp, COLOR_RED);
     fprintf(fp, "[PLEASE REPORT] [TODO] [TAG %02X]:", node->tag);
     euicc_hex_print(fp, node->self.ptr, node->self.length);
-    vt100_colorize(fp, VT100_CLEAR);
+    colorize(fp, COLOR_CLEAR);
     fputc('\n', fp);
 }
