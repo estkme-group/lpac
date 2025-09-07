@@ -30,8 +30,8 @@
 
 ## Debug
 
-* `LIBEUICC_DEBUG_APDU`: enable debug output for APDU.
-* `LIBEUICC_DEBUG_HTTP`: enable debug output for HTTP.
+* `LPAC_APDU_DEBUG`: enable debug output for APDU. ([boolean])
+* `LPAC_HTTP_DEBUG`: enable debug output for HTTP. ([boolean])
 * `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend. ([boolean])
 * `LPAC_APDU_GBINDER_DEBUG`: enable debug output for GBinder APDU backend. ([boolean])
 

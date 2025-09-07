@@ -105,7 +105,7 @@ static int setup_mss(uint8_t *mss) {
 }
 
 static int setup_logger(FILE **apdu_log_fp, FILE **http_log_fp) {
-    set_deprecated_env_name(ENV_HTTP_DEBUG, "LIBEUICC_DEBUG_APDU");
+    set_deprecated_env_name(ENV_APDU_DEBUG, "LIBEUICC_DEBUG_APDU");
     set_deprecated_env_name(ENV_HTTP_DEBUG, "LIBEUICC_DEBUG_HTTP");
 
     *apdu_log_fp = NULL;
