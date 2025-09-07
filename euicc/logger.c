@@ -28,7 +28,9 @@ inline void euicc_apdu_request_print(FILE *fp, const struct apdu_request *req, c
     const size_t n = req_len - sizeof(struct apdu_request);
     char output[(n * 2) + 1];
     euicc_hexutil_bin2hex(output, (n * 2) + 1, req->data, n);
-    EMIT_LOG(fp, COLOR_GREEN, "[DEBUG] [APDU] [TX] CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X, Data: %s",
+    EMIT_LOG(fp, COLOR_GREEN,
+             "[DEBUG] [APDU] [TX] "
+             "CLA: %02X, INS: %02X, P1: %02X, P2: %02X, Lc: %02X, Data: %s",
              req->cla, req->ins, req->p1, req->p2, req->length, output);
 }
 
@@ -38,26 +40,38 @@ inline void euicc_apdu_response_print(FILE *fp, const struct apdu_response *resp
     const size_t n = resp->length;
     char output[(n * 2) + 1];
     euicc_hexutil_bin2hex(output, (n * 2) + 1, resp->data, n);
-    EMIT_LOG(fp, COLOR_RED, "[DEBUG] [APDU] [RX] SW1: %02X, SW2: %02X, Data: %s", resp->sw1, resp->sw2, output);
+    EMIT_LOG(fp, COLOR_RED,
+             "[DEBUG] [APDU] [RX] "
+             "SW1: %02X, SW2: %02X, Data: %s",
+             resp->sw1, resp->sw2, output);
 }
 
-inline void euicc_http_request_print(FILE *fp, const char *url, const char *tx) {
-    if (fp == NULL)
-        return;
-    EMIT_LOG(fp, COLOR_GREEN, "[DEBUG] [HTTP] [TX] URL: %s, Data: %s", url, tx);
-}
-
-inline void euicc_http_response_print(FILE *fp, const uint32_t rcode, const char *rx) {
-    if (fp == NULL)
-        return;
-    EMIT_LOG(fp, COLOR_RED, "[DEBUG] [HTTP] [RX] RCode: %d, Data: %s", rcode, rx);
-}
-
-inline void euicc_unhandled_tag_print(FILE *fp, const struct euicc_derutil_node *node) {
+inline void euicc_apdu_unhandled_tag_print(FILE *fp, const struct euicc_derutil_node *node) {
     if (fp == NULL)
         return;
     const size_t n = node->self.length;
     char output[(n * 2) + 1];
     euicc_hexutil_bin2hex(output, (n * 2) + 1, node->self.ptr, n);
-    EMIT_LOG(fp, COLOR_MAGENTA, "[PLEASE REPORT] [TODO] [TAG %02X]: %s", node->tag, output);
+    EMIT_LOG(fp, COLOR_MAGENTA,
+             "[DEBUG] [APDU] [UNHANDLED BER-TLV] "
+             "[TAG %02X]: %s",
+             node->tag, output);
+}
+
+inline void euicc_http_request_print(FILE *fp, const char *url, const char *tx) {
+    if (fp == NULL)
+        return;
+    EMIT_LOG(fp, COLOR_GREEN,
+             "[DEBUG] [HTTP] [TX] "
+             "URL: %s, Data: %s",
+             url, tx);
+}
+
+inline void euicc_http_response_print(FILE *fp, const uint32_t rcode, const char *rx) {
+    if (fp == NULL)
+        return;
+    EMIT_LOG(fp, COLOR_RED,
+             "[DEBUG] [HTTP] [RX] "
+             "RCode: %d, Data: %s",
+             rcode, rx);
 }

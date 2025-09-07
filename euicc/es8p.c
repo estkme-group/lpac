@@ -100,7 +100,7 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
         case 0xB6:
         case 0xB7:
         case 0x99:
-            euicc_unhandled_tag_print(NULL, &n_iter); // Assuming logging is not needed here
+            euicc_apdu_unhandled_tag_print(NULL, &n_iter); // Assuming logging is not needed here
             break;
         }
     }
