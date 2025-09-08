@@ -49,7 +49,7 @@ int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
     const int n = vsnprintf(NULL, 0, fmt, args_length);
     va_end(args_length);
 
-    char *formatted = calloc(n + 2 /* CR+LF */ + 1, 1);
+    _cleanup_free_ char *formatted = calloc(n + 2 /* CR+LF */ + 1, 1);
     if (formatted == NULL) {
         va_end(args);
         return -1;
@@ -66,6 +66,5 @@ int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
         fprintf(stderr, "AT_DEBUG_TX: %s", formatted);
 
     int ret = at_write_command(userdata, formatted);
-    free(formatted);
     return ret;
 }

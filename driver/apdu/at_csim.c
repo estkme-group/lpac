@@ -6,7 +6,6 @@
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,14 +38,12 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
 
 static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
-    at_channel_set(userdata, ctx->apdu._internal.logic_channel, NULL);
     at_device_close(userdata);
 }
 
 static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
                                    const uint32_t tx_len) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
-    const char *logic_channel = at_channel_get(userdata, ctx->apdu._internal.logic_channel);
 
     int fret = 0;
     char *response = NULL;
@@ -97,28 +94,23 @@ exit:
 }
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, const uint8_t aid_len) {
-    struct at_userdata *userdata = ctx->apdu.interface->userdata;
-    char **channels = at_channels(userdata);
-
     _cleanup_free_ char *aid_hex = malloc(aid_len * 2 + 1);
     euicc_hexutil_bin2hex(aid_hex, aid_len * 2 + 1, aid, aid_len);
 
     // Send MANAGE CHANNEL open
     const uint8_t manage_open[] = {0x00, 0x70, 0x00, 0x00, 0x01};
-    uint8_t *resp = NULL;
+    _cleanup_free_ uint8_t *resp = NULL;
     uint32_t resp_len = 0;
     if (apdu_interface_transmit(ctx, &resp, &resp_len, manage_open, sizeof(manage_open)) != 0) {
         return -1;
     }
     if (resp_len != 3 || resp[1] != 0x90 || resp[2] != 0x00) {
-        free(resp);
         return -1;
     }
     uint8_t channel_byte = resp[0];
-    free(resp);
 
     // Select AID
-    uint8_t *select_cmd = malloc(5 + aid_len);
+    _cleanup_free_ uint8_t *select_cmd = malloc(5 + aid_len);
     if (select_cmd == NULL) {
         return -1;
     }
@@ -132,44 +124,20 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     resp = NULL;
     resp_len = 0;
     if (apdu_interface_transmit(ctx, &resp, &resp_len, select_cmd, 5 + aid_len) != 0) {
-        free(select_cmd);
         return -1;
     }
-    free(select_cmd);
 
     if (resp_len < 2 || (resp[resp_len - 2] != 0x90 && resp[resp_len - 2] != 0x61)) {
-        free(resp);
         return -1;
     }
-    free(resp);
-
-    // Register channel
-    char channel_str[4];
-    snprintf(channel_str, sizeof(channel_str), "%u", channel_byte);
-    const int channel_id = at_channel_next_id(userdata);
-    if (at_channel_set(userdata, channel_id, channel_str) != 0) {
-        fprintf(stderr, "Failed to register channel %d with identifier '%s'\n", channel_id, channel_str);
-        return -1;
-    }
-    return channel_id;
+    return (int)channel_byte; // channel number
 }
 
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint8_t channel) {
-    struct at_userdata *userdata = ctx->apdu.interface->userdata;
-    char *identifier = at_channel_get(userdata, channel);
-
-    if (identifier == NULL) {
-        return;
-    }
-
-    uint8_t channel_byte = (uint8_t)atoi(identifier);
-    const uint8_t manage_close[] = {0x00, 0x70, 0x80, channel_byte, 0x00};
-    uint8_t *resp = NULL;
+    const uint8_t manage_close[] = {0x00, 0x70, 0x80, channel, 0x00};
+    _cleanup_free_ uint8_t *resp = NULL;
     uint32_t resp_len = 0;
     apdu_interface_transmit(ctx, &resp, &resp_len, manage_close, sizeof(manage_close));
-    free(resp);
-
-    at_channel_set(userdata, channel, NULL);
 }
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {

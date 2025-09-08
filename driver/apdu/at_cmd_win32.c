@@ -78,7 +78,7 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
 int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
     char line[AT_BUFFER_SIZE];
     DWORD bytes_read;
-    char *found_response_data = NULL;
+    _cleanup_free_ char *found_response_data = NULL;
     int result = -1;
     HANDLE hComm = userdata->hComm;
     char *at_read_buffer = userdata->at_read_buffer;
@@ -146,8 +146,7 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
 end:
     if (result == 0 && response != NULL) {
         *response = found_response_data;
-    } else {
-        free(found_response_data);
+        found_response_data = NULL;
     }
     return result;
 }

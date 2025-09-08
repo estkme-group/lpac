@@ -37,14 +37,15 @@ static int enumerate_serial_device_for_linux(cJSON *devices) {
         }
 
         const size_t path_len = strlen(dir_path) + 1 /* SEP */ + strlen(entry->d_name) + 1 /* NUL */;
-        char *full_path = malloc(path_len);
-        snprintf(full_path, path_len, "%s/%s", dir_path, entry->d_name);
+        {
+            _cleanup_free_ char *full_path = malloc(path_len);
+            snprintf(full_path, path_len, "%s/%s", dir_path, entry->d_name);
 
-        cJSON *device = cJSON_CreateObject();
-        cJSON_AddStringToObject(device, "env", full_path);
-        cJSON_AddStringToObject(device, "name", entry->d_name);
-        cJSON_AddItemToArray(devices, device);
-        free(full_path);
+            cJSON *device = cJSON_CreateObject();
+            cJSON_AddStringToObject(device, "env", full_path);
+            cJSON_AddStringToObject(device, "name", entry->d_name);
+            cJSON_AddItemToArray(devices, device);
+        }
     }
     closedir(dir);
     return 0;
@@ -73,7 +74,7 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
 
 int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
     char line[AT_BUFFER_SIZE];
-    char *found_response_data = NULL;
+    _cleanup_free_ char *found_response_data = NULL;
     int result = -1;
 
     if (response)
@@ -147,8 +148,7 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
 end:
     if (result == 0 && response) {
         *response = found_response_data;
-    } else {
-        free(found_response_data);
+        found_response_data = NULL;
     }
     return result;
 }
