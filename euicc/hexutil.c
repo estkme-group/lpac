@@ -16,7 +16,7 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const ch
     memset(output, 0, output_len);
     for (uint32_t i = 0; i < input_len; i++) {
         c = input[i] | ' '; // to lower
-        if ((c < '0' || c > '9') && (c < 'a' || c > 'f')) {
+        if (!(c - '0' < 10 || c - 'a' < 6)) {
             return -1; // invalid character
         }
         c -= c > '9' ? 'a' - 10 : '0';
