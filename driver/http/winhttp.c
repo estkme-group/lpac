@@ -186,6 +186,7 @@ retry_send:
 error:
     fret = -1;
     fprintf(stderr, "WinHTTP error: %d\n", (int)GetLastError());
+    goto exit;
 
 exit:
     if (hRequest) WinHttpCloseHandle(hRequest);
