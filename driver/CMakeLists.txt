@@ -9,6 +9,7 @@ option(LPAC_WITH_APDU_QMI_QRTR "Build QMI-over-QRTR backend for Qualcomm devices
 option(LPAC_WITH_APDU_MBIM "Build MBIM backend for MBIM devices (requires libmbim)" OFF)
 
 option(LPAC_WITH_HTTP_CURL "Build HTTP Curl interface" ON)
+cmake_dependent_option(LPAC_WITH_HTTP_WINHTTP "Build HTTP WinHTTP interface (Win32 only)" ON WIN32 OFF)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} DIR_INTERFACE_SRCS)
 if(LPAC_DYNAMIC_DRIVERS)
@@ -98,7 +99,7 @@ if (LPAC_WITH_APDU_QMI_QRTR)
 endif ()
 
 if(LPAC_WITH_APDU_MBIM)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_MBIM")
+    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_HTTP_WINHTTP)
     target_sources(euicc-drivers PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim.c
     ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim_helpers.c)
@@ -121,6 +122,16 @@ if(LPAC_WITH_HTTP_CURL)
         if(LPAC_DYNAMIC_DRIVERS)
             list(APPEND LIBEUICC_DRIVERS_REQUIRES "libcurl")
         endif()
+    endif()
+endif()
+
+if (LPAC_WITH_HTTP_WINHTTP)
+    if(WIN32)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_HTTP_WINHTTP")
+        target_link_libraries(euicc-drivers winhttp)
+        target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/winhttp.c)
+    else()
+        message(FATAL_ERROR "LPAC_WITH_HTTP_WINHTTP is only supported on Windows platform.")
     endif()
 endif()
 
