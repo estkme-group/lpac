@@ -99,7 +99,7 @@ if (LPAC_WITH_APDU_QMI_QRTR)
 endif ()
 
 if(LPAC_WITH_APDU_MBIM)
-    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_HTTP_MBIM)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_MBIM")
     target_sources(euicc-drivers PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim.c
     ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim_helpers.c)
