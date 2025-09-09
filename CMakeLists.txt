@@ -86,6 +86,9 @@ if (NOT DEFINED USE_SYSTEM_DEPS)
             set(ENABLE_CUSTOM_COMPILER_FLAGS OFF)
             FetchContent_MakeAvailable(cjson)
             set(CJSON_LIBRARY cjson)
+            # Force cJSON dynamically link CRT although it's statuc library.
+            set_property(TARGET cjson PROPERTY
+                MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
         else()
             message(FATAL_ERROR "System cJSON is not found and network access is not permitted!")
         endif()
@@ -100,6 +103,9 @@ else()
         set(ENABLE_CUSTOM_COMPILER_FLAGS OFF)
         FetchContent_MakeAvailable(cjson)
         set(CJSON_LIBRARY cjson)
+        # Force cJSON dynamically link CRT although it's statuc library.
+        set_property(TARGET cjson PROPERTY
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     else()
         message(FATAL_ERROR "System cJSON is not found and network access is not permitted!")
     endif()
