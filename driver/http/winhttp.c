@@ -11,16 +11,16 @@
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
-wchar_t *utf8_to_wide(const char *input) {
-    if (!input)
+static wchar_t *utf8_to_wide(const char *input) {
+    if (input == NULL)
         return NULL;
-    const int len = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0);
-    if (len == 0)
+    const int n = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0);
+    if (n == 0)
         return NULL;
-    wchar_t *output = (wchar_t *)malloc(len * sizeof(wchar_t));
-    if (!output)
+    wchar_t *output = calloc(n, sizeof(wchar_t));
+    if (output == NULL)
         return NULL;
-    MultiByteToWideChar(CP_UTF8, 0, input, -1, output, len);
+    MultiByteToWideChar(CP_UTF8, 0, input, -1, output, n);
     return output;
 }
 
