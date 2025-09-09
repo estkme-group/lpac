@@ -13,7 +13,6 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const ch
     }
     uint8_t c, msb = 0;
     uint32_t bytes = 0;
-    memset(output, 0, output_len);
     for (uint32_t i = 0; i < input_len; i++) {
         c = input[i] | ' '; // to lower
         if (!(c - '0' < 10 || c - 'a' < 6)) {
@@ -26,6 +25,7 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const ch
             output[bytes++] = msb << 4 | c;
         }
     }
+    output[bytes] = 0;
     return (int)bytes;
 }
 
@@ -34,13 +34,14 @@ int euicc_hexutil_bin2hex(char *output, const uint32_t output_len, const uint8_t
         return -1;
     }
     uint8_t msb, lsb;
-    memset(output, 0, output_len);
-    for (uint32_t i = 0, j = 0; i < bin_len; ++i) {
+    uint32_t bytes = 0;
+    for (uint32_t i = 0; i < bin_len; ++i) {
         msb = bin[i] >> 4;
         lsb = bin[i] & 0xf;
-        output[j++] = (char)(msb + (msb > 9 ? 'a' - 10 : '0'));
-        output[j++] = (char)(lsb + (lsb > 9 ? 'a' - 10 : '0'));
+        output[bytes++] = (char)(msb + (msb > 9 ? 'a' - 10 : '0'));
+        output[bytes++] = (char)(lsb + (lsb > 9 ? 'a' - 10 : '0'));
     }
+    output[bytes] = 0;
     return 0;
 }
 
