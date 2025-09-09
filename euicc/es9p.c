@@ -124,7 +124,7 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
         strncpy(ctx->http.status.message, "HTTP transport failed", sizeof(ctx->http.status.message));
         goto err;
     }
-    free(sbuf);
+    cJSON_free(sbuf);
     sbuf = NULL;
 
     if (rcode / 100 != 2) {
