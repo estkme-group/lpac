@@ -99,7 +99,7 @@ if (LPAC_WITH_APDU_QMI_QRTR)
 endif ()
 
 if(LPAC_WITH_APDU_MBIM)
-    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_HTTP_WINHTTP)
+    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_HTTP_MBIM)
     target_sources(euicc-drivers PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim.c
     ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim_helpers.c)
@@ -126,14 +126,13 @@ if(LPAC_WITH_HTTP_CURL)
 endif()
 
 if (LPAC_WITH_HTTP_WINHTTP)
-    if(WIN32)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_HTTP_WINHTTP")
-        target_link_libraries(euicc-drivers winhttp)
-        target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/winhttp.c)
-    else()
+    if (NOT WIN32)
         message(FATAL_ERROR "LPAC_WITH_HTTP_WINHTTP is only supported on Windows platform.")
-    endif()
-endif()
+    endif ()
+    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_HTTP_WINHTTP)
+    target_link_libraries(euicc-drivers winhttp)
+    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/winhttp.c)
+endif ()
 
 if(LPAC_DYNAMIC_DRIVERS)
     # Install headers
