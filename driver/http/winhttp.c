@@ -68,6 +68,9 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     if (!hRequest)
         goto error;
     WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS, &(DWORD){SECURITY_FLAG_IGNORE_UNKNOWN_CA}, sizeof(DWORD));
+    WinHttpSetOption(hRequest, WINHTTP_OPTION_REDIRECT_POLICY, &(DWORD){WINHTTP_OPTION_REDIRECT_POLICY_ALWAYS},
+                     sizeof(DWORD));
+    WinHttpSetOption(hRequest, WINHTTP_OPTION_CLIENT_CERT_CONTEXT, WINHTTP_NO_CLIENT_CERT_CONTEXT, 0);
 
     if (h) {
         for (int i = 0; h[i] != NULL; i++) {
@@ -81,20 +84,9 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
         }
     }
 
-    WinHttpSetOption(hRequest, WINHTTP_OPTION_REDIRECT_POLICY, &(DWORD){WINHTTP_OPTION_REDIRECT_POLICY_ALWAYS},
-                     sizeof(DWORD));
-
     bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)tx, tx_len, tx_len, 0);
-    if (!bResults) {
-        DWORD err = GetLastError();
-        if (err == ERROR_WINHTTP_CLIENT_AUTH_CERT_NEEDED) {
-            if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_CLIENT_CERT_CONTEXT, WINHTTP_NO_CLIENT_CERT_CONTEXT, 0)) {
-                fprintf(stderr, "WinHttpSetOption(WINHTTP_NO_CLIENT_CERT_CONTEXT) failed: %d\n", (int)GetLastError());
-                goto error;
-            }
-        }
+    if (!bResults)
         goto error;
-    }
 
     bResults = WinHttpReceiveResponse(hRequest, NULL);
     if (!bResults)
