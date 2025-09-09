@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: CC0-1.0
+// SPDX-License-Copyright: Brad Conte <brad@bradconte.com>
+// Original code from https://github.com/B-Con/crypto-algorithms/blob/02b66ec/sha256.h
 /*********************************************************************
  * Filename:   sha256.h
  * Author:     Brad Conte (brad AT bradconte.com)
