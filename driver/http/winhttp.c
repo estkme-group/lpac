@@ -15,7 +15,7 @@ DEFINE_TRIVIAL_CLEANUP_FUNC(HINTERNET, WinHttpCloseHandle);
 
 #define utf8_to_wide(input, output)                                            \
     const int output##n = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0); \
-    wchar_t output[output##n];                                                 \
+    _cleanup_free_ wchar_t *output = calloc(output##n, sizeof(wchar_t));       \
     MultiByteToWideChar(CP_UTF8, 0, input, -1, output, output##n);
 
 static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
