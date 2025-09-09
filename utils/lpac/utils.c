@@ -57,7 +57,7 @@ void set_deprecated_env_name(const char *name, const char *deprecated_name) {
 
 bool json_print(char *type, cJSON *jpayload) {
     _cleanup_cjson_ cJSON *jroot = NULL;
-    _cleanup_free_ char *jstr = NULL;
+    _cleanup_cjson_free_ char *jstr = NULL;
 
     if (jpayload == NULL) {
         goto err;

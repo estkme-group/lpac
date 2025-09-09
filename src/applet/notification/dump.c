@@ -24,7 +24,7 @@ static bool retrieve_notification(const char *eid, const uint32_t seqNumber) {
     if (jroot == NULL)
         return false;
 
-    _cleanup_free_ char *jstr = cJSON_PrintUnformatted(jroot);
+    _cleanup_cjson_free_ char *jstr = cJSON_PrintUnformatted(jroot);
     printf("%s\n", jstr);
     fflush(stdout);
 
