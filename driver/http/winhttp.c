@@ -11,60 +11,50 @@
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
-static wchar_t *utf8_to_wide(const char *input) {
-    if (input == NULL)
-        return NULL;
-    const int n = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0);
-    if (n == 0)
-        return NULL;
-    wchar_t *output = calloc(n, sizeof(wchar_t));
-    if (output == NULL)
-        return NULL;
-    MultiByteToWideChar(CP_UTF8, 0, input, -1, output, n);
-    return output;
-}
+DEFINE_TRIVIAL_CLEANUP_FUNC(HINTERNET, WinHttpCloseHandle);
+
+#define utf8_to_wide(input, output)                                            \
+    const int output##n = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0); \
+    wchar_t output[output##n];                                                 \
+    MultiByteToWideChar(CP_UTF8, 0, input, -1, output, output##n);
 
 static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
                                    uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **h) {
     int fret = 0;
-    HINTERNET hSession = NULL, hConnect = NULL, hRequest = NULL;
+    _cleanup_(WinHttpCloseHandlep) HINTERNET hSession = NULL;
+    _cleanup_(WinHttpCloseHandlep) HINTERNET hConnect = NULL;
+    _cleanup_(WinHttpCloseHandlep) HINTERNET hRequest = NULL;
+    wchar_t hostname[256];
+    wchar_t pathname[1024];
     BOOL bResults = FALSE;
 
     *rx = NULL;
     *rx_len = 0;
     *rcode = 0;
 
-    URL_COMPONENTS urlComp = {0};
-    urlComp.dwStructSize = sizeof(urlComp);
-    urlComp.dwHostNameLength = 256;
-    urlComp.lpszHostName = calloc(urlComp.dwHostNameLength, sizeof(WCHAR));
-    urlComp.dwUrlPathLength = 1024;
-    urlComp.lpszUrlPath = calloc(urlComp.dwUrlPathLength, sizeof(WCHAR));
-    urlComp.nPort = INTERNET_DEFAULT_HTTPS_PORT;
-    if (urlComp.lpszHostName == NULL || urlComp.lpszUrlPath == NULL)
-        goto exit;
-
-    wchar_t *wUrl = utf8_to_wide(url);
-    if (wUrl == NULL)
-        goto exit;
-
-    if (!WinHttpCrackUrl(wUrl, wcslen(wUrl), 0, &urlComp)) {
-        free(wUrl);
+    URL_COMPONENTS urlComp = {
+        .dwStructSize = sizeof(urlComp),
+        .dwHostNameLength = sizeof(hostname),
+        .lpszHostName = hostname,
+        .dwUrlPathLength = sizeof(pathname),
+        .lpszUrlPath = pathname,
+        .nPort = INTERNET_DEFAULT_HTTPS_PORT,
+    };
+    utf8_to_wide(url, wUrl);
+    if (!WinHttpCrackUrl(wUrl, wcslen(wUrl), 0, &urlComp))
         goto error;
-    }
-    free(wUrl);
 
     hSession =
         WinHttpOpen(NULL, WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
     if (hSession == NULL)
         goto error;
 
-    hConnect = WinHttpConnect(hSession, urlComp.lpszHostName, urlComp.nPort, 0);
+    hConnect = WinHttpConnect(hSession, hostname, urlComp.nPort, 0);
     if (hConnect == NULL)
         goto error;
 
-    hRequest = WinHttpOpenRequest(hConnect, L"POST", urlComp.lpszUrlPath, NULL, WINHTTP_NO_REFERER,
-                                  WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
+    hRequest = WinHttpOpenRequest(hConnect, L"POST", pathname, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES,
+                                  WINHTTP_FLAG_SECURE);
     if (!hRequest)
         goto error;
     WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS, &(DWORD){SECURITY_FLAG_IGNORE_UNKNOWN_CA}, sizeof(DWORD));
@@ -72,16 +62,10 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
                      sizeof(DWORD));
     WinHttpSetOption(hRequest, WINHTTP_OPTION_CLIENT_CERT_CONTEXT, WINHTTP_NO_CLIENT_CERT_CONTEXT, 0);
 
-    if (h) {
-        for (int i = 0; h[i] != NULL; i++) {
-            wchar_t *wHeader = utf8_to_wide(h[i]);
-            if (!wHeader)
-                goto error;
-            bResults = WinHttpAddRequestHeaders(hRequest, wHeader, (ULONG)-1L, WINHTTP_ADDREQ_FLAG_ADD);
-            free(wHeader);
-            if (!bResults)
-                goto error;
-        }
+    for (int i = 0; h[i] != NULL; i++) {
+        utf8_to_wide(h[i], wHeader);
+        if (!WinHttpAddRequestHeaders(hRequest, wHeader, (ULONG)-1L, WINHTTP_ADDREQ_FLAG_ADD))
+            goto error;
     }
 
     bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)tx, tx_len, tx_len, 0);
@@ -114,7 +98,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
             break;
 
         uint8_t *new_buffer = realloc(response_buffer, total_size + dwDataSize);
-        if (!new_buffer) {
+        if (new_buffer == NULL) {
             free(response_buffer);
             fret = ERROR_NOT_ENOUGH_MEMORY;
             goto exit;
@@ -135,7 +119,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
         free(response_buffer);
         goto error;
     }
-    if (final_buf)
+    if (final_buf != NULL)
         final_buf[total_size] = 0;
 
     *rx = final_buf;
@@ -148,16 +132,6 @@ error:
     fret = -1;
     fprintf(stderr, "WinHTTP error: %d\n", (int)GetLastError());
 exit:
-    if (hRequest != NULL)
-        WinHttpCloseHandle(hRequest);
-    if (hConnect != NULL)
-        WinHttpCloseHandle(hConnect);
-    if (hSession != NULL)
-        WinHttpCloseHandle(hSession);
-    if (urlComp.lpszHostName != NULL)
-        free(urlComp.lpszHostName);
-    if (urlComp.lpszUrlPath != NULL)
-        free(urlComp.lpszUrlPath);
     return fret;
 }
 
