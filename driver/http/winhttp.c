@@ -40,14 +40,15 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     urlComp.lpszHostName = calloc(urlComp.dwHostNameLength, sizeof(WCHAR));
     urlComp.dwUrlPathLength = 1024;
     urlComp.lpszUrlPath = calloc(urlComp.dwUrlPathLength, sizeof(WCHAR));
-    if (!urlComp.lpszHostName || !urlComp.lpszUrlPath)
+    urlComp.nPort = INTERNET_DEFAULT_HTTPS_PORT;
+    if (urlComp.lpszHostName == NULL || urlComp.lpszUrlPath == NULL)
         goto exit;
 
     wchar_t *wUrl = utf8_to_wide(url);
-    if (!wUrl)
+    if (wUrl == NULL)
         goto exit;
 
-    if (!WinHttpCrackUrl(wUrl, (DWORD)wcslen(wUrl), 0, &urlComp)) {
+    if (!WinHttpCrackUrl(wUrl, wcslen(wUrl), 0, &urlComp)) {
         free(wUrl);
         goto error;
     }
@@ -58,30 +59,15 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     if (hSession == NULL)
         goto error;
 
-    INTERNET_PORT port =
-        (urlComp.nScheme == INTERNET_SCHEME_HTTPS) ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT;
-    hConnect = WinHttpConnect(hSession, urlComp.lpszHostName, port, 0);
+    hConnect = WinHttpConnect(hSession, urlComp.lpszHostName, urlComp.nPort, 0);
     if (hConnect == NULL)
         goto error;
 
-    DWORD dwFlags = 0;
-    if (urlComp.nScheme == INTERNET_SCHEME_HTTPS) {
-        dwFlags = SECURITY_FLAG_IGNORE_CERT_CN_INVALID | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID
-                  | SECURITY_FLAG_IGNORE_UNKNOWN_CA;
-    }
-
-    DWORD openRequestFlags = 0;
-    if (urlComp.nScheme == INTERNET_SCHEME_HTTPS) {
-        openRequestFlags = WINHTTP_FLAG_SECURE;
-    }
-
-    hRequest = WinHttpOpenRequest(hConnect, tx_len ? L"POST" : L"GET", urlComp.lpszUrlPath, NULL, WINHTTP_NO_REFERER,
-                                  WINHTTP_DEFAULT_ACCEPT_TYPES, openRequestFlags);
-    if (dwFlags != 0) {
-        WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS, &dwFlags, sizeof(dwFlags));
-    }
+    hRequest = WinHttpOpenRequest(hConnect, L"POST", urlComp.lpszUrlPath, NULL, WINHTTP_NO_REFERER,
+                                  WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
     if (!hRequest)
         goto error;
+    WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS, &(DWORD){SECURITY_FLAG_IGNORE_UNKNOWN_CA}, sizeof(DWORD));
 
     if (h) {
         for (int i = 0; h[i] != NULL; i++) {
@@ -95,10 +81,9 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
         }
     }
 
-    DWORD redirectFlags = WINHTTP_OPTION_REDIRECT_POLICY_ALWAYS;
-    WinHttpSetOption(hRequest, WINHTTP_OPTION_REDIRECT_POLICY, &redirectFlags, sizeof(redirectFlags));
+    WinHttpSetOption(hRequest, WINHTTP_OPTION_REDIRECT_POLICY, &(DWORD){WINHTTP_OPTION_REDIRECT_POLICY_ALWAYS},
+                     sizeof(DWORD));
 
-retry_send:
     bResults = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)tx, tx_len, tx_len, 0);
     if (!bResults) {
         DWORD err = GetLastError();
@@ -107,7 +92,6 @@ retry_send:
                 fprintf(stderr, "WinHttpSetOption(WINHTTP_NO_CLIENT_CERT_CONTEXT) failed: %d\n", (int)GetLastError());
                 goto error;
             }
-            goto retry_send;
         }
         goto error;
     }
@@ -171,18 +155,16 @@ retry_send:
 error:
     fret = -1;
     fprintf(stderr, "WinHTTP error: %d\n", (int)GetLastError());
-    goto exit;
-
 exit:
-    if (hRequest)
+    if (hRequest != NULL)
         WinHttpCloseHandle(hRequest);
-    if (hConnect)
+    if (hConnect != NULL)
         WinHttpCloseHandle(hConnect);
-    if (hSession)
+    if (hSession != NULL)
         WinHttpCloseHandle(hSession);
-    if (urlComp.lpszHostName)
+    if (urlComp.lpszHostName != NULL)
         free(urlComp.lpszHostName);
-    if (urlComp.lpszUrlPath)
+    if (urlComp.lpszUrlPath != NULL)
         free(urlComp.lpszUrlPath);
     return fret;
 }
