@@ -38,8 +38,7 @@ static inline wchar_t *utf8_to_wide_alloc(const char *input) {
     return out;
 }
 
-#define utf8_to_wide(input, output) \
-    _cleanup_free_ wchar_t *output = utf8_to_wide_alloc(input)
+#define utf8_to_wide(input, output) _cleanup_free_ wchar_t *output = utf8_to_wide_alloc(input)
 
 static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
                                    uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **h) {
