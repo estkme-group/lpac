@@ -49,11 +49,12 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, const uint32_t output_len, const c
     if (output == NULL || input == NULL || output_len < padding_to) {
         return -1;
     }
-    uint32_t n = strlen(input);
-    char tmp[n + (n % 2)];
-    memcpy(tmp, input, n);
-    memset(tmp + n, 'f', n % 2); // pad with 'f' if odd
-    const int bytes = euicc_hexutil_hex2bin_r(output, output_len, tmp, n + (n % 2));
+    const uint32_t n = strlen(input);
+    char *bin = malloc(n + (n % 2));
+    memcpy(bin, input, n);
+    memset(bin + n, 'f', n % 2); // pad with 'f' if odd
+    const int bytes = euicc_hexutil_hex2bin_r(output, output_len, bin, n + (n % 2));
+    free(bin);
     if (bytes == -1) {
         return -1;
     }
@@ -69,11 +70,13 @@ int euicc_hexutil_bin2gsmbcd(char *output, const uint32_t output_len, const uint
         return -1;
     }
     uint32_t i;
-    uint8_t tmp[bin_len];
+    uint8_t *tmp = malloc(bin_len);
     for (i = 0; i < bin_len; i++) {
         tmp[i] = bin[i] >> 4 | (bin[i] & 0xf) << 4; // swap
     }
-    if (euicc_hexutil_bin2hex(output, output_len, tmp, bin_len) != 0) {
+    const int ret = euicc_hexutil_bin2hex(output, output_len, tmp, bin_len);
+    free(tmp);
+    if (ret != 0) {
         return -1;
     }
     for (i = (2 * bin_len) - 1; i > 0 && output[i] != 'f'; i--)
