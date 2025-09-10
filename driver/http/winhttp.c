@@ -13,10 +13,33 @@
 
 DEFINE_TRIVIAL_CLEANUP_FUNC(HINTERNET, WinHttpCloseHandle);
 
-#define utf8_to_wide(input, output)                                            \
-    const int output##n = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0); \
-    _cleanup_free_ wchar_t *output = calloc(output##n, sizeof(wchar_t));       \
-    MultiByteToWideChar(CP_UTF8, 0, input, -1, output, output##n);
+static inline wchar_t *utf8_to_wide_alloc(const char *input) {
+    if (!input) {
+        SetLastError(ERROR_INVALID_PARAMETER);
+        return NULL;
+    }
+
+    int len = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0);
+    if (len == 0) {
+        return NULL;
+    }
+
+    wchar_t *out = calloc(len, sizeof(wchar_t));
+    if (!out) {
+        SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+        return NULL;
+    }
+
+    if (MultiByteToWideChar(CP_UTF8, 0, input, -1, out, len) == 0) {
+        free(out);
+        return NULL;
+    }
+
+    return out;
+}
+
+#define utf8_to_wide(input, output) \
+    _cleanup_free_ wchar_t *output = utf8_to_wide_alloc(input)
 
 static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
                                    uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **h) {
@@ -25,7 +48,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     _cleanup_(WinHttpCloseHandlep) HINTERNET hConnect = NULL;
     _cleanup_(WinHttpCloseHandlep) HINTERNET hRequest = NULL;
     wchar_t hostname[256];
-    wchar_t pathname[1024];
+    wchar_t pathname[4096];
     BOOL bResults = FALSE;
 
     *rx = NULL;
@@ -64,6 +87,8 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
 
     for (int i = 0; h[i] != NULL; i++) {
         utf8_to_wide(h[i], wHeader);
+        if (!wHeader)
+            goto error;
         if (!WinHttpAddRequestHeaders(hRequest, wHeader, (ULONG)-1L, WINHTTP_ADDREQ_FLAG_ADD))
             goto error;
     }
