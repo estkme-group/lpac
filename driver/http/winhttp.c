@@ -77,7 +77,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
 
     for (int i = 0; h[i] != NULL; i++) {
         _cleanup_free_ wchar_t *wHeader = NULL;
-        if (utf8_to_wide(h[i], &wHeader) != TRUE || wHeader == NULL)
+        if (utf8_to_wide(h[i], &wHeader) || wHeader == NULL)
             goto error;
         if (!WinHttpAddRequestHeaders(hRequest, wHeader, (ULONG)-1L, WINHTTP_ADDREQ_FLAG_ADD))
             goto error;
