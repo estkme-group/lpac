@@ -3,6 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef LIBEUICC_REDUCED_STDLIB_CALL
+#    include <ctype.h>
+#    include <errno.h>
+#    include <stddef.h>
+#endif
+
 inline int euicc_hexutil_hex2bin(uint8_t *output, const uint32_t output_len, const char *input) {
     return euicc_hexutil_hex2bin_r(output, output_len, input, strlen(input));
 }
@@ -11,11 +17,12 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const ch
     if (output == NULL || input == NULL || (input_len % 2) != 0 || output_len < (input_len / 2)) {
         return -1;
     }
-    uint8_t c, msb = 0;
     uint32_t bytes = 0;
+#ifdef LIBEUICC_REDUCED_STDLIB_CALL
+    uint8_t c, msb = 0;
     for (uint32_t i = 0; i < input_len; i++) {
-        c = input[i] | ' '; // to lower
-        if (!(c - '0' < 10 || c - 'a' < 6)) {
+        c = input[i] | ' ';
+        if ((c < '0' || c > '9') && (c < 'a' || c > 'f')) {
             return -1; // invalid character
         }
         c -= c > '9' ? 'a' - 10 : '0';
@@ -25,7 +32,17 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const ch
             output[bytes++] = msb << 4 | c;
         }
     }
-    output[bytes] = 0;
+#else
+    char hex[3] = "\0\0";
+    for (uint32_t i = 0; i < input_len; i += 2) {
+        hex[0] = input[i + 0];
+        hex[1] = input[i + 1];
+        if (!(isxdigit(hex[0]) && isxdigit(hex[1]))) {
+            return -1; // invalid character
+        }
+        output[bytes++] = (uint8_t)strtol(hex, NULL, 16);
+    }
+#endif
     return (int)bytes;
 }
 
@@ -41,7 +58,7 @@ int euicc_hexutil_bin2hex(char *output, const uint32_t output_len, const uint8_t
         output[bytes++] = (char)(msb + (msb > 9 ? 'a' - 10 : '0'));
         output[bytes++] = (char)(lsb + (lsb > 9 ? 'a' - 10 : '0'));
     }
-    output[bytes] = 0;
+    output[bytes] = '\0';
     return 0;
 }
 
@@ -79,8 +96,10 @@ int euicc_hexutil_bin2gsmbcd(char *output, const uint32_t output_len, const uint
     if (ret != 0) {
         return -1;
     }
-    for (i = (2 * bin_len) - 1; i > 0 && output[i] != 'f'; i--)
-        ;
+    i = (2 * bin_len) - 1;
+    while (i > 0 && output[i] != 'f') {
+        i--;
+    }
     output[i] = 0;
     return 0;
 }
