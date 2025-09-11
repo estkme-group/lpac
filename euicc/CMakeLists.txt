@@ -1,4 +1,6 @@
 option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" OFF)
+option(LIBEUICC_REDUCED_STDLIB_CALL "Reduce standard library calling" OFF)
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} LIB_EUICC_SRCS)
 if(LPAC_DYNAMIC_LIBEUICC)
     add_library(euicc SHARED ${LIB_EUICC_SRCS})
@@ -29,3 +31,7 @@ if(LPAC_DYNAMIC_LIBEUICC)
     install(TARGETS euicc LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
                           PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/euicc)
 endif()
+
+if (LIBEUICC_REDUCED_STDLIB_CALL)
+    target_compile_definitions(euicc PRIVATE LIBEUICC_REDUCED_STDLIB_CALL)
+endif ()
