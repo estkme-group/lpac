@@ -17,6 +17,7 @@
     - `gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
 * `LPAC_HTTP`: specify which HTTP backend will be used.
   - `curl`: use libcurl
+  - `winhttp`: use WinHTTP (Windows only)
   - `stdio`: use standard input/output
 * `LPAC_APDU_AT_DEVICE`: specify which serial port device will be used by AT APDU backend.
 * `LPAC_APDU_PCSC_DRV_IFID`: specify which PC/SC interface index will be used by PC/SC APDU backend.
