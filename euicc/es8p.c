@@ -3,9 +3,8 @@
 #include "base64.h"
 #include "derutil.h"
 #include "hexutil.h"
+#include "logger.h"
 
-#include <inttypes.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -101,12 +100,7 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
         case 0xB6:
         case 0xB7:
         case 0x99:
-            // fprintf(stderr, "\n[PLEASE REPORT][TODO][TAG %02X]: ", n_iter.tag);
-            // for (uint32_t i = 0; i < n_iter.self.length; i++)
-            // {
-            //     fprintf(stderr, "%02X ", n_iter.self.ptr[i]);
-            // }
-            // fprintf(stderr, "\n");
+            euicc_apdu_unhandled_tag_print(NULL, &n_iter); // Assuming logging is not needed here
             break;
         }
     }

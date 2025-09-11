@@ -4,6 +4,7 @@
 #include "interface.h"
 
 #include <inttypes.h>
+#include <stdio.h>
 
 #ifdef interface
 #    undef interface
@@ -22,6 +23,7 @@ struct euicc_ctx {
                 uint8_t body[255];
             } __attribute__((packed)) request_buffer;
         } _internal;
+        FILE *log_fp;
     } apdu;
     struct {
         const struct euicc_http_interface *interface;
@@ -45,6 +47,7 @@ struct euicc_ctx {
             char *b64_bound_profile_package;
             char *b64_cancel_session_response;
         } _internal;
+        FILE *log_fp;
     } http;
     void *userdata;
 };
