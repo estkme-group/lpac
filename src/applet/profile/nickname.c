@@ -1,14 +1,12 @@
-#include "nickname.h"
+#include "applet.h"
+
 #include "main.h"
 
 #include <euicc/es10c.h>
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
-static int applet_main(int argc, char **argv) {
+int applet_profile_nickname_main(int argc, char **argv) {
     int ret;
     const char *iccid;
     const char *new_name;
@@ -44,8 +42,3 @@ static int applet_main(int argc, char **argv) {
 
     return 0;
 }
-
-struct applet_entry applet_profile_nickname = {
-    .name = "nickname",
-    .main = applet_main,
-};

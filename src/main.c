@@ -1,14 +1,9 @@
 #include "main.h"
 
-#include "applet.h"
-#include "applet/chip.h"
-#include "applet/notification.h"
-#include "applet/profile.h"
-#include "applet/version.h"
+#include "applet/entry.h"
 
 #include <locale.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -32,34 +27,6 @@
 #define ENV_ES10X_MSS CUSTOM_ENV_NAME(ES10X_MSS)
 #define ES10X_MSS_MIN_VALUE 6
 #define ES10X_MSS_MAX_VALUE 255
-
-static int driver_applet_main(const int argc, char **argv) {
-    const struct applet_entry *applets[] = {
-        &(struct applet_entry){
-            .name = "apdu",
-            .main = euicc_driver_main_apdu,
-        },
-        &(struct applet_entry){
-            .name = "http",
-            .main = euicc_driver_main_http,
-        },
-        &(struct applet_entry){
-            .name = "list",
-            .main = euicc_driver_list,
-        },
-        NULL,
-    };
-    return applet_entry(argc, argv, applets);
-}
-
-struct applet_entry driver_applet = {
-    .name = "driver",
-    .main = driver_applet_main,
-};
-
-static const struct applet_entry *applets[] = {
-    &driver_applet, &applet_chip, &applet_profile, &applet_notification, &applet_version, NULL,
-};
 
 static int euicc_ctx_inited = 0;
 struct euicc_ctx euicc_ctx = {0};
@@ -98,6 +65,20 @@ static int setup_mss(uint8_t *mss) {
         return -1;
 
     *mss = (uint8_t)parsed;
+    return 0;
+}
+
+int main_init_driver(void) {
+    const char *apdu_driver = getenv(ENV_APDU_DRIVER);
+
+    const char *http_driver = getenv(ENV_HTTP_DRIVER);
+
+    if (euicc_driver_init(apdu_driver, http_driver))
+        return -1;
+
+    euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
+    euicc_ctx.http.interface = &euicc_driver_interface_http;
+
     return 0;
 }
 
@@ -155,17 +136,6 @@ int main(int argc, char **argv) {
 
     memset(&euicc_ctx, 0, sizeof(euicc_ctx));
 
-    const char *apdu_driver = getenv(ENV_APDU_DRIVER);
-
-    const char *http_driver = getenv(ENV_HTTP_DRIVER);
-
-    if (euicc_driver_init(apdu_driver, http_driver)) {
-        return -1;
-    }
-
-    euicc_ctx.apdu.interface = &euicc_driver_interface_apdu;
-    euicc_ctx.http.interface = &euicc_driver_interface_http;
-
 #ifdef WIN32
     argv = warg_to_arg(argc, CommandLineToArgvW(GetCommandLineW(), &argc));
     if (argv == NULL) {
@@ -173,7 +143,7 @@ int main(int argc, char **argv) {
     }
 #endif
 
-    ret = applet_entry(argc, argv, applets);
+    ret = applet_main(argc, argv);
 
     main_fini_euicc();
 

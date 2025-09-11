@@ -1,14 +1,13 @@
-#include "purge.h"
+#include "applet.h"
 
 #include "main.h"
+
 #include <euicc/es10c.h>
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
-static int applet_main(int argc, char **argv) {
+int applet_chip_purge_main(const int argc, char **argv) {
     int ret;
 
     if (argc < 2) {
@@ -40,8 +39,3 @@ static int applet_main(int argc, char **argv) {
 
     return 0;
 }
-
-struct applet_entry applet_chip_purge = {
-    .name = "purge",
-    .main = applet_main,
-};

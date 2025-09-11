@@ -1,14 +1,12 @@
-#include "defaultsmdp.h"
+#include "applet.h"
+
+#include "main.h"
 
 #include <euicc/es10a.h>
 
-#include <main.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
-static int applet_main(int argc, char **argv) {
+int applet_chip_default_smdp_main(int argc, char **argv) {
     const char *smdp;
 
     if (argc < 2) {
@@ -27,8 +25,3 @@ static int applet_main(int argc, char **argv) {
 
     return 0;
 }
-
-struct applet_entry applet_chip_defaultsmdp = {
-    .name = "defaultsmdp",
-    .main = applet_main,
-};

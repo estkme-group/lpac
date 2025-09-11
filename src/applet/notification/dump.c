@@ -1,5 +1,6 @@
+#include "applet.h"
+
 #include "notification_common.h"
-#include "process.h"
 
 #include <euicc/es10b.h>
 #include <euicc/es10c.h>
@@ -31,7 +32,7 @@ static bool retrieve_notification(const char *eid, const uint32_t seqNumber) {
     return true;
 }
 
-static int applet_main(const int argc, char **argv) {
+int applet_notification_dump_main(const int argc, char **argv) {
     static const char *opt_string = "ah?";
 
     int fret = 0;
@@ -96,8 +97,3 @@ static int applet_main(const int argc, char **argv) {
 
     return fret;
 }
-
-struct applet_entry applet_notification_dump = {
-    .name = "dump",
-    .main = applet_main,
-};
