@@ -13,32 +13,21 @@
 
 DEFINE_TRIVIAL_CLEANUP_FUNC(HINTERNET, WinHttpCloseHandle);
 
-static inline wchar_t *utf8_to_wide_alloc(const char *input) {
-    if (!input) {
-        SetLastError(ERROR_INVALID_PARAMETER);
-        return NULL;
-    }
-
-    int len = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0);
-    if (len == 0) {
-        return NULL;
-    }
-
-    wchar_t *out = calloc(len, sizeof(wchar_t));
-    if (!out) {
-        SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-        return NULL;
-    }
-
-    if (MultiByteToWideChar(CP_UTF8, 0, input, -1, out, len) == 0) {
-        free(out);
-        return NULL;
-    }
-
-    return out;
+static int utf8_to_wide(const char *input, wchar_t **output) {
+    if (input == NULL)
+        return -1;
+    const int n = MultiByteToWideChar(CP_UTF8, 0, input, -1, NULL, 0);
+    if (n < 0)
+        return -1;
+    *output = calloc(n, sizeof(wchar_t));
+    if (*output == NULL)
+        return -1;
+    if (MultiByteToWideChar(CP_UTF8, 0, input, -1, *output, n) > 0)
+        return 0;
+    free(*output);
+    *output = NULL;
+    return -1;
 }
-
-#define utf8_to_wide(input, output) _cleanup_free_ wchar_t *output = utf8_to_wide_alloc(input)
 
 static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
                                    uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **h) {
@@ -62,7 +51,9 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
         .lpszUrlPath = pathname,
         .nPort = INTERNET_DEFAULT_HTTPS_PORT,
     };
-    utf8_to_wide(url, wUrl);
+    _cleanup_free_ wchar_t *wUrl = NULL;
+    if (utf8_to_wide(url, &wUrl) || wUrl == NULL)
+        goto error;
     if (!WinHttpCrackUrl(wUrl, wcslen(wUrl), 0, &urlComp))
         goto error;
 
@@ -85,8 +76,8 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     WinHttpSetOption(hRequest, WINHTTP_OPTION_CLIENT_CERT_CONTEXT, WINHTTP_NO_CLIENT_CERT_CONTEXT, 0);
 
     for (int i = 0; h[i] != NULL; i++) {
-        utf8_to_wide(h[i], wHeader);
-        if (!wHeader)
+        _cleanup_free_ wchar_t *wHeader = NULL;
+        if (utf8_to_wide(h[i], &wHeader) != TRUE || wHeader == NULL)
             goto error;
         if (!WinHttpAddRequestHeaders(hRequest, wHeader, (ULONG)-1L, WINHTTP_ADDREQ_FLAG_ADD))
             goto error;
