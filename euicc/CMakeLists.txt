@@ -11,11 +11,7 @@ target_compile_options(euicc PRIVATE -Wall -Wextra -Wvla)
 if(LPAC_DYNAMIC_LIBEUICC)
     # Install headers
     file(GLOB ALL_HEADERS "*.h")
-    foreach(header ${ALL_HEADERS})
-        if(${header} MATCHES "^.*\.private\.h$")
-            list(REMOVE_ITEM ALL_HEADERS ${header})
-        endif()
-    endforeach()
+    list(FILTER ALL_HEADERS EXCLUDE REGEX "\.private\.h$")
     set_target_properties(euicc PROPERTIES PUBLIC_HEADER "${ALL_HEADERS}")
     # Only useful on Windows, and will lead to invalid arguments on ld.gold.
     if(WIN32)
