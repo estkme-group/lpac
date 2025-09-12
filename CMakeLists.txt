@@ -8,7 +8,7 @@ project (lpac
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-option(USE_SYSTEM_DEPS "Use system-wide installed dependencies (cJSON)" OFF)
+option(USE_SYSTEM_DEPS "Use system-wide installed dependencies" OFF)
 
 set(LPAC_CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH ${LPAC_CMAKE_MODULE_PATH})
