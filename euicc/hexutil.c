@@ -5,7 +5,6 @@
 
 #ifndef LIBEUICC_REDUCED_STDLIB_CALL
 #    include <ctype.h>
-#    include <errno.h>
 #    include <stddef.h>
 #endif
 
