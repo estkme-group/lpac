@@ -91,7 +91,7 @@ elseif (NOT NO_NETWORK)
     set_property(TARGET cjson PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 else ()
-    message(FATAL_ERROR "System cJSON is not found and network access is not permitted!")
+    message(FATAL_ERROR "cJSON is required. Either set USE_SYSTEM_DEPS to ON or enable network to download it.")
 endif ()
 
 add_subdirectory(cjson-ext)
