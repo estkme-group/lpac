@@ -98,18 +98,20 @@ if (LPAC_WITH_APDU_QMI_QRTR)
     endif ()
 endif ()
 
-if(LPAC_WITH_APDU_MBIM)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_APDU_MBIM")
+if (LPAC_WITH_APDU_MBIM)
+    target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_MBIM)
     target_sources(euicc-drivers PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim_helpers.c)
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/mbim_helpers.c)
+
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(MBIM_GLIB REQUIRED IMPORTED_TARGET mbim-glib)
+    pkg_check_modules(MBIM_GLIB REQUIRED IMPORTED_TARGET mbim-glib>=1.26.0)
     target_link_libraries(euicc-drivers PkgConfig::MBIM_GLIB PkgConfig::MBIM_GLIB)
-    if(LPAC_DYNAMIC_DRIVERS)
+
+    if (LPAC_DYNAMIC_DRIVERS)
         list(APPEND LIBEUICC_DRIVERS_REQUIRES "mbim-glib")
-    endif()
-endif()
+    endif ()
+endif ()
 
 if(LPAC_WITH_HTTP_CURL)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLPAC_WITH_HTTP_CURL")
