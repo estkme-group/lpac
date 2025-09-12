@@ -15,7 +15,7 @@ apt install -y meson ninja-build \
 QMI_REPO_URL="https://github.com/linux-mobile-broadband/libqmi" # official mirror repo
 QMI_REPO_DIR="$(mktemp -d libqmi-src-XXXXXX)"
 QMI_BUILD_DIR="$QMI_REPO_DIR/build"
-QMI_VERSION=1.35.5-dev
+QMI_VERSION=1.36.0
 
 trap 'rm -rf '"$QMI_REPO_DIR" EXIT
 
