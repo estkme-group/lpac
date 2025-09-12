@@ -9,10 +9,6 @@
 #    include <stddef.h>
 #endif
 
-inline int euicc_hexutil_hex2bin(uint8_t *output, const uint32_t output_len, const char *input) {
-    return euicc_hexutil_hex2bin_r(output, output_len, input, strlen(input));
-}
-
 int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const char *input, const uint32_t input_len) {
     if (output == NULL || input == NULL || (input_len % 2) != 0 || output_len < (input_len / 2)) {
         return -1;
