@@ -15,10 +15,24 @@
         (b) = temp;           \
     } while (0)
 
-static void gsmbcd_swap_chars(char *input, const uint32_t input_len) {
+static inline void gsmbcd_swap_chars(char *input, const uint32_t input_len) {
     for (uint32_t i = 0; i < input_len; i += 2) {
         SWAP(input[i], input[i + 1]);
     }
+}
+
+int euicc_hexutil_bin2hex(char *output, const uint32_t output_len, const uint8_t *bin, const uint32_t bin_len) {
+    if (output == NULL || bin == NULL || output_len < ((2 * bin_len) + 1)) {
+        return -1;
+    }
+    static const char digits[] = "0123456789abcdef";
+    uint32_t n = 0;
+    for (uint32_t i = 0; i < bin_len; i++) {
+        output[n++] = digits[bin[i] >> 4];
+        output[n++] = digits[bin[i] & 0xf];
+    }
+    output[n] = '\0';
+    return (int)n;
 }
 
 inline int euicc_hexutil_hex2bin(uint8_t *output, const uint32_t output_len, const char *input) {
@@ -58,20 +72,6 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const ch
     return (int)bytes;
 }
 
-int euicc_hexutil_bin2hex(char *output, const uint32_t output_len, const uint8_t *bin, const uint32_t bin_len) {
-    if (output == NULL || bin == NULL || output_len < ((2 * bin_len) + 1)) {
-        return -1;
-    }
-    static const char digits[] = "0123456789abcdef";
-    uint32_t n = 0;
-    for (uint32_t i = 0; i < bin_len; i++) {
-        output[n++] = digits[bin[i] >> 4];
-        output[n++] = digits[bin[i] & 0xf];
-    }
-    output[n] = '\0';
-    return (int)n;
-}
-
 int euicc_hexutil_gsmbcd2bin(uint8_t *output, const uint32_t output_len, const char *input, const uint32_t padding_to) {
     if (output == NULL || input == NULL || output_len < padding_to) {
         return -1;
@@ -98,11 +98,11 @@ int euicc_hexutil_bin2gsmbcd(char *output, const uint32_t output_len, const uint
     if (n < 0) {
         return -1;
     }
+    n -= 1; // ignore NUL terminator
     gsmbcd_swap_chars(output, n);
     // trim trailing 'f'
-    while (n > 0 && output[n] != 'f') {
-        n--;
+    while (n > 0 && output[n] == 'f') {
+        output[n--] = '\0';
     }
-    output[n] = '\0';
-    return 0;
+    return n;
 }
