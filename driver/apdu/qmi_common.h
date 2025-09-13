@@ -13,7 +13,7 @@ struct qmi_data {
     int uimSlot;
     GMainContext *context;
     QmiClientUim *uimClient;
-#ifdef LPAC_WITH_APDU_QMI_QRTR
+#ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
     QrtrBus *qrtrBus;
 #endif
 };
