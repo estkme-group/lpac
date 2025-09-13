@@ -60,6 +60,7 @@ target_sources(
 )
 
 target_compile_options(euicc PRIVATE -Wall -Wextra -Wvla)
+set_target_properties(euicc PROPERTIES C_STANDARD 99 C_STANDARD_REQUIRED ON C_EXTENSIONS ON)
 if(LPAC_DYNAMIC_LIBEUICC)
     # Only useful on Windows, and will lead to invalid arguments on ld.gold.
     if(WIN32)
