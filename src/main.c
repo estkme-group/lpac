@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
 #ifdef WIN32
     if (!check_windows_version()) {
         if (GetLastError() == ERROR_OLD_WIN_VERSION) {
-            fputs("lpac requires Windows 10 version 1903 or above to run correctly.", stderr);
+            fputs("lpac requires Windows 10 version 1903 or above to run correctly.\n", stderr);
         } else {
             fputs("Failed to get Windows version.", stderr);
         }
