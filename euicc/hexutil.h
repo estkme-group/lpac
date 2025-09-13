@@ -2,8 +2,7 @@
 
 #include <inttypes.h>
 
-#define euicc_hexutil_hex2bin(output, output_len, input) \
-    euicc_hexutil_hex2bin_r(output, output_len, input, strlen(input))
+int euicc_hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *input);
 
 int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *input, uint32_t input_len);
 
