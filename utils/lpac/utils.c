@@ -7,6 +7,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32)
+static char *strndup(const char *s, size_t n) {
+    size_t len = strnlen(s, n);
+    char *new = (char *)malloc(len + 1);
+
+    if (new == NULL)
+        return NULL;
+
+    new[len] = '\0';
+    return (char *)memcpy(new, s, len);
+}
+#endif
+
 const char *getenv_str_or_default(const char *name, const char *default_value) {
     const char *value = getenv(name);
     if (value == NULL || strlen(value) == 0)
@@ -89,4 +102,31 @@ bool json_print(char *type, cJSON *jpayload) {
 
 err:
     return false;
+}
+
+bool ends_with(const char *restrict str, const char *restrict suffix) {
+    if (str == NULL || suffix == NULL) {
+        return false;
+    }
+    size_t str_len = strlen(str);
+    size_t suffix_len = strlen(suffix);
+
+    return (str_len >= suffix_len) && (!memcmp(str + str_len - suffix_len, suffix, suffix_len));
+}
+
+char *remove_suffix(char *restrict str, const char *restrict suffix) {
+    if (str == NULL || suffix == NULL) {
+        return NULL;
+    }
+    size_t str_len = strlen(str);
+    size_t suffix_len = strlen(suffix);
+    if (str_len < suffix_len) {
+        return NULL;
+    }
+    size_t pos = str_len - suffix_len;
+    if (strcmp(str + pos, suffix) == 0) {
+        return strndup(str, pos);
+    } else {
+        return NULL;
+    }
 }

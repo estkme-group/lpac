@@ -5,8 +5,11 @@
 #include <euicc/es10c.h>
 #include <euicc/es9p.h>
 
+#include <dirent.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
 #define ENV_HTTP_DRIVER "LPAC_HTTP"
 #define ENV_APDU_DRIVER "LPAC_APDU"
@@ -42,6 +45,9 @@ DEFINE_TRIVIAL_CLEANUP_FUNC(struct es10c_profile_info_list *, es10c_profile_info
 DEFINE_TRIVIAL_CLEANUP_FUNC(char **, es11_smdp_list_free_all);
 #define _cleanup_es11_smdp_list_ _cleanup_(es11_smdp_list_free_allp)
 
+DEFINE_TRIVIAL_CLEANUP_FUNC(DIR *, closedir);
+#define _cleanup_dir_ _cleanup_(closedirp)
+
 static inline void freep(void *p) { free(*(void **)p); }
 #define _cleanup_free_ _cleanup_(freep)
 
@@ -63,3 +69,7 @@ long getenv_long_or_default(const char *name, long default_value);
 void set_deprecated_env_name(const char *name, const char *deprecated_name);
 
 bool json_print(char *type, cJSON *jpayload);
+
+bool ends_with(const char *restrict str, const char *restrict suffix);
+
+char *remove_suffix(char *restrict str, const char *restrict suffix);
