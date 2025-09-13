@@ -63,6 +63,9 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, const uint32_t output_len, const c
     }
     const uint32_t n = strlen(input);
     char *bin = calloc(n + (n % 2), sizeof(char)); // +1 if odd
+    if (bin == NULL) {
+        return -1;
+    }
     memcpy(bin, input, n);
     memset(bin + n, 'f', n % 2); // pad with 'f' if odd
     const int bytes = euicc_hexutil_hex2bin_r(output, output_len, bin, n + (n % 2));
@@ -83,6 +86,9 @@ int euicc_hexutil_bin2gsmbcd(char *output, const uint32_t output_len, const uint
     }
     uint32_t i;
     uint8_t *tmp = calloc(bin_len, sizeof(uint8_t));
+    if (tmp == NULL) {
+        return -1;
+    }
     for (i = 0; i < bin_len; i++) {
         tmp[i] = bin[i] >> 4 | (bin[i] & 0xf) << 4; // swap
     }
