@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <cjson-ext/cJSON_ex.h>
+#include <cjson/cJSON.h>
 
 static const char *lpa_header[] = {
     "User-Agent: gsma-rsp-lpad",
@@ -104,8 +104,14 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
     }
 
     for (int i = 0; ikey[i] != NULL; i++) {
-        if (!cJSON_AddStringOrNullToObject(sjroot, ikey[i], idata[i])) {
-            goto err;
+        cJSON *tmp;
+        if (idata[i] != NULL) {
+            tmp = cJSON_AddStringToObject(sjroot, ikey[i], idata[i]);
+        } else {
+            tmp = cJSON_AddNullToObject(sjroot, ikey[i]);
+        }
+        if (tmp == NULL) {
+            goto err; // add item to object failed
         }
     }
 
