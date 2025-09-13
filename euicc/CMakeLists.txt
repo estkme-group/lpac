@@ -8,6 +8,12 @@ endif()
 target_link_libraries(euicc ${CJSON_LIBRARY} cjson-ext)
 target_include_directories(euicc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 target_compile_options(euicc PRIVATE -Wall -Wextra -Wvla)
+set_target_properties(euicc PROPERTIES
+        # follow C89, but allow for loop initial declarations
+        C_STANDARD 99
+        C_STANDARD_REQUIRED ON
+        C_EXTENSIONS ON
+)
 if(LPAC_DYNAMIC_LIBEUICC)
     # Install headers
     file(GLOB ALL_HEADERS "*.h")
