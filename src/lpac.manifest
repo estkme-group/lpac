@@ -4,11 +4,6 @@
     manifestVersion="1.0"
     xmlns:asmv3="urn:schemas-microsoft-com:asm.v3"
 >
-    <assemblyIdentity
-        type="win32"
-        name="me.estk.lpac"
-        version="6.0.0.0"
-    />
     <!-- Use UTF-8 code page -->
     <asmv3:application>
         <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">
