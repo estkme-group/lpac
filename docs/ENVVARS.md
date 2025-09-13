@@ -2,50 +2,26 @@
 
 ## General
 
-* `LPAC_CUSTOM_ES10X_MSS`: specify maximum segment size for ES10x APDU backend. (default: 120, min: 6, max: 255)
-* `LPAC_CUSTOM_ISD_R_AID`: specify which AID will be used to open the logic channel. (hex string, 32 chars)
+- `LPAC_CUSTOM_ES10X_MSS`: specify maximum segment size for ES10x APDU backend. \
+  ([integer](backends/types.md#integer-type), default: 120, min: 6, max: 255)
+- `LPAC_CUSTOM_ISD_R_AID`: specify which AID will be used to open the logic channel. \
+  ([string](backends/types.md#string-type), hexadecimal string, default: `A0000005591010FFFFFFFF8900000100`)
+- `LPAC_APDU_DEBUG`: enable debug output for APDU. \
+  ([boolean](backends/types.md#boolean-type), default: `false`)
+- `LPAC_HTTP_DEBUG`: enable debug output for HTTP. \
+  ([boolean](backends/types.md#boolean-type), default: `false`)
+
+## Backends
+
 * `LPAC_APDU`: specify which APDU backend will be used. Values:
-  - `at`: Use the AT command interface via a serial device on different platforms.
-    - On Unix-like platforms (Linux, BSD), use serial devices such as `/dev/ttyUSB0`.
-    - On Windows platforms, use serial COM ports such as `COM3`.
-  - `pcsc`: use PC/SC Smart Card API
-  - `stdio`: use standard input/output
-  - `qmi`: use QMI
-  - `qmi_qrtr`: use QMI over QRTR
-  - `mbim`: use MBIM
-  - GBinder-based backends for `libhybris` (Halium) distributions:
-    - `gbinder_hidl`: use HIDL IRadio (SoC launched before Android 13)
-* `LPAC_HTTP`: specify which HTTP backend will be used.
-  - `curl`: use libcurl
-  - `winhttp`: use WinHTTP (Windows only)
-  - `stdio`: use standard input/output
-* `LPAC_APDU_AT_DEVICE`: specify which serial port device will be used by AT APDU backend.
-* `LPAC_APDU_PCSC_DRV_IFID`: specify which PC/SC interface index will be used by PC/SC APDU backend.
-* `LPAC_APDU_PCSC_DRV_NAME`: specify which PC/SC interface name will be used by PC/SC APDU backend.
-* `LPAC_APDU_PCSC_DRV_IGNORE_NAME`: specify which PC/SC interface names will be ignored by PC/SC APDU backend. (use semicolon (`;`) split, for example: `Yubico;Canokeys`).
-* `LPAC_APDU_QMI_UIM_SLOT`: specify which UIM slot will be used by QMI APDU backend. (default: 1, slot number starts from 1)
-* `LPAC_APDU_QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
-* `LPAC_APDU_MBIM_UIM_SLOT`: specify which UIM slot will be used by MBIM APDU backend. (default: 1, slot number starts from 1)
-* `LPAC_APDU_MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. ([boolean])
-* `LPAC_APDU_MBIM_DEVICE`: specify which MBIM device will be used by MBIM APDU backend. (default: `/dev/cdc-wdm0`)
-
-## Debug
-
-* `LPAC_APDU_DEBUG`: enable debug output for APDU. ([boolean])
-* `LPAC_HTTP_DEBUG`: enable debug output for HTTP. ([boolean])
-* `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend. ([boolean])
-* `LPAC_APDU_GBINDER_DEBUG`: enable debug output for GBinder APDU backend. ([boolean])
-
-## Data Types
-
-[boolean]: #boolean-type
-
-### Boolean Type
-
-A boolean type environment variable can be set to enable or disable a feature.
-
-The following values are recognized as **enabled** (case-insensitive): `1`, `y`, `on`, `yes`, `true`
-
-The following values are recognized as **disabled** (case-insensitive): `0`, `n`, `off`, `no`, `false`
-
-Any other value will result in the default being used.
+  - [`at`](backends/at.md): AT command interface
+  - [`pcsc`](backends/pcsc.md): PC/SC Smartcard
+  - [`stdio`](backends/stdio.md): Standard input/output
+  - [`qmi`](backends/qmi.md): Qualcomm MSM Interface
+  - [`qmi_qrtr`](backends/qmi.md): QMI over QRTR
+  - [`mbim`](backends/mbim.md): Mobile Broadband Interface Model
+  - [`gbinder_hidl`](backends/gbinder.md): GBinder HIDL
+* `LPAC_HTTP`: specify which HTTP backend will be used. Values:
+  - [`curl`](backends/curl.md): cURL access to HTTPS resources
+  - [`winhttp`](backends/winhttp.md): WinHTTP access to HTTPS resources
+  - [`stdio`](backends/stdio.md): Standard input/output
