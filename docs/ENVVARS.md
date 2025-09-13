@@ -23,8 +23,9 @@
 * `LPAC_APDU_PCSC_DRV_IFID`: specify which PC/SC interface index will be used by PC/SC APDU backend.
 * `LPAC_APDU_PCSC_DRV_NAME`: specify which PC/SC interface name will be used by PC/SC APDU backend.
 * `LPAC_APDU_PCSC_DRV_IGNORE_NAME`: specify which PC/SC interface names will be ignored by PC/SC APDU backend. (use semicolon (`;`) split, for example: `Yubico;Canokeys`).
-* `LPAC_APDU_QMI_UIM_SLOT`: specify which UIM slot will be used by QMI APDU backend. (default: 1, slot number starts from 1)
-* `LPAC_APDU_QMI_DEVICE`: specify which QMI device will be used by QMI APDU backend.
+* `LPAC_APDU_QMI_UIM_SLOT`: specify which UIM slot will be used by QMI or uQMI APDU backend. (default: 1, slot number starts from 1)
+* `LPAC_APDU_QMI_DEVICE`: specify which QMI device will be used by QMI or uQMI APDU backend.
+* `LPAC_APDU_UQMI_PROGRAM`: specify which uQMI program will be used by uQMI APDU backend. (default: `uqmi`)
 * `LPAC_APDU_MBIM_UIM_SLOT`: specify which UIM slot will be used by MBIM APDU backend. (default: 1, slot number starts from 1)
 * `LPAC_APDU_MBIM_USE_PROXY`: tell the MBIM APDU backend to use the mbim-proxy. ([boolean])
 * `LPAC_APDU_MBIM_DEVICE`: specify which MBIM device will be used by MBIM APDU backend. (default: `/dev/cdc-wdm0`)
@@ -34,6 +35,7 @@
 * `LPAC_APDU_DEBUG`: enable debug output for APDU. ([boolean])
 * `LPAC_HTTP_DEBUG`: enable debug output for HTTP. ([boolean])
 * `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend. ([boolean])
+* `LPAC_APDU_QMI_DEBUG`: enable debug output for QMI or uQMI APDU backend. ([boolean])
 * `LPAC_APDU_GBINDER_DEBUG`: enable debug output for GBinder APDU backend. ([boolean])
 
 ## Data Types
