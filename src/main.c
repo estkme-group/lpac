@@ -24,6 +24,7 @@
 #    include <processthreadsapi.h>
 #    include <shellapi.h>
 #    include <stringapiset.h>
+#    include <winbase.h>
 #endif
 
 #define ENV_HTTP_DEBUG ENV_HTTP_DRIVER "_DEBUG"
@@ -151,6 +152,24 @@ void main_fini_euicc(void) {
 }
 
 #ifdef WIN32
+bool check_windows_version() {
+    DWORDLONG dwlConditionMask = 0;
+
+    OSVERSIONINFOEX osvi = {
+        .dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX),
+        .dwMajorVersion = 10,
+        .dwMinorVersion = 0,
+        .dwBuildNumber = 18362 // Windows 10 1903
+    };
+
+    VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+    VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+    VER_SET_CONDITION(dwlConditionMask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+
+    // Only work when manifest embedded correctly.
+    return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
+}
+
 static char **warg_to_arg(const int wargc, wchar_t **wargv) {
     char **argv = malloc(wargc * sizeof(char *));
     if (argv == NULL) {
@@ -191,6 +210,14 @@ int main(int argc, char **argv) {
     euicc_ctx.http.interface = &euicc_driver_interface_http;
 
 #ifdef WIN32
+    if (!check_windows_version()) {
+        if (GetLastError() == ERROR_OLD_WIN_VERSION) {
+            fputs("lpac requires Windows 10 version 1903 or above to run correctly.\n", stderr);
+        } else {
+            fputs("Failed to get Windows version.\n", stderr);
+        }
+        return -1;
+    }
     argv = warg_to_arg(argc, CommandLineToArgvW(GetCommandLineW(), &argc));
     if (argv == NULL) {
         return -1;
