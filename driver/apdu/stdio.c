@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <cjson-ext/cJSON_ex.h>
 #include <euicc/hexutil.h>
@@ -144,11 +143,11 @@ static int json_response(int *ecode, uint8_t **data, uint32_t *data_len) {
 
 err:
     fret = -1;
-    free(*data);
-    if (data) {
+    if (data != NULL) {
+        free(*data);
         *data = NULL;
     }
-    if (data_len) {
+    if (data_len != NULL) {
         *data_len = 0;
     }
     *ecode = -1;
