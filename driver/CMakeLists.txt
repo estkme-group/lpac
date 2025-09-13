@@ -46,12 +46,15 @@ endif ()
 
 if (LPAC_WITH_APDU_AT)
     target_compile_definitions(euicc-drivers PRIVATE LPAC_WITH_APDU_AT)
-    target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_common.c)
+    target_sources(euicc-drivers PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_helpers.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_csim.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at.c)
     if (UNIX)
-        target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_unix.c)
+        target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_cmd_unix.c)
     elseif (WIN32)
         target_link_libraries(euicc-drivers setupapi)
-        target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_win32.c)
+        target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_cmd_win32.c)
     else ()
         message(FATAL_ERROR "LPAC_WITH_APDU_AT is only supported on Unix and Windows platforms.")
     endif ()

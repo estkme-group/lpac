@@ -54,7 +54,7 @@ static const struct euicc_driver *drivers[] = {
     &driver_apdu_pcsc,
 #endif
 #ifdef LPAC_WITH_APDU_AT
-    &driver_apdu_at,
+    &driver_apdu_at,           &driver_apdu_at_csim,
 #endif
 #ifdef LPAC_WITH_HTTP_WINHTTP // Prefer to use WINHTTP
     &driver_http_winhttp,
@@ -62,7 +62,7 @@ static const struct euicc_driver *drivers[] = {
 #ifdef LPAC_WITH_HTTP_CURL
     &driver_http_curl,
 #endif
-    &driver_apdu_stdio,        &driver_http_stdio, NULL,
+    &driver_apdu_stdio,        &driver_http_stdio,   NULL,
 };
 
 static const struct euicc_driver *_driver_apdu = NULL;
