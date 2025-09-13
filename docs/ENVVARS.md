@@ -14,7 +14,8 @@
 ## Backends
 
 * `LPAC_APDU`: specify which APDU backend will be used. Values:
-  - [`at`](backends/at.md): AT command interface
+  - [`at`](backends/at.md): AT command interface (using AT+CCHO/CCHC/CGLA)  
+  - [`at_csim`](backends/at.md): AT command interface (using AT+CSIM)  
   - [`pcsc`](backends/pcsc.md): PC/SC Smartcard
   - [`stdio`](backends/stdio.md): Standard input/output
   - [`qmi`](backends/qmi.md): Qualcomm MSM Interface
