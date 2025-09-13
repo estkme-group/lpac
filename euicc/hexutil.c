@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#pragma clang diagnostic ignored "-Wgcc-compat"
+
 int euicc_hexutil_bin2hex(char *output, uint32_t output_len, const uint8_t *bin, uint32_t bin_len) {
     const char hexDigits[] = "0123456789abcdef";
 
@@ -131,11 +133,11 @@ int euicc_hexutil_bin2gsmbcd(char *output, uint32_t output_len, const uint8_t *b
         output[i + 1] = temp;
     }
 
-    for (uint32_t i = length - 1; i > 0; i--) {
-        if (output[i] != 'f') {
+    for (uint32_t j = length - 1; j > 0; j--) {
+        if (output[j] != 'f') {
             break;
         }
-        output[i] = '\0';
+        output[j] = '\0';
     }
 
     return 0;

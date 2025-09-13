@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#pragma clang diagnostic ignored "-Wgcc-compat"
+
 int euicc_derutil_unpack_first(struct euicc_derutil_node *result, const uint8_t *buffer, uint32_t buffer_len) {
     const uint8_t *cptr;
     uint32_t rlen;
@@ -272,8 +274,8 @@ int euicc_derutil_convert_long2bin(uint8_t *buffer, uint32_t *buffer_len, long v
         return -1;
     }
 
-    for (int i = 0; i < required_len; i++) {
-        buffer[i] = (value >> ((required_len - i - 1) * 8)) & 0xFF;
+    for (int j = 0; j < required_len; j++) {
+        buffer[j] = (value >> ((required_len - j - 1) * 8)) & 0xFF;
     }
 
     *buffer_len = required_len;
@@ -339,13 +341,13 @@ int euicc_derutil_convert_bin2bits_str(const char ***output, const uint8_t *buff
     for (max_cap_len = 0; desc[max_cap_len]; max_cap_len++)
         ;
 
-    for (int j = 0; j < buffer_len; j++) {
-        if (j == buffer_len - 1) {
-            flags_reg = buffer[j] & ~(0xFF >> (8 - unused));
+    for (int k = 0; k < buffer_len; k++) {
+        if (k == buffer_len - 1) {
+            flags_reg = buffer[k] & ~(0xFF >> (8 - unused));
         } else {
-            flags_reg = buffer[j];
+            flags_reg = buffer[k];
         }
-        for (int i = 0; (i < 8) && ((j * 8 + i) < max_cap_len); i++) {
+        for (int i = 0; (i < 8) && ((k * 8 + i) < max_cap_len); i++) {
             if (flags_reg & 0x80) {
                 flags_count++;
             }

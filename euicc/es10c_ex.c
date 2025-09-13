@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include "es10c_ex.h"
 #include "euicc.private.h"
 
@@ -8,6 +7,8 @@
 
 #include "derutil.h"
 #include "hexutil.h"
+
+#pragma clang diagnostic ignored "-Wgcc-compat"
 
 static int _versiontype2str(char **out, const uint8_t *buffer, uint8_t buffer_len) {
     if (buffer_len != 3) {

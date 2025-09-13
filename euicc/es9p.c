@@ -7,6 +7,8 @@
 
 #include <cjson-ext/cJSON_ex.h>
 
+#pragma clang diagnostic ignored "-Wgcc-compat"
+
 static const char *lpa_header[] = {
     "User-Agent: gsma-rsp-lpad",
     "X-Admin-Protocol: gsma/rsp/v2.2.0",
@@ -103,8 +105,8 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
         goto err;
     }
 
-    for (int i = 0; ikey[i] != NULL; i++) {
-        if (!cJSON_AddStringOrNullToObject(sjroot, ikey[i], idata[i])) {
+    for (int j = 0; ikey[j] != NULL; j++) {
+        if (!cJSON_AddStringOrNullToObject(sjroot, ikey[j], idata[j])) {
             goto err;
         }
     }

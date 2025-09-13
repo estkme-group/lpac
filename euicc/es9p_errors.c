@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#pragma clang diagnostic ignored "-Wgcc-compat"
+
 struct es9p_error {
     const char *subject_code;
     const char *reason_code;
