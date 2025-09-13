@@ -63,13 +63,13 @@ int euicc_hexutil_bin2hex(char *output, const uint32_t output_len, const uint8_t
         return -1;
     }
     static const char digits[] = "0123456789abcdef";
-    uint32_t bytes = 0;
+    uint32_t n = 0;
     for (uint32_t i = 0; i < bin_len; i++) {
-        output[bytes++] = digits[bin[i] >> 4];
-        output[bytes++] = digits[bin[i] & 0xf];
+        output[n++] = digits[bin[i] >> 4];
+        output[n++] = digits[bin[i] & 0xf];
     }
-    output[bytes] = '\0';
-    return 0;
+    output[n] = '\0';
+    return (int)n;
 }
 
 int euicc_hexutil_gsmbcd2bin(uint8_t *output, const uint32_t output_len, const char *input, const uint32_t padding_to) {
@@ -94,15 +94,15 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, const uint32_t output_len, const c
 }
 
 int euicc_hexutil_bin2gsmbcd(char *output, const uint32_t output_len, const uint8_t *bin, const uint32_t bin_len) {
-    if (euicc_hexutil_bin2hex(output, output_len, bin, bin_len) < 0) {
+    int n = euicc_hexutil_bin2hex(output, output_len, bin, bin_len);
+    if (n < 0) {
         return -1;
     }
-    gsmbcd_swap_chars(output, output_len);
+    gsmbcd_swap_chars(output, n);
     // trim trailing 'f'
-    uint32_t i = (2 * bin_len) - 1;
-    while (i > 0 && output[i] != 'f') {
-        i--;
+    while (n > 0 && output[n] != 'f') {
+        n--;
     }
-    output[i] = '\0';
+    output[n] = '\0';
     return 0;
 }
