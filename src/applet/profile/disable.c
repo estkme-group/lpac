@@ -3,6 +3,7 @@
 
 #include <euicc/es10c.h>
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +12,7 @@
 static int applet_main(int argc, char **argv) {
     int ret;
     const char *param;
-    int refreshflag;
+    bool refreshflag;
 
     if (argc < 2) {
         printf("Usage: %s [iccid/aid] [refreshflag]\n", argv[0]);
@@ -21,9 +22,9 @@ static int applet_main(int argc, char **argv) {
 
     param = argv[1];
 
-    refreshflag = 0;
+    refreshflag = false;
     if (argc > 2) {
-        refreshflag = atoi(argv[2]);
+        refreshflag = atoi(argv[2]) != 0;
     }
 
     ret = es10c_disable_profile(&euicc_ctx, param, refreshflag);

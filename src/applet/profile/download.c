@@ -243,7 +243,7 @@ static int applet_main(int argc, char **argv) {
         jprint_progress_obj("es8p_meatadata_parse", jmetadata);
 
         if (interactive_preview) {
-            char c;
+            int c;
             jprint_progress("preview", "y/n");
             c = getchar();
             if (c != 'y' && c != 'Y') {

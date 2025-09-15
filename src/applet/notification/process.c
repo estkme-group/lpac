@@ -12,7 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 
-static int _process_single(uint32_t seqNumber, uint8_t autoremove) {
+static int _process_single(const uint32_t seqNumber, const bool autoremove) {
     int ret;
     char str_seqNumber[11];
     _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
@@ -60,7 +60,7 @@ static int applet_main(int argc, char **argv) {
 
     int fret = 0;
     int all = 0;
-    int autoremove = 0;
+    bool autoremove = false;
     int opt = 0;
 
     while ((opt = getopt(argc, argv, opt_string)) != -1) {
@@ -69,7 +69,7 @@ static int applet_main(int argc, char **argv) {
             all = 1;
             break;
         case 'r':
-            autoremove = 1;
+            autoremove = true;
             break;
         case 'h':
         case '?':
@@ -93,7 +93,7 @@ static int applet_main(int argc, char **argv) {
 
         rptr = notifications;
         while (rptr) {
-            if (_process_single(rptr->seqNumber, autoremove)) {
+            if (_process_single((uint32_t)rptr->seqNumber, autoremove)) {
                 fret = -1;
                 break;
             }
@@ -109,10 +109,10 @@ static int applet_main(int argc, char **argv) {
             // Although POSIX said user should check errno instead of return value,
             // but errno may not be set when no conversion is performed according to C99.
             // Check nptr is same as str_end to ensure there is no conversion.
-            if ((seqNumber == 0 && strcmp(argv[i], str_end)) || errno != 0) {
+            if ((seqNumber == 0 && strcmp(argv[i], str_end) != 0) || errno != 0) {
                 continue;
             }
-            if (_process_single(seqNumber, autoremove)) {
+            if (_process_single((uint32_t)seqNumber, autoremove)) {
                 fret = -1;
                 break;
             }

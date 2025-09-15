@@ -67,7 +67,7 @@ static int applet_main(int argc, char **argv) {
 
         rptr = notifications;
         while (rptr) {
-            if (_delete_single(rptr->seqNumber)) {
+            if (_delete_single((uint32_t)rptr->seqNumber)) {
                 fret = -1;
                 break;
             }
@@ -87,7 +87,7 @@ static int applet_main(int argc, char **argv) {
                 continue;
             }
 
-            if (_delete_single(seqNumber)) {
+            if (_delete_single((uint32_t)seqNumber)) {
                 fret = -1;
                 break;
             }

@@ -25,7 +25,7 @@ static int applet_main(__attribute__((unused)) int argc, __attribute__((unused))
         cJSON *jnotification = NULL;
 
         jnotification = cJSON_CreateObject();
-        cJSON_AddNumberToObject(jnotification, "seqNumber", rptr->seqNumber);
+        cJSON_AddNumberToObject(jnotification, "seqNumber", (uint32_t)rptr->seqNumber);
         cJSON_AddStringOrNullToObject(jnotification, "profileManagementOperation",
                                       euicc_profilemanagementoperation2str(rptr->profileManagementOperation));
         cJSON_AddStringOrNullToObject(jnotification, "notificationAddress",
