@@ -23,7 +23,8 @@ pushd "$QMI_REPO_DIR"
 wget -nv "$QMI_REPO_URL/archive/refs/tags/$QMI_VERSION.tar.gz" -O - |
     tar xz --strip-components=1
 meson setup "$QMI_BUILD_DIR" --prefix=/usr --buildtype=release \
-    -Dman=false -Dbash_completion=false
+    -Dmbim_qmux=false -Dfirmware_update=false -Dudev=false -Dintrospection=false \
+    -Dman=false -Dbash_completion=false -Dgtk_doc=false
 pushd "$QMI_BUILD_DIR"
 ninja -j"$(nproc)"
 sudo ninja install
