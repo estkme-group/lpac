@@ -33,9 +33,9 @@ else()
     message(INFO "IPO is not supported: ${output}")
 endif()
 
-if (APPLE)
+if (APPLE AND NOT DEFINED CMAKE_OSX_ARCHITECTURES)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
-endif()
+endif ()
 
 if(UNIX)
     include(GNUInstallDirs)
