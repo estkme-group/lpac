@@ -43,8 +43,8 @@ function download {
 function copy-license {
     local OUTPUT="$1"
 
-    mkdir "$OUTPUT/LICENSES"
-    cp -r "$WORKSPACE/LICENSES" "$OUTPUT/LICENSES"
+    cp -r "$WORKSPACE/LICENSES" "$OUTPUT"
+    cp "$WORKSPACE/REUSE.toml" "$OUTPUT"
 }
 
 function copy-curl-woa {
