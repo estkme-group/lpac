@@ -76,7 +76,7 @@ if (LPAC_WITH_APDU_QMI OR LPAC_WITH_APDU_QMI_QRTR)
             ${CMAKE_CURRENT_SOURCE_DIR}/apdu/qmi_common.c)
 
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(QMI_GLIB REQUIRED IMPORTED_TARGET qmi-glib>=1.35.5)
+    pkg_check_modules(QMI_GLIB REQUIRED IMPORTED_TARGET qmi-glib>=1.36.0)
     target_link_libraries(euicc-drivers PkgConfig::QMI_GLIB)
 
     if (LPAC_DYNAMIC_DRIVERS)
