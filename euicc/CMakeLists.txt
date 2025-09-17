@@ -1,11 +1,29 @@
 option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" OFF)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} LIB_EUICC_SRCS)
 if(LPAC_DYNAMIC_LIBEUICC)
-    add_library(euicc SHARED ${LIB_EUICC_SRCS})
+    add_library(euicc SHARED)
 else()
-    add_library(euicc STATIC ${LIB_EUICC_SRCS})
+    add_library(euicc STATIC)
 endif()
 target_link_libraries(euicc ${CJSON_LIBRARY} cjson-ext)
+target_sources(
+    euicc
+    PRIVATE
+        base64.c
+        derutil.c
+        es8p.c
+        es9p.c
+        es9p_errors.c
+        es10a.c
+        es10b.c
+        es10c.c
+        es10c_ex.c
+        euicc.c
+        hexutil.c
+        interface.c
+        logger.c
+        sha256.c
+        tostr.c
+)
 target_sources(
     euicc
     PRIVATE

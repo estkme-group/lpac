@@ -11,14 +11,18 @@ option(LPAC_WITH_APDU_MBIM "Build MBIM backend for MBIM devices (requires libmbi
 option(LPAC_WITH_HTTP_CURL "Build HTTP Curl interface" ON)
 cmake_dependent_option(LPAC_WITH_HTTP_WINHTTP "Build HTTP WinHTTP interface (Win32 only)" ON WIN32 OFF)
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} DIR_INTERFACE_SRCS)
 if(LPAC_DYNAMIC_DRIVERS)
-    add_library(euicc-drivers SHARED ${DIR_INTERFACE_SRCS})
+    add_library(euicc-drivers SHARED)
     list(APPEND LIBEUICC_DRIVERS_REQUIRES "libeuicc = ${PROJECT_VERSION}")
 else()
-    add_library(euicc-drivers STATIC ${DIR_INTERFACE_SRCS})
+    add_library(euicc-drivers STATIC)
 endif()
 target_link_libraries(euicc-drivers euicc ${CJSON_LIBRARY} lpac-utils)
+target_sources(
+    euicc-drivers
+    PRIVATE
+        driver.c
+)
 target_sources(
     euicc-drivers
     PRIVATE

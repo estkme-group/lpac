@@ -1,5 +1,9 @@
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} LIB_DLFCN_SRCS)
-add_library(dlfcn-win32 STATIC ${LIB_DLFCN_SRCS})
+add_library(dlfcn-win32 STATIC)
+target_sources(
+    dlfcn-win32
+    PRIVATE
+        dlfcn.c
+)
 target_sources(
     dlfcn-win32
     PUBLIC

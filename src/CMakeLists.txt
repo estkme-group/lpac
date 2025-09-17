@@ -4,15 +4,35 @@ else()
     set(RPATH_BINARY_PATH "$ORIGIN")
 endif()
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} DIR_LPAC_SRCS)
-
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet DIR_LPAC_SRCS)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet/chip DIR_LPAC_SRCS)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet/notification DIR_LPAC_SRCS)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet/profile DIR_LPAC_SRCS)
-
-add_executable(lpac ${DIR_LPAC_SRCS} lpac.manifest)
+add_executable(lpac lpac.manifest)
 target_link_libraries(lpac PRIVATE euicc euicc-drivers lpac-utils)
+target_sources(
+    lpac
+    PRIVATE
+        applet/chip/defaultsmdp.c
+        applet/chip/info.c
+        applet/chip/purge.c
+        applet/notification/list.c
+        applet/notification/notification_common.c
+        applet/notification/process.c
+        applet/notification/remove.c
+        applet/notification/replay.c
+        applet/notification/dump.c
+        applet/profile/delete.c
+        applet/profile/disable.c
+        applet/profile/discovery.c
+        applet/profile/enable.c
+        applet/profile/list.c
+        applet/profile/nickname.c
+        applet/profile/download.c
+        applet/chip.c
+        applet/notification.c
+        applet/profile.c
+        applet/version.c
+        applet.c
+        jprint.c
+        main.c
+)
 target_sources(
     lpac
     PUBLIC
