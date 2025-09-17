@@ -8,7 +8,9 @@ GBinder-based backends for `libhybris` (Halium) distributions
 > a HAL and its users. HIDL allows specifying types and method calls, collected into interfaces and packages. More
 > broadly, HIDL is a system for communicating between codebases that may be compiled independently.
 
-This backend uses the `android.hardware.radio@1.0::IRadio` HIDL interface to send and receive APDUs via the RIL.
+This backend uses the [`android.hardware.radio@1.0::IRadio`] HIDL interface to send and receive APDUs via the RIL.
+
+[`android.hardware.radio@1.0::IRadio`]: https://android.googlesource.com/platform/hardware/interfaces/+/3c927eee/radio/1.0/IRadio.hal
 
 ## Environment Variables
 
