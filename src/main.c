@@ -70,34 +70,34 @@ static const struct applet_entry *applets[] = {
 static int euicc_ctx_inited = 0;
 struct euicc_ctx euicc_ctx = {0};
 
-static int setup_isdr_aid(const uint8_t **aid, uint8_t *aid_len) {
+static bool setup_isdr_aid(const uint8_t **aid, uint8_t *aid_len) {
     *aid = NULL;
     *aid_len = 0;
 
     const char *value = getenv_or_default(ENV_ISD_R_AID, "A0000005591010FFFFFFFF8900000100");
     const size_t n = strlen(value);
     if (n % 2 != 0 || n < ISD_R_AID_MIN_LENGTH || n > ISD_R_AID_MAX_LENGTH)
-        return -1;
+        return false;
 
     *aid_len = (uint8_t)n / 2;
     *aid = calloc(*aid_len, sizeof(uint8_t));
-    return euicc_hexutil_hex2bin_r((uint8_t *)*aid, *aid_len, value, n);
+    return euicc_hexutil_hex2bin_r((uint8_t *)*aid, *aid_len, value, n) > 0;
 }
 
-static int setup_es10x_mss(uint8_t *mss) {
+static bool setup_es10x_mss(uint8_t *mss) {
     *mss = 0;
 
     const long value = getenv_or_default(ENV_ES10X_MSS, (long)0);
     if (value == 0)
-        return 0;
+        return true; // use default
     if (errno == ERANGE || value < ES10X_MSS_MIN_VALUE || value > ES10X_MSS_MAX_VALUE)
-        return -1;
+        return false;
 
     *mss = (uint8_t)value;
-    return 0;
+    return true;
 }
 
-static int setup_logger(FILE **apdu_log_fp, FILE **http_log_fp) {
+static bool setup_logger(FILE **apdu_log_fp, FILE **http_log_fp) {
     set_deprecated_env_name(ENV_APDU_DEBUG, "LIBEUICC_DEBUG_APDU");
     set_deprecated_env_name(ENV_HTTP_DEBUG, "LIBEUICC_DEBUG_HTTP");
 
@@ -105,25 +105,25 @@ static int setup_logger(FILE **apdu_log_fp, FILE **http_log_fp) {
     *http_log_fp = NULL;
 
     if (stderr == NULL)
-        return -1;
+        return false;
 
     if (getenv_or_default(ENV_APDU_DEBUG, (bool)false))
         *apdu_log_fp = stderr;
     if (getenv_or_default(ENV_HTTP_DEBUG, (bool)false))
         *http_log_fp = stderr;
-    return 0;
+    return true;
 }
 
 int main_init_euicc(void) {
-    if (setup_isdr_aid(&euicc_ctx.aid, &euicc_ctx.aid_len) < 0) {
+    if (setup_isdr_aid(&euicc_ctx.aid, &euicc_ctx.aid_len) == false) {
         jprint_error("euicc_init", "invalid custom ISD-R applet id given");
         return -1;
     }
-    if (setup_es10x_mss(&euicc_ctx.es10x_mss) < 0) {
+    if (setup_es10x_mss(&euicc_ctx.es10x_mss) == false) {
         jprint_error("euicc_init", "invalid custom ES10x MSS given");
         return -1;
     }
-    if (setup_logger(&euicc_ctx.apdu.log_fp, &euicc_ctx.http.log_fp)) {
+    if (setup_logger(&euicc_ctx.apdu.log_fp, &euicc_ctx.http.log_fp) == false) {
         jprint_error("euicc_init", "invalid log file given");
         return -1;
     }
