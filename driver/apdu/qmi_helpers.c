@@ -12,7 +12,7 @@ static void async_result_ready(GObject *source_object, GAsyncResult *res, gpoint
     *result_out = g_object_ref(res);
 }
 
-#ifdef LPAC_WITH_APDU_QMI_QRTR
+#ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
 QrtrBus *qrtr_bus_new_sync(GMainContext *context, GError **error) {
     g_autoptr(GMainContextPusher) pusher = NULL;
     g_autoptr(GAsyncResult) result = NULL;
@@ -43,7 +43,7 @@ QmiDevice *qmi_device_new_from_node_sync(QrtrNode *node, GMainContext *context, 
 }
 #endif
 
-#ifdef LPAC_WITH_APDU_QMI
+#ifdef LPAC_WITH_DRIVER_APDU_QMI
 QmiDevice *qmi_device_new_from_path(GFile *file, GMainContext *context, GError **error) {
     g_autoptr(GMainContextPusher) pusher = NULL;
     g_autoptr(GAsyncResult) result = NULL;

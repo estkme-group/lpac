@@ -11,7 +11,7 @@
 #define ENV_UIM_SLOT APDU_ENV_NAME(QMI, UIM_SLOT)
 #define ENV_DEVICE APDU_ENV_NAME(QMI, DEVICE)
 
-#ifdef LPAC_WITH_APDU_QMI_QRTR
+#ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
 #    include <libqrtr-glib.h>
 
 QrtrBus *qrtr_bus_new_sync(GMainContext *context, GError **error);
@@ -19,7 +19,7 @@ QrtrBus *qrtr_bus_new_sync(GMainContext *context, GError **error);
 QmiDevice *qmi_device_new_from_node_sync(QrtrNode *node, GMainContext *context, GError **error);
 #endif
 
-#ifdef LPAC_WITH_APDU_QMI
+#ifdef LPAC_WITH_DRIVER_APDU_QMI
 QmiDevice *qmi_device_new_from_path(GFile *file, GMainContext *context, GError **error);
 #endif
 
