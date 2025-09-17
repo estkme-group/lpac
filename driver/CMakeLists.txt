@@ -19,7 +19,25 @@ else()
     add_library(euicc-drivers STATIC ${DIR_INTERFACE_SRCS})
 endif()
 target_link_libraries(euicc-drivers euicc ${CJSON_LIBRARY} lpac-utils)
-target_include_directories(euicc-drivers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_sources(
+    euicc-drivers
+    PRIVATE
+        FILE_SET private_headers
+        TYPE HEADERS
+        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+        FILES
+            driver.private.h
+)
+target_sources(
+    euicc-drivers
+    PUBLIC
+        FILE_SET public_headers
+        TYPE HEADERS
+        BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+        FILES
+            driver.h
+)
+
 
 target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/stdio.c)
 target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/stdio.c)
@@ -137,10 +155,6 @@ if (LPAC_WITH_HTTP_WINHTTP)
 endif ()
 
 if(LPAC_DYNAMIC_DRIVERS)
-    # Install headers
-    file(GLOB ALL_HEADERS "*.h")
-    list(FILTER ALL_HEADERS EXCLUDE REGEX "\.private\.h$")
-    set_target_properties(euicc-drivers PROPERTIES PUBLIC_HEADER "${ALL_HEADERS}")
     # Install a pkg-config file (mainly for Linux; macOS is untested; Win32 is not supported)
     if(UNIX)
         list(JOIN LIBEUICC_DRIVERS_REQUIRES ", " LIBEUICC_DRIVERS_REQUIRES)
@@ -148,6 +162,6 @@ if(LPAC_DYNAMIC_DRIVERS)
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeuicc-drivers.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
     endif()
     set_target_properties(euicc-drivers PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
-    install(TARGETS euicc-drivers LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-                          PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/euicc)
+    install(TARGETS euicc-drivers   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                                    FILE_SET public_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()

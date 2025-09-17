@@ -12,8 +12,17 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet/notification DIR_LPAC_SR
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/applet/profile DIR_LPAC_SRCS)
 
 add_executable(lpac ${DIR_LPAC_SRCS} lpac.manifest)
-target_link_libraries(lpac euicc-drivers lpac-utils)
-target_include_directories(lpac PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+target_link_libraries(lpac PRIVATE euicc euicc-drivers lpac-utils)
+target_sources(
+    lpac
+    PUBLIC
+        FILE_SET private_headers
+        TYPE HEADERS
+        FILES
+            main.h
+            jprint.h
+            applet.h
+)
 target_compile_options(lpac PRIVATE -Wall -Wextra)
 
 include(${CMAKE_SOURCE_DIR}/cmake/git-version.cmake)
