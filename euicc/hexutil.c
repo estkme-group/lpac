@@ -1,142 +1,112 @@
 #include "hexutil.h"
 
-#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
-int euicc_hexutil_bin2hex(char *output, uint32_t output_len, const uint8_t *bin, uint32_t bin_len) {
-    const char hexDigits[] = "0123456789abcdef";
+#ifndef LIBEUICC_REDUCED_STDLIB_CALL
+#    include <ctype.h>
+#    include <stddef.h>
+#endif
 
-    if (!bin || !output) {
-        return -1;
+#define SWAP(a, b)            \
+    do {                      \
+        typeof(a) temp = (a); \
+        (a) = (b);            \
+        (b) = temp;           \
+    } while (0)
+
+static inline void gsmbcd_swap_chars(char *restrict input, const uint32_t input_len) {
+    for (uint32_t i = 0; i < input_len; i += 2) {
+        SWAP(input[i], input[i + 1]);
     }
-
-    if (output_len < 2 * bin_len + 1) {
-        return -1;
-    }
-
-    for (uint32_t i = 0; i < bin_len; ++i) {
-        char byte = bin[i];
-        output[2 * i] = hexDigits[(byte >> 4) & 0x0F];
-        output[2 * i + 1] = hexDigits[byte & 0x0F];
-    }
-    output[2 * bin_len] = '\0';
-
-    return 0;
 }
 
-int euicc_hexutil_hex2bin(uint8_t *output, uint32_t output_len, const char *str) {
-    return euicc_hexutil_hex2bin_r(output, output_len, str, strlen(str));
+int euicc_hexutil_bin2hex(char *restrict output, const uint32_t output_len, const uint8_t *bin,
+                          const uint32_t bin_len) {
+    if (output == NULL || bin == NULL || output_len < ((2 * bin_len) + 1)) {
+        return -1;
+    }
+    static const char digits[] = "0123456789abcdef";
+    uint32_t n = 0;
+    for (uint32_t i = 0; i < bin_len; i++) {
+        output[n++] = digits[bin[i] >> 4];
+        output[n++] = digits[bin[i] & 0xf];
+    }
+    output[n] = '\0';
+    return (int)n;
 }
 
-int euicc_hexutil_hex2bin_r(uint8_t *output, uint32_t output_len, const char *str, uint32_t str_len) {
-    uint32_t length;
-
-    if (!str || !output || str_len % 2 != 0) {
-        return -1;
-    }
-
-    length = str_len / 2;
-    if (length > output_len) {
-        return -1;
-    }
-
-    for (uint32_t i = 0; i < length; ++i) {
-        char high = str[2 * i];
-        char low = str[2 * i + 1];
-
-        if (high >= '0' && high <= '9') {
-            high -= '0';
-        } else if (high >= 'a' && high <= 'f') {
-            high = high - 'a' + 10;
-        } else if (high >= 'A' && high <= 'F') {
-            high = high - 'A' + 10;
-        } else {
-            return -1;
-        }
-
-        if (low >= '0' && low <= '9') {
-            low -= '0';
-        } else if (low >= 'a' && low <= 'f') {
-            low = low - 'a' + 10;
-        } else if (low >= 'A' && low <= 'F') {
-            low = low - 'A' + 10;
-        } else {
-            return -1;
-        }
-
-        output[i] = (high << 4) + low;
-    }
-
-    return length;
+inline int euicc_hexutil_hex2bin(uint8_t *restrict output, const uint32_t output_len, const char *restrict input) {
+    return euicc_hexutil_hex2bin_r(output, output_len, input, strlen(input));
 }
 
-int euicc_hexutil_gsmbcd2bin(uint8_t *output, uint32_t output_len, const char *str, uint32_t padding_to) {
-    uint32_t str_length;
-    uint32_t idx = 0;
-
-    str_length = strlen(str);
-
-    if (output_len < (str_length + 1) / 2) {
+int euicc_hexutil_hex2bin_r(uint8_t *restrict output, const uint32_t output_len, const char *restrict input,
+                            const uint32_t input_len) {
+    if (output == NULL || input == NULL || (input_len % 2) != 0 || output_len < (input_len / 2)) {
         return -1;
     }
-
-    if (output_len < padding_to) {
-        return -1;
-    }
-
-    for (uint32_t i = 0; i < str_length; i += 2) {
-        char high_nibble = (i + 1 < str_length) ? str[i + 1] : 'F';
-        char low_nibble = str[i];
-
-        uint8_t high_nibble_val = 0x0;
-        uint8_t low_nibble_val = 0x0;
-
-        if (low_nibble >= '0' && low_nibble <= '9') {
-            low_nibble_val = low_nibble - '0';
-        } else if (low_nibble == 'F' || low_nibble == 'f') {
-            low_nibble_val = 0x0F;
-        } else {
-            return -1;
+    uint32_t bytes = 0;
+#ifdef LIBEUICC_REDUCED_STDLIB_CALL
+    uint8_t c, msb = 0;
+    for (uint32_t i = 0; i < input_len; i++) {
+        c = input[i] | ' ';
+        if ((c < '0' || c > '9') && (c < 'a' || c > 'f')) {
+            return -1; // invalid character
         }
-
-        if (high_nibble >= '0' && high_nibble <= '9') {
-            high_nibble_val = high_nibble - '0';
-        } else if (high_nibble == 'F' || high_nibble == 'f') {
-            high_nibble_val = 0xF;
+        c -= c > '9' ? 'a' - 10 : '0';
+        if (i % 2 == 0) {
+            msb = c;
         } else {
-            return -1;
+            output[bytes++] = msb << 4 | c;
         }
-
-        output[idx] = (high_nibble_val << 4) | low_nibble_val;
-        idx++;
     }
-
-    for (; idx < padding_to; idx++) {
-        output[idx] = 0xFF;
+#else
+    char hex[3] = "\0\0";
+    for (uint32_t i = 0; i < input_len; i += 2) {
+        hex[0] = input[i + 0];
+        hex[1] = input[i + 1];
+        if (!(isxdigit(hex[0]) && isxdigit(hex[1]))) {
+            return -1; // invalid character
+        }
+        output[bytes++] = (uint8_t)strtol(hex, NULL, 16);
     }
-
-    return idx;
+#endif
+    return (int)bytes;
 }
 
-int euicc_hexutil_bin2gsmbcd(char *output, uint32_t output_len, const uint8_t *binData, uint32_t length) {
-    if (euicc_hexutil_bin2hex(output, output_len, binData, length)) {
+int euicc_hexutil_gsmbcd2bin(uint8_t *restrict output, const uint32_t output_len, const char *restrict input,
+                             const uint32_t padding_to) {
+    if (output == NULL || input == NULL || output_len < padding_to) {
         return -1;
     }
-
-    length = strlen(output);
-    for (size_t i = 0; i < length - 1; i += 2) {
-        char temp = output[i];
-        output[i] = output[i + 1];
-        output[i + 1] = temp;
+    const uint32_t n = strlen(input);
+    char *bin = calloc(n + (n % 2), sizeof(char)); // +1 if odd
+    if (bin == NULL) {
+        return -1;
     }
-
-    for (uint32_t i = length - 1; i > 0; i--) {
-        if (output[i] != 'f') {
-            break;
-        }
-        output[i] = '\0';
+    memcpy(bin, input, n);
+    memset(bin + n, 'f', n % 2); // pad with 'f' if odd
+    gsmbcd_swap_chars(bin, n + (n % 2));
+    const int bytes = euicc_hexutil_hex2bin_r(output, output_len, bin, n + (n % 2));
+    free(bin);
+    if (bytes == -1) {
+        return -1;
     }
+    memset(output + bytes, 0xff, padding_to - bytes);
+    return bytes;
+}
 
-    return 0;
+int euicc_hexutil_bin2gsmbcd(char *restrict output, const uint32_t output_len, const uint8_t *restrict bin,
+                             const uint32_t bin_len) {
+    int n = euicc_hexutil_bin2hex(output, output_len, bin, bin_len);
+    if (n < 0) {
+        return -1;
+    }
+    n -= 1; // ignore NUL terminator
+    gsmbcd_swap_chars(output, n);
+    // trim trailing 'f'
+    while (n > 0 && output[n] == 'f') {
+        output[n--] = '\0';
+    }
+    return n;
 }
