@@ -15,13 +15,14 @@
         (b) = temp;           \
     } while (0)
 
-static inline void gsmbcd_swap_chars(char *input, const uint32_t input_len) {
+static inline void gsmbcd_swap_chars(char *restrict input, const uint32_t input_len) {
     for (uint32_t i = 0; i < input_len; i += 2) {
         SWAP(input[i], input[i + 1]);
     }
 }
 
-int euicc_hexutil_bin2hex(char *output, const uint32_t output_len, const uint8_t *bin, const uint32_t bin_len) {
+int euicc_hexutil_bin2hex(char *restrict output, const uint32_t output_len, const uint8_t *bin,
+                          const uint32_t bin_len) {
     if (output == NULL || bin == NULL || output_len < ((2 * bin_len) + 1)) {
         return -1;
     }
@@ -35,11 +36,12 @@ int euicc_hexutil_bin2hex(char *output, const uint32_t output_len, const uint8_t
     return (int)n;
 }
 
-inline int euicc_hexutil_hex2bin(uint8_t *output, const uint32_t output_len, const char *input) {
+inline int euicc_hexutil_hex2bin(uint8_t *restrict output, const uint32_t output_len, const char *restrict input) {
     return euicc_hexutil_hex2bin_r(output, output_len, input, strlen(input));
 }
 
-int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const char *input, const uint32_t input_len) {
+int euicc_hexutil_hex2bin_r(uint8_t *restrict output, const uint32_t output_len, const char *restrict input,
+                            const uint32_t input_len) {
     if (output == NULL || input == NULL || (input_len % 2) != 0 || output_len < (input_len / 2)) {
         return -1;
     }
@@ -72,7 +74,8 @@ int euicc_hexutil_hex2bin_r(uint8_t *output, const uint32_t output_len, const ch
     return (int)bytes;
 }
 
-int euicc_hexutil_gsmbcd2bin(uint8_t *output, const uint32_t output_len, const char *input, const uint32_t padding_to) {
+int euicc_hexutil_gsmbcd2bin(uint8_t *restrict output, const uint32_t output_len, const char *restrict input,
+                             const uint32_t padding_to) {
     if (output == NULL || input == NULL || output_len < padding_to) {
         return -1;
     }
@@ -93,7 +96,8 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *output, const uint32_t output_len, const c
     return bytes;
 }
 
-int euicc_hexutil_bin2gsmbcd(char *output, const uint32_t output_len, const uint8_t *bin, const uint32_t bin_len) {
+int euicc_hexutil_bin2gsmbcd(char *restrict output, const uint32_t output_len, const uint8_t *restrict bin,
+                             const uint32_t bin_len) {
     int n = euicc_hexutil_bin2hex(output, output_len, bin, bin_len);
     if (n < 0) {
         return -1;
