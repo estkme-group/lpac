@@ -43,7 +43,7 @@ target_sources(
             driver.h
 )
 
-target_sources(euicc-drivers PRIVATE stdio/stdio-helpers.c stdio/stdio-apdu.c stdio/stdio-http.c)
+target_sources(euicc-drivers PRIVATE stdio/helpers.c stdio/apdu.c stdio/http.c)
 
 if ((LPAC_DYNAMIC_DRIVERS AND LPAC_DYNAMIC_DRIVERS_SOLID) OR NOT LPAC_DYNAMIC_DRIVERS)
     set(DRIVER_BUILD_TYPE OBJECT)

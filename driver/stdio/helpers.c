@@ -1,4 +1,4 @@
-#include "stdio-helpers.h"
+#include "helpers.h"
 
 #include "lpac/utils.h"
 
@@ -7,7 +7,7 @@
 #include <string.h>
 
 // getline is a GNU extension, Mingw32 macOS and FreeBSD don't have (a working) one
-inline int afgets(char **obuf, FILE *fp) {
+static int afgets(char **obuf, FILE *fp) {
     uint32_t len = 0;
     char buffer[2];
     char *obuf_new = NULL;

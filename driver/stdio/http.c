@@ -1,4 +1,4 @@
-#include "stdio-helpers.h"
+#include "helpers.h"
 #include "stdio.h"
 
 #include <cjson-ext/cJSON_ex.h>
@@ -6,7 +6,6 @@
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
-#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

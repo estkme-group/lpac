@@ -1,15 +1,12 @@
-#include "stdio-helpers.h"
+#include "helpers.h"
 #include "stdio.h"
-
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include <cjson-ext/cJSON_ex.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
+
+#include <stdio.h>
 
 static bool json_request(const char *func, const uint8_t *param, unsigned param_len) {
     _cleanup_free_ char *param_hex = NULL;
