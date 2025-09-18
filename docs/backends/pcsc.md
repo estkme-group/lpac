@@ -11,6 +11,4 @@ data exchange
 - `LPAC_APDU_PCSC_DRV_NAME`: specify which PC/SC interface name will be used by PC/SC APDU backend. \
   ([string](types.md#string-type), default: none, for example: `ESTKme-RED`)
 - `LPAC_APDU_PCSC_DRV_IGNORE_NAME`: specify which PC/SC interface names will be ignored by PC/SC APDU backend. \
-  ([string](types.md#string-type), use [semicolon] split, for example: `Yubico;Canokeys`).
-
-[semicolon]: https://en.wikipedia.org/wiki/Semicolon
+  ([string](types.md#string-type), use semicolon (`;`) split, substring match, for example: `Yubico;Canokeys`).

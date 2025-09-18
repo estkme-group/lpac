@@ -1,25 +1,43 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "LPAC Standard I/O Driver Message Schema",
-    "type": "object",
-    "properties": {
-        "type": {
-            "enum": ["apdu", "http"],
-            "description": "Type of the message, either 'apdu' for APDU commands or 'http' for HTTP requests"
+    "oneOf": [
+        { "$ref": "#/$defs/apdu-transceiver" },
+        { "$ref": "#/$defs/http-transceiver" }
+    ],
+    "$defs": {
+        "apdu-transceiver": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "apdu"
+                },
+                "payload": {
+                    "oneOf": [
+                        { "$ref": "#/$defs/apdu-request" },
+                        { "$ref": "#/$defs/apdu-response" }
+                    ]
+                }
+            },
+            "required": ["type", "payload"],
+            "additionalProperties": false
         },
-        "payload": {
-            "oneOf": [
-                { "$ref": "#/definitions/apdu-request" },
-                { "$ref": "#/definitions/apdu-response" },
-                { "$ref": "#/definitions/http-request" },
-                { "$ref": "#/definitions/http-response" }
-            ],
-            "description": "The payload of the message, structure depends on the 'type' field"
-        }
-    },
-    "required": ["type", "payload"],
-    "additionalProperties": false,
-    "definitions": {
+        "http-transceiver": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "http"
+                },
+                "payload": {
+                    "oneOf": [
+                        { "$ref": "#/$defs/http-request" },
+                        { "$ref": "#/$defs/http-response" }
+                    ]
+                }
+            },
+            "required": ["type", "payload"],
+            "additionalProperties": false
+        },
         "apdu-request": {
             "type": "object",
             "description": "APDU command request",
