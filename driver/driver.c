@@ -62,8 +62,7 @@
 #ifdef LPAC_WITH_DRIVER_HTTP_WINHTTP
 #    include "driver/http/winhttp.h"
 #endif
-#include "driver/apdu/stdio.h"
-#include "driver/http/stdio.h"
+#include "stdio/stdio.h"
 
 static const struct euicc_driver *drivers[] = {
 #ifdef LPAC_WITH_DRIVER_APDU_GBINDER

@@ -43,8 +43,7 @@ target_sources(
             driver.h
 )
 
-target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/stdio.c)
-target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/stdio.c)
+target_sources(euicc-drivers PRIVATE stdio/stdio-helpers.c stdio/stdio-apdu.c stdio/stdio-http.c)
 
 if ((LPAC_DYNAMIC_DRIVERS AND LPAC_DYNAMIC_DRIVERS_SOLID) OR NOT LPAC_DYNAMIC_DRIVERS)
     set(DRIVER_BUILD_TYPE OBJECT)
