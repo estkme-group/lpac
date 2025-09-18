@@ -115,15 +115,15 @@ static bool setup_logger(FILE **apdu_log_fp, FILE **http_log_fp) {
 }
 
 int main_init_euicc(void) {
-    if (setup_isdr_aid(&euicc_ctx.aid, &euicc_ctx.aid_len) == false) {
+    if (!setup_isdr_aid(&euicc_ctx.aid, &euicc_ctx.aid_len)) {
         jprint_error("euicc_init", "invalid custom ISD-R applet id given");
         return -1;
     }
-    if (setup_es10x_mss(&euicc_ctx.es10x_mss) == false) {
+    if (!setup_es10x_mss(&euicc_ctx.es10x_mss)) {
         jprint_error("euicc_init", "invalid custom ES10x MSS given");
         return -1;
     }
-    if (setup_logger(&euicc_ctx.apdu.log_fp, &euicc_ctx.http.log_fp) == false) {
+    if (!setup_logger(&euicc_ctx.apdu.log_fp, &euicc_ctx.http.log_fp)) {
         jprint_error("euicc_init", "invalid log file given");
         return -1;
     }
