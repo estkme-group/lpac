@@ -5,11 +5,13 @@ It is commonly used with cellular modems that support AT commands for SIM card m
 
 ## Unix-like platform
 
-If your needs rootless access to serial port
+If you need to allow **non-root** users to access serial ports, read the following article
 
-1. <https://askubuntu.com/a/133244>
-   (Debian/Ubuntu)
-2. <https://wiki.archlinux.org/title/Working_with_the_serial_console#Connect_using_a_terminal_emulator_program>
+1. <https://help.ubuntu.com/community/DialupModemHowto/SetUpDialer#Configuring_the_dialup_connection_to_your_provider>
+   (Ubuntu)
+2. <https://manpages.debian.org/unstable/minicom/minicom.1.en.html#DEBIAN_SPECIFIC>
+   (Debian)
+3. <https://wiki.archlinux.org/title/Working_with_the_serial_console#Connect_using_a_terminal_emulator_program>
    (Arch Linux)
 
 ## Environment Variables
