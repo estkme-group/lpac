@@ -12,7 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 
-static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, const char **headers) {
+static bool json_request(const char *url, const uint8_t *tx, const uint32_t tx_len, const char **headers) {
     _cleanup_free_ char *tx_hex = NULL;
     _cleanup_cjson_ cJSON *jpayload = NULL;
     cJSON *jheaders = NULL;
@@ -53,81 +53,45 @@ static bool json_request(const char *url, const uint8_t *tx, uint32_t tx_len, co
 }
 
 // {"type":"http","payload":{"rcode":404,"rx":"333435"}}
-static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode, uint8_t **rx,
-                                   uint32_t *rx_len, const uint8_t *tx, uint32_t tx_len, const char **headers) {
-    int fret = 0;
-    _cleanup_free_ char *rx_json;
-    _cleanup_cjson_ cJSON *rx_jroot;
-    cJSON *rx_payload;
-    cJSON *jtmp;
-
+static int http_interface_transmit(__attribute__((unused)) struct euicc_ctx *ctx, const char *url, uint32_t *rcode,
+                                   uint8_t **rx, uint32_t *rx_len, const uint8_t *tx, const uint32_t tx_len,
+                                   const char **headers) {
     *rx = NULL;
 
+    _cleanup_cjson_ cJSON *rx_payload = NULL;
+
     json_request(url, tx, tx_len, headers);
-    if (afgets(&rx_json, stdin) < 0) {
-        return -1;
-    }
-
-    rx_jroot = cJSON_Parse(rx_json);
-    if (rx_jroot == NULL) {
-        return -1;
-    }
-
-    jtmp = cJSON_GetObjectItem(rx_jroot, "type");
-    if (!jtmp) {
-        goto err;
-    }
-    if (!cJSON_IsString(jtmp)) {
-        goto err;
-    }
-    if (strcmp("http", jtmp->valuestring) != 0) {
+    if (receive_payload(stdin, "http", &rx_payload) < 0) {
         goto err;
     }
 
-    rx_payload = cJSON_GetObjectItem(rx_jroot, "payload");
-    if (!rx_payload) {
+    const cJSON *rx_rcode = cJSON_GetObjectItem(rx_payload, "rcode");
+    const cJSON *rx_data = cJSON_GetObjectItem(rx_payload, "rx");
+    if (!cJSON_IsNumber(rx_rcode) || !cJSON_IsString(rx_data)) {
         goto err;
     }
-    if (!cJSON_IsObject(rx_payload)) {
-        goto err;
-    }
+    *rcode = (int)cJSON_GetNumberValue(rx_rcode);
 
-    jtmp = cJSON_GetObjectItem(rx_payload, "rcode");
-    if (!jtmp) {
-        goto err;
-    }
-    if (!cJSON_IsNumber(jtmp)) {
-        goto err;
-    }
-    *rcode = jtmp->valueint;
+    const char *input_data = cJSON_GetStringValue(rx_data);
+    const size_t input_data_len = strlen(input_data);
 
-    jtmp = cJSON_GetObjectItem(rx_payload, "rx");
-    if (!jtmp) {
-        goto err;
-    }
-    if (!cJSON_IsString(jtmp)) {
-        goto err;
-    }
-    *rx_len = strlen(jtmp->valuestring) / 2;
+    *rx_len = input_data_len / 2;
     *rx = malloc(*rx_len);
-    if (!*rx) {
+
+    if (*rx == NULL) {
         goto err;
     }
-    if (euicc_hexutil_hex2bin_r(*rx, *rx_len, jtmp->valuestring, strlen(jtmp->valuestring)) < 0) {
+    if (euicc_hexutil_hex2bin_r(*rx, *rx_len, input_data, input_data_len) < 0) {
         goto err;
     }
 
-    fret = 0;
-    goto exit;
-
+    return 0;
 err:
-    fret = -1;
     free(*rx);
     *rx = NULL;
     *rx_len = 0;
     *rcode = 500;
-exit:
-    return fret;
+    return -1;
 }
 
 static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {

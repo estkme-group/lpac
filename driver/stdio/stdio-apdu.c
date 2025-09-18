@@ -42,70 +42,39 @@ static bool json_request(const char *func, const uint8_t *param, unsigned param_
 }
 
 static int json_response(int *ecode, uint8_t **data, uint32_t *data_len) {
-    int fret = 0;
-    _cleanup_free_ char *data_json;
-    _cleanup_cjson_ cJSON *data_jroot;
-    cJSON *data_payload;
-    cJSON *jtmp;
-
-    if (data) {
+    if (data != NULL)
         *data = NULL;
-    }
 
-    if (afgets(&data_json, stdin) < 0) {
-        return -1;
-    }
-
-    data_jroot = cJSON_Parse(data_json);
-    if (data_jroot == NULL) {
-        return -1;
-    }
-
-    jtmp = cJSON_GetObjectItem(data_jroot, "type");
-    if (!jtmp) {
-        goto err;
-    }
-    if (!cJSON_IsString(jtmp)) {
-        goto err;
-    }
-    if (strcmp("apdu", jtmp->valuestring) != 0) {
+    _cleanup_cjson_ cJSON *rx_payload = NULL;
+    if (receive_payload(stdin, "apdu", &rx_payload) < 0) {
         goto err;
     }
 
-    data_payload = cJSON_GetObjectItem(data_jroot, "payload");
-    if (!data_payload) {
-        goto err;
-    }
-    if (!cJSON_IsObject(data_payload)) {
-        goto err;
+    if (ecode != NULL) {
+        cJSON *rx_ecode = cJSON_GetObjectItem(rx_payload, "ecode");
+        if (rx_ecode == NULL || !cJSON_IsNumber(rx_ecode)) {
+            goto err;
+        }
+        *ecode = (int)cJSON_GetNumberValue(rx_ecode);
     }
 
-    jtmp = cJSON_GetObjectItem(data_payload, "ecode");
-    if (!jtmp) {
-        goto err;
-    }
-    if (!cJSON_IsNumber(jtmp)) {
-        goto err;
-    }
-    *ecode = jtmp->valueint;
-
-    jtmp = cJSON_GetObjectItem(data_payload, "data");
-    if (jtmp && cJSON_IsString(jtmp) && data && data_len) {
-        *data_len = strlen(jtmp->valuestring) / 2;
+    if (data != NULL && data_len != NULL) {
+        const char *rx_data = cJSON_GetStringValue(cJSON_GetObjectItem(rx_payload, "data"));
+        if (rx_data == NULL) {
+            goto err;
+        }
+        const size_t n = strlen(rx_data);
+        *data_len = n / 2;
         *data = malloc(*data_len);
-        if (!*data) {
+        if (*data == NULL) {
             goto err;
         }
-        if (euicc_hexutil_hex2bin_r(*data, *data_len, jtmp->valuestring, strlen(jtmp->valuestring)) < 0) {
+        if (euicc_hexutil_hex2bin_r(*data, *data_len, rx_data, n) < 0) {
             goto err;
         }
     }
-
-    fret = 0;
-    goto exit;
-
+    return 0;
 err:
-    fret = -1;
     if (data != NULL) {
         free(*data);
         *data = NULL;
@@ -113,9 +82,10 @@ err:
     if (data_len != NULL) {
         *data_len = 0;
     }
-    *ecode = -1;
-exit:
-    return fret;
+    if (ecode != NULL) {
+        *ecode = -1;
+    }
+    return -1;
 }
 
 // {"type":"apdu","payload":{"ecode":0}}
@@ -125,7 +95,6 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     if (json_request("connect", NULL, 0)) {
         return -1;
     }
-
     if (json_response(&ecode, NULL, NULL)) {
         return -1;
     }
@@ -135,10 +104,8 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
 
 // {"type":"apdu","payload":{"ecode":0}}
 static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
-    int ecode;
-
     json_request("disconnect", NULL, 0);
-    json_response(&ecode, NULL, NULL);
+    json_response(NULL, NULL, NULL); // ignore errors
 }
 
 // {"type":"apdu","payload":{"ecode":1}}
@@ -148,7 +115,6 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     if (json_request("logic_channel_open", aid, aid_len)) {
         return -1;
     }
-
     if (json_response(&ecode, NULL, NULL)) {
         return -1;
     }
@@ -158,10 +124,8 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 
 // {"type":"apdu","payload":{"ecode":0}}
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
-    int ecode;
-
     json_request("logic_channel_close", &channel, sizeof(channel));
-    json_response(&ecode, NULL, NULL);
+    json_response(NULL, NULL, NULL); // ignore errors
 }
 
 // {"type":"apdu","payload":{"ecode":0,"data":"BF3E125A10890490320010012345000123456789019000"}}
