@@ -145,3 +145,16 @@ char **merge_array_of_str(char *left[], char *right[]) {
     memcpy(merged + left_len, right, right_len * sizeof(char *));
     return merged;
 }
+
+char *path_concat(const char *restrict a, const char *restrict b) {
+    if (a == NULL || b == NULL) {
+        return NULL;
+    }
+    size_t fullpath_len = strlen(a) + 1 /* SEP */ + strlen(b) + 1 /* NUL */;
+    char *fullpath = calloc(fullpath_len, sizeof(char));
+    if (fullpath == NULL) {
+        return NULL;
+    }
+    snprintf(fullpath, fullpath_len, "%s/%s", a, b);
+    return fullpath;
+}

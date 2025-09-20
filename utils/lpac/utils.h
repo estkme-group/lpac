@@ -75,3 +75,5 @@ bool ends_with(const char *restrict str, const char *restrict suffix);
 char *remove_suffix(char *restrict str, const char *restrict suffix);
 
 char **merge_array_of_str(char *left[], char *right[]);
+
+char *path_concat(const char *restrict a, const char *restrict b);
