@@ -55,7 +55,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     }
 
     (*lineptr)[len] = '\0'; // Null-terminate the string
-    return len;
+    return (ssize_t)len;
 }
 #endif
 

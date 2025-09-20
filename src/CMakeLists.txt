@@ -43,7 +43,7 @@ target_sources(
             jprint.h
             applet.h
 )
-target_compile_options(lpac PRIVATE -Wall -Wextra)
+target_compile_options(lpac PRIVATE -Wall -Wextra -Wconversion)
 
 include(${CMAKE_SOURCE_DIR}/cmake/git-version.cmake)
 if(NOT DEFINED LPAC_VERSION)

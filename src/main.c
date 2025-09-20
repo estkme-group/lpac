@@ -82,7 +82,7 @@ static int setup_aid(const uint8_t **aid, uint8_t *aid_len) {
         return -1;
 
     *aid = parsed;
-    *aid_len = n;
+    *aid_len = (uint8_t)n;
     return 0;
 }
 
@@ -171,13 +171,13 @@ bool check_windows_version() {
 }
 
 static char **warg_to_arg(const int wargc, wchar_t **wargv) {
-    char **argv = malloc(wargc * sizeof(char *));
+    char **argv = calloc((size_t)wargc, sizeof(char *));
     if (argv == NULL) {
         return NULL;
     }
     for (int i = 0; i < wargc; ++i) {
         const int size = WideCharToMultiByte(CP_UTF8, 0, wargv[i], -1, NULL, 0, NULL, NULL);
-        argv[i] = malloc(size);
+        argv[i] = malloc((size_t)size);
         if (argv[i] == NULL) {
             for (int j = 0; j < i; ++j) {
                 free(argv[j]);
