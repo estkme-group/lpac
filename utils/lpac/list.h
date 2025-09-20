@@ -579,6 +579,28 @@ static inline size_t list_count_nodes(struct list_head *head) {
 #define list_entry_is_head(pos, head, member) list_is_head(&pos->member, (head))
 
 /**
+ * list_for_each_entry_scoped - iterate over list of given type
+ * @pos:	the type * to use as a loop cursor.
+ * @type:	the type of loop element
+ * @head:	the head for your list.
+ * @member:	the name of the list_head within the struct.
+ */
+#define list_for_each_entry_scoped(pos, type, head, member)                                        \
+    for (type *pos = list_first_entry(head, type, member); !list_entry_is_head(pos, head, member); \
+         pos = list_next_entry(pos, member))
+
+/**
+ * list_for_each_entry_scoped_reverse - iterate backwards over list of given type.
+ * @pos:	the type * to use as a loop cursor.
+ * @type:	the type of loop element
+ * @head:	the head for your list.
+ * @member:	the name of the list_head within the struct.
+ */
+#define list_for_each_entry_scoped_reverse(pos, type, head, member)                               \
+    for (type *pos = list_last_entry(head, type, member); !list_entry_is_head(pos, head, member); \
+         pos = list_prev_entry(pos, member))
+
+/**
  * list_for_each_entry	-	iterate over list of given type
  * @pos:	the type * to use as a loop cursor.
  * @head:	the head for your list.

@@ -283,8 +283,7 @@ static bool init_dynamic_driver_list() { return true; }
 #endif
 
 static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_type type, const char *name) {
-    struct euicc_drivers_list *it;
-    list_for_each_entry(it, &drivers, list) {
+    list_for_each_entry_scoped(it, struct euicc_drivers_list, &drivers, list) {
         const struct euicc_driver *driver = it->driver;
         if (driver->type != type)
             continue;
@@ -352,8 +351,7 @@ int euicc_driver_list(int argc, char **argv) {
     cJSON *http_drivers = cJSON_CreateArray();
     if (apdu_drivers == NULL)
         return -1;
-    struct euicc_drivers_list *it;
-    list_for_each_entry(it, &drivers, list) {
+    list_for_each_entry_scoped(it, struct euicc_drivers_list, &drivers, list) {
         const struct euicc_driver *driver = it->driver;
         driver_name = cJSON_CreateString(driver->name);
         if (driver_name == NULL)
