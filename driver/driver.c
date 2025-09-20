@@ -315,6 +315,7 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
         "mbim",
         "qmi",
         "qmi_qrtr",
+        "uqmi",
         "pcsc",
         "at",
         "stdio",

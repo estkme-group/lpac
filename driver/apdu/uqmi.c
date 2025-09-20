@@ -25,30 +25,15 @@ struct uqmi_userdata {
     char *device_path;
 };
 
-static bool merge_argv(char *required_argv[], char *user_argv[], char **merged_argv[]) {
-    size_t required_argc = 0;
-    size_t user_argc = 0;
-    while (required_argv[required_argc] != NULL)
-        required_argc++;
-    while (user_argv[user_argc] != NULL)
-        user_argc++;
-    *merged_argv = calloc(required_argc + user_argc + 1, sizeof(char *));
-    if (*merged_argv == NULL)
-        return false;
-    memcpy(*merged_argv, required_argv, required_argc * sizeof(char *));
-    memcpy(*merged_argv + required_argc, user_argv, user_argc * sizeof(char *));
-    (*merged_argv)[required_argc + user_argc + 1] = NULL;
-    return true;
-}
-
 static int uqmi_execute_command(const struct uqmi_userdata *userdata, char **buf, char *argv[]) {
     if (userdata == NULL || userdata->device_path == NULL)
         return -1;
 
-    _cleanup_free_ char **merged_argv;
-    merge_argv((char *[]){userdata->program, "--single", "--device", userdata->device_path, NULL},
-               argv,          // user provided arguments
-               &merged_argv); // merged arguments
+    _cleanup_free_ char **merged_argv = merge_array_of_str(
+        // requires arguments
+        (char *[]){userdata->program, "--single", "--device", userdata->device_path, NULL},
+        // user provided arguments
+        argv);
 
     if (getenv_or_default(ENV_QMI_DEBUG, (bool)false)) {
         fprintf(stderr, "UQMI_DEBUG_TX:");
