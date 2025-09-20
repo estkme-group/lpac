@@ -130,3 +130,18 @@ char *remove_suffix(char *restrict str, const char *restrict suffix) {
         return NULL;
     }
 }
+
+char **merge_array_of_str(char *left[], char *right[]) {
+    size_t left_len = 0;
+    size_t right_len = 0;
+    while (left[left_len] != NULL)
+        left_len++;
+    while (right[right_len] != NULL)
+        right_len++;
+    char **merged = calloc(left_len + right_len + 1, sizeof(char *));
+    if (merged == NULL)
+        return NULL;
+    memcpy(merged, left, left_len * sizeof(char *));
+    memcpy(merged + left_len, right, right_len * sizeof(char *));
+    return merged;
+}
