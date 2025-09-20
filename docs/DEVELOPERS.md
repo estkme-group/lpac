@@ -92,4 +92,4 @@ Download prebuilt curl dll is also needed. Refer to the previous compilation ste
 
 ## Debug
 
-Please see [debug environment variables](ENVVARS.md#debug)
+Please see [debug environment variables](ENVVARS.md)

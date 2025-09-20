@@ -1,0 +1,121 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "LPAC Standard I/O Driver Message Schema",
+    "oneOf": [
+        { "$ref": "#/$defs/apdu-transceiver" },
+        { "$ref": "#/$defs/http-transceiver" }
+    ],
+    "$defs": {
+        "apdu-transceiver": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "apdu"
+                },
+                "payload": {
+                    "oneOf": [
+                        { "$ref": "#/$defs/apdu-request" },
+                        { "$ref": "#/$defs/apdu-response" }
+                    ]
+                }
+            },
+            "required": ["type", "payload"],
+            "additionalProperties": false
+        },
+        "http-transceiver": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "http"
+                },
+                "payload": {
+                    "oneOf": [
+                        { "$ref": "#/$defs/http-request" },
+                        { "$ref": "#/$defs/http-response" }
+                    ]
+                }
+            },
+            "required": ["type", "payload"],
+            "additionalProperties": false
+        },
+        "apdu-request": {
+            "type": "object",
+            "description": "APDU command request",
+            "properties": {
+                "func": {
+                    "enum": [
+                        "connect",
+                        "disconnect",
+                        "logic_channel_open",
+                        "logic_channel_close",
+                        "transmit"
+                    ],
+                    "description": "APDU function to be executed"
+                },
+                "param": {
+                    "type": "string",
+                    "description": "APDU command parameters, hexadecimal encoded"
+                }
+            },
+            "required": ["func", "param"],
+            "additionalProperties": false
+        },
+        "apdu-response": {
+            "type": "object",
+            "description": "APDU command response",
+            "properties": {
+                "ecode": {
+                    "type": "integer",
+                    "description": "Execution result code"
+                },
+                "data": {
+                    "type": "string",
+                    "description": "Response data, hexadecimal encoded"
+                }
+            },
+            "required": ["ecode"],
+            "additionalProperties": false
+        },
+        "http-request": {
+            "type": "object",
+            "description": "HTTP Request",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "format": "url",
+                    "description": "HTTP Request URL"
+                },
+                "tx": {
+                    "type": "string",
+                    "description": "HTTP Request Body, hexadecimal encoded"
+                },
+                "headers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "HTTP Header in 'Key: Value' format"
+                    },
+                    "description": "HTTP Request Headers"
+                }
+            },
+            "required": ["url", "tx", "headers"],
+            "additionalProperties": false
+        },
+        "http-response": {
+            "type": "object",
+            "description": "HTTP Response",
+            "properties": {
+                "rcode": {
+                    "type": "integer",
+                    "description": "HTTP Response Code"
+                },
+                "rx": {
+                    "type": "string",
+                    "description": "HTTP Response Body, hexadecimal encoded"
+                }
+            },
+            "required": ["rcode", "rx"],
+            "additionalProperties": false
+        }
+    }
+}
