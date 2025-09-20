@@ -65,7 +65,7 @@
 #include "driver/apdu/stdio.h"
 #include "driver/http/stdio.h"
 
-static const struct euicc_driver *drivers[] = {
+static const struct euicc_driver *builtin_drivers[] = {
 #ifdef LPAC_WITH_DRIVER_APDU_GBINDER
     &driver_apdu_gbinder_hidl,
 #endif
@@ -100,11 +100,11 @@ struct euicc_apdu_interface euicc_driver_interface_apdu;
 struct euicc_http_interface euicc_driver_interface_http;
 
 struct euicc_drivers_list {
-    struct euicc_driver *driver;
+    const struct euicc_driver *driver;
     struct list_head list;
 };
 
-static LIST_HEAD(dynamic_drivers);
+static LIST_HEAD(drivers);
 
 #if defined(__unix__) || defined(__unix)
 static char *get_origin() {
@@ -264,8 +264,17 @@ static bool init_dynamic_driver_list() {
                 return false;
             }
             tmp->driver = driver;
-            list_add_tail(&tmp->list, &dynamic_drivers);
+            list_add_tail(&tmp->list, &drivers);
         }
+    }
+
+    for (int i = 0; builtin_drivers[i] != NULL; i++) {
+        struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
+        if (tmp == NULL) {
+            return false;
+        }
+        tmp->driver = builtin_drivers[i];
+        list_add_tail(&tmp->list, &drivers);
     }
     return true;
 }
@@ -275,15 +284,8 @@ static bool init_dynamic_driver_list() { return true; }
 
 static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_type type, const char *name) {
     struct euicc_drivers_list *it;
-    list_for_each_entry(it, &dynamic_drivers, list) {
+    list_for_each_entry(it, &drivers, list) {
         const struct euicc_driver *driver = it->driver;
-        if (driver->type != type)
-            continue;
-        if (strcasecmp(driver->name, name) == 0)
-            return driver;
-    }
-    for (int i = 0; drivers[i] != NULL; i++) {
-        const struct euicc_driver *driver = drivers[i];
         if (driver->type != type)
             continue;
         if (strcasecmp(driver->name, name) == 0)
@@ -350,19 +352,8 @@ int euicc_driver_list(int argc, char **argv) {
     cJSON *http_drivers = cJSON_CreateArray();
     if (apdu_drivers == NULL)
         return -1;
-    for (int i = 0; drivers[i] != NULL; i++) {
-        driver = drivers[i];
-        driver_name = cJSON_CreateString(driver->name);
-        if (driver_name == NULL)
-            return -1;
-        if (driver->type == DRIVER_APDU) {
-            cJSON_AddItemToArray(apdu_drivers, driver_name);
-        } else if (driver->type == DRIVER_HTTP) {
-            cJSON_AddItemToArray(http_drivers, driver_name);
-        }
-    }
     struct euicc_drivers_list *it;
-    list_for_each_entry(it, &dynamic_drivers, list) {
+    list_for_each_entry(it, &drivers, list) {
         const struct euicc_driver *driver = it->driver;
         driver_name = cJSON_CreateString(driver->name);
         if (driver_name == NULL)
