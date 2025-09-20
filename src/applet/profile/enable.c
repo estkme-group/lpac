@@ -22,7 +22,7 @@ static int applet_main(int argc, char **argv) {
     param = argv[1];
 
     if (argc > 2)
-        refreshflag = str_to_bool(argv[2]);
+        refreshflag = str_to_bool(argv[2]) == true;
 
     ret = es10c_enable_profile(&euicc_ctx, param, refreshflag);
 
