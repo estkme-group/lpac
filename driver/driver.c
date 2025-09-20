@@ -273,23 +273,70 @@ static bool init_dynamic_driver_list() {
 static bool init_dynamic_driver_list() { return true; }
 #endif
 
-static const struct euicc_driver *find_driver(const enum euicc_driver_type type, const char *name) {
+static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_type type, const char *name) {
     struct euicc_drivers_list *it;
     list_for_each_entry(it, &dynamic_drivers, list) {
         const struct euicc_driver *driver = it->driver;
         if (driver->type != type)
             continue;
-        if (name == NULL || strcasecmp(driver->name, name) == 0)
+        if (strcasecmp(driver->name, name) == 0)
             return driver;
     }
     for (int i = 0; drivers[i] != NULL; i++) {
         const struct euicc_driver *driver = drivers[i];
         if (driver->type != type)
             continue;
-        if (name == NULL || strcasecmp(driver->name, name) == 0)
+        if (strcasecmp(driver->name, name) == 0)
             return driver;
     }
     return NULL;
+}
+
+// If backend is not specified, find the certain driver in builtin order.
+// The order is copy from old code, so the behavior will not change.
+// TODO: Implement user-customized and packager-customized order.
+static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_type type) {
+    // clang-format off
+    static const char *http_fallback_order[] = {
+        "winhttp",
+        "curl",
+        "stdio",
+        NULL
+    };
+    static const char *apdu_fallback_order[] = {
+        "gbinder_hidl",
+        "mbim",
+        "qmi",
+        "qmi_qrtr",
+        "pcsc",
+        "at",
+        "stdio",
+        NULL
+    };
+    // clang-format on
+    const char **fallback_order = {NULL};
+    if (type == DRIVER_APDU) {
+        fallback_order = apdu_fallback_order;
+    } else if (type == DRIVER_HTTP) {
+        fallback_order = http_fallback_order;
+    } else {
+        return NULL;
+    }
+    for (int i = 0; fallback_order[i] != NULL; i++) {
+        const struct euicc_driver *driver = find_driver_by_name(type, fallback_order[i]);
+        if (driver != NULL) {
+            return driver;
+        }
+    }
+    return NULL;
+}
+
+static inline const struct euicc_driver *find_driver(const enum euicc_driver_type type, const char *name) {
+    if (name == NULL) {
+        return find_driver_fallback(type);
+    } else {
+        return find_driver_by_name(type, name);
+    }
 }
 
 int euicc_driver_list(int argc, char **argv) {
