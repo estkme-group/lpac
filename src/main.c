@@ -81,7 +81,7 @@ static bool setup_isdr_aid(const uint8_t **aid, uint8_t *aid_len) {
 
     *aid_len = (uint8_t)n / 2;
     *aid = calloc(*aid_len, sizeof(uint8_t));
-    return euicc_hexutil_hex2bin_r((uint8_t *)*aid, *aid_len, value, n) > 0;
+    return euicc_hexutil_hex2bin_r((uint8_t *)*aid, *aid_len, value, (uint32_t)n) > 0;
 }
 
 static bool setup_es10x_mss(uint8_t *mss) {
