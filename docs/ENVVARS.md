@@ -19,6 +19,7 @@
   - [`stdio`](backends/stdio.md): Standard input/output
   - [`qmi`](backends/qmi.md): Qualcomm MSM Interface
   - [`qmi_qrtr`](backends/qmi.md): QMI over QRTR
+  - [`uqmi`](backends/qmi.md#openwrt-specific): uQMI command line tool
   - [`mbim`](backends/mbim.md): Mobile Broadband Interface Model
   - [`gbinder_hidl`](backends/gbinder.md): GBinder HIDL
 * `LPAC_HTTP`: specify which HTTP backend will be used. Values:
