@@ -1,18 +1,17 @@
 #include "disable.h"
+
 #include "main.h"
+#include <lpac/utils.h>
 
 #include <euicc/es10c.h>
 
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 static int applet_main(int argc, char **argv) {
     int ret;
     const char *param;
-    bool refreshflag;
+    bool refreshflag = false;
 
     if (argc < 2) {
         printf("Usage: %s [iccid/aid] [refreshflag]\n", argv[0]);
@@ -22,10 +21,8 @@ static int applet_main(int argc, char **argv) {
 
     param = argv[1];
 
-    refreshflag = false;
-    if (argc > 2) {
-        refreshflag = atoi(argv[2]) != 0;
-    }
+    if (argc > 2)
+        refreshflag = str_to_bool(argv[2]) == true;
 
     ret = es10c_disable_profile(&euicc_ctx, param, refreshflag);
 

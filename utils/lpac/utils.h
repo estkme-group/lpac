@@ -68,6 +68,8 @@ long getenv_long_or_default(const char *name, long default_value);
 
 void set_deprecated_env_name(const char *name, const char *deprecated_name);
 
+int str_to_bool(const char *value);
+
 bool json_print(char *type, cJSON *jpayload);
 
 bool ends_with(const char *restrict str, const char *restrict suffix);
