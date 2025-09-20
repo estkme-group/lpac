@@ -243,9 +243,7 @@ static bool init_dynamic_driver_list() {
     struct dirent *entry;
     while ((entry = readdir(driver_dir)) != NULL) {
         if ((entry->d_type & (DT_LNK | DT_REG | DT_UNKNOWN)) && ends_with(entry->d_name, suffix)) {
-            size_t fullpath_len = strlen(LPAC_DRIVER_HOME) + strlen(entry->d_name) + 2;
-            _cleanup_free_ char *fullpath = calloc(fullpath_len, sizeof(char));
-            snprintf(fullpath, fullpath_len, "%s/%s", LPAC_DRIVER_HOME, entry->d_name);
+            _cleanup_free_ char *fullpath = path_concat(LPAC_DRIVER_HOME, entry->d_name);
             void *handle = dlopen(fullpath, RTLD_NOW);
             if (handle == NULL) {
                 continue;

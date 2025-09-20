@@ -27,9 +27,7 @@ static void enumerate_serial_device_linux(cJSON *data) {
             continue;
         }
 
-        size_t path_len = strlen(dir_path) + 1 /* SEP */ + strlen(entry->d_name) + 1 /* NUL */;
-        _cleanup_free_ char *full_path = malloc(path_len);
-        snprintf(full_path, path_len, "%s/%s", dir_path, entry->d_name);
+        _cleanup_free_ char *full_path = path_concat(dir_path, entry->d_name);
 
         cJSON *item = cJSON_CreateObject();
         cJSON_AddStringToObject(item, "env", full_path);
