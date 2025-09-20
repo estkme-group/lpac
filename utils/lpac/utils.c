@@ -31,7 +31,7 @@ bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
     if (value == NULL || strlen(value) == 0)
         return default_value;
-    const int b = is_bool_string(value);
+    const int b = str_to_bool(value);
     if (b != -1)
         return b;
     fprintf(stderr, "WARNING: Invalid value '%s' for environment variable '%s', falling back to default (%s)\n", value,
@@ -65,7 +65,7 @@ void set_deprecated_env_name(const char *name, const char *deprecated_name) {
 #endif
 }
 
-int is_bool_string(const char *value) {
+int str_to_bool(const char *value) {
     if (strcasecmp(value, "1") == 0 || strcasecmp(value, "y") == 0 || strcasecmp(value, "on") == 0
         || strcasecmp(value, "yes") == 0 || strcasecmp(value, "true") == 0)
         return true;
