@@ -31,12 +31,9 @@ bool getenv_bool_or_default(const char *name, const bool default_value) {
     const char *value = getenv(name);
     if (value == NULL || strlen(value) == 0)
         return default_value;
-    if (strcasecmp(value, "1") == 0 || strcasecmp(value, "y") == 0 || strcasecmp(value, "on") == 0
-        || strcasecmp(value, "yes") == 0 || strcasecmp(value, "true") == 0)
-        return true;
-    if (strcasecmp(value, "0") == 0 || strcasecmp(value, "n") == 0 || strcasecmp(value, "off") == 0
-        || strcasecmp(value, "no") == 0 || strcasecmp(value, "false") == 0)
-        return false;
+    const int b = is_bool_string(value);
+    if (b != -1)
+        return b;
     fprintf(stderr, "WARNING: Invalid value '%s' for environment variable '%s', falling back to default (%s)\n", value,
             name, default_value ? "true" : "false");
     return default_value;
@@ -66,6 +63,16 @@ void set_deprecated_env_name(const char *name, const char *deprecated_name) {
 #else
     setenv(name, value, 1);
 #endif
+}
+
+int is_bool_string(const char *value) {
+    if (strcasecmp(value, "1") == 0 || strcasecmp(value, "y") == 0 || strcasecmp(value, "on") == 0
+        || strcasecmp(value, "yes") == 0 || strcasecmp(value, "true") == 0)
+        return true;
+    if (strcasecmp(value, "0") == 0 || strcasecmp(value, "n") == 0 || strcasecmp(value, "off") == 0
+        || strcasecmp(value, "no") == 0 || strcasecmp(value, "false") == 0)
+        return false;
+    return -1;
 }
 
 bool json_print(char *type, cJSON *jpayload) {
