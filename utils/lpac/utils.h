@@ -73,3 +73,5 @@ bool json_print(char *type, cJSON *jpayload);
 bool ends_with(const char *restrict str, const char *restrict suffix);
 
 char *remove_suffix(char *restrict str, const char *restrict suffix);
+
+char **merge_array_of_str(char *left[], char *right[]);
