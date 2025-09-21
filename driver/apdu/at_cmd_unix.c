@@ -6,11 +6,11 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <poll.h>
 #include <termios.h> // Required for serial port configuration
 #include <unistd.h>
 
@@ -98,8 +98,7 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
             }
 
             if (pfd.revents & POLLIN) {
-                ssize_t bytes_read = read(userdata->fd,
-                                          userdata->at_read_buffer + userdata->at_read_buffer_len,
+                ssize_t bytes_read = read(userdata->fd, userdata->at_read_buffer + userdata->at_read_buffer_len,
                                           AT_BUFFER_SIZE - userdata->at_read_buffer_len);
                 if (bytes_read <= 0) {
                     fprintf(stderr, "read error or connection closed\n");
@@ -116,9 +115,7 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
         memcpy(line, userdata->at_read_buffer, line_len);
         line[line_len] = '\0';
 
-        memmove(userdata->at_read_buffer,
-                newline + 1,
-                userdata->at_read_buffer_len - line_len - 1);
+        memmove(userdata->at_read_buffer, newline + 1, userdata->at_read_buffer_len - line_len - 1);
         userdata->at_read_buffer_len -= line_len + 1;
 
         line[strcspn(line, "\r")] = 0;
