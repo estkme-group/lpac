@@ -60,9 +60,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 #endif
 
 static int handle_notification(const uint32_t seqNumber, const struct es10b_pending_notification notification) {
-    char str_seqNumber[11];
-
-    snprintf(str_seqNumber, sizeof(str_seqNumber), "%u", seqNumber);
+    _cleanup_free_ char *str_seqNumber = safe_snprintf("%u", seqNumber);
 
     euicc_ctx.http.server_address = notification.notificationAddress;
 

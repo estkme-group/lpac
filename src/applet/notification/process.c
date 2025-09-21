@@ -14,10 +14,9 @@
 
 static int _process_single(const uint32_t seqNumber, const bool autoremove) {
     int ret;
-    char str_seqNumber[11];
     _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
 
-    snprintf(str_seqNumber, sizeof(str_seqNumber), "%u", seqNumber);
+    _cleanup_free_ char *str_seqNumber = safe_snprintf("%u", seqNumber);
 
     jprint_progress("es10b_retrieve_notifications_list", str_seqNumber);
     if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber)) {

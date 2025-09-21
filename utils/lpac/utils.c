@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include <cjson-ext/cJSON_ex.h>
+#include <stdarg.h>
 
 #include <ctype.h>
 #include <stdio.h>
@@ -157,11 +158,21 @@ char *path_concat(const char *restrict a, const char *restrict b) {
     if (a == NULL || b == NULL) {
         return NULL;
     }
-    size_t fullpath_len = strlen(a) + 1 /* SEP */ + strlen(b) + 1 /* NUL */;
-    char *fullpath = calloc(fullpath_len, sizeof(char));
-    if (fullpath == NULL) {
+    return safe_snprintf("%s/%s", a, b);
+}
+
+char *safe_snprintf(char *format, ...) {
+    va_list args, args_length;
+    va_start(args, format);
+    va_copy(args_length, args);
+    int size = vsnprintf(NULL, 0, format, args_length);
+    va_end(args_length);
+    if (size < 0)
         return NULL;
-    }
-    snprintf(fullpath, fullpath_len, "%s/%s", a, b);
-    return fullpath;
+    char *buffer = calloc((size_t)size + 1, sizeof(char));
+    if (buffer == NULL)
+        return NULL;
+    vsnprintf(buffer, size + 1, format, args);
+    va_end(args);
+    return buffer;
 }

@@ -11,10 +11,9 @@
 #include <unistd.h>
 
 static int _delete_single(uint32_t seqNumber) {
-    char str_seqNumber[11];
     int ret;
 
-    snprintf(str_seqNumber, sizeof(str_seqNumber), "%u", seqNumber);
+    _cleanup_free_ char *str_seqNumber = safe_snprintf("%u", seqNumber);
 
     jprint_progress("es10b_remove_notification_from_list", str_seqNumber);
     if ((ret = es10b_remove_notification_from_list(&euicc_ctx, seqNumber))) {

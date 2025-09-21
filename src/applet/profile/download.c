@@ -273,12 +273,9 @@ static int applet_main(int argc, char **argv) {
     if (es10b_load_bound_profile_package(&euicc_ctx, &download_result)) {
         jprint_progress_obj("es10b_load_bound_profile_package:result", build_download_result_json(&download_result));
 
-        char buffer[256];
-
-        snprintf(buffer, sizeof(buffer), "%s,%s", euicc_bppcommandid2str(download_result.bppCommandId),
-                 euicc_errorreason2str(download_result.errorReason));
         error_function_name = "es10b_load_bound_profile_package";
-        error_detail = strdup(buffer);
+        error_detail = safe_snprintf("%s,%s", euicc_bppcommandid2str(download_result.bppCommandId),
+                                     euicc_errorreason2str(download_result.errorReason));
 
         goto err;
     }
