@@ -7,10 +7,11 @@ SCRIPT_DIR="$(dirname -- "${BASH_SOURCE[0]}")"
 source "$SCRIPT_DIR/functions.sh"
 
 BUILD="$(mktemp -d)"
+PKGDIR="$(mktemp -d)"
 ARTIFACT="$WORKSPACE/build"
 
-mkdir -p "$BUILD/output"
 mkdir -p "$ARTIFACT"
+mkdir -p "$BUILD"
 
 trap 'rm -rf '"$BUILD" EXIT
 
@@ -18,32 +19,36 @@ cd "$BUILD"
 
 case "${1:-}" in
 make)
-    cmake "$WORKSPACE"
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON
     make -j VERBOSE=1
-    copy-license "$BUILD/output"
-    copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE.zip" "$BUILD/output"
+    make DESTDIR="$PKGDIR" install
+    copy-license "$PKGDIR/executables"
+    copy-usage "$PKGDIR/executables"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE.zip" "$PKGDIR/executables"
     ;;
 make-qmi)
-    cmake "$WORKSPACE" -DLPAC_WITH_APDU_QMI=ON -DLPAC_WITH_APDU_QMI_QRTR=ON -DLPAC_WITH_APDU_MBIM=ON
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DLPAC_WITH_APDU_QMI=ON -DLPAC_WITH_APDU_QMI_QRTR=ON -DLPAC_WITH_APDU_MBIM=ON
     make -j VERBOSE=1
-    copy-license "$BUILD/output"
-    copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-with-qmi.zip" "$BUILD/output"
+    make DESTDIR="$PKGDIR" install
+    copy-license "$PKGDIR/executables"
+    copy-usage "$PKGDIR/executables"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-with-qmi.zip" "$PKGDIR/executables"
     ;;
 make-gbinder)
-    cmake "$WORKSPACE" -DLPAC_WITH_APDU_GBINDER=ON
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DLPAC_WITH_APDU_GBINDER=ON
     make -j VERBOSE=1
-    copy-license "$BUILD/output"
-    copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-with-gbinder.zip" "$BUILD/output"
+    make DESTDIR="$PKGDIR" install
+    copy-license "$PKGDIR/executables"
+    copy-usage "$PKGDIR/executables"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-with-gbinder.zip" "$PKGDIR/executables"
     ;;
 make-without-lto)
-    cmake -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF "$WORKSPACE"
+    cmake "$WORKSPACE" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DSTANDALONE_MODE=ON
     make -j VERBOSE=1
-    copy-license "$BUILD/output"
-    copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-without-lto.zip" "$BUILD/output"
+    make DESTDIR="$PKGDIR" install
+    copy-license "$PKGDIR/executables"
+    copy-usage "$PKGDIR/executables"
+    create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-without-lto.zip" "$PKGDIR/executables"
     ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
@@ -51,28 +56,31 @@ debian)
     cp lpac_*.deb "$ARTIFACT"
     ;;
 mingw)
-    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake
     make -j VERBOSE=1
-    copy-license "$BUILD/output"
-    copy-curl-win "$BUILD/output"
-    copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-windows-x86_64-mingw.zip" "$BUILD/output"
+    make DESTDIR="$PKGDIR" install
+    copy-curl-win "$PKGDIR/executables/lib"
+    copy-license "$PKGDIR/executables"
+    copy-usage "$PKGDIR/executables"
+    create-bundle "$ARTIFACT/lpac-windows-x86_64-mingw.zip" "$PKGDIR/executables"
     ;;
 woa-mingw)
-    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake
     make -j VERBOSE=1
-    copy-license "$BUILD/output"
-    copy-curl-woa "$BUILD/output"
-    copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-windows-arm64-mingw.zip" "$BUILD/output"
+    make DESTDIR="$PKGDIR" install
+    copy-curl-woa "$PKGDIR/executables/lib"
+    copy-license "$PKGDIR/executables"
+    copy-usage "$PKGDIR/executables"
+    create-bundle "$ARTIFACT/lpac-windows-arm64-mingw.zip" "$PKGDIR/executables"
     ;;
 woa-zig)
-    cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
     make -j VERBOSE=1
-    copy-license "$BUILD/output"
-    copy-curl-woa "$BUILD/output"
-    copy-usage "$BUILD/output"
-    create-bundle "$ARTIFACT/lpac-windows-arm64-zig.zip" "$BUILD/output"
+    make DESTDIR="$PKGDIR" install
+    copy-curl-woa "$PKGDIR/executables/lib"
+    copy-license "$PKGDIR/executables"
+    copy-usage "$PKGDIR/executables"
+    create-bundle "$ARTIFACT/lpac-windows-arm64-zig.zip" "$PKGDIR/executables"
     ;;
 *)
     echo "Usage: $0 {make,debian,mingw,woa-mingw,woa-zig}"
