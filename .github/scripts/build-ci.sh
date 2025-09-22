@@ -19,40 +19,40 @@ cd "$BUILD"
 case "${1:-}" in
 make)
     cmake "$WORKSPACE"
-    make -j
+    make -j VERBOSE=1
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE.zip" "$BUILD/output"
     ;;
 make-qmi)
     cmake "$WORKSPACE" -DLPAC_WITH_APDU_QMI=ON -DLPAC_WITH_APDU_QMI_QRTR=ON -DLPAC_WITH_APDU_MBIM=ON
-    make -j
+    make -j VERBOSE=1
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-with-qmi.zip" "$BUILD/output"
     ;;
 make-gbinder)
     cmake "$WORKSPACE" -DLPAC_WITH_APDU_GBINDER=ON
-    make -j
+    make -j VERBOSE=1
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-with-gbinder.zip" "$BUILD/output"
     ;;
 make-without-lto)
     cmake -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF "$WORKSPACE"
-    make -j
+    make -j VERBOSE=1
     copy-license "$BUILD/output"
     copy-usage "$BUILD/output"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-without-lto.zip" "$BUILD/output"
     ;;
 debian)
     cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
-    make -j package
+    make -j VERBOSE=1 package
     cp lpac_*.deb "$ARTIFACT"
     ;;
 mingw)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake
-    make -j
+    make -j VERBOSE=1
     copy-license "$BUILD/output"
     copy-curl-win "$BUILD/output"
     copy-usage "$BUILD/output"
@@ -60,7 +60,7 @@ mingw)
     ;;
 woa-mingw)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake
-    make -j
+    make -j VERBOSE=1
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
     copy-usage "$BUILD/output"
@@ -68,7 +68,7 @@ woa-mingw)
     ;;
 woa-zig)
     cmake "$WORKSPACE" -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
-    make -j
+    make -j VERBOSE=1
     copy-license "$BUILD/output"
     copy-curl-woa "$BUILD/output"
     copy-usage "$BUILD/output"

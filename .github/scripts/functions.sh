@@ -43,32 +43,32 @@ function download {
 function copy-license {
     local OUTPUT="$1"
 
-    cp -r "$WORKSPACE/LICENSES" "$OUTPUT"
-    cp "$WORKSPACE/REUSE.toml" "$OUTPUT"
+    cp -v -r "$WORKSPACE/LICENSES" "$OUTPUT"
+    cp -v "$WORKSPACE/REUSE.toml" "$OUTPUT"
 }
 
 function copy-curl-woa {
     local OUTPUT="$1"
 
     CURL="$(download "$MINGW_CURL_WIN64A_BLOB")"
-    cp "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll "$OUTPUT/libcurl.dll"
-    cp "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/LICENSE-libcurl"
-    rm -rf "$CURL"
+    cp -v "$CURL"/curl-*-mingw/bin/libcurl-arm64.dll "$OUTPUT/libcurl.dll"
+    cp -v "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/LICENSE-libcurl"
+    rm -v -rf "$CURL"
 }
 
 function copy-curl-win {
     local OUTPUT="$1"
 
     CURL="$(download "$MINGW_CURL_WIN64_BLOB")"
-    cp "$CURL"/curl-*-mingw/bin/libcurl-x64.dll "$OUTPUT/libcurl.dll"
-    cp "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/LICENSE-libcurl"
-    rm -rf "$CURL"
+    cp -v "$CURL"/curl-*-mingw/bin/libcurl-x64.dll "$OUTPUT/libcurl.dll"
+    cp -v "$CURL"/curl-*-mingw/COPYING.txt "$OUTPUT/LICENSE-libcurl"
+    rm -v -rf "$CURL"
 }
 
 function copy-usage {
     local OUTPUT="$1"
 
-    cp "$WORKSPACE/docs/USAGE.md" "$OUTPUT/README.md"
+    cp -v "$WORKSPACE/docs/USAGE.md" "$OUTPUT/README.md"
 }
 
 function create-bundle {
@@ -76,6 +76,6 @@ function create-bundle {
     local INPUT_DIR="$2"
 
     pushd "$INPUT_DIR"
-    zip -r "$BUNDLE_FILE" ./*
+    zip -v -r "$BUNDLE_FILE" ./*
     popd
 }
