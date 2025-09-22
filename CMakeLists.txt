@@ -10,7 +10,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 include(CMakeDependentOption)
 option(USE_SYSTEM_DEPS "Use system-wide installed dependencies" OFF)
-option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" OFF)
+option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" ON)
 cmake_dependent_option(LPAC_DYNAMIC_DRIVERS "Build lpac/libeuicc driver backends as a dynamic library" ON "LPAC_DYNAMIC_LIBEUICC" OFF)
 cmake_dependent_option(LPAC_DYNAMIC_DRIVERS_SOLID "Build lpac/libeuicc driver backends as a solid dynamic library" OFF "LPAC_DYNAMIC_LIBEUICC AND LPAC_DYNAMIC_DRIVERS" OFF)
 
