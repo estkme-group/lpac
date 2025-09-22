@@ -71,7 +71,7 @@ set_target_properties(euicc PROPERTIES
 if(LPAC_DYNAMIC_LIBEUICC)
     # Only useful on Windows, and will lead to invalid arguments on ld.gold.
     if(WIN32)
-        set_target_properties(euicc PROPERTIES LINK_FLAGS "-Wl,--export-all-symbols")
+        target_link_options(euicc PRIVATE "LINKER:--export-all-symbols")
     endif()
     # Install a pkg-config file
     configure_file(libeuicc.pc.in libeuicc.pc @ONLY)
