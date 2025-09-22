@@ -210,7 +210,7 @@ static char *get_first_runpath(const char *runpath) {
 }
 
 #if defined(__unix__) || defined(__unix)
-static bool init_dynamic_driver_list() {
+static bool init_driver_list() {
     _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
     if (LPAC_DRIVER_HOME == NULL)
         return false;
@@ -277,7 +277,17 @@ static bool init_dynamic_driver_list() {
     return true;
 }
 #else
-static bool init_dynamic_driver_list() { return true; }
+static bool init_driver_list() {
+    for (int i = 0; builtin_drivers[i] != NULL; i++) {
+        struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
+        if (tmp == NULL) {
+            return false;
+        }
+        tmp->driver = builtin_drivers[i];
+        list_add_tail(&tmp->list, &drivers);
+    }
+    return true;
+}
 #endif
 
 static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_type type, const char *name) {
@@ -368,7 +378,7 @@ int euicc_driver_list(int argc, char **argv) {
 }
 
 int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name) {
-    init_dynamic_driver_list();
+    init_driver_list();
     _driver_apdu = find_driver(DRIVER_APDU, apdu_driver_name);
     if (_driver_apdu == NULL) {
         fprintf(stderr, "No APDU driver found\n");
