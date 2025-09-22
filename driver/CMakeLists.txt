@@ -19,6 +19,12 @@ else()
     add_library(euicc-drivers STATIC)
 endif()
 target_link_libraries(euicc-drivers PRIVATE euicc ${CJSON_LIBRARY} lpac-utils)
+
+# Only useful on Windows, and will lead to invalid arguments on ld.gold.
+if(WIN32)
+    target_link_options(euicc-drivers PRIVATE "LINKER:--export-all-symbols")
+endif()
+
 target_sources(
     euicc-drivers
     PRIVATE
@@ -187,6 +193,10 @@ if ((LPAC_DYNAMIC_DRIVERS AND LPAC_DYNAMIC_DRIVERS_SOLID) OR NOT LPAC_DYNAMIC_DR
     list(APPEND LIBEUICC_DRIVERS_REQUIRES0 ${LIBEUICC_DRIVERS_REQUIRES})
 else()
     foreach(driver ${LPAC_DRIVERS})
+        # Only useful on Windows, and will lead to invalid arguments on ld.gold.
+        if(WIN32)
+            target_link_options(${driver} PRIVATE "LINKER:--export-all-symbols")
+        endif()
         install(TARGETS ${driver} LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/lpac/drivers/)
     endforeach()
 endif()

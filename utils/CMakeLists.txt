@@ -6,6 +6,12 @@ else()
 endif()
 target_link_libraries(lpac-utils PRIVATE ${CJSON_LIBRARY} euicc)
 target_compile_options(lpac-utils PRIVATE -Wall -Wextra)
+
+# Only useful on Windows, and will lead to invalid arguments on ld.gold.
+if(WIN32)
+    target_link_options(lpac-utils PRIVATE "LINKER:--export-all-symbols")
+endif()
+
 target_sources(
     lpac-utils
     PUBLIC
