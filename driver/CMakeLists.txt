@@ -193,7 +193,7 @@ else()
         if(WIN32)
             target_link_options(${driver} PRIVATE "LINKER:--export-all-symbols")
         endif()
-        install(TARGETS ${driver} LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/lpac/drivers/)
+        install(TARGETS ${driver} LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/lpac/driver)
     endforeach()
 endif()
 

@@ -272,7 +272,7 @@ static char *get_driver_path() {
     _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
     if (LPAC_DRIVER_HOME == NULL)
         return NULL;
-    return path_concat(LPAC_DRIVER_HOME, "drivers");
+    return path_concat(LPAC_DRIVER_HOME, "driver");
 }
 
 static const struct euicc_driver *find_driver_by_path(const char *restrict dir, char *restrict name) {
