@@ -1,9 +1,3 @@
-if(APPLE)
-    set(RPATH_BINARY_PATH "@loader_path")
-else()
-    set(RPATH_BINARY_PATH "$ORIGIN")
-endif()
-
 add_executable(lpac lpac.rc)
 target_link_libraries(lpac PRIVATE euicc euicc-drivers lpac-utils)
 target_sources(
@@ -52,10 +46,7 @@ endif()
 target_compile_definitions(lpac PRIVATE LPAC_VERSION="${LPAC_VERSION}")
 
 set_target_properties(lpac PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output"
-    BUILD_RPATH "${RPATH_BINARY_PATH}"
+    BUILD_RPATH "${CMAKE_BINARY_DIR}"
 )
 
-if(UNIX)
-    install(TARGETS lpac RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
+install(TARGETS lpac RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
