@@ -310,7 +310,8 @@ static bool init_driver_list() {
 
     struct dirent *entry;
     while ((entry = readdir(driver_dir)) != NULL) {
-        if ((entry->d_type & (DT_LNK | DT_REG | DT_UNKNOWN)) && ends_with(entry->d_name, dynlib_suffix)) {
+        if ((entry->d_type & (DT_LNK | DT_REG | DT_UNKNOWN)) && !strncmp(entry->d_name, "driver_", 7)
+            && ends_with(entry->d_name, dynlib_suffix)) {
             const struct euicc_driver *driver = find_driver_by_path(LPAC_DRIVER_HOME, entry->d_name);
             struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
             if (tmp == NULL) {
