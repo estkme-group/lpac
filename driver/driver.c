@@ -174,7 +174,19 @@ static char *get_origin() {
 }
 #endif
 
-#if defined(__linux__)
+/*
+ * Glibc, Musl, FreeBSD and Soloris support RTLD_DI_LINKMAP.
+ * Musl hate the vendor detect macro and refuse to support __musl__.
+ * They think we should test feature instead of detect vendor, it's normally right,
+ * but for dlinfo(3), it's almost impossible because dlinfo has no errno or similar thing,
+ * there is dlerror(3), right? No! dlerror(3) can only return a implementation-defined error string
+ * (In C term, it should be called unspecified behavior because libc implementation needn't have
+ * documentation for it) instead of an integer which we can compare it with specific value
+ * programmatically. So we can't test this feature is available, we can only assume there is only
+ * Glibc and Musl on Linux, forget Nolibc and other libc implementations on Linux.
+ */
+#if defined(RTLD_DI_LINKMAP) || defined(__GLIBC__) || defined(__linux__) || defined(__FreeBSD__) \
+    || (defined(__sun) && defined(__SVR4))
 static const char *get_runpath() {
     void *handle = dlopen(NULL, RTLD_NOW);
     if (handle == NULL) {
@@ -194,10 +206,10 @@ static const char *get_runpath() {
         } else if (dyn->d_tag == DT_RUNPATH) {
             runpath = dyn;
         } else if (dyn->d_tag == DT_STRTAB) {
-            strtab = (const char *)dyn->d_un.d_val;
+            strtab = (const char *)dyn->d_un.d_ptr;
         }
     }
-    if (runpath) {
+    if (runpath != NULL && strtab != NULL) {
         return strtab + runpath->d_un.d_val;
     } else {
         return NULL;
@@ -205,7 +217,7 @@ static const char *get_runpath() {
 }
 
 #else
-// FIXME: I still didn't find the way to determine RUNPATH on non-Linux.
+// FIXME: I still didn't find the way to determine RUNPATH on non-Glibc/Musl/Soloris.
 //        So use $ORIGIN as a temporary solution
 static char *get_runpath() { return get_origin(); }
 #endif
@@ -224,7 +236,7 @@ static char *get_driver_path() {
     char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
     if (LPAC_DRIVER_HOME == NULL)
         return NULL;
-    if (!strcmp(LPAC_DRIVER_HOME, "$ORIGIN")) {
+    if (!strcmp(LPAC_DRIVER_HOME, "$ORIGIN") || !strcmp(LPAC_DRIVER_HOME, "@loader_path")) {
         free(LPAC_DRIVER_HOME);
         LPAC_DRIVER_HOME = get_origin();
         if (LPAC_DRIVER_HOME == NULL)
@@ -324,7 +336,7 @@ static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_ty
     _cleanup_free_ char *LPAC_DRIVER_HOME = get_driver_path();
     if (LPAC_DRIVER_HOME == NULL)
         return false;
-    if (!strcmp(LPAC_DRIVER_HOME, "$ORIGIN")) {
+    if (!strcmp(LPAC_DRIVER_HOME, "$ORIGIN") || !strcmp(LPAC_DRIVER_HOME, "@loader_path")) {
         free(LPAC_DRIVER_HOME);
         LPAC_DRIVER_HOME = get_origin();
         if (LPAC_DRIVER_HOME == NULL)
