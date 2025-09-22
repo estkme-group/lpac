@@ -26,6 +26,7 @@
 #    include <sys/sysctl.h>
 #    include <sys/syslimits.h>
 #elif defined(__APPLE__) && defined(__MACH__)
+#    include <dlfcn.h>
 #    include <mach-o/dyld.h>
 #    include <sys/syslimits.h>
 #elif defined(_WIN32)
@@ -105,6 +106,16 @@ struct euicc_drivers_list {
 };
 
 static LIST_HEAD(drivers);
+
+#if defined(_WIN32)
+static const char *dynlib_suffix = ".dll";
+#elif defined(__APPLE__) && defined(__MACH__)
+static const char *dynlib_suffix = ".dylib";
+#elif defined(__unix__) || defined(__unix)
+static const char *dynlib_suffix = ".so";
+#else
+#    error "Unsupported platform."
+#endif
 
 #if defined(__unix__) || defined(__unix)
 static char *get_origin() {
@@ -209,54 +220,61 @@ static char *get_first_runpath(const char *runpath) {
     return strdup(strtok(runpath1, ":"));
 }
 
-#if defined(__unix__) || defined(__unix)
-static bool init_driver_list() {
-    _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
+static char *get_driver_path() {
+    char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
     if (LPAC_DRIVER_HOME == NULL)
-        return false;
+        return NULL;
     if (!strcmp(LPAC_DRIVER_HOME, "$ORIGIN")) {
         free(LPAC_DRIVER_HOME);
         LPAC_DRIVER_HOME = get_origin();
         if (LPAC_DRIVER_HOME == NULL)
-            return false;
+            return NULL;
     }
     char *tmp = realloc(LPAC_DRIVER_HOME, strlen(LPAC_DRIVER_HOME) + 8 + 1);
     if (tmp == NULL)
-        return false;
+        return NULL;
     LPAC_DRIVER_HOME = tmp;
     strcat(LPAC_DRIVER_HOME, "/drivers");
+    return LPAC_DRIVER_HOME;
+}
 
+static const struct euicc_driver *find_driver_by_path(const char *restrict dir, char *restrict name) {
+    _cleanup_free_ char *driver_path = path_concat(dir, name);
+    if (access(driver_path, R_OK) != 0) {
+        return NULL;
+    }
+    void *handle = dlopen(driver_path, RTLD_NOW);
+    if (handle == NULL) {
+        return NULL;
+    }
+    _cleanup_free_ char *ifn = remove_suffix(name, dynlib_suffix);
+    if (ifn == NULL) {
+        return NULL;
+    }
+    struct euicc_driver *driver = dlsym(handle, ifn);
+    if (driver == NULL) {
+        dlclose(handle);
+    }
+    return driver;
+}
+
+#if defined(__unix__) || defined(__unix)
+static bool init_driver_list() {
+    if (list_empty(&drivers)) {
+        return true;
+    }
+    _cleanup_free_ char *LPAC_DRIVER_HOME = get_driver_path();
+    if (LPAC_DRIVER_HOME == NULL)
+        return false;
     _cleanup_dir_ DIR *driver_dir = opendir(LPAC_DRIVER_HOME);
     if (driver_dir == NULL) {
         return true;
     }
-#    if defined(_WIN32)
-    const char *suffix = ".dll";
-#    elif defined(__APPLE__) && defined(__MACH__)
-    const char *suffix = ".dylib";
-#    elif defined(__unix__) || defined(__unix)
-    const char *suffix = ".so";
-#    else
-#        error "Unsupported platform."
-#    endif
 
     struct dirent *entry;
     while ((entry = readdir(driver_dir)) != NULL) {
-        if ((entry->d_type & (DT_LNK | DT_REG | DT_UNKNOWN)) && ends_with(entry->d_name, suffix)) {
-            _cleanup_free_ char *fullpath = path_concat(LPAC_DRIVER_HOME, entry->d_name);
-            void *handle = dlopen(fullpath, RTLD_NOW);
-            if (handle == NULL) {
-                continue;
-            }
-            _cleanup_free_ char *ifn = remove_suffix(entry->d_name, suffix);
-            if (ifn == NULL) {
-                continue;
-            }
-            struct euicc_driver *driver = dlsym(handle, ifn);
-            if (driver == NULL) {
-                dlclose(handle);
-                continue;
-            }
+        if ((entry->d_type & (DT_LNK | DT_REG | DT_UNKNOWN)) && ends_with(entry->d_name, dynlib_suffix)) {
+            const struct euicc_driver *driver = find_driver_by_path(LPAC_DRIVER_HOME, entry->d_name);
             struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
             if (tmp == NULL) {
                 return false;
@@ -278,6 +296,9 @@ static bool init_driver_list() {
 }
 #else
 static bool init_driver_list() {
+    if (list_empty(&drivers)) {
+        return true;
+    }
     for (int i = 0; builtin_drivers[i] != NULL; i++) {
         struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
         if (tmp == NULL) {
@@ -291,14 +312,35 @@ static bool init_driver_list() {
 #endif
 
 static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_type type, const char *name) {
-    list_for_each_entry_scoped(it, struct euicc_drivers_list, &drivers, list) {
-        const struct euicc_driver *driver = it->driver;
-        if (driver->type != type)
-            continue;
-        if (strcasecmp(driver->name, name) == 0)
-            return driver;
+    char *driver_type = NULL;
+    if (type == DRIVER_APDU) {
+        driver_type = "apdu";
+    } else if (type == DRIVER_HTTP) {
+        driver_type = "http";
+    } else {
+        return NULL;
     }
-    return NULL;
+
+    _cleanup_free_ char *LPAC_DRIVER_HOME = get_driver_path();
+    if (LPAC_DRIVER_HOME == NULL)
+        return false;
+    if (!strcmp(LPAC_DRIVER_HOME, "$ORIGIN")) {
+        free(LPAC_DRIVER_HOME);
+        LPAC_DRIVER_HOME = get_origin();
+        if (LPAC_DRIVER_HOME == NULL)
+            return false;
+    }
+    char *tmp = realloc(LPAC_DRIVER_HOME, strlen(LPAC_DRIVER_HOME) + 8 + 1);
+    if (tmp == NULL)
+        return NULL;
+    LPAC_DRIVER_HOME = tmp;
+    strcat(LPAC_DRIVER_HOME, "/drivers");
+
+    size_t driver_name_len = 7 + strlen(driver_type) + 1 + strlen(name) + strlen(dynlib_suffix) + 1;
+    _cleanup_free_ char *driver_name = calloc(driver_name_len, sizeof(char));
+    snprintf(driver_name, driver_name_len, "driver_%s_%s%s", driver_type, name, dynlib_suffix);
+
+    return find_driver_by_path(LPAC_DRIVER_HOME, driver_name);
 }
 
 // If backend is not specified, find the certain driver in builtin order.
@@ -309,7 +351,6 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
     static const char *http_fallback_order[] = {
         "winhttp",
         "curl",
-        "stdio",
         NULL
     };
     static const char *apdu_fallback_order[] = {
@@ -319,7 +360,6 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
         "qmi_qrtr",
         "pcsc",
         "at",
-        "stdio",
         NULL
     };
     // clang-format on
@@ -331,10 +371,21 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
     } else {
         return NULL;
     }
+    // Try to find driver in fallback list.
     for (int i = 0; fallback_order[i] != NULL; i++) {
         const struct euicc_driver *driver = find_driver_by_name(type, fallback_order[i]);
         if (driver != NULL) {
             return driver;
+        }
+    }
+    // Load all driver and try to find available one.
+    // stdio are always builtin so it should fallback to it as last.
+    if (init_driver_list()) {
+        list_for_each_entry_scoped(it, struct euicc_drivers_list, &drivers, list) {
+            const struct euicc_driver *driver = it->driver;
+            if (driver->type == type) {
+                return driver;
+            }
         }
     }
     return NULL;
@@ -378,7 +429,6 @@ int euicc_driver_list(int argc, char **argv) {
 }
 
 int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name) {
-    init_driver_list();
     _driver_apdu = find_driver(DRIVER_APDU, apdu_driver_name);
     if (_driver_apdu == NULL) {
         fprintf(stderr, "No APDU driver found\n");
