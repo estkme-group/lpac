@@ -14,7 +14,7 @@ if(LPAC_DYNAMIC_DRIVERS)
 else()
     add_library(euicc-drivers STATIC)
 endif()
-target_link_libraries(euicc-drivers PRIVATE euicc ${CJSON_LIBRARY} lpac-utils)
+target_link_libraries(euicc-drivers PRIVATE euicc ${DL_LIBRARY} ${CJSON_LIBRARY} lpac-utils)
 
 # Only useful on Windows, and will lead to invalid arguments on ld.gold.
 if(WIN32)
