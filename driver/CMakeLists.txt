@@ -1,7 +1,3 @@
-include(CMakeDependentOption)
-cmake_dependent_option(LPAC_DYNAMIC_DRIVERS "Build lpac/libeuicc driver backends as a dynamic library" ON "LPAC_DYNAMIC_LIBEUICC" OFF)
-cmake_dependent_option(LPAC_DYNAMIC_DRIVERS_SOLID "Build lpac/libeuicc driver backends as a solid dynamic library" OFF "LPAC_DYNAMIC_LIBEUICC AND LPAC_DYNAMIC_DRIVERS" OFF)
-
 option(LPAC_WITH_APDU_PCSC "Build APDU PCSC Backend (requires PCSC libraries)" ON)
 option(LPAC_WITH_APDU_AT "Build APDU AT Backend" ON)
 option(LPAC_WITH_APDU_GBINDER "Build APDU Gbinder backend for libhybris devices (requires gbinder headers)" OFF)

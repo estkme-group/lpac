@@ -8,7 +8,12 @@ project (lpac
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+include(CMakeDependentOption)
 option(USE_SYSTEM_DEPS "Use system-wide installed dependencies" OFF)
+option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" OFF)
+cmake_dependent_option(LPAC_DYNAMIC_DRIVERS "Build lpac/libeuicc driver backends as a dynamic library" ON "LPAC_DYNAMIC_LIBEUICC" OFF)
+cmake_dependent_option(LPAC_DYNAMIC_DRIVERS_SOLID "Build lpac/libeuicc driver backends as a solid dynamic library" OFF "LPAC_DYNAMIC_LIBEUICC AND LPAC_DYNAMIC_DRIVERS" OFF)
+
 
 set(LPAC_CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH ${LPAC_CMAKE_MODULE_PATH})
