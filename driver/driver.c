@@ -260,25 +260,19 @@ static char *get_first_runpath(const char *runpath) {
     if (runpath1 == NULL)
         return NULL;
     // runpath is not empty, so strtok shouldn't return NULL when first call.
-    return strdup(strtok(runpath1, ":"));
+    char *tmp = strtok(runpath1, ":");
+    if (!strcmp(tmp, "$ORIGIN") || !strcmp(tmp, "@loader_path")) {
+        return get_origin();
+    } else {
+        return strdup(tmp);
+    }
 }
 
 static char *get_driver_path() {
-    char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
+    _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
     if (LPAC_DRIVER_HOME == NULL)
         return NULL;
-    if (!strcmp(LPAC_DRIVER_HOME, "$ORIGIN") || !strcmp(LPAC_DRIVER_HOME, "@loader_path")) {
-        free(LPAC_DRIVER_HOME);
-        LPAC_DRIVER_HOME = get_origin();
-        if (LPAC_DRIVER_HOME == NULL)
-            return NULL;
-    }
-    char *tmp = realloc(LPAC_DRIVER_HOME, strlen(LPAC_DRIVER_HOME) + 8 + 1);
-    if (tmp == NULL)
-        return NULL;
-    LPAC_DRIVER_HOME = tmp;
-    strcat(LPAC_DRIVER_HOME, "/drivers");
-    return LPAC_DRIVER_HOME;
+    return path_concat(LPAC_DRIVER_HOME, "drivers");
 }
 
 static const struct euicc_driver *find_driver_by_path(const char *restrict dir, char *restrict name) {
@@ -367,17 +361,6 @@ static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_ty
     _cleanup_free_ char *LPAC_DRIVER_HOME = get_driver_path();
     if (LPAC_DRIVER_HOME == NULL)
         return false;
-    if (!strcmp(LPAC_DRIVER_HOME, "$ORIGIN") || !strcmp(LPAC_DRIVER_HOME, "@loader_path")) {
-        free(LPAC_DRIVER_HOME);
-        LPAC_DRIVER_HOME = get_origin();
-        if (LPAC_DRIVER_HOME == NULL)
-            return false;
-    }
-    char *tmp = realloc(LPAC_DRIVER_HOME, strlen(LPAC_DRIVER_HOME) + 8 + 1);
-    if (tmp == NULL)
-        return NULL;
-    LPAC_DRIVER_HOME = tmp;
-    strcat(LPAC_DRIVER_HOME, "/drivers");
 
     size_t driver_name_len = 7 + strlen(driver_type) + 1 + strlen(name) + strlen(dynlib_suffix) + 1;
     _cleanup_free_ char *driver_name = calloc(driver_name_len, sizeof(char));
