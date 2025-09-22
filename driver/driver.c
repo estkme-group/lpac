@@ -203,7 +203,38 @@ static const char *get_runpath() {
         return NULL;
     }
 }
-
+// If DT_RUNPATH is not accessable, use the first search path as alternative.
+#elif defined(__unix__) || defined(__unix)
+static const char *get_runpath() {
+    void *handle = dlopen(NULL, RTLD_NOW);
+    if (handle == NULL) {
+        return NULL;
+    }
+    Dl_serinfo serinfo;
+    if (dlinfo(handle, RTLD_DI_SERINFOSIZE, &serinfo) == -1) {
+        return NULL;
+    }
+    _cleanup_free_ Dl_serinfo *sip = (Dl_serinfo *)malloc(serinfo.dls_size);
+    if (dlinfo(handle, RTLD_DI_SERINFOSIZE, sip) == -1) {
+        return NULL;
+    }
+    if (dlinfo(handle, RTLD_DI_SERINFO, sip) == -1) {
+        return NULL;
+    }
+    size_t len = strlen(sip->dls_serpath[0].dls_name);
+    char *runpath = strdup(sip->dls_serpath[0].dls_name);
+    for (size_t i = 1; i < serinfo.dls_cnt; i++) {
+        len = len + 1 /* SEP */ + strlen(sip->dls_serpath[i].dls_name) + 1;
+        char *tmp = realloc(runpath, len * sizeof(char));
+        if (tmp == NULL) {
+            return NULL;
+        }
+        strcat(tmp, ":");
+        strcat(tmp, sip->dls_serpath[i].dls_name);
+        runpath = tmp;
+    }
+    return runpath;
+}
 #else
 // FIXME: I still didn't find the way to determine RUNPATH on non-Linux.
 //        So use $ORIGIN as a temporary solution
