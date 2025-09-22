@@ -20,12 +20,16 @@ cmake -B build
 
 # compilation
 cmake --build build
-
-# installation (optionally)
-cmake --install build
 ```
 
-The resulting binary can then be found under `build/output` folder.
+If you want to package lpac in a relocatable directory, please build with `-DSTANDALONE_MODE=ON`,
+and then run command below to install files in directory.
+
+```bash
+DESTDIR=output cmake --install build
+```
+
+The resulting binary can then be found under `build/output/executables` folder.
 
 ### Linux
 
