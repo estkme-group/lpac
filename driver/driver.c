@@ -160,6 +160,9 @@ static char *get_origin() {
         fprintf(stderr, "Failed to get $ORIGIN.\n");
         return NULL;
     }
+    char *last_slash = strrchr(buf, '\\');
+    if (last_slash)
+        *last_slash = '\0';
     return buf;
 }
 #elif defined(__APPLE__) && defined(__MACH__)
@@ -264,9 +267,14 @@ static char *get_first_runpath() {
 }
 
 static char *get_driver_path() {
+#ifdef _WIN32
+    _cleanup_free_ char *LPAC_DRIVER_HOME = get_runpath();
+#else
     _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath();
+#endif
     if (LPAC_DRIVER_HOME == NULL)
         return NULL;
+
     return path_concat(LPAC_DRIVER_HOME, "driver");
 }
 
