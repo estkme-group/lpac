@@ -367,7 +367,18 @@ static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_ty
     _cleanup_free_ char *driver_name = calloc(driver_name_len, sizeof(char));
     snprintf(driver_name, driver_name_len, "driver_%s_%s%s", driver_type, name, dynlib_suffix);
 
-    return find_driver_by_path(LPAC_DRIVER_HOME, driver_name);
+    const struct euicc_driver *driver = find_driver_by_path(LPAC_DRIVER_HOME, driver_name);
+    // Lookup built-in drivers if not found in dynamic drivers
+    if (driver == NULL) {
+        for (size_t i = 0; builtin_drivers[i] != NULL; i++) {
+            const struct euicc_driver *j = builtin_drivers[i];
+            if (j->type == type && !strcmp(j->name, name)) {
+                driver = j;
+                break;
+            }
+        }
+    }
+    return driver;
 }
 
 // If backend is not specified, find the certain driver in builtin order.
