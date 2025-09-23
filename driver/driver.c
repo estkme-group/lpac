@@ -35,69 +35,13 @@
 #    include <winerror.h>
 #endif
 
-#ifdef LPAC_WITH_DRIVER_APDU_GBINDER
-#    include "driver/apdu/gbinder_hidl.h"
-#endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_MBIM
-#    include "driver/apdu/mbim.h"
-#endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_QMI
-#    include "driver/apdu/qmi.h"
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_UQMI
-#    include "driver/apdu/uqmi.h"
-#endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
-#    include "driver/apdu/qmi_qrtr.h"
-#endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_PCSC
-#    include "driver/apdu/pcsc.h"
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_AT
-#    include "driver/apdu/at.h"
-#endif
-#ifdef LPAC_WITH_DRIVER_HTTP_CURL
-#    include "driver/http/curl.h"
-#endif
-#ifdef LPAC_WITH_DRIVER_HTTP_WINHTTP
-#    include "driver/http/winhttp.h"
-#endif
 #include "driver/apdu/stdio.h"
 #include "driver/http/stdio.h"
 
 static const struct euicc_driver *builtin_drivers[] = {
-#ifdef LPAC_WITH_DRIVER_APDU_GBINDER
-    &driver_apdu_gbinder_hidl,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_MBIM
-    &driver_apdu_mbim,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_QMI
-    &driver_apdu_qmi,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_UQMI
-    &driver_apdu_uqmi,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
-    &driver_apdu_qmi_qrtr,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_PCSC
-    &driver_apdu_pcsc,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_AT
-    &driver_apdu_at,
-#endif
-#ifdef LPAC_WITH_DRIVER_HTTP_WINHTTP // Prefer to use WINHTTP
-    &driver_http_winhttp,
-#endif
-#ifdef LPAC_WITH_DRIVER_HTTP_CURL
-    &driver_http_curl,
-#endif
-    &driver_apdu_stdio,        &driver_http_stdio, NULL,
+    &driver_apdu_stdio,
+    &driver_http_stdio,
+    NULL,
 };
 
 static const struct euicc_driver *_driver_apdu = NULL;
