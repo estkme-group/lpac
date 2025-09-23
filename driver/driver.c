@@ -427,6 +427,10 @@ static inline const struct euicc_driver *find_driver(const enum euicc_driver_typ
 }
 
 int euicc_driver_list(int argc, char **argv) {
+    if (!init_driver_list()) {
+        fputs("Driver list initialization failed.\n", stderr);
+        return -1;
+    }
     cJSON *payload = cJSON_CreateObject();
     if (payload == NULL)
         return -1;
