@@ -72,13 +72,15 @@ if(LPAC_DYNAMIC_LIBEUICC)
     if(WIN32)
         target_link_options(euicc PRIVATE "LINKER:--export-all-symbols")
     endif()
-    # Install a pkg-config file
-    configure_file(libeuicc.pc.in libeuicc.pc @ONLY)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeuicc.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-    # Configure libeuicc.so installation
-    set_target_properties(euicc PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
-    install(TARGETS euicc   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-                            FILE_SET public_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    if (NOT STANDALONE_MODE)
+        # Install a pkg-config file
+        configure_file(libeuicc.pc.in libeuicc.pc @ONLY)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeuicc.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+        # Configure libeuicc.so installation
+        set_target_properties(euicc PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+        install(TARGETS euicc FILE_SET public_headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    endif()
+    install(TARGETS euicc LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
 if (LIBEUICC_REDUCED_STDLIB_CALL)

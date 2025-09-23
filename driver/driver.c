@@ -272,7 +272,7 @@ static char *get_driver_path() {
     _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
     if (LPAC_DRIVER_HOME == NULL)
         return NULL;
-    return path_concat(LPAC_DRIVER_HOME, "drivers");
+    return path_concat(LPAC_DRIVER_HOME, "driver");
 }
 
 static const struct euicc_driver *find_driver_by_path(const char *restrict dir, char *restrict name) {
@@ -310,7 +310,8 @@ static bool init_driver_list() {
 
     struct dirent *entry;
     while ((entry = readdir(driver_dir)) != NULL) {
-        if ((entry->d_type & (DT_LNK | DT_REG | DT_UNKNOWN)) && ends_with(entry->d_name, dynlib_suffix)) {
+        if ((entry->d_type & (DT_LNK | DT_REG | DT_UNKNOWN)) && !strncmp(entry->d_name, "driver_", 7)
+            && ends_with(entry->d_name, dynlib_suffix)) {
             const struct euicc_driver *driver = find_driver_by_path(LPAC_DRIVER_HOME, entry->d_name);
             struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
             if (tmp == NULL) {
