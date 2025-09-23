@@ -33,12 +33,6 @@ The resulting binary can then be found under `build/output/executables` folder.
 
 ### Linux
 
-#### Debian/Ubuntu
-
-Require `build-essential` `libpcsclite-dev` `libcurl4-openssl-dev` installed.
-
-If you want to get a Deb package, run `cmake -B build -DCPACK_GENERATOR=DEB` then `cmake --build build`.
-
 #### Droidian
 
 Same as normal Debian/Ubuntu, however, in order to build the GBinder backends, you will need `libgbinder-dev`, `glib2.0-dev`, and you will have to pass `-DLPAC_WITH_APDU_GBINDER=ON` when invoking `cmake`.
