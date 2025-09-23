@@ -27,6 +27,7 @@ path = [
     # Config for other tools
     ".editorconfig",
     ".clang-format",
+    ".clang-format-ignore",
     ".git-blame-ignore-revs",
     ".gitignore"
 ]
