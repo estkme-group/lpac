@@ -50,11 +50,6 @@ make-without-lto)
     copy-usage "$PKGDIR/executables"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-without-lto.zip" "$PKGDIR/executables"
     ;;
-debian)
-    cmake "$WORKSPACE" -DCPACK_GENERATOR=DEB
-    make -j VERBOSE=1 package
-    cp lpac_*.deb "$ARTIFACT"
-    ;;
 mingw)
     cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake
     make -j VERBOSE=1

@@ -84,22 +84,6 @@ else()
     set(DL_LIBRARY dl)
 endif()
 
-if(CPACK_GENERATOR)
-    set(CPACK_PACKAGE_VENDOR "eSTK.me Group")
-
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "eSTK.me Group")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6")
-    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libcurl, libpcsclite, pcscd")
-
-    set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-
-    set(CPACK_RPM_PACKAGE_LICENSE "AGPL-3.0-only AND LGPL-2.0-only")
-    set(CPACK_RPM_PACKAGE_AUTOREQ "yes")
-    set(CPACK_RPM_PACKAGE_REQUIRES "libcurl, libpcsclite, pcscd")
-
-    include(CPack)
-endif()
-
 if (USE_SYSTEM_DEPS)
     find_package(cJSON REQUIRED)
 elseif (NOT NO_NETWORK)
