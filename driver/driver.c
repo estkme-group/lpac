@@ -295,11 +295,11 @@ static const struct euicc_driver *find_driver_by_path(const char *restrict dir, 
     return driver;
 }
 
-#if defined(__unix__) || defined(__unix)
 static bool init_driver_list() {
     if (list_empty(&drivers)) {
         return true;
     }
+
     _cleanup_free_ char *LPAC_DRIVER_HOME = get_driver_path();
     if (LPAC_DRIVER_HOME == NULL)
         return false;
@@ -332,22 +332,6 @@ static bool init_driver_list() {
     }
     return true;
 }
-#else
-static bool init_driver_list() {
-    if (list_empty(&drivers)) {
-        return true;
-    }
-    for (int i = 0; builtin_drivers[i] != NULL; i++) {
-        struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
-        if (tmp == NULL) {
-            return false;
-        }
-        tmp->driver = builtin_drivers[i];
-        list_add_tail(&tmp->list, &drivers);
-    }
-    return true;
-}
-#endif
 
 static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_type type, const char *name) {
     char *driver_type = NULL;
