@@ -185,9 +185,8 @@ static char *get_origin() {
  * programmatically. So we can't test this feature is available, we can only assume there is only
  * Glibc and Musl on Linux, forget Nolibc and other libc implementations on Linux.
  */
-#if defined(RTLD_DI_LINKMAP) || defined(__GLIBC__) || defined(__linux__) || defined(__FreeBSD__) \
-    || (defined(__sun) && defined(__SVR4))
-static const char *get_runpath() {
+#if defined(__GLIBC__) || defined(__linux__) || defined(__FreeBSD__) || (defined(__sun) && defined(__SVR4))
+static char *get_runpath() {
     void *handle = dlopen(NULL, RTLD_NOW);
     if (handle == NULL) {
         return NULL;
@@ -210,14 +209,14 @@ static const char *get_runpath() {
         }
     }
     if (runpath != NULL && strtab != NULL) {
-        return strtab + runpath->d_un.d_val;
+        return strdup(strtab + runpath->d_un.d_val);
     } else {
         return NULL;
     }
 }
 // If DT_RUNPATH is not accessable, use the first search path as alternative.
 #elif defined(__unix__) || defined(__unix)
-static const char *get_runpath() {
+static char *get_runpath() {
     void *handle = dlopen(NULL, RTLD_NOW);
     if (handle == NULL) {
         return NULL;
@@ -248,19 +247,15 @@ static const char *get_runpath() {
     return runpath;
 }
 #else
-// FIXME: I still didn't find the way to determine RUNPATH on non-Glibc/Musl/Soloris.
-//        So use $ORIGIN as a temporary solution
-static char *get_runpath() { return get_origin(); }
+static char *get_runpath() { return strdup("$ORIGIN"); }
 #endif
 
-static char *get_first_runpath(const char *runpath) {
+static char *get_first_runpath() {
+    _cleanup_free_ char *runpath = get_runpath();
     if (runpath == NULL)
         return NULL;
-    _cleanup_free_ char *runpath1 = strdup(runpath);
-    if (runpath1 == NULL)
-        return NULL;
     // runpath is not empty, so strtok shouldn't return NULL when first call.
-    char *tmp = strtok(runpath1, ":");
+    char *tmp = strtok(runpath, ":");
     if (!strcmp(tmp, "$ORIGIN") || !strcmp(tmp, "@loader_path")) {
         return get_origin();
     } else {
@@ -269,7 +264,7 @@ static char *get_first_runpath(const char *runpath) {
 }
 
 static char *get_driver_path() {
-    _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath(get_runpath());
+    _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath();
     if (LPAC_DRIVER_HOME == NULL)
         return NULL;
     return path_concat(LPAC_DRIVER_HOME, "driver");
