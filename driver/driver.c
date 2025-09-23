@@ -322,7 +322,7 @@ static bool init_driver_list() {
         }
     }
 
-    for (int i = 0; builtin_drivers[i] != NULL; i++) {
+    for (size_t i = 0; builtin_drivers[i] != NULL; i++) {
         struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
         if (tmp == NULL) {
             return false;
