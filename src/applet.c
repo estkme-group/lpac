@@ -22,7 +22,7 @@ int applet_entry(int argc, char **argv, const struct applet_entry **entries) {
     const struct applet_entry **entries_cpy;
     const struct applet_entry *entry;
 
-    entries_cpy    =    entries;
+    entries_cpy = entries;
 
     if (argc < 2) {
         applet_usage(argv[0], entries);
