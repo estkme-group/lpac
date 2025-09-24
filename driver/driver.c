@@ -267,14 +267,9 @@ static char *get_first_runpath() {
 }
 
 static char *get_driver_path() {
-#ifdef _WIN32
-    _cleanup_free_ char *LPAC_DRIVER_HOME = get_runpath();
-#else
     _cleanup_free_ char *LPAC_DRIVER_HOME = get_first_runpath();
-#endif
     if (LPAC_DRIVER_HOME == NULL)
         return NULL;
-
     return path_concat(LPAC_DRIVER_HOME, "driver");
 }
 
