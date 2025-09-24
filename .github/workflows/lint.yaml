@@ -11,7 +11,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-      - run: pipx run reuse lint
+      - run: pipx run reuse lint >> "$GITHUB_STEP_SUMMARY"
 
   clang-format:
     name: Clang Format
