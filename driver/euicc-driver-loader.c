@@ -1,7 +1,6 @@
 // Needed by dlinfo(3).
 #define _GNU_SOURCE
 #include "driver.h"
-#include "driver.private.h"
 
 #include <lpac/list.h>
 #include <lpac/utils.h>
