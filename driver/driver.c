@@ -35,10 +35,6 @@
 #    include <winerror.h>
 #endif
 
-static const struct euicc_driver *builtin_drivers[] = {
-    NULL,
-};
-
 static const struct euicc_driver *_driver_apdu = NULL;
 static const struct euicc_driver *_driver_http = NULL;
 
@@ -266,14 +262,6 @@ static bool init_driver_list() {
         }
     }
 
-    for (size_t i = 0; builtin_drivers[i] != NULL; i++) {
-        struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
-        if (tmp == NULL) {
-            return false;
-        }
-        tmp->driver = builtin_drivers[i];
-        list_add_tail(&tmp->list, &drivers);
-    }
     return true;
 }
 
@@ -296,16 +284,6 @@ static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_ty
     snprintf(driver_name, driver_name_len, "driver_%s_%s%s", driver_type, name, dynlib_suffix);
 
     const struct euicc_driver *driver = find_driver_by_path(LPAC_DRIVER_HOME, driver_name);
-    // Lookup built-in drivers if not found in dynamic drivers
-    if (driver == NULL) {
-        for (size_t i = 0; builtin_drivers[i] != NULL; i++) {
-            const struct euicc_driver *j = builtin_drivers[i];
-            if (j->type == type && !strcmp(j->name, name)) {
-                driver = j;
-                break;
-            }
-        }
-    }
     return driver;
 }
 
