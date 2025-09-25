@@ -20,4 +20,5 @@ target_sources(
         BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
         FILES
             lpac/utils.h
+            lpac/list.h
 )
