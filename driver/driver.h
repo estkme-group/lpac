@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef interface
+#    undef interface
+#endif
+
 enum euicc_driver_type {
     DRIVER_APDU,
     DRIVER_HTTP,
