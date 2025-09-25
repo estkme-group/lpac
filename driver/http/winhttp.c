@@ -159,7 +159,7 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
     return 0;
 }
 
-const struct euicc_driver driver_if = {
+DRIVER_INTERFACE = {
     .type = DRIVER_HTTP,
     .name = "winhttp",
     .init = (int (*)(void *))libhttpinterface_init,

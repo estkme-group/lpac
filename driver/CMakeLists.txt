@@ -176,10 +176,6 @@ if (LPAC_WITH_HTTP_WINHTTP)
 endif ()
 
 foreach(driver ${LPAC_DRIVERS})
-    # Only useful on Windows, and will lead to invalid arguments on ld.gold.
-    if(WIN32)
-        target_link_options(${driver} PRIVATE "LINKER:--export-all-symbols")
-    endif()
     install(TARGETS ${driver} LIBRARY DESTINATION ${DRIVER_INSTALL_PATH})
 endforeach()
 

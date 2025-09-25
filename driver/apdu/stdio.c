@@ -228,7 +228,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-const struct euicc_driver driver_if = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "stdio",
     .init = (int (*)(void *))libapduinterface_init,

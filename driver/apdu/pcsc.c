@@ -403,7 +403,7 @@ static void libapduinterface_fini(const struct euicc_apdu_interface *ifstruct) {
     free(userdata);
 }
 
-const struct euicc_driver driver_if = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "pcsc",
     .init = (int (*)(void *))libapduinterface_init,
