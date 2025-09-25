@@ -35,12 +35,7 @@
 #    include <winerror.h>
 #endif
 
-#include "driver/apdu/stdio.h"
-#include "driver/http/stdio.h"
-
 static const struct euicc_driver *builtin_drivers[] = {
-    &driver_apdu_stdio,
-    &driver_http_stdio,
     NULL,
 };
 
@@ -322,6 +317,7 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
     static const char *http_fallback_order[] = {
         "winhttp",
         "curl",
+        "stdio",
         NULL
     };
     static const char *apdu_fallback_order[] = {
@@ -332,6 +328,7 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
         "uqmi",
         "pcsc",
         "at",
+        "stdio",
         NULL
     };
     // clang-format on

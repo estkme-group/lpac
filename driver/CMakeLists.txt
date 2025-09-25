@@ -42,8 +42,15 @@ target_sources(
             driver.h
 )
 
-target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/stdio.c)
-target_sources(euicc-drivers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/http/stdio.c)
+add_library(driver_apdu_stdio SHARED apdu/stdio.c)
+target_include_directories(driver_apdu_stdio PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(driver_apdu_stdio PRIVATE euicc lpac-utils)
+set_target_properties(driver_apdu_stdio PROPERTIES PREFIX "")
+
+add_library(driver_http_stdio SHARED http/stdio.c)
+target_include_directories(driver_http_stdio PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(driver_http_stdio PRIVATE euicc lpac-utils)
+set_target_properties(driver_http_stdio PROPERTIES PREFIX "")
 
 if (LPAC_WITH_APDU_PCSC)
     add_library(driver_apdu_pcsc SHARED ${CMAKE_CURRENT_SOURCE_DIR}/apdu/pcsc.c)
