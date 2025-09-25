@@ -291,7 +291,9 @@ static const struct euicc_driver *find_driver_by_path(const char *restrict dir, 
 }
 
 static bool init_driver_list() {
-    if (list_empty(&drivers)) {
+    // If driver is not empty, means initialization has been done.
+    // But it prevent re-init driver when lpac running.
+    if (!list_empty(&drivers)) {
         return true;
     }
 
