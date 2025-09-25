@@ -248,7 +248,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     free(qmi_priv);
 }
 
-const struct euicc_driver driver_apdu_qmi = {
+const struct euicc_driver driver_if = {
     .type = DRIVER_APDU,
     .name = "qmi",
     .init = (int (*)(void *))libapduinterface_init,

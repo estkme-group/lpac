@@ -190,7 +190,7 @@ static int libapduinterface_main(const struct euicc_apdu_interface *ifstruct, in
     return 0;
 }
 
-const struct euicc_driver driver_http_curl = {
+const struct euicc_driver driver_if = {
     .type = DRIVER_HTTP,
     .name = "curl",
     .init = (int (*)(void *))libhttpinterface_init,

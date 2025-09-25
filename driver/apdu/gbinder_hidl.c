@@ -290,7 +290,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-const struct euicc_driver driver_apdu_gbinder_hidl = {
+const struct euicc_driver driver_if = {
     .type = DRIVER_APDU,
     .name = "gbinder_hidl",
     .init = (int (*)(void *))libapduinterface_init,

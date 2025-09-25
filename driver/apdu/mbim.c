@@ -305,7 +305,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
 
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) { g_free(ifstruct->userdata); }
 
-const struct euicc_driver driver_apdu_mbim = {
+const struct euicc_driver driver_if = {
     .type = DRIVER_APDU,
     .name = "mbim",
     .init = (int (*)(void *))libapduinterface_init,

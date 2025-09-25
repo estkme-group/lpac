@@ -367,7 +367,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     }
 }
 
-const struct euicc_driver driver_apdu_at = {
+const struct euicc_driver driver_if = {
     .type = DRIVER_APDU,
     .name = "at",
     .init = (int (*)(void *))libapduinterface_init,

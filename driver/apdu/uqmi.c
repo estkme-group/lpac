@@ -290,7 +290,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     free(userdata);
 }
 
-const struct euicc_driver driver_apdu_uqmi = {
+const struct euicc_driver driver_if = {
     .type = DRIVER_APDU,
     .name = "uqmi",
     .init = (int (*)(void *))libapduinterface_init,

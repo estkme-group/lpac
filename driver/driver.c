@@ -223,11 +223,7 @@ static const struct euicc_driver *find_driver_by_path(const char *restrict dir, 
     if (handle == NULL) {
         return NULL;
     }
-    _cleanup_free_ char *ifn = remove_suffix(name, dynlib_suffix);
-    if (ifn == NULL) {
-        return NULL;
-    }
-    struct euicc_driver *driver = dlsym(handle, ifn);
+    struct euicc_driver *driver = dlsym(handle, "driver_if");
     if (driver == NULL) {
         dlclose(handle);
     }
