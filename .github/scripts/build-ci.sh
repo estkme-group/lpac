@@ -28,7 +28,8 @@ make)
     ;;
 make-qmi)
     cmake "$WORKSPACE" \
-        -DSTANDALONE_MODE=ON -DLPAC_WITH_APDU_QMI=ON \
+        -DSTANDALONE_MODE=ON \
+        -DLPAC_WITH_APDU_QMI=ON \
         -DLPAC_WITH_APDU_QMI_QRTR=ON \
         -DLPAC_WITH_APDU_UQMI=ON \
         -DLPAC_WITH_APDU_MBIM=ON
