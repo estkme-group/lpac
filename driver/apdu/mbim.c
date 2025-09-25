@@ -2,9 +2,9 @@
 /*
  * Copyright (c) 2024, Frans Klaver <frans.klaver@vislink.com>
  */
-#include "mbim.h"
 #include "mbim_helpers.h"
 
+#include <driver.h>
 #include <euicc/euicc.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>

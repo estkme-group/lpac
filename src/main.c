@@ -12,8 +12,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <driver.h>
 #include <errno.h>
+#include <euicc-driver-loader.h>
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
 #include <lpac/utils.h>

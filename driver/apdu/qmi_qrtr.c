@@ -2,9 +2,9 @@
 /*
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
-#include "qmi_qrtr.h"
 #include "qmi_common.h"
 
+#include <driver.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 

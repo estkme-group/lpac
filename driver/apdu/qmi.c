@@ -2,9 +2,9 @@
 /*
  * Copyright (c) 2024, Robert Marko <robert.marko@sartura.hr>
  */
-#include "qmi.h"
 #include "qmi_common.h"
 
+#include <driver.h>
 #include <lpac/utils.h>
 
 #include <libqmi-glib.h>

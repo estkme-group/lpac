@@ -1,11 +1,10 @@
-#include "stdio.h"
-
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <cjson-ext/cJSON_ex.h>
+#include <driver.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>

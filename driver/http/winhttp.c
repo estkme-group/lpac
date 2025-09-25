@@ -1,5 +1,3 @@
-#include "winhttp.h"
-
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +6,7 @@
 #include <windows.h>
 #include <winhttp.h>
 
+#include <driver.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
