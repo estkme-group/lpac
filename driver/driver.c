@@ -1,4 +1,4 @@
-// Needed by dlinfo(3).
+""// Needed by dlinfo(3).
 #define _GNU_SOURCE
 #include "driver.h"
 #include "driver.private.h"
@@ -386,7 +386,6 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
         "pcsc",
         "at",
         "at_csim",
-        "stdio",
         NULL
     };
     // clang-format on
