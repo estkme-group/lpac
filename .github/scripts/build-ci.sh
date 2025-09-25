@@ -27,7 +27,12 @@ make)
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE.zip" "$PKGDIR/executables"
     ;;
 make-qmi)
-    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DLPAC_WITH_APDU_QMI=ON -DLPAC_WITH_APDU_QMI_QRTR=ON -DLPAC_WITH_APDU_MBIM=ON
+    cmake "$WORKSPACE" \
+        -DSTANDALONE_MODE=ON \
+        -DLPAC_WITH_APDU_QMI=ON \
+        -DLPAC_WITH_APDU_QMI_QRTR=ON \
+        -DLPAC_WITH_APDU_UQMI=ON \
+        -DLPAC_WITH_APDU_MBIM=ON
     make -j VERBOSE=1
     make DESTDIR="$PKGDIR" install
     copy-license "$PKGDIR/executables"

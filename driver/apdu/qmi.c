@@ -164,7 +164,7 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     g_autoptr(GError) error = NULL;
     QmiDevice *device = NULL;
     QmiClient *client = NULL;
-    const char *device_path = getenv(ENV_DEVICE);
+    const char *device_path = getenv_or_default(ENV_DEVICE, "/dev/cdc-wdm0");
     GFile *file;
 
     if (device_path == NULL) {
