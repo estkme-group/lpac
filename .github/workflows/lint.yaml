@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: jidicula/clang-format-action@v4.15.0
+      - uses: nicelabs/clang-format-action@main
         with:
-          clang-format-version: "20"
-          exclude-regex: "(dlfcn-win32)/.*"
+          version: 20
+          warnings-as-errors: true
