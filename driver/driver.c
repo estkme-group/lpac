@@ -166,6 +166,9 @@ static char *get_origin() {
         fprintf(stderr, "Failed to get $ORIGIN.\n");
         return NULL;
     }
+    char *last_slash = strrchr(buf, '\\');
+    if (last_slash)
+        *last_slash = '\0';
     return buf;
 }
 #elif defined(__APPLE__) && defined(__MACH__)
