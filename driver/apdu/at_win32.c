@@ -1,7 +1,7 @@
-#include "at.h"
 #include "at_common.h"
 
 #include <cjson-ext/cJSON_ex.h>
+#include <driver.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
@@ -367,7 +367,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     }
 }
 
-const struct euicc_driver driver_apdu_at = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "at",
     .init = (int (*)(void *))libapduinterface_init,

@@ -1,5 +1,5 @@
 add_executable(lpac lpac.rc)
-target_link_libraries(lpac PRIVATE euicc euicc-drivers lpac-utils)
+target_link_libraries(lpac PRIVATE euicc lpac-utils euicc-driver-loader)
 target_sources(
     lpac
     PRIVATE

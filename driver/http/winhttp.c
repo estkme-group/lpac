@@ -1,5 +1,3 @@
-#include "winhttp.h"
-
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +6,7 @@
 #include <windows.h>
 #include <winhttp.h>
 
+#include <driver.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
@@ -160,7 +159,7 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
     return 0;
 }
 
-const struct euicc_driver driver_http_winhttp = {
+DRIVER_INTERFACE = {
     .type = DRIVER_HTTP,
     .name = "winhttp",
     .init = (int (*)(void *))libhttpinterface_init,
