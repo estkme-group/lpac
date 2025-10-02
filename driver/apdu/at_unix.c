@@ -16,6 +16,17 @@ static FILE *fuart;
 static int logic_channel = 0;
 static char *buffer;
 
+enum WWAN_MODULE
+{
+    RM520N,
+    EM160R,
+    EM05G,
+    EM061K,
+    NOT_SUPPORTED
+};
+
+#define AT_PORT_DEFAULT "/dev/ttyUSB0"
+
 static void enumerate_serial_device_linux(cJSON *data) {
     const char *dir_path = "/dev/serial/by-id";
     DIR *dir = opendir(dir_path);
@@ -60,17 +71,170 @@ static int at_expect(char **response, const char *expected) {
     return 0;
 }
 
+static int checkWWANModuleInstalled(void)
+{
+    int ret;
+    int wwan_value;
+    char *lspci_cmd= "/usr/bin/lspci";
+    char buffer[1024];
+    FILE *fp = NULL;
+
+    //Execute lspci command using popen and save output to fp
+    if ((fp = popen(lspci_cmd, "r")) == NULL) {
+        return -1;
+    }
+
+    //Check which WWAN module is installed
+    while (fgets(buffer, 1024, fp) != NULL) {
+        if(strstr(buffer, "1007") != NULL) {
+            wwan_value = RM520N;
+            break;
+        } else if(strstr(buffer, "100d") != NULL) {
+            wwan_value = EM160R;
+            break;
+        } else {
+            wwan_value = -1;
+        }
+    }
+
+    if(pclose(fp))  {
+        wwan_value = -1;
+    }
+
+    return wwan_value;
+}
+
+static int checkUSBWWANModuleInstalled(void)
+{
+    int wwan_value = 0;
+    char *lsusb_cmd = "/usr/bin/lsusb";
+    char buffer[1024];
+    FILE *fp = NULL;
+
+    //Execute lsusb command using popen and save output to fp
+    if ((fp = popen(lsusb_cmd, "r")) == NULL) {
+        wwan_value = -1;
+    }
+
+    //Check which WWAN module is installed
+    while (fgets(buffer, 1024, fp) != NULL) {
+        if(strstr(buffer, "2c7c:0311") != NULL) {
+            wwan_value = EM05G;
+            break;
+        //EM05G 2c7c:030a
+        } else if(strstr(buffer, "2c7c:030a") != NULL) {
+            wwan_value = EM05G;
+            break;
+        } else if(strstr(buffer, "2c7c:6008") != NULL) {
+            wwan_value = EM061K;
+            break;
+        } else {
+            wwan_value = -1;
+        }
+    }
+
+    if(pclose(fp))  {
+        wwan_value = -1;
+    }
+    return wwan_value;
+}
+
+static char *checkWWANDevice(void)
+{
+    char *at_port = malloc(1024);
+    char *at_line = malloc(1024);
+    char *mmcli_cmd = "mmcli -m any";
+
+    char *at_line_port = NULL;
+    char *at_line_port_2 = NULL;
+    char *token = NULL;
+    char *token_2 = NULL;
+    char *at_port_token = NULL;
+    char *at_port_token_2 = NULL;
+
+    char buffer[1024];
+    char port_checker[10] = "ports:";
+
+    int ctr = 0;
+    FILE *fp = NULL;
+
+    at_port = AT_PORT_DEFAULT;
+
+    //Execute mmcli command using popen and save output to fp
+    if ((fp = popen(mmcli_cmd, "r")) == NULL) {
+        pclose(fp);
+        return at_port;
+    }
+
+    //Check which WWAN module AT port
+    while (fgets(buffer, 1024, fp) != NULL)
+    {
+        at_line = strstr(buffer, port_checker);
+        if (at_line != NULL)
+        {
+            //Split by ":"
+            token = strtok(at_line, ":");
+
+            while(token!=NULL)
+            {
+                if(ctr == 1)
+                {
+                    //Split by ","
+                    token_2 = strtok(token, ",");
+                    while(token_2!=NULL)
+                    {
+                        at_line_port_2 = strstr(token_2, "(at)");
+
+                        if(at_line_port_2 == NULL)
+                        {
+                            token_2 = strtok(NULL, ",");
+                        }
+                        else
+                        {
+                            //Extract AT port and reconstitute
+                            at_port_token_2 = strtok(token_2, " ");
+                            while(at_port_token_2!=NULL)
+                            {
+                                asprintf(&at_port, "/dev/%s", at_port_token_2);
+                                break;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                token = strtok(NULL, ":");
+                ctr++;
+            }
+        }
+    }
+    pclose(fp);
+    return at_port;
+}
+
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
-    const char *device = getenv_or_default(ENV_AT_DEVICE, "/dev/ttyUSB0");
+
+    int module = -1;
+    const char *device = getenv_or_default(ENV_AT_DEVICE, AT_PORT_DEFAULT);
 
     logic_channel = 0;
+
+    if (device == AT_PORT_DEFAULT)
+    {
+        device = checkWWANDevice();
+    }
 
     fuart = fopen(device, "r+");
     if (fuart == NULL) {
         fprintf(stderr, "Failed to open device: %s\n", device);
         return -1;
     }
-    setbuf(fuart, NULL);
+
+    module = checkWWANModuleInstalled();
+
+    if(module == -1) module = checkUSBWWANModuleInstalled();
+    if(module != EM061K) setbuf(fuart, NULL);
 
     fprintf(fuart, "AT+CCHO=?\r\n");
     if (at_expect(NULL, NULL)) {
