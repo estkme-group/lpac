@@ -148,7 +148,11 @@ static char *get_runpath() {
         } else if (dyn->d_tag == DT_RUNPATH) {
             runpath = dyn;
         } else if (dyn->d_tag == DT_STRTAB) {
+#if defined(__GLIBC__)
             strtab = (const char *)dyn->d_un.d_ptr;
+#else
+            strtab = (const char *)(linkmap->l_addr + dyn->d_un.d_val);
+#endif
         }
     }
     if (runpath != NULL && strtab != NULL) {
