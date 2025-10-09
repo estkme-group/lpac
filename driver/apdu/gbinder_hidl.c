@@ -1,5 +1,4 @@
-#include "gbinder_hidl.h"
-
+#include <driver.h>
 #include <euicc/euicc.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
@@ -291,7 +290,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-const struct euicc_driver driver_apdu_gbinder_hidl = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "gbinder_hidl",
     .init = (int (*)(void *))libapduinterface_init,

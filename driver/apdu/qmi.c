@@ -2,9 +2,9 @@
 /*
  * Copyright (c) 2024, Robert Marko <robert.marko@sartura.hr>
  */
-#include "qmi.h"
 #include "qmi_common.h"
 
+#include <driver.h>
 #include <lpac/utils.h>
 
 #include <libqmi-glib.h>
@@ -248,7 +248,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     free(qmi_priv);
 }
 
-const struct euicc_driver driver_apdu_qmi = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "qmi",
     .init = (int (*)(void *))libapduinterface_init,

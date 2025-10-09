@@ -1,11 +1,10 @@
-#include "stdio.h"
-
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <cjson-ext/cJSON_ex.h>
+#include <driver.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
@@ -229,7 +228,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     return 0;
 }
 
-const struct euicc_driver driver_apdu_stdio = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "stdio",
     .init = (int (*)(void *))libapduinterface_init,

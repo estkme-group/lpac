@@ -2,9 +2,9 @@
 /*
  * Copyright (c) 2024, Luca Weiss <luca.weiss@fairphone.com>
  */
-#include "qmi_qrtr.h"
 #include "qmi_common.h"
 
+#include <driver.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
@@ -112,7 +112,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     free(qmi_priv);
 }
 
-const struct euicc_driver driver_apdu_qmi_qrtr = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "qmi_qrtr",
     .init = (int (*)(void *))libapduinterface_init,

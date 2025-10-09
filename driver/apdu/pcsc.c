@@ -1,6 +1,5 @@
-#include "pcsc.h"
-
 #include <cjson-ext/cJSON_ex.h>
+#include <driver.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
@@ -404,7 +403,7 @@ static void libapduinterface_fini(const struct euicc_apdu_interface *ifstruct) {
     free(userdata);
 }
 
-const struct euicc_driver driver_apdu_pcsc = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "pcsc",
     .init = (int (*)(void *))libapduinterface_init,

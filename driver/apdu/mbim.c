@@ -2,9 +2,9 @@
 /*
  * Copyright (c) 2024, Frans Klaver <frans.klaver@vislink.com>
  */
-#include "mbim.h"
 #include "mbim_helpers.h"
 
+#include <driver.h>
 #include <euicc/euicc.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
@@ -305,7 +305,7 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
 
 static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) { g_free(ifstruct->userdata); }
 
-const struct euicc_driver driver_apdu_mbim = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "mbim",
     .init = (int (*)(void *))libapduinterface_init,

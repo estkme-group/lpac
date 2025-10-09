@@ -1,7 +1,6 @@
 // Needed by dlinfo(3).
 #define _GNU_SOURCE
 #include "driver.h"
-#include "driver.private.h"
 
 #include <lpac/list.h>
 #include <lpac/utils.h>
@@ -34,71 +33,6 @@
 #    include <libloaderapi.h>
 #    include <winerror.h>
 #endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_GBINDER
-#    include "driver/apdu/gbinder_hidl.h"
-#endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_MBIM
-#    include "driver/apdu/mbim.h"
-#endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_QMI
-#    include "driver/apdu/qmi.h"
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_UQMI
-#    include "driver/apdu/uqmi.h"
-#endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
-#    include "driver/apdu/qmi_qrtr.h"
-#endif
-
-#ifdef LPAC_WITH_DRIVER_APDU_PCSC
-#    include "driver/apdu/pcsc.h"
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_AT
-#    include "driver/apdu/at.h"
-#endif
-#ifdef LPAC_WITH_DRIVER_HTTP_CURL
-#    include "driver/http/curl.h"
-#endif
-#ifdef LPAC_WITH_DRIVER_HTTP_WINHTTP
-#    include "driver/http/winhttp.h"
-#endif
-#include "driver/apdu/stdio.h"
-#include "driver/http/stdio.h"
-
-static const struct euicc_driver *builtin_drivers[] = {
-#ifdef LPAC_WITH_DRIVER_APDU_GBINDER
-    &driver_apdu_gbinder_hidl,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_MBIM
-    &driver_apdu_mbim,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_QMI
-    &driver_apdu_qmi,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_UQMI
-    &driver_apdu_uqmi,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
-    &driver_apdu_qmi_qrtr,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_PCSC
-    &driver_apdu_pcsc,
-#endif
-#ifdef LPAC_WITH_DRIVER_APDU_AT
-    &driver_apdu_at,
-#endif
-#ifdef LPAC_WITH_DRIVER_HTTP_WINHTTP // Prefer to use WINHTTP
-    &driver_http_winhttp,
-#endif
-#ifdef LPAC_WITH_DRIVER_HTTP_CURL
-    &driver_http_curl,
-#endif
-    &driver_apdu_stdio,        &driver_http_stdio, NULL,
-};
 
 static const struct euicc_driver *_driver_apdu = NULL;
 static const struct euicc_driver *_driver_http = NULL;
@@ -214,7 +148,11 @@ static char *get_runpath() {
         } else if (dyn->d_tag == DT_RUNPATH) {
             runpath = dyn;
         } else if (dyn->d_tag == DT_STRTAB) {
+#if defined(__GLIBC__)
             strtab = (const char *)dyn->d_un.d_ptr;
+#else
+            strtab = (const char *)(linkmap->l_addr + dyn->d_un.d_val);
+#endif
         }
     }
     if (runpath != NULL && strtab != NULL) {
@@ -288,11 +226,7 @@ static const struct euicc_driver *find_driver_by_path(const char *restrict dir, 
     if (handle == NULL) {
         return NULL;
     }
-    _cleanup_free_ char *ifn = remove_suffix(name, dynlib_suffix);
-    if (ifn == NULL) {
-        return NULL;
-    }
-    struct euicc_driver *driver = dlsym(handle, ifn);
+    struct euicc_driver *driver = dlsym(handle, "driver_if");
     if (driver == NULL) {
         dlclose(handle);
     }
@@ -327,14 +261,6 @@ static bool init_driver_list() {
         }
     }
 
-    for (size_t i = 0; builtin_drivers[i] != NULL; i++) {
-        struct euicc_drivers_list *tmp = (struct euicc_drivers_list *)calloc(1, sizeof(struct euicc_drivers_list));
-        if (tmp == NULL) {
-            return false;
-        }
-        tmp->driver = builtin_drivers[i];
-        list_add_tail(&tmp->list, &drivers);
-    }
     return true;
 }
 
@@ -357,16 +283,6 @@ static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_ty
     snprintf(driver_name, driver_name_len, "driver_%s_%s%s", driver_type, name, dynlib_suffix);
 
     const struct euicc_driver *driver = find_driver_by_path(LPAC_DRIVER_HOME, driver_name);
-    // Lookup built-in drivers if not found in dynamic drivers
-    if (driver == NULL) {
-        for (size_t i = 0; builtin_drivers[i] != NULL; i++) {
-            const struct euicc_driver *j = builtin_drivers[i];
-            if (j->type == type && !strcmp(j->name, name)) {
-                driver = j;
-                break;
-            }
-        }
-    }
     return driver;
 }
 
@@ -378,6 +294,7 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
     static const char *http_fallback_order[] = {
         "winhttp",
         "curl",
+        "stdio",
         NULL
     };
     static const char *apdu_fallback_order[] = {
@@ -388,6 +305,7 @@ static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_t
         "uqmi",
         "pcsc",
         "at",
+        "stdio",
         NULL
     };
     // clang-format on

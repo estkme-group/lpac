@@ -1,5 +1,4 @@
-#include "curl.h"
-
+#include <driver.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
@@ -191,7 +190,7 @@ static int libapduinterface_main(const struct euicc_apdu_interface *ifstruct, in
     return 0;
 }
 
-const struct euicc_driver driver_http_curl = {
+DRIVER_INTERFACE = {
     .type = DRIVER_HTTP,
     .name = "curl",
     .init = (int (*)(void *))libhttpinterface_init,

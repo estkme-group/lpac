@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2024 David Bauer <david.bauer@uniberg.com>
-#include "uqmi.h"
-
+#include <driver.h>
 #include <euicc/hexutil.h>
 #include <euicc/interface.h>
 #include <lpac/utils.h>
@@ -291,7 +290,7 @@ static void libapduinterface_fini(struct euicc_apdu_interface *ifstruct) {
     free(userdata);
 }
 
-const struct euicc_driver driver_apdu_uqmi = {
+DRIVER_INTERFACE = {
     .type = DRIVER_APDU,
     .name = "uqmi",
     .init = (int (*)(void *))libapduinterface_init,
