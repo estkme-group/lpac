@@ -68,6 +68,8 @@ if (LPAC_WITH_APDU_PCSC)
 endif ()
 
 if (LPAC_WITH_APDU_AT)
+    message(WARNING "LPAC_WITH_APDU_AT is NO LONGER MAINTAINED and maybe REMOVED in future releases.")
+
     function(add_at_driver target_name extra_sources)
         add_library(${target_name} SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_helpers.c
