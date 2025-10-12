@@ -222,10 +222,16 @@ err:
 void at_cleanup_userdata(struct at_userdata **userdata) {
     if (userdata == NULL || *userdata == NULL)
         return;
+
     at_device_close(*userdata);
-    for (int index = 0; index < 20; index++)
-        free((*userdata)->channels[index]);
-    free((*userdata)->channels);
+
+    if ((*userdata)->channels) {
+        for (int index = 0; index < AT_MAX_LOGICAL_CHANNELS; index++) {
+            free((*userdata)->channels[index]);
+        }
+        free((*userdata)->channels);
+    }
+
     free(*userdata);
     *userdata = NULL;
 }
