@@ -68,18 +68,32 @@ if (LPAC_WITH_APDU_PCSC)
 endif ()
 
 if (LPAC_WITH_APDU_AT)
-    add_library(driver_apdu_at SHARED ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_common.c)
-    target_link_libraries(driver_apdu_at PRIVATE euicc euicc-drivers lpac-utils)
-    set_target_properties(driver_apdu_at PROPERTIES PREFIX "")
-    if (UNIX)
-        target_sources(driver_apdu_at PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_unix.c)
-    elseif (WIN32)
-        target_link_libraries(driver_apdu_at PRIVATE setupapi)
-        target_sources(driver_apdu_at PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_win32.c)
-    else ()
-        message(FATAL_ERROR "LPAC_WITH_APDU_AT is only supported on Unix and Windows platforms.")
-    endif ()
-    install(TARGETS driver_apdu_at LIBRARY DESTINATION ${DRIVER_INSTALL_PATH})
+    function(add_at_driver target_name extra_sources)
+        add_library(${target_name} SHARED
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_helpers.c
+            ${extra_sources}
+        )
+
+        target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+        target_link_libraries(${target_name} PRIVATE euicc euicc-drivers lpac-utils)
+
+        set_target_properties(${target_name} PROPERTIES PREFIX "")
+
+        if (UNIX)
+            target_sources(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_cmd_unix.c)
+        elseif (WIN32)
+            target_link_libraries(${target_name} PRIVATE setupapi)
+            target_sources(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_cmd_win32.c)
+        else ()
+            message(FATAL_ERROR "${target_name} is only supported on Unix and Windows platforms.")
+        endif ()
+
+        install(TARGETS ${target_name} LIBRARY DESTINATION ${DRIVER_INSTALL_PATH})
+    endfunction()
+
+    add_at_driver(driver_apdu_at "${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_etsi.c")
+
+    add_at_driver(driver_apdu_at_csim "${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_etsi_csim.c")
 endif ()
 
 if(LPAC_WITH_APDU_GBINDER)
