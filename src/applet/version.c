@@ -2,7 +2,7 @@
 #include "main.h"
 
 #ifndef LPAC_VERSION
-#    define LPAC_VERSION "v0.0.0-unknown"
+#    define LPAC_VERSION "0.0.0.r0.unknown"
 #endif
 
 static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
