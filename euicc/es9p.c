@@ -9,7 +9,7 @@
 
 static const char *lpa_header[] = {
     "User-Agent: gsma-rsp-lpad",
-    "X-Admin-Protocol: gsma/rsp/v2.2.0",
+    "X-Admin-Protocol: gsma/rsp/v2.2.2",
     "Content-Type: application/json",
     NULL,
 };
