@@ -2,16 +2,16 @@
 
 > [!CAUTION]
 >
-> **PLEASE DO NOT USE THIS BACKEND**, NO LONGER MAINTAINED, FOR DEMO PURPOSES ONLY.
+> **FOR DEMO PURPOSES ONLY.**
+> 
+> Only requests that strictly follow the [ETSI TS 127 007] specification are supported. \
+> Requests outside the specification will be **REJECTED**.
 >
 > Some operations (e.g: download, delete, etc.), may fail due to insufficient response time. \
 > The Maximum Response Time is typically 300ms, which is insufficient for many eUICC operations.
 
 The AT Backend is used to communicate with the eUICC via AT commands over a serial port. \
 It is commonly used with cellular modems that support AT commands for eUICC management.
-
-Only requests that strictly follow the [ETSI TS 127 007] specification are supported. \
-Requests outside the specification will be **REJECTED**.
 
 Not all cellular modems support the required AT commands for eUICC management. \
 Please refer to your modem's documentation to verify compatibility.

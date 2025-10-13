@@ -10,7 +10,8 @@
 
 inline void at_warning_message(void) {
     static char *message =
-        "WARNING: AT driver is NO LONGER MAINTAINED, FOR demo purposes only.\n"
+        "WARNING: AT driver is for demo purposes only.\n"
+        "WARNING: AT driver strictly complies with \"ETSI TS 127 007\" specification.\n"
         "WARNING: Some operations (e.g: download, delete, etc.), may fail due to insufficient response time.\n";
 
     if (isatty(fileno(stdin))) {
