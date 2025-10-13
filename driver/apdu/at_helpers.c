@@ -73,7 +73,7 @@ int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
 
 void at_warning_message(void) {
     static char *message =
-        "WARNING: AT driver is NO LONGER MAINTAINED, It it provided FOR demo purposes only.\n"
+        "WARNING: AT driver is NO LONGER MAINTAINED, FOR demo purposes only.\n"
         "WARNING: Some operations (e.g: download, delete, etc.), may fail due to insufficient response time.\n";
 
     if (isatty(fileno(stdin))) {

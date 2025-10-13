@@ -2,7 +2,7 @@
 
 > [!CAUTION]
 >
-> **PLEASE DO NOT USE THIS BACKEND**, NO LONGER MAINTAINED, IT IS PROVIDED FOR DEMO PURPOSES ONLY.
+> **PLEASE DO NOT USE THIS BACKEND**, NO LONGER MAINTAINED, FOR DEMO PURPOSES ONLY.
 >
 > Some operations (e.g: download, delete, etc.), may fail due to insufficient response time. \
 > The Maximum Response Time is typically 300ms, which is insufficient for many eUICC operations.
