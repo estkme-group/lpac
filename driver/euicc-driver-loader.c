@@ -26,6 +26,7 @@
 #    include <sys/syslimits.h>
 #elif defined(__APPLE__) && defined(__MACH__)
 #    include <dlfcn.h>
+#    include <libgen.h>
 #    include <mach-o/dyld.h>
 #    include <sys/syslimits.h>
 #elif defined(_WIN32)
@@ -109,11 +110,10 @@ static char *get_origin() {
 static char *get_origin() {
     char *buf = (char *)calloc(PATH_MAX, sizeof(char));
     uint32_t size = PATH_MAX;
-    if (_NSGetExecutablePath(buf, &size) == 0) {
-        return buf;
-    } else {
+    if (_NSGetExecutablePath(buf, &size) != 0) {
         return NULL;
     }
+    return strdup(dirname(buf));
 }
 #endif
 
