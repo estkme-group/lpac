@@ -79,3 +79,8 @@ function create-bundle {
     zip -v -r "$BUNDLE_FILE" ./*
     popd
 }
+
+function test-driver-available {
+    env LPAC_APDU=stdio LPAC_HTTP=stdio "$PKGDIR/executables/lpac" driver list | \
+        jq --exit-status '.payload | [isempty(.LPAC_APDU), isempty(.LPAC_HTTP) | not] | all'
+}

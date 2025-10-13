@@ -22,6 +22,9 @@ make)
     cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DLPAC_WITH_APDU_AT=ON
     make -j VERBOSE=1
     make DESTDIR="$PKGDIR" install
+
+    test-driver-available # test driver loader works
+
     copy-license "$PKGDIR/executables"
     copy-usage "$PKGDIR/executables"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE.zip" "$PKGDIR/executables"
@@ -51,6 +54,9 @@ make-without-lto)
     cmake "$WORKSPACE" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DSTANDALONE_MODE=ON
     make -j VERBOSE=1
     make DESTDIR="$PKGDIR" install
+
+    test-driver-available # test driver loader works
+
     copy-license "$PKGDIR/executables"
     copy-usage "$PKGDIR/executables"
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-without-lto.zip" "$PKGDIR/executables"
