@@ -19,7 +19,7 @@ cd "$BUILD"
 
 case "${1:-}" in
 make)
-    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DLPAC_WITH_APDU_AT=ON
     make -j VERBOSE=1
     make DESTDIR="$PKGDIR" install
     copy-license "$PKGDIR/executables"

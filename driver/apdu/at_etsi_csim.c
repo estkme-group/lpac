@@ -141,6 +141,8 @@ static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint
 }
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
+    at_warning_message();
+
     set_deprecated_env_name(ENV_AT_DEBUG, "AT_DEBUG");
     set_deprecated_env_name(ENV_AT_DEVICE, "AT_DEVICE");
 

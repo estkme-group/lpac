@@ -4,7 +4,22 @@
 #include <string.h>
 
 #include "at_helpers.h"
+
 #include <lpac/utils.h>
+#include <unistd.h>
+
+inline void at_warning_message(void) {
+    static char *message =
+        "WARNING: AT driver is for demo purposes only.\n"
+        "WARNING: AT driver strictly complies with \"ETSI TS 127 007\" specification.\n"
+        "WARNING: Some operations (e.g: download, delete, etc.), may fail due to insufficient response time.\n";
+
+    if (isatty(fileno(stdin))) {
+        fprintf(stderr, "\033[0;31m%s\033[0m", message);
+    } else {
+        fprintf(stderr, "%s", message);
+    }
+}
 
 char *at_channel_get(struct at_userdata *userdata, const int index) {
     if (index <= 0 || index > AT_MAX_LOGICAL_CHANNELS)
