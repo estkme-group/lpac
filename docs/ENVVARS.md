@@ -13,6 +13,11 @@
 
 ## Backends
 
+> [!NOTE]
+> 
+> If you need use non-PC/SC driver, please set `LPAC_APDU` to non-`pcsc` backend, \
+> otherwise, lpac will try to open PC/SC reader first.
+
 * `LPAC_APDU`: specify which APDU backend will be used. Values:
   - [`at`](backends/at.md): AT command interface (using AT+CCHO/CCHC/CGLA)  
   - [`at_csim`](backends/at.md): AT command interface (using AT+CSIM)  
