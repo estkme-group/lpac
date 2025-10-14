@@ -289,12 +289,25 @@ static const struct euicc_driver *find_driver_by_name(const enum euicc_driver_ty
 /**
  * @brief Find driver by fallback order.
  *
+ * TODO: Implement user-customized and packager-customized fallback order.
+ *
  * @param type Driver type, see enum euicc_driver_type.
  * @return The first found driver in fallback order, or NULL if no driver found.
  */
 static const struct euicc_driver *find_driver_fallback(const enum euicc_driver_type type) {
-    static const char *http_fallback_order[] = {"winhttp", "curl", "stdio", NULL};
-    static const char *apdu_fallback_order[] = {"pcsc", "stdio", NULL};
+    // clang-format off
+    static const char *http_fallback_order[] = {
+        "winhttp",
+        "curl",
+        "stdio",
+        NULL
+    };
+    static const char *apdu_fallback_order[] = {
+        "pcsc",
+        "stdio",
+        NULL
+    };
+    // clang-format on
     const char **fallback_order = {NULL};
     if (type == DRIVER_APDU) {
         fallback_order = apdu_fallback_order;
