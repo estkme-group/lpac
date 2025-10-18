@@ -13,6 +13,12 @@
 
 ## Backends
 
+> [!NOTE]
+>
+> By default, lpac only tries to use `pcsc` and `stdio` in order.
+>
+> If you want to use another APDU backend, specify with `LPAC_APDU` explicit instead.
+
 * `LPAC_APDU`: specify which APDU backend will be used. Values:
   - [`at`](backends/at.md): AT command interface (using AT+CCHO/CCHC/CGLA)  
   - [`at_csim`](backends/at.md): AT command interface (using AT+CSIM)  
