@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <time.h>
 
 #define ENV_HTTP_DRIVER "LPAC_HTTP"
 #define ENV_APDU_DRIVER "LPAC_APDU"
@@ -79,3 +80,9 @@ char *remove_suffix(char *restrict str, const char *restrict suffix);
 char **merge_array_of_str(char *left[], char *right[]);
 
 char *path_concat(const char *restrict a, const char *restrict b);
+
+struct timespec get_current_clock(clockid_t clock_id);
+
+struct timespec get_duration(struct timespec t0, struct timespec t1);
+
+struct timespec get_wall_time(struct timespec wall);

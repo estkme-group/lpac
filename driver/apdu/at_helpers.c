@@ -77,8 +77,7 @@ int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
     formatted[n + 1] = '\n'; // LF
     formatted[n + 2] = '\0'; // NUL
 
-    if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
-        fprintf(stderr, "AT_DEBUG_TX: %s", formatted);
+    AT_DEBUG_TX(formatted);
 
     int ret = at_write_command(userdata, formatted);
     return ret;
