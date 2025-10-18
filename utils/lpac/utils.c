@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 #if defined(_WIN32)
 static char *strndup(const char *s, size_t n) {
@@ -164,4 +166,21 @@ char *path_concat(const char *restrict a, const char *restrict b) {
     }
     snprintf(fullpath, fullpath_len, "%s/%s", a, b);
     return fullpath;
+}
+
+inline struct timespec get_current_clock(clockid_t clock_id) {
+    struct timespec current_time;
+    clock_gettime(clock_id, &current_time);
+    return current_time;
+}
+
+inline struct timespec get_duration(struct timespec t0, struct timespec t1) {
+    bool borrow = (t1.tv_nsec < t0.tv_nsec);
+    struct timespec dur = {.tv_sec = (borrow ? 1e9 : 0) + t1.tv_sec - t0.tv_sec,
+                           .tv_nsec = t1.tv_nsec - t0.tv_nsec - (borrow ? 1 : 0)};
+    return dur;
+}
+
+inline struct timespec get_wall_time(struct timespec wall) {
+    return get_duration(wall, get_current_clock(CLOCK_MONOTONIC));
 }
