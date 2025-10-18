@@ -53,10 +53,6 @@ int enumerate_serial_device(cJSON *devices) {
     return 0;
 }
 
-char *get_at_default_device(struct at_userdata *userdata) { return userdata->default_device; }
-
-char **at_channels(struct at_userdata *userdata) { return userdata->channels; }
-
 int at_write_command(struct at_userdata *userdata, const char *command) {
     if (WriteFile(userdata->hComm, command, strlen(command), NULL, NULL))
         return 0;

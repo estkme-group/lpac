@@ -15,7 +15,7 @@
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
 
-    const char *device = getenv_or_default(ENV_AT_DEVICE, get_at_default_device(userdata));
+    const char *device = getenv_or_default(ENV_AT_DEVICE, userdata->default_device);
     if (at_device_open(userdata, device) != 0) {
         fprintf(stderr, "Failed to open device: %s\n", device);
         return -1;
