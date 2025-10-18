@@ -10,18 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #pragma comment(lib, "setupapi.lib")
-
-struct at_userdata {
-    HANDLE hComm;
-    char *at_cmd_buffer;
-    char at_read_buffer[AT_READ_BUFFER_SIZE];
-    DWORD at_read_buffer_len;
-    char *default_device;
-
-    char **channels;
-};
 
 int enumerate_serial_device(cJSON *devices) {
     const HDEVINFO hDevInfo = SetupDiGetClassDevsA(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
@@ -124,8 +115,7 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
             continue;
         }
 
-        if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
-            fprintf(stderr, "AT_DEBUG_RX: %s\n", line);
+        AT_DEBUG_RX(line);
 
         if (strcmp(line, "ERROR") == 0) {
             result = -1;
@@ -201,6 +191,7 @@ int at_setup_userdata(struct at_userdata **userdata) {
     if (*userdata == NULL)
         return -1;
     memset(*userdata, 0, sizeof(struct at_userdata));
+    (*userdata)->wall = get_current_clock(CLOCK_MONOTONIC);
     (*userdata)->default_device = "COM3";
     (*userdata)->hComm = INVALID_HANDLE_VALUE;
     (*userdata)->at_cmd_buffer = calloc(AT_BUFFER_SIZE, 1);

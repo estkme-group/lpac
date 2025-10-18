@@ -12,18 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h> // Required for serial port configuration
+#include <time.h>
 #include <unistd.h>
-
-struct at_userdata {
-    char *default_device;
-    int fd; // Use file descriptor instead of FILE*
-
-    // A persistent buffer for reading data from the serial port
-    char at_read_buffer[AT_BUFFER_SIZE];
-    size_t at_read_buffer_len;
-
-    char **channels;
-};
 
 #if defined(__linux__)
 int enumerate_serial_device(cJSON *devices) {
@@ -124,8 +114,7 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
         if (strlen(line) == 0)
             continue;
 
-        if (getenv_or_default(ENV_AT_DEBUG, (bool)false))
-            fprintf(stderr, "AT_DEBUG_RX: %s\n", line);
+        AT_DEBUG_RX(line);
 
         if (strcmp(line, "ERROR") == 0) {
             result = -1;
@@ -215,6 +204,7 @@ int at_setup_userdata(struct at_userdata **userdata) {
         return -1;
 
     memset(*userdata, 0, sizeof(struct at_userdata));
+    (*userdata)->wall = get_current_clock(CLOCK_MONOTONIC);
     (*userdata)->default_device = "/dev/ttyUSB0";
     (*userdata)->fd = -1;
     (*userdata)->channels = calloc(AT_MAX_LOGICAL_CHANNELS + 1, sizeof(char *));
