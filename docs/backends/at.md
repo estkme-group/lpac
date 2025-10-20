@@ -29,6 +29,10 @@ If you need to allow **non-root** users to access serial ports, read the followi
 3. <https://wiki.archlinux.org/title/Working_with_the_serial_console#Connect_using_a_terminal_emulator_program>
    (Arch Linux)
 
+> [!NOTE]
+>
+> If you encounter the `+CME ERROR: 3` issue, please try sending `AT+ECSIMSLEEP=0` to the device's AT port, then try again.
+
 ## `at` Backend
 
 Use the [AT+{CCHO,CCHC,CGLA}][managed] command for APDU transmission.
