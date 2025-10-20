@@ -31,7 +31,7 @@ If you need to allow **non-root** users to access serial ports, read the followi
 
 > [!NOTE]
 >
-> If you encounter the `+CME ERROR: 3` issue, please try sending `AT+ECSIMSLEEP=0` to the device's AT port, then try again.
+> If you encounter the `+CME ERROR: 3` issue, this may be related to device internal settings. Please contact the device admin or support team for instructions on how to resolve it.
 
 ## `at` Backend
 
