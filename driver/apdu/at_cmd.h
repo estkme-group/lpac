@@ -43,10 +43,6 @@ struct at_userdata {
 
 int enumerate_serial_device(cJSON *device);
 
-char *get_at_default_device(struct at_userdata *userdata);
-
-char **at_channels(struct at_userdata *userdata);
-
 int at_write_command(struct at_userdata *userdata, const char *command);
 
 int at_expect(struct at_userdata *userdata, char **response, const char *expected);

@@ -16,7 +16,7 @@
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
 
-    const char *device = getenv_or_default(ENV_AT_DEVICE, get_at_default_device(userdata));
+    const char *device = getenv_or_default(ENV_AT_DEVICE, userdata->default_device);
     if (at_device_open(userdata, device) != 0) {
         fprintf(stderr, "Failed to open device: %s\n", device);
         return -1;
@@ -98,7 +98,7 @@ exit:
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, const uint8_t aid_len) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
-    char **channels = at_channels(userdata);
+    char **channels = userdata->channels;
 
     _cleanup_free_ char *aid_hex = malloc(aid_len * 2 + 1);
     euicc_hexutil_bin2hex(aid_hex, aid_len * 2 + 1, aid, aid_len);

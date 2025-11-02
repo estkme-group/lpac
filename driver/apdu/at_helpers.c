@@ -25,7 +25,7 @@ char *at_channel_get(struct at_userdata *userdata, const int index) {
     if (index <= 0 || index > AT_MAX_LOGICAL_CHANNELS)
         return NULL;
 
-    char **channels = at_channels(userdata);
+    char **channels = userdata->channels;
     return channels[index];
 }
 
@@ -33,7 +33,7 @@ int at_channel_set(struct at_userdata *userdata, const int index, const char *id
     if (index <= 0 || index > AT_MAX_LOGICAL_CHANNELS)
         return -1;
 
-    char **channels = at_channels(userdata);
+    char **channels = userdata->channels;
 
     if (channels[index]) {
         free(channels[index]);
@@ -45,7 +45,7 @@ int at_channel_set(struct at_userdata *userdata, const int index, const char *id
 
 int at_channel_next_id(struct at_userdata *userdata) {
     int index = 1;
-    char **channels = at_channels(userdata);
+    char **channels = userdata->channels;
 
     while (index <= AT_MAX_LOGICAL_CHANNELS && channels[index] != NULL)
         index++;
