@@ -29,6 +29,11 @@ If you need to allow **non-root** users to access serial ports, read the followi
 3. <https://wiki.archlinux.org/title/Working_with_the_serial_console#Connect_using_a_terminal_emulator_program>
    (Arch Linux)
 
+## Caveats
+
+- If you encounter the `+CME ERROR: 3` (Operation not allowed) issue, this may be related to device internal settings. \
+  Please contact this modem FAE for instructions on how to resolve it.
+
 ## `at` Backend
 
 Use the [AT+{CCHO,CCHC,CGLA}][managed] command for APDU transmission.
