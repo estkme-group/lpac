@@ -158,7 +158,7 @@ exit:
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
     int ecode;
 
-    if (json_request("connect", NULL, 0)) {
+    if (!json_request("connect", NULL, 0)) {
         return -1;
     }
 
@@ -181,7 +181,7 @@ static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len) {
     int ecode;
 
-    if (json_request("logic_channel_open", aid, aid_len)) {
+    if (!json_request("logic_channel_open", aid, aid_len)) {
         return -1;
     }
 
@@ -207,7 +207,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
                                    uint32_t tx_len) {
     int ecode;
 
-    if (json_request("transmit", tx, tx_len)) {
+    if (!json_request("transmit", tx, tx_len)) {
         return -1;
     }
 
