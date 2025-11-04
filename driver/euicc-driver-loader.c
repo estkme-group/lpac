@@ -155,8 +155,14 @@ static char *get_runpath() {
 #    endif
         }
     }
-    if (runpath != NULL && strtab != NULL) {
+    if (strtab == NULL) {
+        return NULL;
+    }
+    if (runpath != NULL) {
         return strdup(strtab + runpath->d_un.d_val);
+    } else if (rpath != NULL) {
+        // On old system, RPATH was used instead of RUNPATH.
+        return strdup(strtab + rpath->d_un.d_val);
     } else {
         return NULL;
     }
