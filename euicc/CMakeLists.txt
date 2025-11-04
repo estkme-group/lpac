@@ -16,6 +16,7 @@ target_sources(
         es9p_errors.c
         es10a.c
         es10b.c
+        es10b_ex.c
         es10c.c
         es10c_ex.c
         euicc.c
@@ -43,17 +44,18 @@ target_sources(
         BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/..
         FILES
             base64.h
-            es8p.h
-            es9p_errors.h
-            es10b.h
-            es10c_ex.h
             interface.h
             logger.h
             tostr.h
             derutil.h
+            es8p.h
             es9p.h
+            es9p_errors.h
             es10a.h
+            es10b.h
+            es10b_ex.h
             es10c.h
+            es10c_ex.h
             euicc.h
             hexutil.h
             sha256.h
