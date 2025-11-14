@@ -4,6 +4,11 @@
 >
 > **All Linux distribution packages are unofficially maintained.**
 
+[![Packaging status][packaging-badge]][packaging-versions]
+
+[packaging-badge]: https://repology.org/badge/vertical-allrepos/lpac.svg
+[packaging-versions]: https://repology.org/project/lpac/versions
+
 ## OpenWrt
 
 > Minimum available release: [24.10.2](https://downloads.openwrt.org/releases/24.10.2/targets/)
