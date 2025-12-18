@@ -102,7 +102,7 @@ endif ()
 
 if(LPAC_WITH_APDU_GBINDER)
     add_library(driver_apdu_gbinder SHARED ${CMAKE_CURRENT_SOURCE_DIR}/apdu/gbinder_hidl.c)
-    target_link_libraries(driver_apdu_gbinder PRIVATE euicc-drivers)
+    target_link_libraries(driver_apdu_gbinder PRIVATE euicc euicc-drivers lpac-utils)
     set_target_properties(driver_apdu_gbinder PROPERTIES PREFIX "")
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GBINDER REQUIRED IMPORTED_TARGET libgbinder)
