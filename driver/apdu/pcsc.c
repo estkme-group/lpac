@@ -118,7 +118,7 @@ static int pcsc_open_hCard_iter(struct pcsc_userdata *userdata, const int index,
     const int id = getenv_or_default(ENV_DRV_IFID, (int)-1);
     if (id != -1 && id != index) {
         const char *part_name = getenv(ENV_DRV_NAME);
-        if (strstr(reader, part_name) == NULL) {
+        if (part_name != NULL && strstr(reader, part_name) == NULL) {
             return 0;
         }
     }
