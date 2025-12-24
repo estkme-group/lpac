@@ -66,28 +66,11 @@ see <https://launchpad.net/~daniel-gimpelevich/+archive/ubuntu/ssl/+sourcepub/17
 
 ## SailfishOS
 
-> (Published on 2025-12-21)
-> You need to enable [chum repo](https://chumrpm.netlify.app/) first
+> You need to enable [chum repo](https://chumrpm.netlify.app) and [Juanro49 OpenRepos](https://sailfish.openrepos.net/Juanro49/personal/main) first
 
-GUI
-- Install [Chum GUI Installer](https://openrepos.net/content/olf/sailfishoschum-gui-installer) from [Storeman](https://openrepos.net/content/olf/storeman-installer) to enable chum repo
-- Open Chum GUI annd refresh chum repo
-- Install [lpac](https://openrepos.net/content/juanro49/lpac) from [Storeman](https://openrepos.net/content/olf/storeman-installer)
-
-CLI
-```shell
-devel-su
-#add chum repo
-ssu ar sailfishos-chum "https://repo.sailfishos.org/obs/sailfishos:/chum/$(grep '^VERSION_ID=' /etc/os-release | cut -d= -f2 | cut -d. -f1-2)_%(arch)/"
-#add Juanro49 openrepos repo
-ssu ar openrepos-Juanro49 https://sailfish.openrepos.net/Juanro49/personal/main
-# refresh repositories
-zypper refresh
-# or
-pkcon refresh
-#install lpac
+```bash
 zypper install lpac
-#or
+# or
 pkcon install lpac
 ```
 
