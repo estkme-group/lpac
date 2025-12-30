@@ -63,3 +63,15 @@ see <https://github.com/NixOS/nixpkgs/blob/master/pkgs/by-name/lp/lpac/package.n
 > (Published on 2024-09-01)
 
 see <https://launchpad.net/~daniel-gimpelevich/+archive/ubuntu/ssl/+sourcepub/17063242/+listing-archive-extra>
+
+## SailfishOS
+
+> You need to enable [chum repo](https://chumrpm.netlify.app) and [Juanro49 OpenRepos](https://sailfish.openrepos.net/Juanro49/personal/main) first
+
+```bash
+zypper install lpac
+# or
+pkcon install lpac
+```
+
+see <https://openrepos.net/content/juanro49/lpac>
