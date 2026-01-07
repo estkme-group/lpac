@@ -115,16 +115,21 @@ static int pcsc_iter_reader(struct pcsc_userdata *userdata,
 static int pcsc_open_hCard_iter(struct pcsc_userdata *userdata, const int index, const char *reader, void *context) {
     DWORD dwActiveProtocol;
 
+    // skip if id mismatch
     const int id = getenv_or_default(ENV_DRV_IFID, (int)-1);
-    if (id != -1 && id != index) {
-        const char *part_name = getenv(ENV_DRV_NAME);
-        if (part_name == NULL || strstr(reader, part_name) == NULL) {
-            return 0;
-        }
+    if (id >= 0 && id != index) {
+        return 0;
     }
 
+    // skip if name mismatch
+    const char *part_name = getenv(ENV_DRV_NAME);
+    if (part_name != NULL && strstr(reader, part_name) == NULL) {
+        return 0;
+    }
+
+    // skip ignored reader names
     if (is_ignored_reader_name(reader)) {
-        return 0; // skip ignored reader names
+        return 0;
     }
 
     const int ret = SCardConnect(userdata->ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &userdata->hCard,
