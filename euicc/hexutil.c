@@ -89,7 +89,7 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *restrict output, const uint32_t output_len
     gsmbcd_swap_chars(bin, n + (n % 2));
     const int bytes = euicc_hexutil_hex2bin_r(output, output_len, bin, n + (n % 2));
     free(bin);
-    if (bytes < 0) {
+    if (bytes == -1) {
         return -1;
     }
     if (padding_to > (uint32_t)bytes) {
