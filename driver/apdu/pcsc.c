@@ -119,21 +119,22 @@ static int pcsc_open_hCard_iter(struct pcsc_userdata *userdata, const int index,
     const int id = getenv_or_default(ENV_DRV_IFID, (int)-1);
     if (id >= 0) {
         if (id != index) {
-            // skip non-matching reader ids
-            return 0;
+            return 0; // skip non-matching reader ids
         }
         goto matched;
     }
 
     // check name env var
     const char *part_name = getenv(ENV_DRV_NAME);
-    if (part_name != NULL && strstr(reader, part_name) == NULL) {
-        return 0;
+    if (part_name != NULL) {
+        if (strstr(reader, part_name) == NULL) {
+            return 0; // skip non-matching reader names
+        }
+        goto matched;
     }
 
-    // skip ignored reader names
     if (is_ignored_reader_name(reader)) {
-        return 0;
+        return 0; // skip ignored reader names
     }
 
 matched:
