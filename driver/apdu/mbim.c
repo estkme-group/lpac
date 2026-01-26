@@ -54,7 +54,11 @@ static int select_sim_slot(struct mbim_data *mbim_priv) {
     g_autoptr(MbimMessage) current_slot_response =
         mbim_device_command_sync(mbim_priv->device, mbim_priv->context, current_slot_request, &error);
     if (!current_slot_response) {
-        fprintf(stderr, "error: device didn't respond: %s\n", error->message);
+        if (error->code == MBIM_STATUS_ERROR_NO_DEVICE_SUPPORT && mbim_priv->uim_slot == 0) {
+            return 0;
+        }
+
+        fprintf(stderr, "error: unable to query slot mapping: %s\n", error->message);
         return -1;
     }
 
@@ -85,7 +89,7 @@ static int select_sim_slot(struct mbim_data *mbim_priv) {
     g_autoptr(MbimMessage) update_slot_response =
         mbim_device_command_sync(mbim_priv->device, mbim_priv->context, update_slot_request, &error);
     if (!update_slot_response) {
-        fprintf(stderr, "error: device didn't respond: %s\n", error->message);
+        fprintf(stderr, "error: unable to select sim slot: %s\n", error->message);
         return -1;
     }
 
