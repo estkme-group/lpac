@@ -137,8 +137,7 @@ static int pcsc_open_hCard_iter(struct pcsc_userdata *userdata, const int index,
         return 0; // skip ignored reader names
     }
 
-matched:
-    {} // Workaround for label followed by a declaration in Clang (before C23)
+matched: {} // Workaround for label followed by a declaration in Clang (before C23)
     const int ret = SCardConnect(userdata->ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &userdata->hCard,
                                  &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS) {
