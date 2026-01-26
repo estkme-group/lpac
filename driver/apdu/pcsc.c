@@ -115,18 +115,29 @@ static int pcsc_iter_reader(struct pcsc_userdata *userdata,
 static int pcsc_open_hCard_iter(struct pcsc_userdata *userdata, const int index, const char *reader, void *context) {
     DWORD dwActiveProtocol;
 
+    // check id env var
     const int id = getenv_or_default(ENV_DRV_IFID, (int)-1);
-    if (id != -1 && id != index) {
-        const char *part_name = getenv(ENV_DRV_NAME);
-        if (part_name != NULL && strstr(reader, part_name) == NULL) {
-            return 0;
+    if (id >= 0) {
+        if (id != index) {
+            return 0; // skip non-matching reader ids
         }
+        goto matched;
+    }
+
+    // check name env var
+    const char *part_name = getenv(ENV_DRV_NAME);
+    if (part_name != NULL) {
+        if (strstr(reader, part_name) == NULL) {
+            return 0; // skip non-matching reader names
+        }
+        goto matched;
     }
 
     if (is_ignored_reader_name(reader)) {
         return 0; // skip ignored reader names
     }
 
+matched: {} // Workaround for label followed by a declaration in Clang (before C23)
     const int ret = SCardConnect(userdata->ctx, reader, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0, &userdata->hCard,
                                  &dwActiveProtocol);
     if (ret != SCARD_S_SUCCESS) {
