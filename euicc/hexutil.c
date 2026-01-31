@@ -92,7 +92,9 @@ int euicc_hexutil_gsmbcd2bin(uint8_t *restrict output, const uint32_t output_len
     if (bytes == -1) {
         return -1;
     }
-    memset(output + bytes, 0xff, padding_to - bytes);
+    if (padding_to > (uint32_t)bytes) {
+        memset(output + bytes, 0xff, padding_to - bytes);
+    }
     return bytes;
 }
 
