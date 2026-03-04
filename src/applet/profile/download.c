@@ -60,6 +60,7 @@ static cJSON *build_download_result_json(const struct es10b_load_bound_profile_p
         return NULL;
     }
     cJSON_AddNumberToObject(jdata, "seqNumber", (double)result->seqNumber);
+    cJSON_AddStringOrNullToObject(jdata, "iccid", result->iccid);
     cJSON_AddStringToObject(jdata, "bppCommandId", euicc_bppcommandid2str(result->bppCommandId));
     cJSON_AddStringToObject(jdata, "errorReason", euicc_errorreason2str(result->errorReason));
     return jdata;

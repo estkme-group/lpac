@@ -172,13 +172,14 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx,
     result->seqNumber = 0;
     result->bppCommandId = ES10B_BPP_COMMAND_ID_UNDEFINED;
     result->errorReason = ES10B_ERROR_REASON_UNDEFINED;
+    result->iccid = NULL;
 
     if (es10x_command(ctx, &respbuf, &resplen, reqbuf, reqbuf_len) < 0) {
         goto err;
     }
 
     if (resplen > 0) {
-        struct euicc_derutil_node tmpnode, n_notificationMetadata, n_sequenceNumber, n_finalResult;
+        struct euicc_derutil_node tmpnode, n_notificationMetadata, n_sequenceNumber, n_iccid, n_finalResult;
 
         if (euicc_derutil_unpack_find_tag(&tmpnode, 0xBF37, respbuf, resplen) < 0) // ProfileInstallationResult
         {
@@ -211,6 +212,18 @@ static int es10b_load_bound_profile_package_tx(struct euicc_ctx *ctx,
                                           n_notificationMetadata.length)
             == 0) {
             result->seqNumber = euicc_derutil_convert_bin2long(n_sequenceNumber.value, n_sequenceNumber.length);
+        }
+
+        if (euicc_derutil_unpack_find_tag(&n_iccid, 0x5A, n_notificationMetadata.value, n_notificationMetadata.length)
+            == 0) {
+            result->iccid = malloc((n_iccid.length * 2) + 1);
+            if (result->iccid) {
+                if (euicc_hexutil_bin2gsmbcd(result->iccid, (n_iccid.length * 2) + 1, n_iccid.value, n_iccid.length)
+                    < 0) {
+                    free(result->iccid);
+                    result->iccid = NULL;
+                }
+            }
         }
 
         switch (n_finalResult.tag) {
