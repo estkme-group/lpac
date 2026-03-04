@@ -225,7 +225,7 @@ static int applet_main(int argc, char **argv) {
         CANCELPOINT();
         if (es8p_metadata_parse(&profile_metadata,
                                 euicc_ctx.http._internal.prepare_download_param->b64_profileMetadata)) {
-            error_function_name = "es8p_meatadata_parse";
+            error_function_name = "es8p_metadata_parse";
             error_detail = NULL;
             goto err;
         }
@@ -240,7 +240,7 @@ static int applet_main(int argc, char **argv) {
         cJSON_AddStringOrNullToObject(jmetadata, "profileClass",
                                       euicc_profileclass2str(profile_metadata->profileClass));
 
-        jprint_progress_obj("es8p_meatadata_parse", jmetadata);
+        jprint_progress_obj("es8p_metadata_parse", jmetadata);
 
         if (interactive_preview) {
             int c;
