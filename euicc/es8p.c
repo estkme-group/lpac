@@ -43,7 +43,7 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
     n_iter.self.ptr = n_metadata.value;
     n_iter.self.length = 0;
 
-    p->profileClass = ES10C_PROFILE_CLASS_NULL;
+    p->profileClass = ES10C_PROFILE_CLASS_OPERATIONAL;
     p->iconType = ES10C_ICON_TYPE_NULL;
 
     while (euicc_derutil_unpack_next(&n_iter, &n_iter, n_metadata.value, n_metadata.length) == 0) {
