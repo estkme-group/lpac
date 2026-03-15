@@ -25,23 +25,23 @@ static void es8p_metadata_access_rules_free(struct es8p_metadata_access_rule **a
 
 static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **access_rules, const uint8_t *buffer,
                                             uint32_t buffer_len) {
-    struct euicc_derutil_node n_entry;
+    struct euicc_derutil_node n_ref_ar_do_entry;
     struct es8p_metadata_access_rule *last = NULL;
     struct es8p_metadata_access_rule *rule = NULL;
 
     *access_rules = NULL;
 
-    memset(&n_entry, 0, sizeof(n_entry));
-    n_entry.self.ptr = buffer;
-    n_entry.self.length = 0;
+    memset(&n_ref_ar_do_entry, 0, sizeof(n_ref_ar_do_entry));
+    n_ref_ar_do_entry.self.ptr = buffer;
+    n_ref_ar_do_entry.self.length = 0;
 
-    while (euicc_derutil_unpack_next(&n_entry, &n_entry, buffer, buffer_len) == 0) {
-        struct euicc_derutil_node n_e2_child;
-        struct euicc_derutil_node n_e1_child;
-        struct euicc_derutil_node n_e1;
-        int found_e1 = 0;
+    while (euicc_derutil_unpack_next(&n_ref_ar_do_entry, &n_ref_ar_do_entry, buffer, buffer_len) == 0) {
+        struct euicc_derutil_node n_ref_ar_do_child;
+        struct euicc_derutil_node n_ref_do_child;
+        struct euicc_derutil_node n_ref_do;
+        int found_ref_do = 0;
 
-        if (n_entry.tag != 0xE2) {
+        if (n_ref_ar_do_entry.tag != 0xE2) {
             continue;
         }
 
@@ -50,51 +50,50 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
             goto err;
         }
 
-        memset(&n_e2_child, 0, sizeof(n_e2_child));
-        n_e2_child.self.ptr = n_entry.value;
-        n_e2_child.self.length = 0;
+        memset(&n_ref_ar_do_child, 0, sizeof(n_ref_ar_do_child));
+        n_ref_ar_do_child.self.ptr = n_ref_ar_do_entry.value;
+        n_ref_ar_do_child.self.length = 0;
 
-        while (euicc_derutil_unpack_next(&n_e2_child, &n_e2_child, n_entry.value, n_entry.length) == 0) {
-            if (n_e2_child.tag == 0xE1) {
-                n_e1 = n_e2_child;
-                found_e1 = 1;
+        while (euicc_derutil_unpack_next(&n_ref_ar_do_child, &n_ref_ar_do_child, n_ref_ar_do_entry.value,
+                                         n_ref_ar_do_entry.length)
+               == 0) {
+            if (n_ref_ar_do_child.tag == 0xE1) {
+                n_ref_do = n_ref_ar_do_child;
+                found_ref_do = 1;
                 break;
             }
         }
 
-        if (!found_e1) {
-            free(rule->certificateHash);
-            free(rule->packageName);
-            free(rule);
-            continue;
+        if (!found_ref_do) {
+            goto err;
         }
 
-        memset(&n_e1_child, 0, sizeof(n_e1_child));
-        n_e1_child.self.ptr = n_e1.value;
-        n_e1_child.self.length = 0;
+        memset(&n_ref_do_child, 0, sizeof(n_ref_do_child));
+        n_ref_do_child.self.ptr = n_ref_do.value;
+        n_ref_do_child.self.length = 0;
 
-        while (euicc_derutil_unpack_next(&n_e1_child, &n_e1_child, n_e1.value, n_e1.length) == 0) {
-            switch (n_e1_child.tag) {
+        while (euicc_derutil_unpack_next(&n_ref_do_child, &n_ref_do_child, n_ref_do.value, n_ref_do.length) == 0) {
+            switch (n_ref_do_child.tag) {
             case 0xC1:
-                rule->certificateHash = malloc((n_e1_child.length * 2) + 1);
+                rule->certificateHash = malloc((n_ref_do_child.length * 2) + 1);
                 if (!rule->certificateHash) {
                     goto err;
                 }
 
-                if (euicc_hexutil_bin2hex(rule->certificateHash, (n_e1_child.length * 2) + 1, n_e1_child.value,
-                                          n_e1_child.length)
+                if (euicc_hexutil_bin2hex(rule->certificateHash, (n_ref_do_child.length * 2) + 1, n_ref_do_child.value,
+                                          n_ref_do_child.length)
                     < 0) {
                     goto err;
                 }
                 break;
             case 0xCA:
-                rule->packageName = malloc(n_e1_child.length + 1);
+                rule->packageName = malloc(n_ref_do_child.length + 1);
                 if (!rule->packageName) {
                     goto err;
                 }
 
-                memcpy(rule->packageName, n_e1_child.value, n_e1_child.length);
-                rule->packageName[n_e1_child.length] = '\0';
+                memcpy(rule->packageName, n_ref_do_child.value, n_ref_do_child.length);
+                rule->packageName[n_ref_do_child.length] = '\0';
                 break;
             }
         }
