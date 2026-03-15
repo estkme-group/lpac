@@ -35,6 +35,7 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
     n_ref_ar_do_entry.self.ptr = buffer;
     n_ref_ar_do_entry.self.length = 0;
 
+    // Each 0xBF76 tag may contain multiple REF-AR-DO (0xE2) entries
     while (euicc_derutil_unpack_next(&n_ref_ar_do_entry, &n_ref_ar_do_entry, buffer, buffer_len) == 0) {
         struct euicc_derutil_node n_ref_ar_do_child;
         struct euicc_derutil_node n_ref_do_child;
@@ -54,6 +55,7 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
         n_ref_ar_do_child.self.ptr = n_ref_ar_do_entry.value;
         n_ref_ar_do_child.self.length = 0;
 
+        // Each REF-AR-DO must contain EXACTLY 1 REF-DO (0xE1)
         while (euicc_derutil_unpack_next(&n_ref_ar_do_child, &n_ref_ar_do_child, n_ref_ar_do_entry.value,
                                          n_ref_ar_do_entry.length)
                == 0) {
@@ -64,6 +66,7 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
             }
         }
 
+        // If we don't find REF-DO, abort
         if (!found_ref_do) {
             goto err;
         }
@@ -72,6 +75,8 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
         n_ref_do_child.self.ptr = n_ref_do.value;
         n_ref_do_child.self.length = 0;
 
+        // Now we have REF-DO, each MUST contain a 0xC1 (cert hash)
+        // Optionally, a 0xCA (package name)
         while (euicc_derutil_unpack_next(&n_ref_do_child, &n_ref_do_child, n_ref_do.value, n_ref_do.length) == 0) {
             switch (n_ref_do_child.tag) {
             case 0xC1:
@@ -215,6 +220,7 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
             }
             break;
         case 0xBF76:
+            // Android's extension, AR-DO in profile metadata
             if (es8p_metadata_parse_access_rules(&p->accessRules, n_iter.value, n_iter.length) < 0) {
                 goto err;
             }
