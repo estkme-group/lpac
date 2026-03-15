@@ -60,9 +60,13 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
                                          n_ref_ar_do_entry.length)
                == 0) {
             if (n_ref_ar_do_child.tag == 0xE1) {
-                n_ref_do = n_ref_ar_do_child;
-                found_ref_do = 1;
-                break;
+                if (found_ref_do) {
+                    // We can't have multiple REF-DO's per REF-AR-DO
+                    goto err;
+                } else {
+                    n_ref_do = n_ref_ar_do_child;
+                    found_ref_do = 1;
+                }
             }
         }
 
@@ -80,6 +84,11 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
         while (euicc_derutil_unpack_next(&n_ref_do_child, &n_ref_do_child, n_ref_do.value, n_ref_do.length) == 0) {
             switch (n_ref_do_child.tag) {
             case 0xC1:
+                // There can only be one 0xC1 (cert hash) per REF-DO
+                if (rule->certificateHash) {
+                    goto err;
+                }
+
                 rule->certificateHash = malloc((n_ref_do_child.length * 2) + 1);
                 if (!rule->certificateHash) {
                     goto err;
@@ -92,6 +101,11 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
                 }
                 break;
             case 0xCA:
+                // There can only be one 0xCA (package name)
+                if (rule->packageName) {
+                    goto err;
+                }
+
                 rule->packageName = malloc(n_ref_do_child.length + 1);
                 if (!rule->packageName) {
                     goto err;
