@@ -23,6 +23,13 @@ struct es8p_metadata {
         char *dpOid;
     } dpProprietaryData;
     char **profilePolicyRules;
+    struct es8p_metadata_access_rule *accessRules;
+};
+
+struct es8p_metadata_access_rule {
+    char *certificateHash;
+    char *packageName;
+    struct es8p_metadata_access_rule *next;
 };
 
 int es8p_metadata_parse(struct es8p_metadata **metadata, const char *b64_Metadata);

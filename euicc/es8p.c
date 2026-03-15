@@ -9,6 +9,116 @@
 #include <string.h>
 #include <unistd.h>
 
+static void es8p_metadata_access_rules_free(struct es8p_metadata_access_rule **access_rules) {
+    struct es8p_metadata_access_rule *rule = *access_rules;
+
+    while (rule) {
+        struct es8p_metadata_access_rule *next = rule->next;
+        free(rule->certificateHash);
+        free(rule->packageName);
+        free(rule);
+        rule = next;
+    }
+
+    *access_rules = NULL;
+}
+
+static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **access_rules, const uint8_t *buffer,
+                                            uint32_t buffer_len) {
+    struct euicc_derutil_node n_entry;
+    struct es8p_metadata_access_rule *last = NULL;
+    struct es8p_metadata_access_rule *rule = NULL;
+
+    *access_rules = NULL;
+
+    memset(&n_entry, 0, sizeof(n_entry));
+    n_entry.self.ptr = buffer;
+    n_entry.self.length = 0;
+
+    while (euicc_derutil_unpack_next(&n_entry, &n_entry, buffer, buffer_len) == 0) {
+        struct euicc_derutil_node n_e2_child;
+        struct euicc_derutil_node n_e1_child;
+        int found_e1 = 0;
+
+        if (n_entry.tag != 0xE2) {
+            continue;
+        }
+
+        rule = calloc(1, sizeof(*rule));
+        if (!rule) {
+            goto err;
+        }
+
+        memset(&n_e2_child, 0, sizeof(n_e2_child));
+        n_e2_child.self.ptr = n_entry.value;
+        n_e2_child.self.length = 0;
+
+        while (euicc_derutil_unpack_next(&n_e2_child, &n_e2_child, n_entry.value, n_entry.length) == 0) {
+            if (n_e2_child.tag != 0xE1) {
+                continue;
+            }
+
+            found_e1 = 1;
+
+            memset(&n_e1_child, 0, sizeof(n_e1_child));
+            n_e1_child.self.ptr = n_e2_child.value;
+            n_e1_child.self.length = 0;
+
+            while (euicc_derutil_unpack_next(&n_e1_child, &n_e1_child, n_e2_child.value, n_e2_child.length) == 0) {
+                switch (n_e1_child.tag) {
+                case 0xC1:
+                    rule->certificateHash = malloc((n_e1_child.length * 2) + 1);
+                    if (!rule->certificateHash) {
+                        goto err;
+                    }
+
+                    if (euicc_hexutil_bin2hex(rule->certificateHash, (n_e1_child.length * 2) + 1, n_e1_child.value,
+                                              n_e1_child.length)
+                        < 0) {
+                        goto err;
+                    }
+                    break;
+                case 0xCA:
+                    rule->packageName = malloc(n_e1_child.length + 1);
+                    if (!rule->packageName) {
+                        goto err;
+                    }
+
+                    memcpy(rule->packageName, n_e1_child.value, n_e1_child.length);
+                    rule->packageName[n_e1_child.length] = '\0';
+                    break;
+                }
+            }
+        }
+
+        if (!found_e1 || !rule->certificateHash) {
+            free(rule->certificateHash);
+            free(rule->packageName);
+            free(rule);
+            continue;
+        }
+
+        if (!*access_rules) {
+            *access_rules = rule;
+        } else {
+            last->next = rule;
+        }
+        last = rule;
+        rule = NULL;
+    }
+
+    return 0;
+
+err:
+    if (rule) {
+        free(rule->certificateHash);
+        free(rule->packageName);
+        free(rule);
+    }
+    es8p_metadata_access_rules_free(access_rules);
+    return -1;
+}
+
 int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Metadata) {
     int ret;
     uint8_t *metadata = NULL;
@@ -97,6 +207,11 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
                 break;
             }
             break;
+        case 0xBF76:
+            if (es8p_metadata_parse_access_rules(&p->accessRules, n_iter.value, n_iter.length) < 0) {
+                goto err;
+            }
+            break;
         case 0xB6:
         case 0xB7:
         case 0x99:
@@ -111,10 +226,7 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
 
 err:
     ret = -1;
-    free(*stru_metadata);
-    *stru_metadata = NULL;
-    free(p);
-    p = NULL;
+    es8p_metadata_free(&p);
 exit:
     free(metadata);
     metadata = NULL;
@@ -132,6 +244,7 @@ void es8p_metadata_free(struct es8p_metadata **stru_metadata) {
     free(p->serviceProviderName);
     free(p->profileName);
     free(p->icon);
+    es8p_metadata_access_rules_free(&p->accessRules);
     free(p);
 
     *stru_metadata = NULL;
