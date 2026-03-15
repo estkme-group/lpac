@@ -38,6 +38,7 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
     while (euicc_derutil_unpack_next(&n_entry, &n_entry, buffer, buffer_len) == 0) {
         struct euicc_derutil_node n_e2_child;
         struct euicc_derutil_node n_e1_child;
+        struct euicc_derutil_node n_e1;
         int found_e1 = 0;
 
         if (n_entry.tag != 0xE2) {
@@ -54,44 +55,51 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
         n_e2_child.self.length = 0;
 
         while (euicc_derutil_unpack_next(&n_e2_child, &n_e2_child, n_entry.value, n_entry.length) == 0) {
-            if (n_e2_child.tag != 0xE1) {
-                continue;
-            }
-
-            found_e1 = 1;
-
-            memset(&n_e1_child, 0, sizeof(n_e1_child));
-            n_e1_child.self.ptr = n_e2_child.value;
-            n_e1_child.self.length = 0;
-
-            while (euicc_derutil_unpack_next(&n_e1_child, &n_e1_child, n_e2_child.value, n_e2_child.length) == 0) {
-                switch (n_e1_child.tag) {
-                case 0xC1:
-                    rule->certificateHash = malloc((n_e1_child.length * 2) + 1);
-                    if (!rule->certificateHash) {
-                        goto err;
-                    }
-
-                    if (euicc_hexutil_bin2hex(rule->certificateHash, (n_e1_child.length * 2) + 1, n_e1_child.value,
-                                              n_e1_child.length)
-                        < 0) {
-                        goto err;
-                    }
-                    break;
-                case 0xCA:
-                    rule->packageName = malloc(n_e1_child.length + 1);
-                    if (!rule->packageName) {
-                        goto err;
-                    }
-
-                    memcpy(rule->packageName, n_e1_child.value, n_e1_child.length);
-                    rule->packageName[n_e1_child.length] = '\0';
-                    break;
-                }
+            if (n_e2_child.tag == 0xE1) {
+                n_e1 = n_e2_child;
+                found_e1 = 1;
+                break;
             }
         }
 
-        if (!found_e1 || !rule->certificateHash) {
+        if (!found_e1) {
+            free(rule->certificateHash);
+            free(rule->packageName);
+            free(rule);
+            continue;
+        }
+
+        memset(&n_e1_child, 0, sizeof(n_e1_child));
+        n_e1_child.self.ptr = n_e1.value;
+        n_e1_child.self.length = 0;
+
+        while (euicc_derutil_unpack_next(&n_e1_child, &n_e1_child, n_e1.value, n_e1.length) == 0) {
+            switch (n_e1_child.tag) {
+            case 0xC1:
+                rule->certificateHash = malloc((n_e1_child.length * 2) + 1);
+                if (!rule->certificateHash) {
+                    goto err;
+                }
+
+                if (euicc_hexutil_bin2hex(rule->certificateHash, (n_e1_child.length * 2) + 1, n_e1_child.value,
+                                          n_e1_child.length)
+                    < 0) {
+                    goto err;
+                }
+                break;
+            case 0xCA:
+                rule->packageName = malloc(n_e1_child.length + 1);
+                if (!rule->packageName) {
+                    goto err;
+                }
+
+                memcpy(rule->packageName, n_e1_child.value, n_e1_child.length);
+                rule->packageName[n_e1_child.length] = '\0';
+                break;
+            }
+        }
+
+        if (!rule->certificateHash) {
             free(rule->certificateHash);
             free(rule->packageName);
             free(rule);
