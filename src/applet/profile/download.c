@@ -265,10 +265,12 @@ static int applet_main(int argc, char **argv) {
         cJSON_AddStringOrNullToObject(jmetadata, "icon", profile_metadata->icon);
         cJSON_AddStringOrNullToObject(jmetadata, "profileClass",
                                       euicc_profileclass2str(profile_metadata->profileClass));
-        jaccessRules = build_access_rules_json(profile_metadata->accessRules);
-        if (jaccessRules) {
-            cJSON_AddItemToObject(jmetadata, "accessRules", jaccessRules);
-            jaccessRules = NULL;
+        if (profile_metadata->accessRules) {
+            jaccessRules = build_access_rules_json(profile_metadata->accessRules);
+            if (jaccessRules) {
+                cJSON_AddItemToObject(jmetadata, "accessRules", jaccessRules);
+                jaccessRules = NULL;
+            }
         }
 
         jprint_progress_obj("es8p_metadata_parse", jmetadata);
