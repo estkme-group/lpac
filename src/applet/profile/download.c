@@ -108,6 +108,7 @@ static int applet_main(int argc, char **argv) {
     struct es10b_load_bound_profile_package_result download_result = {0};
 
     cJSON *jmetadata = NULL;
+    cJSON *jaccessRules = NULL;
     _cleanup_(es8p_metadata_free) struct es8p_metadata *profile_metadata = NULL;
 
     while ((opt = getopt(argc, argv, opt_string)) != -1) {
@@ -264,13 +265,10 @@ static int applet_main(int argc, char **argv) {
         cJSON_AddStringOrNullToObject(jmetadata, "icon", profile_metadata->icon);
         cJSON_AddStringOrNullToObject(jmetadata, "profileClass",
                                       euicc_profileclass2str(profile_metadata->profileClass));
-        {
-            cJSON *jrules = build_access_rules_json(profile_metadata->accessRules);
-            if (jrules) {
-                cJSON_AddItemToObject(jmetadata, "accessRules", jrules);
-            } else {
-                cJSON_AddNullToObject(jmetadata, "accessRules");
-            }
+        jaccessRules = build_access_rules_json(profile_metadata->accessRules);
+        if (jaccessRules) {
+            cJSON_AddItemToObject(jmetadata, "accessRules", jaccessRules);
+            jaccessRules = NULL;
         }
 
         jprint_progress_obj("es8p_metadata_parse", jmetadata);

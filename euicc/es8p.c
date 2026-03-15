@@ -226,6 +226,8 @@ int es8p_metadata_parse(struct es8p_metadata **stru_metadata, const char *b64_Me
 
 err:
     ret = -1;
+    free(*stru_metadata);
+    *stru_metadata = NULL;
     es8p_metadata_free(&p);
 exit:
     free(metadata);
