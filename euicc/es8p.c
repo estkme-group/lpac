@@ -103,11 +103,9 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
             }
         }
 
+        // Each REF-DO child must at least contain a cert hash
         if (!rule->certificateHash) {
-            free(rule->certificateHash);
-            free(rule->packageName);
-            free(rule);
-            continue;
+            goto err;
         }
 
         if (!*access_rules) {
