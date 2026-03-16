@@ -25,21 +25,20 @@ static void es8p_metadata_access_rules_free(struct es8p_metadata_access_rule **a
 
 static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **access_rules, const uint8_t *buffer,
                                             uint32_t buffer_len) {
-    struct euicc_derutil_node n_ref_ar_do_entry;
+    struct euicc_derutil_node n_ref_ar_do_entry = {0};
     struct es8p_metadata_access_rule *last = NULL;
     struct es8p_metadata_access_rule *rule = NULL;
 
     *access_rules = NULL;
 
-    memset(&n_ref_ar_do_entry, 0, sizeof(n_ref_ar_do_entry));
     n_ref_ar_do_entry.self.ptr = buffer;
     n_ref_ar_do_entry.self.length = 0;
 
     // Each 0xBF76 tag may contain multiple REF-AR-DO (0xE2) entries
     while (euicc_derutil_unpack_next(&n_ref_ar_do_entry, &n_ref_ar_do_entry, buffer, buffer_len) == 0) {
-        struct euicc_derutil_node n_ref_ar_do_child;
-        struct euicc_derutil_node n_ref_do_child;
-        struct euicc_derutil_node n_ref_do;
+        struct euicc_derutil_node n_ref_ar_do_child = {0};
+        struct euicc_derutil_node n_ref_do_child = {0};
+        struct euicc_derutil_node n_ref_do = {0};
         int found_ref_do = 0;
 
         if (n_ref_ar_do_entry.tag != 0xE2) {
@@ -51,7 +50,6 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
             goto err;
         }
 
-        memset(&n_ref_ar_do_child, 0, sizeof(n_ref_ar_do_child));
         n_ref_ar_do_child.self.ptr = n_ref_ar_do_entry.value;
         n_ref_ar_do_child.self.length = 0;
 
@@ -75,7 +73,6 @@ static int es8p_metadata_parse_access_rules(struct es8p_metadata_access_rule **a
             goto err;
         }
 
-        memset(&n_ref_do_child, 0, sizeof(n_ref_do_child));
         n_ref_do_child.self.ptr = n_ref_do.value;
         n_ref_do_child.self.length = 0;
 
