@@ -83,6 +83,11 @@ else()
     set(DL_LIBRARY dl)
 endif()
 
+# Only useful on Windows, and will lead to invalid arguments on ld.gold.
+if(WIN32)
+    add_link_options("LINKER:--export-all-symbols")
+endif()
+
 if (USE_SYSTEM_DEPS)
     find_package(cJSON REQUIRED)
 elseif (NOT NO_NETWORK)

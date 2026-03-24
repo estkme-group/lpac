@@ -17,8 +17,4 @@ struct euicc_driver {
     void (*fini)(void *interface);
 };
 
-#if defined(_WIN32)
-#    define DRIVER_INTERFACE __declspec(dllexport) const struct euicc_driver driver_if
-#else
-#    define DRIVER_INTERFACE const struct euicc_driver driver_if
-#endif
+#define DRIVER_INTERFACE const struct euicc_driver driver_if

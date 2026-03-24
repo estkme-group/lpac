@@ -38,11 +38,6 @@ target_sources(
             euicc-driver-loader.h
 )
 
-# Only useful on Windows, and will lead to invalid arguments on ld.gold.
-if(WIN32)
-    target_link_options(euicc-driver-loader PRIVATE "LINKER:--export-all-symbols")
-endif()
-
 add_library(driver_apdu_stdio SHARED apdu/stdio.c)
 target_link_libraries(driver_apdu_stdio PRIVATE euicc euicc-drivers lpac-utils)
 set_target_properties(driver_apdu_stdio PROPERTIES PREFIX "")
