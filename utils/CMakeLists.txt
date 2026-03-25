@@ -5,6 +5,8 @@ target_link_libraries(lpac-utils PRIVATE ${CJSON_LIBRARY} cjson-ext euicc)
 target_compile_options(lpac-utils PRIVATE -Wall -Wextra)
 
 if(WIN32)
+    # To expose all missing dllimport/dllexport
+    target_link_options(lpac-utils PRIVATE "LINKER:--disable-auto-import")
     # FIXME: Glibc since 2.17 have move clock_* from librt to libc so
     #        single-thread program can use these functions without the
     #        overheads associated with multi-thread support.

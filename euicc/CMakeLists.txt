@@ -70,6 +70,10 @@ set_target_properties(euicc PROPERTIES
         C_EXTENSIONS ON
 )
 if(LPAC_DYNAMIC_LIBEUICC)
+    if(WIN32)
+        # To expose all missing dllimport/dllexport
+        target_link_options(euicc PRIVATE "LINKER:--disable-auto-import")
+    endif()
     if (NOT STANDALONE_MODE)
         # Install a pkg-config file
         configure_file(libeuicc.pc.in libeuicc.pc @ONLY)

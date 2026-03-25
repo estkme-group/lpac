@@ -24,6 +24,10 @@ target_sources(
 add_library(euicc-driver-loader SHARED)
 target_compile_definitions(euicc-driver-loader PRIVATE DRIVER_EXPORTS)
 target_link_libraries(euicc-driver-loader PRIVATE euicc euicc-drivers ${DL_LIBRARY} ${CJSON_LIBRARY} lpac-utils)
+if(WIN32)
+    # To expose all missing dllimport/dllexport
+    target_link_options(euicc-driver-loader PRIVATE "LINKER:--disable-auto-import")
+endif()
 target_sources(
     euicc-driver-loader
     PRIVATE
