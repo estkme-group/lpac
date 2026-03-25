@@ -1,11 +1,10 @@
 add_library(lpac-utils SHARED lpac/utils.c)
+target_compile_definitions(lpac-utils PRIVATE LIBLPAC_UTILS_EXPORTS)
 install(TARGETS lpac-utils LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-target_link_libraries(lpac-utils PRIVATE ${CJSON_LIBRARY} euicc)
+target_link_libraries(lpac-utils PRIVATE ${CJSON_LIBRARY} cjson-ext euicc)
 target_compile_options(lpac-utils PRIVATE -Wall -Wextra)
 
 if(WIN32)
-    # Only useful on Windows, and will lead to invalid arguments on ld.gold.
-    target_link_options(lpac-utils PRIVATE "LINKER:--export-all-symbols")
     # FIXME: Glibc since 2.17 have move clock_* from librt to libc so
     #        single-thread program can use these functions without the
     #        overheads associated with multi-thread support.

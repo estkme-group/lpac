@@ -22,6 +22,7 @@ target_sources(
 )
 
 add_library(euicc-driver-loader SHARED)
+target_compile_definitions(euicc-driver-loader PRIVATE DRIVER_EXPORTS)
 target_link_libraries(euicc-driver-loader PRIVATE euicc euicc-drivers ${DL_LIBRARY} ${CJSON_LIBRARY} lpac-utils)
 target_sources(
     euicc-driver-loader
@@ -37,11 +38,6 @@ target_sources(
         FILES
             euicc-driver-loader.h
 )
-
-# Only useful on Windows, and will lead to invalid arguments on ld.gold.
-if(WIN32)
-    target_link_options(euicc-driver-loader PRIVATE "LINKER:--export-all-symbols")
-endif()
 
 add_library(driver_apdu_stdio SHARED apdu/stdio.c)
 target_link_libraries(driver_apdu_stdio PRIVATE euicc euicc-drivers lpac-utils)

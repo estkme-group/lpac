@@ -2,6 +2,7 @@ option(LIBEUICC_REDUCED_STDLIB_CALL "Reduce standard library calling" OFF)
 
 if(LPAC_DYNAMIC_LIBEUICC)
     add_library(euicc SHARED)
+    target_compile_definitions(euicc PRIVATE LIBEUICC_EXPORTS)
 else()
     add_library(euicc STATIC)
 endif()
@@ -55,6 +56,7 @@ target_sources(
             es10a.h
             es10c.h
             euicc.h
+            euicc_export.h
             hexutil.h
             sha256.h
 
@@ -68,10 +70,6 @@ set_target_properties(euicc PROPERTIES
         C_EXTENSIONS ON
 )
 if(LPAC_DYNAMIC_LIBEUICC)
-    # Only useful on Windows, and will lead to invalid arguments on ld.gold.
-    if(WIN32)
-        target_link_options(euicc PRIVATE "LINKER:--export-all-symbols")
-    endif()
     if (NOT STANDALONE_MODE)
         # Install a pkg-config file
         configure_file(libeuicc.pc.in libeuicc.pc @ONLY)

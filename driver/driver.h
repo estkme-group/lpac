@@ -4,6 +4,16 @@
 #    undef interface
 #endif
 
+#if defined(_WIN32)
+#    ifdef DRIVER_EXPORTS
+#        define DRIVER_API __declspec(dllexport)
+#    else
+#        define DRIVER_API __declspec(dllimport)
+#    endif
+#else
+#    define DRIVER_API
+#endif
+
 enum euicc_driver_type {
     DRIVER_APDU,
     DRIVER_HTTP,
