@@ -134,10 +134,8 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
     }
 end:
     if (result == 0 && response) {
-        if (found_response_data) {
-            *response = found_response_data;
-            found_response_data = NULL;
-        }
+        *response = found_response_data;
+        found_response_data = NULL;
     }
     return result;
 }
