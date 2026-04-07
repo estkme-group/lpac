@@ -57,7 +57,6 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
 int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
     char line[AT_BUFFER_SIZE];
     _cleanup_free_ char *found_response_data = NULL;
-    _cleanup_free_ char *last_content_line = NULL;
     int result = -1;
 
     if (response)
@@ -128,10 +127,9 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
             while (*found_response_data == ' ')
                 memmove(found_response_data, found_response_data + 1, strlen(found_response_data));
         } else if (response && !found_response_data && strncasecmp(line, "AT", 2) != 0) {
-            // Fallback: save last non-echo content line for modems that return
+            // Fallback: save non-echo content line for modems that return
 	    //	bare values without prefix (e.g. FM350-GL: "2\r\nOK" not "+CCHO: 2\r\nOK")
-            free(last_content_line);
-            last_content_line = strdup(line);
+            found_response_data = strdup(line);
         }
     }
 end:
@@ -139,9 +137,6 @@ end:
         if (found_response_data) {
             *response = found_response_data;
             found_response_data = NULL;
-        } else if (last_content_line) {
-            *response = last_content_line;
-            last_content_line = NULL;
         }
     }
     return result;
