@@ -5,6 +5,7 @@ option(LPAC_WITH_APDU_QMI "Build QMI backend for Qualcomm devices (requires libq
 option(LPAC_WITH_APDU_QMI_QRTR "Build QMI-over-QRTR backend for Qualcomm devices (requires libqrtr and libqmi headers)" OFF)
 option(LPAC_WITH_APDU_UQMI "Build uQMI backend for Qualcomm devices (requires uqmi)" OFF)
 option(LPAC_WITH_APDU_MBIM "Build MBIM backend for MBIM devices (requires libmbim)" OFF)
+option(LPAC_WITH_APDU_ARGOS "Build APDU backend for Todos Argos Mini II USB reader (requires libusb)" OFF)
 
 option(LPAC_WITH_HTTP_CURL "Build HTTP Curl interface" ON)
 cmake_dependent_option(LPAC_WITH_HTTP_WINHTTP "Build HTTP WinHTTP interface (Win32 only)" ON WIN32 OFF)
@@ -168,6 +169,16 @@ if (LPAC_WITH_APDU_MBIM)
     target_link_libraries(driver_apdu_mbim PRIVATE PkgConfig::MBIM_GLIB PkgConfig::MBIM_GLIB)
 
     install(TARGETS driver_apdu_mbim LIBRARY DESTINATION ${DRIVER_INSTALL_PATH})
+endif ()
+
+if (LPAC_WITH_APDU_ARGOS)
+    add_library(driver_apdu_argos SHARED ${CMAKE_CURRENT_SOURCE_DIR}/apdu/argos.c)
+    target_link_libraries(driver_apdu_argos PRIVATE euicc euicc-drivers lpac-utils)
+    set_target_properties(driver_apdu_argos PROPERTIES PREFIX "")
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBUSB REQUIRED IMPORTED_TARGET libusb-1.0)
+    target_link_libraries(driver_apdu_argos PRIVATE PkgConfig::LIBUSB)
+    install(TARGETS driver_apdu_argos LIBRARY DESTINATION ${DRIVER_INSTALL_PATH})
 endif ()
 
 if(LPAC_WITH_HTTP_CURL)
