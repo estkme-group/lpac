@@ -15,6 +15,16 @@
 #define ENV_UIM_SLOT APDU_ENV_NAME(MBIM, UIM_SLOT)
 #define ENV_USE_PROXY APDU_ENV_NAME(MBIM, USE_PROXY)
 #define ENV_DEVICE APDU_ENV_NAME(MBIM, DEVICE)
+#define ENV_SKIP_SLOT_MAPPING APDU_ENV_NAME(MBIM, SKIP_SLOT_MAPPING)
+
+/*
+ * https://learn.microsoft.com/en-us/windows-hardware/drivers/network/mb-low-level-uicc-access
+ * SelectP2Arg maps to the P2 byte of the ISO/IEC 7816-4 SELECT command.
+ * ETSI TS 102 221 V18.0.0, section 11.1.1.2, table 11.2 defines 0x0c as
+ * "No data returned":
+ * https://www.etsi.org/deliver/etsi_ts/102200_102299/102221/18.00.00_60/ts_102221v180000p.pdf
+ */
+#define LPAC_MBIM_UICC_SELECT_P2_NO_RESPONSE 0x0c
 
 struct mbim_data {
     const char *device_path;
@@ -138,6 +148,11 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
         return -1;
     }
 
+    if (getenv_bool_or_default(ENV_SKIP_SLOT_MAPPING, false)) {
+        fprintf(stderr, "info: skipping MBIM device slot mapping\n");
+        return 0;
+    }
+
     return select_sim_slot(mbim_priv);
 }
 
@@ -165,9 +180,21 @@ static int mbim_apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uin
     struct mbim_data *mbim_priv = ctx->apdu.interface->userdata;
     g_autoptr(GError) error = NULL;
 
-    MbimMessage *request = mbim_message_ms_uicc_low_level_access_apdu_set_new(
-        mbim_priv->last_channel_id, MBIM_UICC_SECURE_MESSAGING_NONE, MBIM_UICC_CLASS_BYTE_TYPE_INTER_INDUSTRY, tx_len,
-        tx, &error);
+    const guint8 *apdu = tx;
+    guint32 apdu_len = tx_len;
+    g_autofree guint8 *apdu_with_le = NULL;
+
+    if (tx_len >= 5 && tx[1] == 0xe2 && tx_len == (guint32)tx[4] + 5) {
+        apdu_with_le = g_malloc(tx_len + 1);
+        memcpy(apdu_with_le, tx, tx_len);
+        apdu_with_le[tx_len] = 0x00;
+        apdu = apdu_with_le;
+        apdu_len = tx_len + 1;
+    }
+
+    MbimMessage *request =
+        mbim_message_ms_uicc_low_level_access_apdu_set_new(mbim_priv->last_channel_id, MBIM_UICC_SECURE_MESSAGING_NONE,
+                                                           MBIM_UICC_CLASS_BYTE_TYPE_EXTENDED, apdu_len, apdu, &error);
     if (!request) {
         fprintf(stderr, "error: creating apdu message failed: %s\n", error->message);
         return -1;
@@ -197,7 +224,8 @@ static int mbim_apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const u
     g_autoptr(GError) error = NULL;
     guint8 channel_id;
 
-    MbimMessage *request = mbim_message_ms_uicc_low_level_access_open_channel_set_new(aid_len, aid, 0, 1, &error);
+    MbimMessage *request = mbim_message_ms_uicc_low_level_access_open_channel_set_new(
+        aid_len, aid, LPAC_MBIM_UICC_SELECT_P2_NO_RESPONSE, 1, &error);
     if (!request) {
         fprintf(stderr, "error: creating channel message failed: %s\n", error->message);
         return -1;
