@@ -9,6 +9,12 @@
 
 #define AT_MAX_LOGICAL_CHANNELS 20
 
+#define AT_DEFAULT_DEADLINE_MS 10000
+#define AT_RECOVERY_DEADLINE_MS 30000
+#define AT_CGLA_DEADLINE_MS 240000
+#define AT_PROBE_DEADLINE_MS 3000
+#define AT_POLL_SLICE_MS 500
+
 #define ENV_AT_DEBUG APDU_ENV_NAME(AT, DEBUG)
 #define ENV_AT_DEVICE APDU_ENV_NAME(AT, DEVICE)
 
@@ -44,6 +50,9 @@ struct at_userdata {
 int enumerate_serial_device(cJSON *device);
 
 int at_write_command(struct at_userdata *userdata, const char *command);
+
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected,
+                            int deadline_ms);
 
 int at_expect(struct at_userdata *userdata, char **response, const char *expected);
 
