@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
+#include "euicc_export.h"
 // SPDX-License-Copyright: Brad Conte <brad@bradconte.com>
 // Original code from https://github.com/B-Con/crypto-algorithms/blob/02b66ec/sha256.h
 /*********************************************************************
@@ -10,13 +11,13 @@
  *********************************************************************/
 
 #ifndef SHA256_H
-#define SHA256_H
+#    define SHA256_H
 
 /*************************** HEADER FILES ***************************/
-#include <stddef.h>
+#    include <stddef.h>
 
 /****************************** MACROS ******************************/
-#define SHA256_BLOCK_SIZE 32 // SHA256 outputs a 32 byte digest
+#    define SHA256_BLOCK_SIZE 32 // SHA256 outputs a 32 byte digest
 
 /**************************** DATA TYPES ****************************/
 typedef unsigned char BYTE; // 8-bit byte
@@ -30,8 +31,9 @@ typedef struct {
 } EUICC_SHA256_CTX;
 
 /*********************** FUNCTION DECLARATIONS **********************/
-void euicc_sha256_init(EUICC_SHA256_CTX *ctx);
-void euicc_sha256_update(EUICC_SHA256_CTX *ctx, const BYTE data[], size_t len);
-void euicc_sha256_final(EUICC_SHA256_CTX *ctx, BYTE hash[]);
+
+EUICC_API void euicc_sha256_init(EUICC_SHA256_CTX *ctx);
+EUICC_API void euicc_sha256_update(EUICC_SHA256_CTX *ctx, const BYTE data[], size_t len);
+EUICC_API void euicc_sha256_final(EUICC_SHA256_CTX *ctx, BYTE hash[]);
 
 #endif // SHA256_H

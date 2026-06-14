@@ -19,6 +19,16 @@
 #define APDU_ENV_NAME(DRIVER, NAME) ENV_APDU_DRIVER "_" #DRIVER "_" #NAME
 #define CUSTOM_ENV_NAME(NAME) "LPAC_CUSTOM_" #NAME
 
+#if defined(_WIN32)
+#    ifdef LIBLPAC_UTILS_EXPORTS
+#        define LPAC_API __declspec(dllexport)
+#    else
+#        define LPAC_API __declspec(dllimport)
+#    endif
+#else
+#    define LPAC_API __attribute__((visibility("default")))
+#endif
+
 #define _cleanup_(x) __attribute__((cleanup(x)))
 
 #define DEFINE_TRIVIAL_CLEANUP_FUNC(type, func) \
@@ -59,30 +69,30 @@ static inline void freep(void *p) { free(*(void **)p); }
         long: getenv_long_or_default,          \
         char *: getenv_str_or_default)(name, default_value)
 
-const char *getenv_str_or_default(const char *name, const char *default_value);
+LPAC_API const char *getenv_str_or_default(const char *name, const char *default_value);
 
-bool getenv_bool_or_default(const char *name, bool default_value);
+LPAC_API bool getenv_bool_or_default(const char *name, bool default_value);
 
-int getenv_int_or_default(const char *name, int default_value);
+LPAC_API int getenv_int_or_default(const char *name, int default_value);
 
-long getenv_long_or_default(const char *name, long default_value);
+LPAC_API long getenv_long_or_default(const char *name, long default_value);
 
-void set_deprecated_env_name(const char *name, const char *deprecated_name);
+LPAC_API void set_deprecated_env_name(const char *name, const char *deprecated_name);
 
-int str_to_bool(const char *value);
+LPAC_API int str_to_bool(const char *value);
 
-bool json_print(char *type, cJSON *jpayload);
+LPAC_API bool json_print(char *type, cJSON *jpayload);
 
-bool ends_with(const char *restrict str, const char *restrict suffix);
+LPAC_API bool ends_with(const char *restrict str, const char *restrict suffix);
 
-char *remove_suffix(char *restrict str, const char *restrict suffix);
+LPAC_API char *remove_suffix(char *restrict str, const char *restrict suffix);
 
-char **merge_array_of_str(char *left[], char *right[]);
+LPAC_API char **merge_array_of_str(char *left[], char *right[]);
 
-char *path_concat(const char *restrict a, const char *restrict b);
+LPAC_API char *path_concat(const char *restrict a, const char *restrict b);
 
-struct timespec get_current_clock(clockid_t clock_id);
+LPAC_API struct timespec get_current_clock(clockid_t clock_id);
 
-struct timespec get_duration(struct timespec t0, struct timespec t1);
+LPAC_API struct timespec get_duration(struct timespec t0, struct timespec t1);
 
-struct timespec get_wall_time(struct timespec wall);
+LPAC_API struct timespec get_wall_time(struct timespec wall);
