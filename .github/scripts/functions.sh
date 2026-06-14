@@ -8,7 +8,7 @@ MACHINE="$(uname -m)"
 export KERNEL MACHINE
 
 export WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
-export CURL_VERSION="8.6.0_1"
+export CURL_VERSION="8.20.0_5"
 export MINGW_CURL_WIN64_BLOB="https://curl.se/windows/dl-$CURL_VERSION/curl-$CURL_VERSION-win64-mingw.zip"
 export MINGW_CURL_WIN64A_BLOB="https://curl.se/windows/dl-$CURL_VERSION/curl-$CURL_VERSION-win64a-mingw.zip"
 
