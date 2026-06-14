@@ -12,6 +12,7 @@
 #    include <dlfcn-win32/dlfcn.h>
 #    define CURL_GLOBAL_DEFAULT ((1 << 0) | (1 << 1))
 #    define CURLE_OK 0
+#    define CURLE_SSL_CONNECT_ERROR 35
 #    define CURLOPT_URL 10002
 #    define CURLOPT_WRITEFUNCTION 20011
 #    define CURLOPT_WRITEDATA 10001
@@ -105,6 +106,14 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     }
 
     res = libcurl._curl_easy_perform(curl);
+
+    if (res == CURLE_SSL_CONNECT_ERROR) {
+        fprintf(stderr,
+                "libcurl: TLS handshake failed: %s, see known issues at "
+                "https://github.com/estkme-group/lpac/blob/main/docs/FAQ.md.\n",
+                libcurl._curl_easy_strerror(res));
+        goto err;
+    }
 
     if (res != CURLE_OK) {
         fprintf(stderr, "curl_easy_perform() failed: %s\n", libcurl._curl_easy_strerror(res));
