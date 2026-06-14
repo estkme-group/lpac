@@ -84,7 +84,7 @@ static int applet_main(const int argc, char **argv) {
             // Although POSIX said user should check errno instead of return value,
             // but errno may not be set when no conversion is performed according to C99.
             // Check nptr is same as str_end to ensure there is no conversion.
-            if ((seqNumber == 0 && strcmp(argv[i], str_end) != 0) || errno != 0) {
+            if (argv[i] == str_end || errno != 0) {
                 continue;
             }
             if (!retrieve_notification(eid, (uint32_t)seqNumber)) {
