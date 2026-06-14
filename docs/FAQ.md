@@ -16,3 +16,8 @@
 ### I can't download eSIM profile of xxx.
 
 The verification of SM-DP+ servers of telecom operators is diverse. Please check whether the parameters you enter are consistent with those provided to you by the telecom operators. Some telecom operators issue profiles in the form of push, which may require the use of lpac's discovery and custom IMEI function.
+
+### I got error message "libcurl: TLS handshake failed: ..., see known issues at ..." when download profile.
+
+It may be caused by the SSL library linked by libcurl doesn't support TLS 1.3, such as MbedTLS prior to 3.6.0. It often
+happened on old system like OpenWRT 23.05. Try to upgrade you system to the version supports TLS 1.3.
