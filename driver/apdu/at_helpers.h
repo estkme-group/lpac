@@ -8,3 +8,4 @@ int at_channel_set(struct at_userdata *userdata, int index, const char *identifi
 int at_channel_next_id(struct at_userdata *userdata);
 int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 void at_probe_capability_optional(struct at_userdata *userdata, const char *command);
+int at_expect_ccho_channel(struct at_userdata *userdata, char **out);
