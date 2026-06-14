@@ -60,6 +60,12 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
     return -1;
 }
 
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected,
+                            int deadline_ms) {
+    (void)deadline_ms;
+    return at_expect(userdata, response, expected);
+}
+
 int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
     char line[AT_BUFFER_SIZE];
     DWORD bytes_read;

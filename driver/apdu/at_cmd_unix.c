@@ -54,10 +54,18 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
     return 0;
 }
 
-int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+static int at_elapsed_ms(const struct timespec *start) {
+    const struct timespec now = get_current_clock(CLOCK_MONOTONIC);
+
+    return (int)((now.tv_sec - start->tv_sec) * 1000 + (now.tv_nsec - start->tv_nsec) / 1000000);
+}
+
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected,
+                            int deadline_ms) {
     char line[AT_BUFFER_SIZE];
     _cleanup_free_ char *found_response_data = NULL;
     int result = -1;
+    const struct timespec start = get_current_clock(CLOCK_MONOTONIC);
 
     if (response)
         *response = NULL;
@@ -71,17 +79,24 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
                 goto end;
             }
 
+            const int elapsed = at_elapsed_ms(&start);
+            if (elapsed >= deadline_ms) {
+                fprintf(stderr, "AT command timeout (%d ms)\n", deadline_ms);
+                goto end;
+            }
+
             struct pollfd pfd;
             pfd.fd = userdata->fd;
             pfd.events = POLLIN;
 
-            int rv = poll(&pfd, 1, -1);
+            const int remain = deadline_ms - elapsed;
+            const int poll_ms = remain > AT_POLL_SLICE_MS ? AT_POLL_SLICE_MS : remain;
+            const int rv = poll(&pfd, 1, poll_ms);
             if (rv < 0) {
                 fprintf(stderr, "poll error: %s\n", strerror(errno));
                 goto end;
             } else if (rv == 0) {
-                fprintf(stderr, "AT command timeout\n");
-                goto end;
+                continue;
             }
 
             if (pfd.revents & POLLIN) {
@@ -134,6 +149,10 @@ end:
         found_response_data = NULL;
     }
     return result;
+}
+
+int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+    return at_expect_with_deadline(userdata, response, expected, AT_DEFAULT_DEADLINE_MS);
 }
 
 int at_device_open(struct at_userdata *userdata, const char *device_name) {
