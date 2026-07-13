@@ -182,28 +182,27 @@ static int es9p_trans_json(struct euicc_ctx *ctx, const char *smdp, const char *
 
         if (cJSON_HasObjectItem(statusCodeData, "reasonCode")
             && cJSON_IsString(cJSON_GetObjectItem(statusCodeData, "reasonCode"))) {
-            strncpy(ctx->http.status.reasonCode, cJSON_GetObjectItem(statusCodeData, "reasonCode")->valuestring,
-                    sizeof(ctx->http.status.reasonCode));
+            snprintf(ctx->http.status.reasonCode, sizeof(ctx->http.status.reasonCode), "%s",
+                     cJSON_GetObjectItem(statusCodeData, "reasonCode")->valuestring);
         }
         if (cJSON_HasObjectItem(statusCodeData, "subjectCode")
             && cJSON_IsString(cJSON_GetObjectItem(statusCodeData, "subjectCode"))) {
-            strncpy(ctx->http.status.subjectCode, cJSON_GetObjectItem(statusCodeData, "subjectCode")->valuestring,
-                    sizeof(ctx->http.status.subjectCode));
+            snprintf(ctx->http.status.subjectCode, sizeof(ctx->http.status.subjectCode), "%s",
+                     cJSON_GetObjectItem(statusCodeData, "subjectCode")->valuestring);
         }
         if (cJSON_HasObjectItem(statusCodeData, "subjectIdentifier")
             && cJSON_IsString(cJSON_GetObjectItem(statusCodeData, "subjectIdentifier"))) {
-            strncpy(ctx->http.status.subjectIdentifier,
-                    cJSON_GetObjectItem(statusCodeData, "subjectIdentifier")->valuestring,
-                    sizeof(ctx->http.status.subjectIdentifier));
+            snprintf(ctx->http.status.subjectIdentifier, sizeof(ctx->http.status.subjectIdentifier), "%s",
+                     cJSON_GetObjectItem(statusCodeData, "subjectIdentifier")->valuestring);
         }
         if (cJSON_HasObjectItem(statusCodeData, "message")
             && cJSON_IsString(cJSON_GetObjectItem(statusCodeData, "message"))) {
-            strncpy(ctx->http.status.message, cJSON_GetObjectItem(statusCodeData, "message")->valuestring,
-                    sizeof(ctx->http.status.message));
+            snprintf(ctx->http.status.message, sizeof(ctx->http.status.message), "%s",
+                     cJSON_GetObjectItem(statusCodeData, "message")->valuestring);
         } else {
             const char *message = es9p_error_message(ctx->http.status.subjectCode, ctx->http.status.reasonCode);
             if (message != NULL) {
-                strncpy(ctx->http.status.message, message, sizeof(ctx->http.status.message));
+                snprintf(ctx->http.status.message, sizeof(ctx->http.status.message), "%s", message);
             } else {
                 snprintf(ctx->http.status.message, sizeof(ctx->http.status.message),
                          "subject-code: %s, reason-code: %s", ctx->http.status.subjectCode,
