@@ -126,6 +126,14 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
             found_response_data = strdup(line + strlen(expected));
             while (*found_response_data == ' ')
                 memmove(found_response_data, found_response_data + 1, strlen(found_response_data));
+        } else if (expected != NULL && strstr(expected, "CCHO") != NULL &&
+                   found_response_data == NULL &&
+                   strspn(line, "0123456789") == strlen(line)) {
+            /* Some modem firmwares (e.g. Fibocom FM350-GL) reply to AT+CCHO
+             * with a bare channel number line ("1") instead of the
+             * 3GPP TS 27.007 "+CCHO: <n>" form. Accept an all-digits line
+             * as the channel identifier so such devices work. */
+            found_response_data = strdup(line);
         }
     }
 end:
