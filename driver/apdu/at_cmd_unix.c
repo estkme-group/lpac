@@ -89,10 +89,12 @@ static int at_pop_line(char *buf, size_t *buf_len, char *line, size_t line_size)
 
 /*
  * Applies AT response bookkeeping (OK/ERROR detection, `expected` prefix capture)
- * to an already-extracted `line`.
+ * to an already-extracted `line`. A line that doesn't match `expected` is still
+ * captured when is_fallback_match(line) is true.
  * Returns 0 once `result` is final, -1 if more lines are needed.
  */
-static int at_match_line(const char *line, const char *expected, char **found_response_data, int *result) {
+static int at_match_line(const char *line, const char *expected, bool (*is_fallback_match)(const char *line),
+                         char **found_response_data, int *result) {
     if (strlen(line) == 0)
         return -1;
 
@@ -110,6 +112,9 @@ static int at_match_line(const char *line, const char *expected, char **found_re
         *found_response_data = strdup(line + strlen(expected));
         while (*found_response_data && (*found_response_data)[0] == ' ')
             memmove(*found_response_data, *found_response_data + 1, strlen(*found_response_data));
+    } else if (is_fallback_match && is_fallback_match(line)) {
+        free(*found_response_data);
+        *found_response_data = strdup(line);
     }
     return -1;
 }
@@ -249,7 +254,8 @@ static int at_deadline_wait(struct at_deadline *d, bool *timed_out) {
 static void at_deadline_destroy(struct at_deadline *d) { (void)d; }
 #endif
 
-int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms) {
+int at_expect_with_deadline_ex(struct at_userdata *userdata, char **response, const char *expected,
+                               bool (*is_fallback_match)(const char *line), int deadline_ms) {
     char line[AT_BUFFER_SIZE];
     _cleanup_free_ char *found_response_data = NULL;
     struct at_deadline deadline;
@@ -265,7 +271,7 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
     while (1) {
         if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
             AT_DEBUG_RX(line);
-            if (at_match_line(line, expected, &found_response_data, &result) == 0)
+            if (at_match_line(line, expected, is_fallback_match, &found_response_data, &result) == 0)
                 goto end;
             continue;
         }
@@ -298,6 +304,10 @@ end:
         found_response_data = NULL;
     }
     return result;
+}
+
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms) {
+    return at_expect_with_deadline_ex(userdata, response, expected, NULL, deadline_ms);
 }
 
 int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
