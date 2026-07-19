@@ -1,6 +1,7 @@
 // Needed by dlinfo(3).
 #define _GNU_SOURCE
-#include "driver.h"
+
+#include "euicc-driver-loader.h"
 
 #include <lpac/list.h>
 #include <lpac/utils.h>
@@ -38,8 +39,8 @@
 static const struct euicc_driver *_driver_apdu = NULL;
 static const struct euicc_driver *_driver_http = NULL;
 
-struct euicc_apdu_interface euicc_driver_interface_apdu;
-struct euicc_http_interface euicc_driver_interface_http;
+DRIVER_API struct euicc_apdu_interface euicc_driver_interface_apdu;
+DRIVER_API struct euicc_http_interface euicc_driver_interface_http;
 
 struct euicc_drivers_list {
     const struct euicc_driver *driver;
@@ -350,7 +351,7 @@ static inline const struct euicc_driver *find_driver(const enum euicc_driver_typ
     }
 }
 
-int euicc_driver_list(int argc, char **argv) {
+DRIVER_API int euicc_driver_list(int argc, char **argv) {
     if (!init_driver_list()) {
         fputs("Driver list initialization failed.\n", stderr);
         return -1;
@@ -383,7 +384,7 @@ int euicc_driver_list(int argc, char **argv) {
     return 0;
 }
 
-int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name) {
+DRIVER_API int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name) {
     _driver_apdu = find_driver(DRIVER_APDU, apdu_driver_name);
     if (_driver_apdu == NULL) {
         fprintf(stderr, "No APDU driver found\n");
@@ -409,7 +410,7 @@ int euicc_driver_init(const char *apdu_driver_name, const char *http_driver_name
     return 0;
 }
 
-void euicc_driver_fini() {
+DRIVER_API void euicc_driver_fini() {
     if (_driver_apdu != NULL && _driver_apdu->fini != NULL) {
         _driver_apdu->fini(&euicc_driver_interface_apdu);
     }
@@ -418,7 +419,7 @@ void euicc_driver_fini() {
     }
 }
 
-int euicc_driver_main_apdu(const int argc, char **argv) {
+DRIVER_API int euicc_driver_main_apdu(const int argc, char **argv) {
     if (_driver_apdu == NULL) {
         fprintf(stderr, "No APDU driver found\n");
         return -1;
@@ -430,7 +431,7 @@ int euicc_driver_main_apdu(const int argc, char **argv) {
     return _driver_apdu->main(&euicc_driver_interface_apdu, argc, argv);
 }
 
-int euicc_driver_main_http(const int argc, char **argv) {
+DRIVER_API int euicc_driver_main_http(const int argc, char **argv) {
     if (_driver_http == NULL) {
         fprintf(stderr, "No HTTP driver found\n");
         return -1;

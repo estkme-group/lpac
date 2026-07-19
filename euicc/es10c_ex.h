@@ -1,4 +1,5 @@
 #pragma once
+#include "euicc_export.h"
 
 #include "euicc.h"
 
@@ -27,5 +28,5 @@ struct es10c_ex_euiccinfo2 {
     } certificationDataObject;
 };
 
-int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *euiccinfo2);
-void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2);
+EUICC_API int es10c_ex_get_euiccinfo2(struct euicc_ctx *ctx, struct es10c_ex_euiccinfo2 *euiccinfo2);
+EUICC_API void es10c_ex_euiccinfo2_free(struct es10c_ex_euiccinfo2 *euiccinfo2);

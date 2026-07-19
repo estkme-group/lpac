@@ -52,6 +52,6 @@ struct euicc_ctx {
     void *userdata;
 };
 
-int euicc_init(struct euicc_ctx *ctx);
-void euicc_fini(struct euicc_ctx *ctx);
-void euicc_http_cleanup(struct euicc_ctx *ctx);
+EUICC_API int euicc_init(struct euicc_ctx *ctx);
+EUICC_API void euicc_fini(struct euicc_ctx *ctx);
+EUICC_API void euicc_http_cleanup(struct euicc_ctx *ctx);

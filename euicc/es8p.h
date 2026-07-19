@@ -1,4 +1,5 @@
 #pragma once
+#include "euicc_export.h"
 
 #include "es10c.h"
 #include "euicc.h"
@@ -32,5 +33,5 @@ struct es8p_metadata_access_rule {
     struct es8p_metadata_access_rule *next;
 };
 
-int es8p_metadata_parse(struct es8p_metadata **metadata, const char *b64_Metadata);
-void es8p_metadata_free(struct es8p_metadata **stru_metadata);
+EUICC_API int es8p_metadata_parse(struct es8p_metadata **metadata, const char *b64_Metadata);
+EUICC_API void es8p_metadata_free(struct es8p_metadata **stru_metadata);
