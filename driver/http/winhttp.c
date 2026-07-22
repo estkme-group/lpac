@@ -12,6 +12,19 @@
 
 DEFINE_TRIVIAL_CLEANUP_FUNC(HINTERNET, WinHttpCloseHandle);
 
+/*
+ * By default lpac does not verify the SM-DP+/SM-DS server's TLS certificate,
+ * since some servers use certificates issued by CAs that are not (yet) part
+ * of the GSMA CI trust store shipped with common OS trust stores. Setting
+ * this environment variable to a truthy value re-enables standard
+ * certificate/hostname verification. Shared with the curl backend, see
+ * driver/http/curl.c.
+ */
+#define ENV_SSL_VERIFY "LPAC_HTTP_SSL_VERIFY"
+
+/* Populated once in libhttpinterface_init() from ENV_SSL_VERIFY. */
+static DWORD security_flags = SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+
 static wchar_t *utf8_to_wide(const char *input) {
     if (input == NULL)
         return NULL;
@@ -68,7 +81,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
                                   WINHTTP_FLAG_SECURE);
     if (!hRequest)
         goto error;
-    WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS, &(DWORD){SECURITY_FLAG_IGNORE_UNKNOWN_CA}, sizeof(DWORD));
+    WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS, &security_flags, sizeof(security_flags));
     WinHttpSetOption(hRequest, WINHTTP_OPTION_REDIRECT_POLICY, &(DWORD){WINHTTP_OPTION_REDIRECT_POLICY_ALWAYS},
                      sizeof(DWORD));
     WinHttpSetOption(hRequest, WINHTTP_OPTION_CLIENT_CERT_CONTEXT, WINHTTP_NO_CLIENT_CERT_CONTEXT, 0);
@@ -154,6 +167,14 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
     }
 
     memset(ifstruct, 0, sizeof(struct euicc_http_interface));
+
+    /*
+     * TLS certificate verification is disabled by default for backward
+     * compatibility (see ENV_SSL_VERIFY above). Set the env variable to
+     * enable standard verification.
+     */
+    security_flags = getenv_or_default(ENV_SSL_VERIFY, false) ? 0 : SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+
     ifstruct->transmit = http_interface_transmit;
 
     return 0;
