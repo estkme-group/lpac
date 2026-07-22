@@ -29,7 +29,7 @@ static int _process_single(const uint32_t seqNumber, const bool autoremove) {
 
     jprint_progress("es9p_handle_notification", str_seqNumber);
     if (es9p_handle_notification(&euicc_ctx, notification.b64_PendingNotification)) {
-        jprint_error("es9p_handle_notification", NULL);
+        jprint_error("es9p_handle_notification", euicc_ctx.http.status.message);
         return -1;
     }
 

@@ -68,7 +68,7 @@ static int handle_notification(const uint32_t seqNumber, const struct es10b_pend
 
     jprint_progress("es9p_handle_notification", str_seqNumber);
     if (es9p_handle_notification(&euicc_ctx, notification.b64_PendingNotification)) {
-        jprint_error("es9p_handle_notification", NULL);
+        jprint_error("es9p_handle_notification", euicc_ctx.http.status.message);
         return -1;
     }
 
