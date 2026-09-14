@@ -42,7 +42,6 @@ static int applet_main(int argc, char **argv) {
             return -1;
             break;
         }
-        opt = getopt(argc, argv, opt_string);
     }
 
     if (smds == NULL) {
