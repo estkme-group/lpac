@@ -29,13 +29,8 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     }
 
     static const char *commands[] = {"AT+CCHO", "AT+CCHC", "AT+CGLA", NULL};
-    for (int index = 0; commands[index] != NULL; index++) {
-        at_emit_command(userdata, "%s=?", commands[index]);
-        if (at_expect(userdata, NULL, NULL) == 0)
-            continue;
-        fprintf(stderr, "Device missing %s support\n", commands[index]);
-        return false;
-    }
+    for (int index = 0; commands[index] != NULL; index++)
+        at_probe_capability_optional(userdata, commands[index]);
 
     return true;
 }

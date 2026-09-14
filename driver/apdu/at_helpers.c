@@ -82,3 +82,9 @@ int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
     int ret = at_write_command(userdata, formatted);
     return ret;
 }
+
+void at_probe_capability_optional(struct at_userdata *userdata, const char *command) {
+    at_emit_command(userdata, "%s=?", command);
+    if (at_expect_with_deadline(userdata, NULL, NULL, AT_PROBE_DEADLINE_MS) != 0)
+        fprintf(stderr, "AT capability probe %s: no response (continuing)\n", command);
+}
