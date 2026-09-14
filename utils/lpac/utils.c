@@ -176,8 +176,8 @@ inline struct timespec get_current_clock(clockid_t clock_id) {
 
 inline struct timespec get_duration(struct timespec t0, struct timespec t1) {
     bool borrow = (t1.tv_nsec < t0.tv_nsec);
-    struct timespec dur = {.tv_sec = (borrow ? 1e9 : 0) + t1.tv_sec - t0.tv_sec,
-                           .tv_nsec = t1.tv_nsec - t0.tv_nsec - (borrow ? 1 : 0)};
+    struct timespec dur = {.tv_sec = t1.tv_sec - t0.tv_sec - (borrow ? 1 : 0),
+                           .tv_nsec = t1.tv_nsec - t0.tv_nsec + (borrow ? 1e9 : 0)};
     return dur;
 }
 
