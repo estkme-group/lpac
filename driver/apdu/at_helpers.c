@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,4 +82,20 @@ int at_emit_command(struct at_userdata *userdata, const char *fmt, ...) {
 
     int ret = at_write_command(userdata, formatted);
     return ret;
+}
+
+static int at_line_is_decimal_channel(const char *line) {
+    if (!line || !*line)
+        return 0;
+    for (; *line; line++) {
+        if (!isdigit((unsigned char)*line))
+            return 0;
+    }
+    return 1;
+}
+
+/* Fibocom FM350-GL answers AT+CCHO with a bare decimal channel line instead of the
+ * standard "+CCHO: <id>". Accept either. */
+int at_expect_ccho_channel(struct at_userdata *userdata, char **out) {
+    return at_expect_with_deadline_ex(userdata, out, "+CCHO: ", at_line_is_decimal_channel, AT_RECOVERY_DEADLINE_MS);
 }
