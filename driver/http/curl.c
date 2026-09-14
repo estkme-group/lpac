@@ -6,6 +6,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * By default lpac does not verify the SM-DP+/SM-DS server's TLS certificate
+ * or hostname, since some servers use certificates issued by CAs that are
+ * not (yet) part of the GSMA CI trust store shipped with common OS trust
+ * stores. Setting this environment variable to a truthy value re-enables
+ * both checks. This is intentionally not backend-specific (see
+ * HTTP_ENV_NAME), so all HTTP backends that support it use the same name.
+ */
+#define ENV_SSL_VERIFY "LPAC_HTTP_SSL_VERIFY"
+
 #ifndef _WIN32
 #    include <curl/curl.h>
 #else
@@ -50,6 +60,15 @@ static struct libcurl_interface {
     char *(*_curl_version)(void);
 } libcurl;
 
+/*
+ * Populated once in libhttpinterface_init() from ENV_SSL_VERIFY.
+ * CURLOPT_SSL_VERIFYHOST only accepts 0 (disabled) or 2 (enabled, match the
+ * hostname against the certificate) - 1 is a legacy value curl no longer
+ * accepts.
+ */
+static long ssl_verifypeer = 0L;
+static long ssl_verifyhost = 0L;
+
 static size_t http_trans_write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
     struct http_trans_response_data *mem = (struct http_trans_response_data *)userp;
@@ -88,8 +107,8 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     libcurl._curl_easy_setopt(curl, CURLOPT_URL, url);
     libcurl._curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, http_trans_write_callback);
     libcurl._curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&responseData);
-    libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, ssl_verifypeer);
+    libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, ssl_verifyhost);
     for (int i = 0; h[i] != NULL; i++) {
         nheaders = libcurl._curl_slist_append(headers, h[i]);
         if (nheaders == NULL) {
@@ -170,6 +189,19 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
 
     if (libcurl._curl_global_init(CURL_GLOBAL_DEFAULT) != CURLE_OK) {
         return -1;
+    }
+
+    /*
+     * TLS certificate/hostname verification is disabled by default for
+     * backward compatibility (see ENV_SSL_VERIFY above). Set the env
+     * variable to enable it.
+     */
+    if (getenv_or_default(ENV_SSL_VERIFY, false)) {
+        ssl_verifypeer = 1L;
+        ssl_verifyhost = 2L;
+    } else {
+        ssl_verifypeer = 0L;
+        ssl_verifyhost = 0L;
     }
 
     ifstruct->transmit = http_interface_transmit;
