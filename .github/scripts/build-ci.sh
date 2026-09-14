@@ -21,6 +21,7 @@ case "${1:-}" in
 make)
     cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DLPAC_WITH_APDU_AT=ON
     make -j VERBOSE=1
+    ctest --parallel --output-on-failure
     make DESTDIR="$PKGDIR" install
 
     test-driver-available # test driver loader works
@@ -37,6 +38,7 @@ make-qmi)
         -DLPAC_WITH_APDU_UQMI=ON \
         -DLPAC_WITH_APDU_MBIM=ON
     make -j VERBOSE=1
+    ctest --parallel --output-on-failure
     make DESTDIR="$PKGDIR" install
     copy-license "$PKGDIR/executables"
     copy-usage "$PKGDIR/executables"
@@ -45,6 +47,7 @@ make-qmi)
 make-gbinder)
     cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DLPAC_WITH_APDU_GBINDER=ON
     make -j VERBOSE=1
+    ctest --parallel --output-on-failure
     make DESTDIR="$PKGDIR" install
     copy-license "$PKGDIR/executables"
     copy-usage "$PKGDIR/executables"
@@ -53,6 +56,7 @@ make-gbinder)
 make-without-lto)
     cmake "$WORKSPACE" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DSTANDALONE_MODE=ON
     make -j VERBOSE=1
+    ctest --parallel --output-on-failure
     make DESTDIR="$PKGDIR" install
 
     test-driver-available # test driver loader works
@@ -62,8 +66,10 @@ make-without-lto)
     create-bundle "$ARTIFACT/lpac-$KERNEL-$MACHINE-without-lto.zip" "$PKGDIR/executables"
     ;;
 mingw)
-    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake
+    # FIXME: no criterion package available for MinGW in Debian
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64.cmake -DBUILD_TESTING=OFF
     make -j VERBOSE=1
+    #ctest --parallel --output-on-failure
     make DESTDIR="$PKGDIR" install
     copy-curl-win "$PKGDIR/executables/lib"
     copy-license "$PKGDIR/executables"
@@ -71,8 +77,10 @@ mingw)
     create-bundle "$ARTIFACT/lpac-windows-x86_64-mingw.zip" "$PKGDIR/executables"
     ;;
 woa-mingw)
-    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake
+    # FIXME: no criterion package available for MinGW in Debian
+    cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/linux-mingw64-woa.cmake -DBUILD_TESTING=OFF
     make -j VERBOSE=1
+    #ctest --parallel --output-on-failure
     make DESTDIR="$PKGDIR" install
     copy-curl-woa "$PKGDIR/executables/lib"
     copy-license "$PKGDIR/executables"
@@ -82,6 +90,7 @@ woa-mingw)
 woa-zig)
     cmake "$WORKSPACE" -DSTANDALONE_MODE=ON -DCMAKE_TOOLCHAIN_FILE=./cmake/aarch64-windows-zig.cmake
     make -j VERBOSE=1
+    ctest --parallel --output-on-failure
     make DESTDIR="$PKGDIR" install
     copy-curl-woa "$PKGDIR/executables/lib"
     copy-license "$PKGDIR/executables"
