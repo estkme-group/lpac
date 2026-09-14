@@ -5,7 +5,7 @@ if(LPAC_DYNAMIC_LIBEUICC)
 else()
     add_library(euicc STATIC)
 endif()
-target_link_libraries(euicc ${CJSON_LIBRARY} cjson-ext)
+target_link_libraries(euicc PRIVATE ${CJSON_LIBRARY} cjson-ext)
 target_sources(
     euicc
     PRIVATE
@@ -25,9 +25,10 @@ target_sources(
         sha256.c
         tostr.c
 )
+add_library(euicc-internal INTERFACE)
 target_sources(
-    euicc
-    PRIVATE
+    euicc-internal
+    INTERFACE
         FILE_SET private_headers
         TYPE HEADERS
         BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/..

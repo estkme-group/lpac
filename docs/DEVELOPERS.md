@@ -22,6 +22,8 @@ cmake -B build
 cmake --build build
 ```
 
+To run unit tests, run `test` target.
+
 If you want to package lpac in a relocatable directory, please build with `-DSTANDALONE_MODE=ON`,
 and then run command below to install files in directory.
 

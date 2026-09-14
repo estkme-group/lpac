@@ -44,12 +44,12 @@ if(WIN32)
 endif()
 
 add_library(driver_apdu_stdio SHARED apdu/stdio.c)
-target_link_libraries(driver_apdu_stdio PRIVATE euicc euicc-drivers lpac-utils)
+target_link_libraries(driver_apdu_stdio PRIVATE euicc euicc-drivers cjson-ext lpac-utils)
 set_target_properties(driver_apdu_stdio PROPERTIES PREFIX "")
 install(TARGETS driver_apdu_stdio LIBRARY DESTINATION ${DRIVER_INSTALL_PATH})
 
 add_library(driver_http_stdio SHARED http/stdio.c)
-target_link_libraries(driver_http_stdio PRIVATE euicc euicc-drivers lpac-utils)
+target_link_libraries(driver_http_stdio PRIVATE euicc euicc-drivers cjson-ext lpac-utils)
 set_target_properties(driver_http_stdio PROPERTIES PREFIX "")
 install(TARGETS driver_http_stdio LIBRARY DESTINATION ${DRIVER_INSTALL_PATH})
 
@@ -79,7 +79,7 @@ if (LPAC_WITH_APDU_AT)
         )
 
         target_include_directories(${target_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-        target_link_libraries(${target_name} PRIVATE euicc euicc-drivers lpac-utils)
+        target_link_libraries(${target_name} PRIVATE euicc euicc-drivers cjson-ext lpac-utils)
 
         set_target_properties(${target_name} PROPERTIES PREFIX "")
 

@@ -5,6 +5,7 @@ path = [
     "src/**",
     "driver/**",
     "utils/**",
+    "tests/**",
 ]
 SPDX-FileCopyrightText = "2023-2025 ESTKME TECHNOLOGY LIMITED, Hong Kong"
 SPDX-License-Identifier = "AGPL-3.0-only"

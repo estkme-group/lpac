@@ -10,7 +10,7 @@ function apt() {
 }
 
 apt update
-apt install -y build-essential libpcsclite-dev libcurl4-openssl-dev zip
+apt install -y build-essential libpcsclite-dev libcurl4-openssl-dev zip libcriterion-dev
 
 function setup-mingw-woarm64() {
     BASE_URL="https://github.com/Windows-on-ARM-Experiments/mingw-woarm64-build"
