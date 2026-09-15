@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #define ENV_DEBUG APDU_ENV_NAME(GBINDER, DEBUG)
+#define ENV_UIM_SLOT APDU_ENV_NAME(GBINDER, UIM_SLOT)
 
 #define HIDL_SERVICE_DEVICE "/dev/hwbinder"
 #define HIDL_SERVICE_IFACE "android.hardware.radio@1.0::IRadio"
@@ -26,6 +27,7 @@
 #define HIDL_SERVICE_ICC_TRANSMIT_APDU_LOGICAL_CHANNEL_CALLBACK (GBINDER_FIRST_CALL_TRANSACTION + 106)
 
 static int lastChannelId = -1;
+static int uimSlot = -1;
 
 struct radio_response_info {
     int32_t type;
@@ -192,13 +194,21 @@ static void apdu_interface_disconnect(struct euicc_ctx *ctx) { cleanup(); }
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, uint8_t aid_len) {
     // We only start to use gbinder connection here, because only now can we detect whether
-    // a given slot is a valid eSIM slot. This way we can automatically fall back in the case
-    // where a device has only one eSIM -- we don't want to force the user to choose in this case.
-    int res = try_open_slot(1, aid, aid_len);
-    if (res < 0)
-        res = try_open_slot(2, aid, aid_len);
+    // a given slot is a valid eSIM slot. If the user doesn't specify a slot,
+    // this way we can automatically fall back in the case where a device has only one eSIM
+    int res = -1;
+
+    if (uimSlot == -1) {
+        res = try_open_slot(1, aid, aid_len);
+        if (res < 0)
+            res = try_open_slot(2, aid, aid_len);
+    } else {
+        res = try_open_slot(uimSlot, aid, aid_len);
+    }
+
     if (res >= 0)
         lastChannelId = res;
+
     return res;
 }
 
@@ -273,6 +283,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
     set_deprecated_env_name(ENV_DEBUG, "GBINDER_APDU_DEBUG");
+    set_deprecated_env_name(ENV_UIM_SLOT, "UIM_SLOT");
 
     ifstruct->connect = apdu_interface_connect;
     ifstruct->disconnect = apdu_interface_disconnect;
@@ -286,6 +297,12 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
 
     // The glib loop is detached from any client object, so create it here.
     binder_loop = g_main_loop_new(NULL, FALSE);
+
+    /*
+     * Allow the user to select the SIM card slot via environment variable.
+     * Automatically detected if not set.
+     */
+    uimSlot = getenv_or_default(ENV_UIM_SLOT, (int)-1);
 
     return 0;
 }
