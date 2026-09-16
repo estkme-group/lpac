@@ -14,6 +14,7 @@ option(USE_SYSTEM_DEPS "Use system-wide installed dependencies" OFF)
 option(STANDALONE_MODE "All things in a relocatable directory" OFF)
 option(LPAC_DYNAMIC_LIBEUICC "Build and install libeuicc as a dynamic library" ON)
 
+option(LPAC_BUILD_LIBEUICC_ONLY "Only build libeuicc" OFF)
 
 set(LPAC_CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH ${LPAC_CMAKE_MODULE_PATH})
@@ -113,10 +114,12 @@ endif ()
 
 add_subdirectory(cjson-ext)
 add_subdirectory(euicc)
-add_subdirectory(utils)
-add_subdirectory(driver)
-add_subdirectory(src)
-
 if (BUILD_TESTING)
     add_subdirectory(tests)
+endif ()
+
+if (NOT LPAC_BUILD_LIBEUICC_ONLY)
+    add_subdirectory(utils)
+    add_subdirectory(driver)
+    add_subdirectory(src)
 endif ()
