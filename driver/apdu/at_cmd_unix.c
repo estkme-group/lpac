@@ -16,6 +16,15 @@
 #include <unistd.h>
 
 #if defined(__linux__)
+#    include <sys/timerfd.h>
+#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) \
+    || defined(__DragonFly__)
+#    include <sys/event.h>
+#    include <sys/time.h>
+#    define AT_HAVE_KQUEUE 1
+#endif
+
+#if defined(__linux__)
 int enumerate_serial_device(cJSON *devices) {
     const char *dir_path = "/dev/serial/by-id";
     DIR *dir = opendir(dir_path);
@@ -54,7 +63,52 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
     return 0;
 }
 
-int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+/* Extracts the next complete line from `buf` into `line`, decoupled from at_userdata.
+ * Returns 0 on success, -1 if no complete line is buffered yet. */
+static int at_pop_line(char *buf, size_t *buf_len, char *line, size_t line_size) {
+    char *newline = memchr(buf, '\n', *buf_len);
+    if (!newline)
+        return -1;
+
+    size_t line_len = newline - buf;
+    if (line_len >= line_size)
+        line_len = line_size - 1;
+    memcpy(line, buf, line_len);
+    line[line_len] = '\0';
+
+    memmove(buf, newline + 1, *buf_len - line_len - 1);
+    *buf_len -= line_len + 1;
+
+    line[strcspn(line, "\r")] = 0;
+    return 0;
+}
+
+/* Applies AT response bookkeeping to an already-extracted `line`.
+ * Returns 1 to keep reading, 0 once `result` is final. */
+static int at_match_line(const char *line, const char *expected, char **found_response_data, int *result) {
+    if (strlen(line) == 0)
+        return 1;
+
+    if (strcmp(line, "ERROR") == 0) {
+        *result = -1;
+        return 0;
+    }
+    if (strcmp(line, "OK") == 0) {
+        *result = 0;
+        return 0;
+    }
+
+    if (expected && strncmp(line, expected, strlen(expected)) == 0) {
+        free(*found_response_data);
+        *found_response_data = strdup(line + strlen(expected));
+        while (*found_response_data && (*found_response_data)[0] == ' ')
+            memmove(*found_response_data, *found_response_data + 1, strlen(*found_response_data));
+    }
+    return 1;
+}
+
+#if defined(__linux__)
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms) {
     char line[AT_BUFFER_SIZE];
     _cleanup_free_ char *found_response_data = NULL;
     int result = -1;
@@ -62,70 +116,197 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
     if (response)
         *response = NULL;
 
+    const int timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+    if (timer_fd < 0) {
+        fprintf(stderr, "timerfd_create error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    const struct itimerspec its = {
+        .it_value = {.tv_sec = deadline_ms / 1000, .tv_nsec = (long)(deadline_ms % 1000) * 1000000L},
+    };
+    if (timerfd_settime(timer_fd, 0, &its, NULL) < 0) {
+        fprintf(stderr, "timerfd_settime error: %s\n", strerror(errno));
+        close(timer_fd);
+        return -1;
+    }
+
     while (1) {
-        char *newline = memchr(userdata->at_read_buffer, '\n', userdata->at_read_buffer_len);
-        if (!newline) {
-            if (userdata->at_read_buffer_len >= AT_BUFFER_SIZE) {
-                fprintf(stderr, "AT response line too long or buffer full\n");
-                userdata->at_read_buffer_len = 0;
+        if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
+            AT_DEBUG_RX(line);
+            if (!at_match_line(line, expected, &found_response_data, &result))
                 goto end;
-            }
-
-            struct pollfd pfd;
-            pfd.fd = userdata->fd;
-            pfd.events = POLLIN;
-
-            int rv = poll(&pfd, 1, -1);
-            if (rv < 0) {
-                fprintf(stderr, "poll error: %s\n", strerror(errno));
-                goto end;
-            } else if (rv == 0) {
-                fprintf(stderr, "AT command timeout\n");
-                goto end;
-            }
-
-            if (pfd.revents & POLLIN) {
-                ssize_t bytes_read = read(userdata->fd, userdata->at_read_buffer + userdata->at_read_buffer_len,
-                                          AT_BUFFER_SIZE - userdata->at_read_buffer_len);
-                if (bytes_read <= 0) {
-                    fprintf(stderr, "read error or connection closed\n");
-                    goto end;
-                }
-                userdata->at_read_buffer_len += bytes_read;
-            }
             continue;
         }
 
-        size_t line_len = newline - userdata->at_read_buffer;
-        if (line_len >= sizeof(line))
-            line_len = sizeof(line) - 1;
-        memcpy(line, userdata->at_read_buffer, line_len);
-        line[line_len] = '\0';
+        if (userdata->at_read_buffer_len >= AT_BUFFER_SIZE) {
+            fprintf(stderr, "AT response line too long or buffer full\n");
+            userdata->at_read_buffer_len = 0;
+            goto end;
+        }
 
-        memmove(userdata->at_read_buffer, newline + 1, userdata->at_read_buffer_len - line_len - 1);
-        userdata->at_read_buffer_len -= line_len + 1;
+        struct pollfd pfds[2];
+        pfds[0].fd = userdata->fd;
+        pfds[0].events = POLLIN;
+        pfds[1].fd = timer_fd;
+        pfds[1].events = POLLIN;
 
-        line[strcspn(line, "\r")] = 0;
+        const int rv = poll(pfds, 2, -1);
+        if (rv < 0) {
+            fprintf(stderr, "poll error: %s\n", strerror(errno));
+            goto end;
+        }
 
-        if (strlen(line) == 0)
+        if (pfds[1].revents & POLLIN) {
+            fprintf(stderr, "AT command timeout (%d ms)\n", deadline_ms);
+            goto end;
+        }
+
+        if (pfds[0].revents & POLLIN) {
+            ssize_t bytes_read = read(userdata->fd, userdata->at_read_buffer + userdata->at_read_buffer_len,
+                                      AT_BUFFER_SIZE - userdata->at_read_buffer_len);
+            if (bytes_read <= 0) {
+                fprintf(stderr, "read error or connection closed\n");
+                goto end;
+            }
+            userdata->at_read_buffer_len += bytes_read;
+        }
+    }
+end:
+    close(timer_fd);
+    if (result == 0 && response) {
+        *response = found_response_data;
+        found_response_data = NULL;
+    }
+    return result;
+}
+#elif defined(AT_HAVE_KQUEUE)
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms) {
+    char line[AT_BUFFER_SIZE];
+    _cleanup_free_ char *found_response_data = NULL;
+    int result = -1;
+
+    if (response)
+        *response = NULL;
+
+    const int kq = kqueue();
+    if (kq < 0) {
+        fprintf(stderr, "kqueue error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    /* No NOTE_MSECONDS: EVFILT_TIMER defaults to ms without a NOTE_*SECONDS flag. */
+    struct kevent changes[2];
+    EV_SET(&changes[0], userdata->fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+    EV_SET(&changes[1], (uintptr_t)userdata, EVFILT_TIMER, EV_ADD | EV_ONESHOT, 0, deadline_ms, NULL);
+    if (kevent(kq, changes, 2, NULL, 0, NULL) < 0) {
+        fprintf(stderr, "kevent register error: %s\n", strerror(errno));
+        close(kq);
+        return -1;
+    }
+
+    while (1) {
+        if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
+            AT_DEBUG_RX(line);
+            if (!at_match_line(line, expected, &found_response_data, &result))
+                goto end;
             continue;
-
-        AT_DEBUG_RX(line);
-
-        if (strcmp(line, "ERROR") == 0) {
-            result = -1;
-            goto end;
         }
-        if (strcmp(line, "OK") == 0) {
-            result = 0;
+
+        if (userdata->at_read_buffer_len >= AT_BUFFER_SIZE) {
+            fprintf(stderr, "AT response line too long or buffer full\n");
+            userdata->at_read_buffer_len = 0;
             goto end;
         }
 
-        if (expected && strncmp(line, expected, strlen(expected)) == 0) {
-            free(found_response_data);
-            found_response_data = strdup(line + strlen(expected));
-            while (*found_response_data == ' ')
-                memmove(found_response_data, found_response_data + 1, strlen(found_response_data));
+        struct kevent event;
+        const int nev = kevent(kq, NULL, 0, &event, 1, NULL);
+        if (nev < 0) {
+            fprintf(stderr, "kevent error: %s\n", strerror(errno));
+            goto end;
+        }
+
+        if (event.filter == EVFILT_TIMER) {
+            fprintf(stderr, "AT command timeout (%d ms)\n", deadline_ms);
+            goto end;
+        }
+
+        if (event.filter == EVFILT_READ) {
+            ssize_t bytes_read = read(userdata->fd, userdata->at_read_buffer + userdata->at_read_buffer_len,
+                                      AT_BUFFER_SIZE - userdata->at_read_buffer_len);
+            if (bytes_read <= 0) {
+                fprintf(stderr, "read error or connection closed\n");
+                goto end;
+            }
+            userdata->at_read_buffer_len += bytes_read;
+        }
+    }
+end:
+    close(kq);
+    if (result == 0 && response) {
+        *response = found_response_data;
+        found_response_data = NULL;
+    }
+    return result;
+}
+#else
+static int at_elapsed_ms(const struct timespec *start) {
+    const struct timespec now = get_current_clock(CLOCK_MONOTONIC);
+
+    return (int)((now.tv_sec - start->tv_sec) * 1000 + (now.tv_nsec - start->tv_nsec) / 1000000);
+}
+
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms) {
+    char line[AT_BUFFER_SIZE];
+    _cleanup_free_ char *found_response_data = NULL;
+    int result = -1;
+    const struct timespec start = get_current_clock(CLOCK_MONOTONIC);
+
+    if (response)
+        *response = NULL;
+
+    while (1) {
+        if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
+            AT_DEBUG_RX(line);
+            if (!at_match_line(line, expected, &found_response_data, &result))
+                goto end;
+            continue;
+        }
+
+        if (userdata->at_read_buffer_len >= AT_BUFFER_SIZE) {
+            fprintf(stderr, "AT response line too long or buffer full\n");
+            userdata->at_read_buffer_len = 0;
+            goto end;
+        }
+
+        const int elapsed = at_elapsed_ms(&start);
+        if (elapsed >= deadline_ms) {
+            fprintf(stderr, "AT command timeout (%d ms)\n", deadline_ms);
+            goto end;
+        }
+
+        struct pollfd pfd;
+        pfd.fd = userdata->fd;
+        pfd.events = POLLIN;
+
+        const int remain = deadline_ms - elapsed;
+        const int poll_ms = remain > AT_POLL_SLICE_MS ? AT_POLL_SLICE_MS : remain;
+        const int rv = poll(&pfd, 1, poll_ms);
+        if (rv < 0) {
+            fprintf(stderr, "poll error: %s\n", strerror(errno));
+            goto end;
+        } else if (rv == 0) {
+            continue;
+        }
+
+        if (pfd.revents & POLLIN) {
+            ssize_t bytes_read = read(userdata->fd, userdata->at_read_buffer + userdata->at_read_buffer_len,
+                                      AT_BUFFER_SIZE - userdata->at_read_buffer_len);
+            if (bytes_read <= 0) {
+                fprintf(stderr, "read error or connection closed\n");
+                goto end;
+            }
+            userdata->at_read_buffer_len += bytes_read;
         }
     }
 end:
@@ -134,6 +315,11 @@ end:
         found_response_data = NULL;
     }
     return result;
+}
+#endif
+
+int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+    return at_expect_with_deadline(userdata, response, expected, AT_DEFAULT_DEADLINE_MS);
 }
 
 int at_device_open(struct at_userdata *userdata, const char *device_name) {
