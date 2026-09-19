@@ -11,6 +11,16 @@
 #define ENV_UIM_SLOT APDU_ENV_NAME(QMI, UIM_SLOT)
 #define ENV_DEVICE APDU_ENV_NAME(QMI, DEVICE)
 
+/*
+ * If set to a truthy value, the SIM will be power-cycled (SIM Power Off
+ * followed by SIM Power On) right after a profile has been successfully
+ * enabled or disabled, so that the modem re-reads the (u)SIM.
+ */
+#define ENV_SIM_REFRESH APDU_ENV_NAME(QMI, SIM_REFRESH_AFTER_PROFILE_TOGGLE)
+
+/* Delay in milliseconds between SIM Power Off and SIM Power On. Defaults to 1000ms. */
+#define ENV_SIM_REFRESH_DELAY_MS APDU_ENV_NAME(QMI, SIM_REFRESH_DELAY_MS)
+
 #ifdef LPAC_WITH_DRIVER_APDU_QMI_QRTR
 #    include <libqrtr-glib.h>
 
@@ -49,3 +59,11 @@ QmiMessageUimSwitchSlotOutput *qmi_client_uim_switch_slot_sync(QmiClientUim *cli
 
 QmiMessageUimGetCardStatusOutput *qmi_client_uim_get_card_status_sync(QmiClientUim *client, GMainContext *context,
                                                                       GError **error);
+
+QmiMessageUimPowerOffSimOutput *qmi_client_uim_power_off_sim_sync(QmiClientUim *client,
+                                                                   QmiMessageUimPowerOffSimInput *input,
+                                                                   GMainContext *context, GError **error);
+
+QmiMessageUimPowerOnSimOutput *qmi_client_uim_power_on_sim_sync(QmiClientUim *client,
+                                                                 QmiMessageUimPowerOnSimInput *input,
+                                                                 GMainContext *context, GError **error);
