@@ -60,7 +60,8 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
     return -1;
 }
 
-int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+static int at_expect_core(struct at_userdata *userdata, char **response, const char *expected,
+                          int (*is_fallback_match)(const char *line)) {
     char line[AT_BUFFER_SIZE];
     DWORD bytes_read;
     _cleanup_free_ char *found_response_data = NULL;
@@ -124,6 +125,9 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
         if (expected && strncmp(line, expected, strlen(expected)) == 0) {
             free(found_response_data);
             found_response_data = strdup(line + strlen(expected));
+        } else if (is_fallback_match && is_fallback_match(line)) {
+            free(found_response_data);
+            found_response_data = strdup(line);
         }
     }
 
@@ -133,6 +137,21 @@ end:
         found_response_data = NULL;
     }
     return result;
+}
+
+int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+    return at_expect_core(userdata, response, expected, NULL);
+}
+
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms) {
+    (void)deadline_ms;
+    return at_expect_core(userdata, response, expected, NULL);
+}
+
+int at_expect_with_deadline_ex(struct at_userdata *userdata, char **response, const char *expected,
+                               int (*is_fallback_match)(const char *line), int deadline_ms) {
+    (void)deadline_ms;
+    return at_expect_core(userdata, response, expected, is_fallback_match);
 }
 
 int at_device_open(struct at_userdata *userdata, const char *device_name) {
