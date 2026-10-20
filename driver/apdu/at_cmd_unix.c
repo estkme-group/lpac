@@ -63,31 +63,37 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
     return 0;
 }
 
-/* Extracts the next complete line from `buf` into `line`, decoupled from at_userdata.
- * Returns 0 on success, -1 if no complete line is buffered yet. */
+/*
+ * Extracts the next complete line from `buf` into `line` and strips the trailing CR.
+ * Returns 0 on success, -1 if no complete line is buffered yet.
+ */
 static int at_pop_line(char *buf, size_t *buf_len, char *line, size_t line_size) {
     char *newline = memchr(buf, '\n', *buf_len);
     if (!newline)
         return -1;
 
-    size_t line_len = newline - buf;
+    const size_t consumed = newline - buf + 1;
+    size_t line_len = consumed - 1;
     if (line_len >= line_size)
         line_len = line_size - 1;
     memcpy(line, buf, line_len);
     line[line_len] = '\0';
 
-    memmove(buf, newline + 1, *buf_len - line_len - 1);
-    *buf_len -= line_len + 1;
+    memmove(buf, buf + consumed, *buf_len - consumed);
+    *buf_len -= consumed;
 
     line[strcspn(line, "\r")] = 0;
     return 0;
 }
 
-/* Applies AT response bookkeeping to an already-extracted `line`.
- * Returns 1 to keep reading, 0 once `result` is final. */
+/*
+ * Applies AT response bookkeeping (OK/ERROR detection, `expected` prefix capture)
+ * to an already-extracted `line`.
+ * Returns 0 once `result` is final, -1 if more lines are needed.
+ */
 static int at_match_line(const char *line, const char *expected, char **found_response_data, int *result) {
     if (strlen(line) == 0)
-        return 1;
+        return -1;
 
     if (strcmp(line, "ERROR") == 0) {
         *result = -1;
@@ -104,7 +110,7 @@ static int at_match_line(const char *line, const char *expected, char **found_re
         while (*found_response_data && (*found_response_data)[0] == ' ')
             memmove(*found_response_data, *found_response_data + 1, strlen(*found_response_data));
     }
-    return 1;
+    return -1;
 }
 
 #if defined(__linux__)
@@ -134,7 +140,7 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
     while (1) {
         if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
             AT_DEBUG_RX(line);
-            if (!at_match_line(line, expected, &found_response_data, &result))
+            if (at_match_line(line, expected, &found_response_data, &result) == 0)
                 goto end;
             continue;
         }
@@ -195,7 +201,7 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
         return -1;
     }
 
-    /* No NOTE_MSECONDS: EVFILT_TIMER defaults to ms without a NOTE_*SECONDS flag. */
+    // No NOTE_MSECONDS: EVFILT_TIMER defaults to ms without a NOTE_*SECONDS flag.
     struct kevent changes[2];
     EV_SET(&changes[0], userdata->fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
     EV_SET(&changes[1], (uintptr_t)userdata, EVFILT_TIMER, EV_ADD | EV_ONESHOT, 0, deadline_ms, NULL);
@@ -208,7 +214,7 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
     while (1) {
         if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
             AT_DEBUG_RX(line);
-            if (!at_match_line(line, expected, &found_response_data, &result))
+            if (at_match_line(line, expected, &found_response_data, &result) == 0)
                 goto end;
             continue;
         }
@@ -268,7 +274,7 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
     while (1) {
         if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
             AT_DEBUG_RX(line);
-            if (!at_match_line(line, expected, &found_response_data, &result))
+            if (at_match_line(line, expected, &found_response_data, &result) == 0)
                 goto end;
             continue;
         }
