@@ -235,6 +235,14 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
      */
     qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int)1);
 
+    /*
+     * Allow the user to enable power-cycling the SIM after a successful
+     * profile enable/disable, so the modem re-reads the (u)SIM. Disabled
+     * by default.
+     */
+    qmi_priv->sim_refresh_enabled = getenv_or_default(ENV_SIM_REFRESH, false);
+    qmi_priv->sim_refresh_delay_ms = (guint)getenv_or_default(ENV_SIM_REFRESH_DELAY_MS, (int)1000);
+
     ifstruct->userdata = qmi_priv;
 
     return 0;

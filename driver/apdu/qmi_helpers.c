@@ -197,3 +197,35 @@ QmiMessageUimGetCardStatusOutput *qmi_client_uim_get_card_status_sync(QmiClientU
 
     return qmi_client_uim_get_card_status_finish(client, result, error);
 }
+
+QmiMessageUimPowerOffSimOutput *qmi_client_uim_power_off_sim_sync(QmiClientUim *client,
+                                                                   QmiMessageUimPowerOffSimInput *input,
+                                                                   GMainContext *context, GError **error) {
+    g_autoptr(GMainContextPusher) pusher = NULL;
+    g_autoptr(GAsyncResult) result = NULL;
+
+    pusher = g_main_context_pusher_new(context);
+
+    qmi_client_uim_power_off_sim(client, input, 10, NULL, async_result_ready, &result);
+
+    while (result == NULL)
+        g_main_context_iteration(context, TRUE);
+
+    return qmi_client_uim_power_off_sim_finish(client, result, error);
+}
+
+QmiMessageUimPowerOnSimOutput *qmi_client_uim_power_on_sim_sync(QmiClientUim *client,
+                                                                 QmiMessageUimPowerOnSimInput *input,
+                                                                 GMainContext *context, GError **error) {
+    g_autoptr(GMainContextPusher) pusher = NULL;
+    g_autoptr(GAsyncResult) result = NULL;
+
+    pusher = g_main_context_pusher_new(context);
+
+    qmi_client_uim_power_on_sim(client, input, 10, NULL, async_result_ready, &result);
+
+    while (result == NULL)
+        g_main_context_iteration(context, TRUE);
+
+    return qmi_client_uim_power_on_sim_finish(client, result, error);
+}
