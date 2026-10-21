@@ -110,7 +110,7 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     if (res == CURLE_SSL_CONNECT_ERROR) {
         fprintf(stderr,
                 "libcurl: TLS handshake failed: %s, see known issues at "
-                "https://github.com/estkme-group/lpac/blob/main/docs/FAQ.md.\n",
+                "<https://github.com/estkme-group/lpac/blob/HEAD/docs/DEVICE-SPECIFIC-CAVEATS.md>.\n",
                 libcurl._curl_easy_strerror(res));
         goto err;
     }
