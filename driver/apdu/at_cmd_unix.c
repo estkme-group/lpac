@@ -8,12 +8,22 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h> // Required for serial port configuration
 #include <time.h>
 #include <unistd.h>
+
+#if defined(__linux__)
+#    include <sys/timerfd.h>
+#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) \
+    || defined(__DragonFly__)
+#    include <sys/event.h>
+#    include <sys/time.h>
+#    define AT_HAVE_KQUEUE 1
+#endif
 
 #if defined(__linux__)
 int enumerate_serial_device(cJSON *devices) {
@@ -54,86 +64,244 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
     return 0;
 }
 
-int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+/*
+ * Extracts the next complete line from `buf` into `line` and strips the trailing CR.
+ * Returns 0 on success, -1 if no complete line is buffered yet.
+ */
+static int at_pop_line(char *buf, size_t *buf_len, char *line, size_t line_size) {
+    char *newline = memchr(buf, '\n', *buf_len);
+    if (!newline)
+        return -1;
+
+    const size_t consumed = newline - buf + 1;
+    size_t line_len = consumed - 1;
+    if (line_len >= line_size)
+        line_len = line_size - 1;
+    memcpy(line, buf, line_len);
+    line[line_len] = '\0';
+
+    memmove(buf, buf + consumed, *buf_len - consumed);
+    *buf_len -= consumed;
+
+    line[strcspn(line, "\r")] = 0;
+    return 0;
+}
+
+/*
+ * Applies AT response bookkeeping (OK/ERROR detection, `expected` prefix capture)
+ * to an already-extracted `line`.
+ * Returns 0 once `result` is final, -1 if more lines are needed.
+ */
+static int at_match_line(const char *line, const char *expected, char **found_response_data, int *result) {
+    if (strlen(line) == 0)
+        return -1;
+
+    if (strcmp(line, "ERROR") == 0) {
+        *result = -1;
+        return 0;
+    }
+    if (strcmp(line, "OK") == 0) {
+        *result = 0;
+        return 0;
+    }
+
+    if (expected && strncmp(line, expected, strlen(expected)) == 0) {
+        free(*found_response_data);
+        *found_response_data = strdup(line + strlen(expected));
+        while (*found_response_data && (*found_response_data)[0] == ' ')
+            memmove(*found_response_data, *found_response_data + 1, strlen(*found_response_data));
+    }
+    return -1;
+}
+
+struct at_deadline {
+    int fd;
+    int event_fd;
+    int ms;
+    struct timespec start;
+};
+
+/*
+ * at_deadline_wait() blocks until `fd` is readable or the deadline passes,
+ * setting `timed_out` in the latter case. Returns 0 on success, -1 on error.
+ */
+#if defined(__linux__)
+static int at_deadline_init(struct at_deadline *d, int fd, int ms) {
+    d->fd = fd;
+    d->ms = ms;
+    d->event_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+    if (d->event_fd < 0) {
+        fprintf(stderr, "timerfd_create error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    const struct itimerspec its = {
+        .it_value = {.tv_sec = ms / 1000, .tv_nsec = (long)(ms % 1000) * 1000000L},
+    };
+    if (timerfd_settime(d->event_fd, 0, &its, NULL) < 0) {
+        fprintf(stderr, "timerfd_settime error: %s\n", strerror(errno));
+        close(d->event_fd);
+        return -1;
+    }
+    return 0;
+}
+
+static int at_deadline_wait(struct at_deadline *d, bool *timed_out) {
+    while (1) {
+        struct pollfd pfds[2];
+        pfds[0].fd = d->fd;
+        pfds[0].events = POLLIN;
+        pfds[1].fd = d->event_fd;
+        pfds[1].events = POLLIN;
+
+        if (poll(pfds, 2, -1) < 0) {
+            fprintf(stderr, "poll error: %s\n", strerror(errno));
+            return -1;
+        }
+
+        if (pfds[1].revents & POLLIN) {
+            *timed_out = true;
+            return 0;
+        }
+        if (pfds[0].revents & POLLIN)
+            return 0;
+    }
+}
+
+static void at_deadline_destroy(struct at_deadline *d) { close(d->event_fd); }
+#elif defined(AT_HAVE_KQUEUE)
+static int at_deadline_init(struct at_deadline *d, int fd, int ms) {
+    d->fd = fd;
+    d->ms = ms;
+    d->event_fd = kqueue();
+    if (d->event_fd < 0) {
+        fprintf(stderr, "kqueue error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    struct kevent changes[2];
+    EV_SET(&changes[0], fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+    EV_SET(&changes[1], (uintptr_t)d, EVFILT_TIMER, EV_ADD | EV_ONESHOT, 0, ms, NULL);
+    if (kevent(d->event_fd, changes, 2, NULL, 0, NULL) < 0) {
+        fprintf(stderr, "kevent register error: %s\n", strerror(errno));
+        close(d->event_fd);
+        return -1;
+    }
+    return 0;
+}
+
+static int at_deadline_wait(struct at_deadline *d, bool *timed_out) {
+    while (1) {
+        struct kevent event;
+        if (kevent(d->event_fd, NULL, 0, &event, 1, NULL) < 0) {
+            fprintf(stderr, "kevent error: %s\n", strerror(errno));
+            return -1;
+        }
+
+        if (event.filter == EVFILT_TIMER) {
+            *timed_out = true;
+            return 0;
+        }
+        if (event.filter == EVFILT_READ)
+            return 0;
+    }
+}
+
+static void at_deadline_destroy(struct at_deadline *d) { close(d->event_fd); }
+#else
+static int at_elapsed_ms(const struct timespec *start) {
+    const struct timespec now = get_current_clock(CLOCK_MONOTONIC);
+
+    return (int)((now.tv_sec - start->tv_sec) * 1000 + (now.tv_nsec - start->tv_nsec) / 1000000);
+}
+
+static int at_deadline_init(struct at_deadline *d, int fd, int ms) {
+    d->fd = fd;
+    d->ms = ms;
+    d->event_fd = -1;
+    d->start = get_current_clock(CLOCK_MONOTONIC);
+    return 0;
+}
+
+static int at_deadline_wait(struct at_deadline *d, bool *timed_out) {
+    while (1) {
+        const int elapsed = at_elapsed_ms(&d->start);
+        if (elapsed >= d->ms) {
+            *timed_out = true;
+            return 0;
+        }
+
+        struct pollfd pfd;
+        pfd.fd = d->fd;
+        pfd.events = POLLIN;
+
+        const int remain = d->ms - elapsed;
+        const int rv = poll(&pfd, 1, remain > AT_POLL_SLICE_MS ? AT_POLL_SLICE_MS : remain);
+        if (rv < 0) {
+            fprintf(stderr, "poll error: %s\n", strerror(errno));
+            return -1;
+        }
+        if (rv > 0 && (pfd.revents & POLLIN))
+            return 0;
+    }
+}
+
+static void at_deadline_destroy(struct at_deadline *d) { (void)d; }
+#endif
+
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms) {
     char line[AT_BUFFER_SIZE];
     _cleanup_free_ char *found_response_data = NULL;
+    struct at_deadline deadline;
+    bool timed_out = false;
     int result = -1;
 
     if (response)
         *response = NULL;
 
+    if (at_deadline_init(&deadline, userdata->fd, deadline_ms) < 0)
+        return -1;
+
     while (1) {
-        char *newline = memchr(userdata->at_read_buffer, '\n', userdata->at_read_buffer_len);
-        if (!newline) {
-            if (userdata->at_read_buffer_len >= AT_BUFFER_SIZE) {
-                fprintf(stderr, "AT response line too long or buffer full\n");
-                userdata->at_read_buffer_len = 0;
+        if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
+            AT_DEBUG_RX(line);
+            if (at_match_line(line, expected, &found_response_data, &result) == 0)
                 goto end;
-            }
-
-            struct pollfd pfd;
-            pfd.fd = userdata->fd;
-            pfd.events = POLLIN;
-
-            int rv = poll(&pfd, 1, -1);
-            if (rv < 0) {
-                fprintf(stderr, "poll error: %s\n", strerror(errno));
-                goto end;
-            } else if (rv == 0) {
-                fprintf(stderr, "AT command timeout\n");
-                goto end;
-            }
-
-            if (pfd.revents & POLLIN) {
-                ssize_t bytes_read = read(userdata->fd, userdata->at_read_buffer + userdata->at_read_buffer_len,
-                                          AT_BUFFER_SIZE - userdata->at_read_buffer_len);
-                if (bytes_read <= 0) {
-                    fprintf(stderr, "read error or connection closed\n");
-                    goto end;
-                }
-                userdata->at_read_buffer_len += bytes_read;
-            }
             continue;
         }
 
-        size_t line_len = newline - userdata->at_read_buffer;
-        if (line_len >= sizeof(line))
-            line_len = sizeof(line) - 1;
-        memcpy(line, userdata->at_read_buffer, line_len);
-        line[line_len] = '\0';
-
-        memmove(userdata->at_read_buffer, newline + 1, userdata->at_read_buffer_len - line_len - 1);
-        userdata->at_read_buffer_len -= line_len + 1;
-
-        line[strcspn(line, "\r")] = 0;
-
-        if (strlen(line) == 0)
-            continue;
-
-        AT_DEBUG_RX(line);
-
-        if (strcmp(line, "ERROR") == 0) {
-            result = -1;
-            goto end;
-        }
-        if (strcmp(line, "OK") == 0) {
-            result = 0;
+        if (userdata->at_read_buffer_len >= AT_BUFFER_SIZE) {
+            fprintf(stderr, "AT response line too long or buffer full\n");
+            userdata->at_read_buffer_len = 0;
             goto end;
         }
 
-        if (expected && strncmp(line, expected, strlen(expected)) == 0) {
-            free(found_response_data);
-            found_response_data = strdup(line + strlen(expected));
-            while (*found_response_data == ' ')
-                memmove(found_response_data, found_response_data + 1, strlen(found_response_data));
+        if (at_deadline_wait(&deadline, &timed_out) < 0)
+            goto end;
+        if (timed_out) {
+            fprintf(stderr, "AT command timeout (%d ms)\n", deadline_ms);
+            goto end;
         }
+
+        ssize_t bytes_read = read(userdata->fd, userdata->at_read_buffer + userdata->at_read_buffer_len,
+                                  AT_BUFFER_SIZE - userdata->at_read_buffer_len);
+        if (bytes_read <= 0) {
+            fprintf(stderr, "read error or connection closed\n");
+            goto end;
+        }
+        userdata->at_read_buffer_len += bytes_read;
     }
 end:
+    at_deadline_destroy(&deadline);
     if (result == 0 && response) {
         *response = found_response_data;
         found_response_data = NULL;
     }
     return result;
+}
+
+int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+    return at_expect_with_deadline(userdata, response, expected, AT_DEFAULT_DEADLINE_MS);
 }
 
 int at_device_open(struct at_userdata *userdata, const char *device_name) {
