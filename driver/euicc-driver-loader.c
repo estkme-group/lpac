@@ -128,7 +128,9 @@ static char *get_origin() {
  * programmatically. So we can't test this feature is available, we can only assume there is only
  * Glibc and Musl on Linux, forget Nolibc and other libc implementations on Linux.
  */
-#if defined(__GLIBC__) || defined(__linux__) || defined(__FreeBSD__) || (defined(__sun) && defined(__SVR4))
+#if defined(__ANDROID__) || defined(ANDROID)
+static char *get_runpath() { return strdup("$ORIGIN"); }
+#elif defined(__GLIBC__) || defined(__linux__) || defined(__FreeBSD__) || (defined(__sun) && defined(__SVR4))
 static char *get_runpath() {
     void *handle = dlopen(NULL, RTLD_NOW);
     if (handle == NULL) {
