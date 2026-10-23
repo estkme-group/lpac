@@ -10,8 +10,49 @@
 #include <string.h>
 #include <unistd.h>
 
-int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList) {
+// Write the tags for the requested fields, in ascending tag order, and return the
+// length. The buffer must hold at least ES10C_PROFILE_INFO_TAGLIST_MAX bytes.
+#define ES10C_PROFILE_INFO_TAGLIST_MAX 10
+static uint32_t es10c_profile_info_taglist(uint8_t *buffer, uint32_t fields) {
+    uint32_t len = 0;
+
+    if (fields & ES10C_PROFILE_INFO_FIELD_ISDP_AID) {
+        buffer[len++] = 0x4F;
+    }
+    if (fields & ES10C_PROFILE_INFO_FIELD_ICCID) {
+        buffer[len++] = 0x5A;
+    }
+    if (fields & ES10C_PROFILE_INFO_FIELD_PROFILE_NICKNAME) {
+        buffer[len++] = 0x90;
+    }
+    if (fields & ES10C_PROFILE_INFO_FIELD_PROVIDER_NAME) {
+        buffer[len++] = 0x91;
+    }
+    if (fields & ES10C_PROFILE_INFO_FIELD_PROFILE_NAME) {
+        buffer[len++] = 0x92;
+    }
+    if (fields & ES10C_PROFILE_INFO_FIELD_ICON) {
+        buffer[len++] = 0x93;
+        buffer[len++] = 0x94;
+    }
+    if (fields & ES10C_PROFILE_INFO_FIELD_PROFILE_CLASS) {
+        buffer[len++] = 0x95;
+    }
+    if (fields & ES10C_PROFILE_INFO_FIELD_PROFILE_STATE) {
+        buffer[len++] = 0x9F;
+        buffer[len++] = 0x70;
+    }
+
+    return len;
+}
+
+int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_list **profileInfoList, uint32_t fields) {
     int fret = 0;
+    uint8_t taglist[ES10C_PROFILE_INFO_TAGLIST_MAX];
+    struct euicc_derutil_node n_taglist = {
+        .tag = 0x5C, // tagList
+        .value = taglist,
+    };
     struct euicc_derutil_node n_request = {
         .tag = 0xBF2D, // ProfileInfoListRequest
     };
@@ -26,6 +67,13 @@ int es10c_get_profiles_info(struct euicc_ctx *ctx, struct es10c_profile_info_lis
     int tmpint;
 
     *profileInfoList = NULL;
+
+    // With no tag list the eUICC returns its own default set, which may be too large
+    // for some modems to carry back. Callers asking for specific fields get a tag list.
+    n_taglist.length = es10c_profile_info_taglist(taglist, fields);
+    if (n_taglist.length != 0) {
+        n_request.pack.child = &n_taglist;
+    }
 
     reqlen = sizeof(ctx->apdu._internal.request_buffer.body);
     if (euicc_derutil_pack(ctx->apdu._internal.request_buffer.body, &reqlen, &n_request)) {
