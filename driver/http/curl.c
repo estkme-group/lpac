@@ -2,9 +2,28 @@
 #include <euicc/interface.h>
 #include <lpac/utils.h>
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/*
+ * By default lpac does not verify the SM-DP+/SM-DS server's TLS certificate
+ * or hostname, since some servers use certificates issued by CAs that are
+ * not (yet) part of the GSMA CI trust store shipped with common OS trust
+ * stores. Setting this environment variable to a truthy value re-enables
+ * both checks. This is intentionally not backend-specific (see
+ * HTTP_ENV_NAME), so all HTTP backends that support it use the same name.
+ */
+#define ENV_SSL_VERIFY "LPAC_HTTP_SSL_VERIFY"
+
+/*
+ * Path to a PEM file with the CA certificates to trust, e.g. the GSMA CI
+ * certificates. If set, only these certificates are trusted (the system trust
+ * store is not used) and verification is enabled unless ENV_SSL_VERIFY is
+ * explicitly set to a falsy value. Shared with the WinHTTP backend.
+ */
+#define ENV_TRUST_STORE "LPAC_HTTP_TRUST_STORE"
 
 #ifndef _WIN32
 #    include <curl/curl.h>
@@ -18,6 +37,10 @@
 #    define CURLOPT_WRITEDATA 10001
 #    define CURLOPT_SSL_VERIFYPEER 64
 #    define CURLOPT_SSL_VERIFYHOST 81
+#    define CURLOPT_CAINFO 10065
+#    define CURLOPT_CAPATH 10097
+#    define CURLOPT_ERRORBUFFER 10010
+#    define CURL_ERROR_SIZE 256
 #    define CURLOPT_HTTPHEADER 10023
 #    define CURLOPT_POSTFIELDS 10015
 #    define CURLOPT_POSTFIELDSIZE 60
@@ -51,6 +74,18 @@ static struct libcurl_interface {
     char *(*_curl_version)(void);
 } libcurl;
 
+/*
+ * Populated once in libhttpinterface_init() from ENV_SSL_VERIFY.
+ * CURLOPT_SSL_VERIFYHOST only accepts 0 (disabled) or 2 (enabled, match the
+ * hostname against the certificate) - 1 is a legacy value curl no longer
+ * accepts.
+ */
+static long ssl_verifypeer = 0L;
+static long ssl_verifyhost = 0L;
+
+/* Populated once in libhttpinterface_init() from ENV_TRUST_STORE, NULL if not set. */
+static char *ssl_cainfo = NULL;
+
 static size_t http_trans_write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
     struct http_trans_response_data *mem = (struct http_trans_response_data *)userp;
@@ -77,7 +112,9 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     struct http_trans_response_data responseData = {0};
     struct curl_slist *headers = NULL, *nheaders = NULL;
     long response_code;
+    char errbuf[CURL_ERROR_SIZE];
 
+    errbuf[0] = '\0';
     (*rx) = NULL;
     (*rcode) = 0;
 
@@ -87,10 +124,25 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     }
 
     libcurl._curl_easy_setopt(curl, CURLOPT_URL, url);
+    libcurl._curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
     libcurl._curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, http_trans_write_callback);
     libcurl._curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&responseData);
-    libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, ssl_verifypeer);
+    libcurl._curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, ssl_verifyhost);
+    if (ssl_cainfo != NULL) {
+        /*
+         * Trust only the certificates from ENV_TRUST_STORE: CURLOPT_CAINFO
+         * replaces libcurl's default CA bundle, and clearing CURLOPT_CAPATH
+         * drops its default CA directory (e.g. /etc/ssl/certs), which libcurl
+         * would otherwise consult as well. Clearing CURLOPT_CAPATH fails
+         * harmlessly on TLS backends without CA directory support.
+         */
+        if (libcurl._curl_easy_setopt(curl, CURLOPT_CAINFO, ssl_cainfo) != CURLE_OK) {
+            fprintf(stderr, "libcurl: cannot use trust store '%s'\n", ssl_cainfo);
+            goto err;
+        }
+        libcurl._curl_easy_setopt(curl, CURLOPT_CAPATH, (char *)NULL);
+    }
     for (int i = 0; h[i] != NULL; i++) {
         nheaders = libcurl._curl_slist_append(headers, h[i]);
         if (nheaders == NULL) {
@@ -116,7 +168,8 @@ static int http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint3
     }
 
     if (res != CURLE_OK) {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", libcurl._curl_easy_strerror(res));
+        fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                errbuf[0] != '\0' ? errbuf : libcurl._curl_easy_strerror(res));
         goto err;
     }
 
@@ -181,9 +234,50 @@ static int libhttpinterface_init(struct euicc_http_interface *ifstruct) {
         return -1;
     }
 
+    /*
+     * TLS certificate/hostname verification is disabled by default for
+     * backward compatibility (see ENV_SSL_VERIFY above). Set the env
+     * variable to enable it. Configuring a trust store (ENV_TRUST_STORE)
+     * enables it too, unless ENV_SSL_VERIFY is explicitly disabled.
+     */
+    const char *trust_store = getenv_or_default(ENV_TRUST_STORE, (char *)NULL);
+    if (getenv_or_default(ENV_SSL_VERIFY, (bool)(trust_store != NULL))) {
+        ssl_verifypeer = 1L;
+        ssl_verifyhost = 2L;
+    } else {
+        ssl_verifypeer = 0L;
+        ssl_verifyhost = 0L;
+        if (trust_store != NULL) {
+            fprintf(stderr, "WARNING: '%s' is ignored, since '%s' disables TLS verification\n", ENV_TRUST_STORE,
+                    ENV_SSL_VERIFY);
+            trust_store = NULL;
+        }
+    }
+
+    free(ssl_cainfo);
+    ssl_cainfo = NULL;
+    if (trust_store != NULL) {
+        /* Fail early (and closed) if the trust store can't be read. */
+        FILE *fp = fopen(trust_store, "rb");
+        if (fp == NULL) {
+            fprintf(stderr, "%s: cannot read '%s': %s\n", ENV_TRUST_STORE, trust_store, strerror(errno));
+            return -1;
+        }
+        fclose(fp);
+        ssl_cainfo = strdup(trust_store);
+        if (ssl_cainfo == NULL) {
+            return -1;
+        }
+    }
+
     ifstruct->transmit = http_interface_transmit;
 
     return 0;
+}
+
+static void libhttpinterface_fini(struct euicc_http_interface *ifstruct) {
+    free(ssl_cainfo);
+    ssl_cainfo = NULL;
 }
 
 static int libapduinterface_main(const struct euicc_apdu_interface *ifstruct, int argc, char **argv) {
@@ -204,5 +298,5 @@ DRIVER_INTERFACE = {
     .name = "curl",
     .init = (int (*)(void *))libhttpinterface_init,
     .main = (int (*)(void *, int, char **))libapduinterface_main,
-    .fini = NULL,
+    .fini = (void (*)(void *))libhttpinterface_fini,
 };
