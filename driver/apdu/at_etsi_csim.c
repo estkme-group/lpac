@@ -57,7 +57,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     euicc_hexutil_bin2hex(encoded, tx_len * 2 + 1, tx, tx_len);
 
     at_emit_command(userdata, "AT+CSIM=%u,\"%s\"", tx_len * 2, encoded);
-    if (at_expect(userdata, &response, "+CSIM: ") != 0 || response == NULL)
+    if (at_expect(userdata, &response, "+CSIM:") != 0 || response == NULL)
         goto err;
 
     // Parse the response

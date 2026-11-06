@@ -64,7 +64,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     euicc_hexutil_bin2hex(encoded, tx_len * 2 + 1, tx, tx_len);
 
     at_emit_command(userdata, "AT+CGLA=%s,%u,\"%s\"", logic_channel, tx_len * 2, encoded);
-    if (at_expect(userdata, &response, "+CGLA: ") != 0 || response == NULL)
+    if (at_expect(userdata, &response, "+CGLA:") != 0 || response == NULL)
         goto err;
 
     strtok(response, ",");        // Skip length
@@ -112,7 +112,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 
     at_emit_command(userdata, "AT+CCHO=\"%s\"", aid_hex);
     _cleanup_free_ char *response = NULL;
-    if (at_expect(userdata, &response, "+CCHO: ") != 0 || response == NULL)
+    if (at_expect(userdata, &response, "+CCHO:") != 0 || response == NULL)
         return -1;
 
     const int channel_id = at_channel_next_id(userdata);
