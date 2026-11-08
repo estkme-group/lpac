@@ -185,7 +185,7 @@ endif()
 
 if (LPAC_WITH_HTTP_WINHTTP)
     add_library(driver_http_winhttp SHARED ${CMAKE_CURRENT_SOURCE_DIR}/http/winhttp.c)
-    target_link_libraries(driver_http_winhttp PRIVATE winhttp euicc euicc-drivers lpac-utils)
+    target_link_libraries(driver_http_winhttp PRIVATE winhttp crypt32 euicc euicc-drivers lpac-utils)
     set_target_properties(driver_http_winhttp PROPERTIES PREFIX "")
     install(TARGETS driver_http_winhttp LIBRARY DESTINATION ${DRIVER_INSTALL_PATH})
 endif ()

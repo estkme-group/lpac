@@ -10,6 +10,13 @@
   ([boolean](backends/types.md#boolean-type), default: `false`)
 - `LPAC_HTTP_DEBUG`: enable debug output for HTTP. \
   ([boolean](backends/types.md#boolean-type), default: `false`)
+- `LPAC_HTTP_SSL_VERIFY`: verify the TLS certificate and hostname of the SM-DP+/SM-DS server
+  (`curl` and `winhttp` backends). \
+  ([boolean](backends/types.md#boolean-type), default: `false`, or `true` if `LPAC_HTTP_TRUST_STORE` is set)
+- `LPAC_HTTP_TRUST_STORE`: path to a PEM file with the CA certificates to verify the TLS certificate of the
+  SM-DP+/SM-DS server with, instead of the system trust store, e.g. the GSMA CI certificates from
+  <https://euicc-manual.osmocom.org/docs/pki/ci/bundle.pem> (`curl` and `winhttp` backends). \
+  ([string](backends/types.md#string-type), default: unset)
 
 ## Backends
 
