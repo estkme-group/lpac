@@ -62,6 +62,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
 
     encoded = malloc(tx_len * 2 + 1);
     euicc_hexutil_bin2hex(encoded, tx_len * 2 + 1, tx, tx_len);
+    at_apply_hex_case(encoded);
 
     at_emit_command(userdata, "AT+CGLA=%s,%u,\"%s\"", logic_channel, tx_len * 2, encoded);
     if (at_expect(userdata, &response, "+CGLA: ") != 0 || response == NULL)
@@ -102,6 +103,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 
     _cleanup_free_ char *aid_hex = malloc(aid_len * 2 + 1);
     euicc_hexutil_bin2hex(aid_hex, aid_len * 2 + 1, aid, aid_len);
+    at_apply_hex_case(aid_hex);
 
     for (int index = 0; index < AT_MAX_LOGICAL_CHANNELS; index++) {
         if (channels[index] == NULL)
