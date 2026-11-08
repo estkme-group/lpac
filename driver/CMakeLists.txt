@@ -74,6 +74,7 @@ if (LPAC_WITH_APDU_AT)
 
     function(add_at_driver target_name extra_sources)
         add_library(${target_name} SHARED
+            ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_cmd.c
             ${CMAKE_CURRENT_SOURCE_DIR}/apdu/at_helpers.c
             ${extra_sources}
         )

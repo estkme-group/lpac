@@ -7,6 +7,7 @@
 // windows.h MUST before other Windows headers
 #include <devguid.h>
 #include <setupapi.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,71 +61,61 @@ int at_write_command(struct at_userdata *userdata, const char *command) {
     return -1;
 }
 
-int at_expect(struct at_userdata *userdata, char **response, const char *expected) {
+int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms) {
     char line[AT_BUFFER_SIZE];
-    DWORD bytes_read;
     _cleanup_free_ char *found_response_data = NULL;
+    const ULONGLONG start = GetTickCount64();
     int result = -1;
-    HANDLE hComm = userdata->hComm;
-    char *at_read_buffer = userdata->at_read_buffer;
-    DWORD *at_read_buffer_len_ptr = &userdata->at_read_buffer_len; // Use pointer for easier modification
 
     if (response)
         *response = NULL;
 
     while (true) {
-        char *newline = memchr(at_read_buffer, '\n', *at_read_buffer_len_ptr);
-        if (!newline) {
-            if (*at_read_buffer_len_ptr >= sizeof(userdata->at_read_buffer)) {
-                fprintf(stderr, "AT response line too long or buffer full\n");
-                *at_read_buffer_len_ptr = 0;
-                result = -1;
+        if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
+            AT_DEBUG_RX(line);
+            if (at_match_line(line, expected, &found_response_data, &result) == 0)
                 goto end;
-            }
-            if (!ReadFile(hComm, at_read_buffer + *at_read_buffer_len_ptr,
-                          sizeof(userdata->at_read_buffer) - *at_read_buffer_len_ptr, &bytes_read, NULL)) {
-                fprintf(stderr, "ReadFile error: %lu\n", GetLastError());
-                result = -1;
-                goto end;
-            }
-
-            if (bytes_read == 0) {
-                fprintf(stderr, "AT command timeout\n");
-                result = -1;
-                goto end;
-            }
-
-            *at_read_buffer_len_ptr += bytes_read;
             continue;
         }
 
-        const int line_len = newline - at_read_buffer;
-        memcpy(line, at_read_buffer, line_len);
-        line[line_len] = '\0';
-
-        memmove(at_read_buffer, newline + 1, *at_read_buffer_len_ptr - line_len - 1);
-        *at_read_buffer_len_ptr -= line_len + 1;
-
-        line[strcspn(line, "\r")] = 0;
-
-        if (strlen(line) == 0) {
-            continue;
-        }
-
-        AT_DEBUG_RX(line);
-
-        if (strcmp(line, "ERROR") == 0) {
-            result = -1;
+        if (userdata->at_read_buffer_len >= AT_BUFFER_SIZE) {
+            fprintf(stderr, "AT response line too long or buffer full\n");
+            userdata->at_read_buffer_len = 0;
             goto end;
         }
-        if (strcmp(line, "OK") == 0) {
-            result = 0;
+
+        DWORD wait_ms = AT_POLL_SLICE_MS;
+        if (deadline_ms >= 0) {
+            const ULONGLONG elapsed = GetTickCount64() - start;
+            if (elapsed >= (ULONGLONG)deadline_ms) {
+                fprintf(stderr, "AT command timeout (%d ms)\n", deadline_ms);
+                goto end;
+            }
+            wait_ms = (DWORD)(deadline_ms - elapsed);
+        }
+
+        // ReadFile returns as soon as any byte arrives, or with zero bytes after wait_ms.
+        // https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-commtimeouts#remarks
+        COMMTIMEOUTS timeouts;
+        if (!GetCommTimeouts(userdata->hComm, &timeouts)) {
+            fprintf(stderr, "GetCommTimeouts error: %lu\n", GetLastError());
             goto end;
         }
-        if (expected && strncmp(line, expected, strlen(expected)) == 0) {
-            free(found_response_data);
-            found_response_data = strdup(line + strlen(expected));
+        timeouts.ReadIntervalTimeout = MAXDWORD;
+        timeouts.ReadTotalTimeoutMultiplier = MAXDWORD;
+        timeouts.ReadTotalTimeoutConstant = wait_ms;
+        if (!SetCommTimeouts(userdata->hComm, &timeouts)) {
+            fprintf(stderr, "SetCommTimeouts error: %lu\n", GetLastError());
+            goto end;
         }
+
+        DWORD bytes_read;
+        if (!ReadFile(userdata->hComm, userdata->at_read_buffer + userdata->at_read_buffer_len,
+                      AT_BUFFER_SIZE - userdata->at_read_buffer_len, &bytes_read, NULL)) {
+            fprintf(stderr, "ReadFile error: %lu\n", GetLastError());
+            goto end;
+        }
+        userdata->at_read_buffer_len += bytes_read;
     }
 
 end:
