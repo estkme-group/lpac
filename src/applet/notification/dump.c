@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 static bool retrieve_notification(const char *eid, const uint32_t seqNumber) {
-    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
+    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification = {0};
 
     if (es10b_retrieve_notifications_list(&euicc_ctx, &notification, seqNumber)) {
         jprint_error("es10b_retrieve_notifications_list", NULL);
@@ -60,7 +60,8 @@ static int applet_main(const int argc, char **argv) {
     }
 
     if (all) {
-        _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
+        _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications = NULL,
+                                                                                           *rptr = NULL;
 
         if (es10b_list_notification(&euicc_ctx, &notifications)) {
             jprint_error("es10b_list_notification", NULL);

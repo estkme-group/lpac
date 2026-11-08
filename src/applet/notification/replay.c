@@ -92,7 +92,7 @@ static int applet_main(__attribute__((unused)) const int argc, __attribute__((un
 
     size_t n;
 
-    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
+    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification = {0};
 
     while (getline(&input, &n, stdin) != -1) {
         _cleanup_cjson_ cJSON *jroot = cJSON_ParseWithLength(input, n);

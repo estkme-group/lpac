@@ -11,7 +11,8 @@
 #include <unistd.h>
 
 static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
-    _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
+    _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications = NULL,
+                                                                                       *rptr = NULL;
     cJSON *jdata = NULL;
 
     if (es10b_list_notification(&euicc_ctx, &notifications)) {

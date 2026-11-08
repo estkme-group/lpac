@@ -14,9 +14,9 @@
 
 static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
     _cleanup_free_ char *eid = NULL;
-    _cleanup_(es10a_euicc_configured_addresses_free) struct es10a_euicc_configured_addresses addresses;
-    _cleanup_es10b_rat_list_ struct es10b_rat *ratList;
-    _cleanup_(es10c_ex_euiccinfo2_free) struct es10c_ex_euiccinfo2 euiccinfo2;
+    _cleanup_(es10a_euicc_configured_addresses_free) struct es10a_euicc_configured_addresses addresses = {0};
+    _cleanup_es10b_rat_list_ struct es10b_rat *ratList = NULL;
+    _cleanup_(es10c_ex_euiccinfo2_free) struct es10c_ex_euiccinfo2 euiccinfo2 = {0};
     cJSON *jaddresses = NULL, *jratList = NULL, *jeuiccinfo2 = NULL, *jdata = NULL;
 
     if (es10c_get_eid(&euicc_ctx, &eid)) {

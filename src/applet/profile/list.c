@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 static int applet_main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
-    _cleanup_es10c_profile_info_list_ struct es10c_profile_info_list *profiles;
+    _cleanup_es10c_profile_info_list_ struct es10c_profile_info_list *profiles = NULL;
     struct es10c_profile_info_list *rptr;
     cJSON *jdata = NULL;
 

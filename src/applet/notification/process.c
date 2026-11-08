@@ -15,7 +15,7 @@
 static int _process_single(const uint32_t seqNumber, const bool autoremove) {
     int ret;
     char str_seqNumber[11];
-    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification;
+    _cleanup_(es10b_pending_notification_free) struct es10b_pending_notification notification = {0};
 
     snprintf(str_seqNumber, sizeof(str_seqNumber), "%u", seqNumber);
 
@@ -83,7 +83,8 @@ static int applet_main(int argc, char **argv) {
     }
 
     if (all) {
-        _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications, *rptr;
+        _cleanup_es10b_notification_metadata_list_ struct es10b_notification_metadata_list *notifications = NULL,
+                                                                                           *rptr = NULL;
 
         jprint_progress("es10b_list_notification", NULL);
         if (es10b_list_notification(&euicc_ctx, &notifications)) {
