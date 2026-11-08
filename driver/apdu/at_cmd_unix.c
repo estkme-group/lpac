@@ -126,6 +126,10 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
             found_response_data = strdup(line + strlen(expected));
             while (*found_response_data == ' ')
                 memmove(found_response_data, found_response_data + 1, strlen(found_response_data));
+        } else if (response && !found_response_data && strncasecmp(line, "AT", 2) != 0) {
+            // Fallback: save non-echo content line for modems that return
+	    //	bare values without prefix (e.g. FM350-GL: "2\r\nOK" not "+CCHO: 2\r\nOK")
+            found_response_data = strdup(line);
         }
     }
 end:
