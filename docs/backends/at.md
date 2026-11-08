@@ -33,6 +33,9 @@ If you need to allow **non-root** users to access serial ports, read the followi
 
 - If you encounter the `+CME ERROR: 3` (Operation not allowed) issue, this may be related to device internal settings. \
   Please contact this modem FAE for instructions on how to resolve it.
+- On Unix-like platforms, each AT response line is bounded by a 10 second timeout. \
+  If the modem does not reply in time, the command fails with `AT command timeout (10,000 ms)` instead of waiting indefinitely. \
+  This timeout is not yet enforced on Windows.
 
 ## `at` Backend
 

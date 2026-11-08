@@ -112,7 +112,7 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 
     at_emit_command(userdata, "AT+CCHO=\"%s\"", aid_hex);
     _cleanup_free_ char *response = NULL;
-    if (at_expect(userdata, &response, "+CCHO: ") != 0 || response == NULL)
+    if (at_expect_ccho_channel(userdata, &response) != 0 || response == NULL)
         return -1;
 
     const int channel_id = at_channel_next_id(userdata);
