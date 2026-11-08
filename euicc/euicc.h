@@ -14,6 +14,13 @@ struct euicc_ctx {
     const uint8_t *aid;
     uint8_t aid_len;
     uint8_t es10x_mss;
+    /*
+     * Set by applet code (see src/applet/profile/enable.c, disable.c) right
+     * after a profile has been successfully enabled or disabled. APDU
+     * backends may inspect this (e.g. to power-cycle the SIM so a modem
+     * re-reads it) once the eUICC session ends.
+     */
+    uint8_t profile_toggled;
     struct {
         const struct euicc_apdu_interface *interface;
         struct {

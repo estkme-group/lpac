@@ -7,6 +7,56 @@
 
 #include <stdio.h>
 
+void qmi_apdu_maybe_power_cycle_sim(struct euicc_ctx *ctx) {
+    struct qmi_data *qmi_priv = ctx->apdu.interface->userdata;
+    g_autoptr(GError) error = NULL;
+    g_autoptr(QmiMessageUimPowerOffSimInput) power_off_input = NULL;
+    g_autoptr(QmiMessageUimPowerOffSimOutput) power_off_output = NULL;
+    g_autoptr(QmiMessageUimPowerOnSimInput) power_on_input = NULL;
+    g_autoptr(QmiMessageUimPowerOnSimOutput) power_on_output = NULL;
+
+    if (!ctx->profile_toggled)
+        return;
+
+    if (!qmi_priv->sim_refresh_enabled)
+        return;
+
+    if (!qmi_priv->uimClient || !qmi_priv->context) {
+        fprintf(stderr, "warning: cannot power-cycle SIM, QMI UIM client is gone\n");
+        return;
+    }
+
+    fprintf(stderr, "info: profile enable/disable succeeded, power-cycling SIM slot %d\n", qmi_priv->uimSlot);
+
+    power_off_input = qmi_message_uim_power_off_sim_input_new();
+    qmi_message_uim_power_off_sim_input_set_slot(power_off_input, qmi_priv->uimSlot, NULL);
+
+    power_off_output = qmi_client_uim_power_off_sim_sync(qmi_priv->uimClient, power_off_input, qmi_priv->context, &error);
+    if (!power_off_output) {
+        fprintf(stderr, "error: SIM power off failed: %s\n", error->message);
+        return;
+    }
+    if (!qmi_message_uim_power_off_sim_output_get_result(power_off_output, &error)) {
+        fprintf(stderr, "error: SIM power off operation failed: %s\n", error->message);
+        return;
+    }
+
+    g_usleep(qmi_priv->sim_refresh_delay_ms * 1000);
+
+    power_on_input = qmi_message_uim_power_on_sim_input_new();
+    qmi_message_uim_power_on_sim_input_set_slot(power_on_input, qmi_priv->uimSlot, NULL);
+
+    power_on_output = qmi_client_uim_power_on_sim_sync(qmi_priv->uimClient, power_on_input, qmi_priv->context, &error);
+    if (!power_on_output) {
+        fprintf(stderr, "error: SIM power on failed: %s\n", error->message);
+        return;
+    }
+    if (!qmi_message_uim_power_on_sim_output_get_result(power_on_output, &error)) {
+        fprintf(stderr, "error: SIM power on operation failed: %s\n", error->message);
+        return;
+    }
+}
+
 int qmi_apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
                                 uint32_t tx_len) {
     struct qmi_data *qmi_priv = ctx->apdu.interface->userdata;
@@ -133,6 +183,9 @@ void qmi_apdu_interface_disconnect(struct euicc_ctx *ctx) {
     g_autoptr(GError) error = NULL;
     QmiClient *client = QMI_CLIENT(qmi_priv->uimClient);
     QmiDevice *device = QMI_DEVICE(qmi_client_get_device(client));
+
+    /* Do this before releasing the UIM client, as it is still needed here. */
+    qmi_apdu_maybe_power_cycle_sim(ctx);
 
     qmi_device_release_client_sync(device, client, qmi_priv->context, &error);
     qmi_priv->uimClient = NULL;
