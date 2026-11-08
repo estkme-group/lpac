@@ -275,14 +275,14 @@ static int applet_main(int argc, char **argv) {
         }
 
         jprint_progress_obj("es8p_metadata_parse", jmetadata);
+    }
 
-        if (interactive_preview) {
-            int c;
-            jprint_progress("preview", "y/n");
-            c = getchar();
-            if (c != 'y' && c != 'Y') {
-                cancelled = 1;
-            }
+    if (interactive_preview) {
+        int c;
+        jprint_progress("preview", "y/n");
+        c = getchar();
+        if (c != 'y' && c != 'Y') {
+            cancelled = 1;
         }
     }
 
