@@ -98,6 +98,10 @@ static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
      * Use the primary SIM slot if not set.
      */
     qmi_priv->uimSlot = getenv_or_default(ENV_UIM_SLOT, (int)1);
+    // malloc'd, not zeroed: without this, a garbage-positive value makes the
+    // cleanup path close a wild channel after an init-failure abort — the
+    // estkme-group/lpac#419 root cause (garbage 1662901524 in the field).
+    qmi_priv->lastChannelId = -1;
 
     ifstruct->userdata = qmi_priv;
 
