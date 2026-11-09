@@ -57,7 +57,7 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
     euicc_hexutil_bin2hex(encoded, tx_len * 2 + 1, tx, tx_len);
 
     at_emit_command(userdata, "AT+CSIM=%u,\"%s\"", tx_len * 2, encoded);
-    if (at_expect(userdata, &response, "+CSIM: ") != 0 || response == NULL)
+    if (at_expect(userdata, &response, "+CSIM:") != 0 || response == NULL)
         goto err;
 
     // Parse the response
@@ -101,13 +101,55 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     const uint8_t manage_open[] = {0x00, 0x70, 0x00, 0x00, 0x01};
     _cleanup_free_ uint8_t *resp = NULL;
     uint32_t resp_len = 0;
-    if (apdu_interface_transmit(ctx, &resp, &resp_len, manage_open, sizeof(manage_open)) != 0) {
+    uint8_t channel_byte = 0;
+    if (apdu_interface_transmit(ctx, &resp, &resp_len, manage_open, sizeof(manage_open)) == 0 && resp_len == 3 &&
+        resp[1] == 0x90 && resp[2] == 0x00) {
+        channel_byte = resp[0];
+    } else {
+        // Some modems reject MANAGE CHANNEL over AT+CSIM. Fall back to the basic channel (0),
+        // which may disturb the modem's own USIM session until it re-selects it.
+        fprintf(stderr, "WARNING: MANAGE CHANNEL open rejected by modem, falling back to basic channel 0\n");
+    }
+
+    /*
+
+        per SGP.22 - RSP Technical Specification v2.6.1; Section 3.4.2 RSP Device Capabilities
+            The Device SHALL report its support of LPA functions using the Terminal Capability
+            command data defined in ETSI TS 102 221 [6]. This command SHALL be sent before the
+            SELECT ISD-R command defined in section 5.7.1.
+
+        per ETSI TS 102 221 V17.1.0 (2022-02); Section 11.1.19 TERMINAL CAPABILITY:
+        header:
+            CLA: 0x8x (standard logical channels 0-3, Section 10.1.1, table 10.3)
+            INS: 0xAA (section 10.1.2 Coding of Instruction Byte)
+            P1: 0x00
+            P2: 0x00;
+            Len: x
+        body:
+            tag: 0xA9
+            len: x
+        per ETSI TS 102 221 V17.1.0 (2022-02); Section 11.1.19.2.4 Additional Terminal capability indications related to eUICC:
+            Tag: 0x83
+            Len: 1
+            caps:
+                per t SGP.22 - RSP Technical Specification v2.6.1; Section 3.4.2 RSP Device Capabilities:
+                    b1 LPA has LUId support
+                    b2 LPA has LPDd support
+                    b3 LPA has LDSd support
+
+                For LPAd implementations according to this version of the specification, b1, b2 and b3
+                SHALL either all be set to 1 or all be set to 0.
+
+    */
+
+    const uint8_t tcaps[] = { (0x80 | channel_byte), 0xAA, 0x00, 0x00, 0x05, 0xA9, 0x03, 0x83, 0x01, 0x07 };
+    resp = NULL;
+    resp_len = 0;
+    apdu_interface_transmit(ctx, &resp, &resp_len, tcaps, sizeof(tcaps));
+
+    if (resp_len < 2 || (resp[resp_len - 2] != 0x90)) {
         return -1;
     }
-    if (resp_len != 3 || resp[1] != 0x90 || resp[2] != 0x00) {
-        return -1;
-    }
-    uint8_t channel_byte = resp[0];
 
     // Select AID
     _cleanup_free_ uint8_t *select_cmd = malloc(5 + aid_len);
@@ -134,6 +176,9 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
 }
 
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint8_t channel) {
+    if (channel == 0) {
+        return; // basic channel cannot be closed
+    }
     const uint8_t manage_close[] = {0x00, 0x70, 0x80, channel, 0x00};
     _cleanup_free_ uint8_t *resp = NULL;
     uint32_t resp_len = 0;
