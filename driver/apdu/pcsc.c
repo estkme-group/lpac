@@ -175,7 +175,7 @@ static void pcsc_close(const struct pcsc_userdata *userdata) {
 }
 
 static int pcsc_transmit_lowlevel(const struct pcsc_userdata *userdata, uint8_t *rx, uint32_t *rx_len,
-                                  const uint8_t *tx, const uint8_t tx_len) {
+                                  const uint8_t *tx, const uint32_t tx_len) {
     int ret;
     DWORD rx_len_merged;
 
