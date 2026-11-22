@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "at_helpers.h"
 #include "driver.h"
@@ -55,6 +56,14 @@ static int apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t
 
     encoded = malloc(tx_len * 2 + 1);
     euicc_hexutil_bin2hex(encoded, tx_len * 2 + 1, tx, tx_len);
+
+    // LPAC_APDU_AT_HEX=UPPER: some modems (Qualcomm-class parsers,
+    // cf. issue #428) reject lowercase hex in AT+CSIM with a bare
+    // ERROR — set this to force uppercase output
+    if (strcmp(getenv_or_default(ENV_AT_HEX, "lower"), "UPPER") == 0) {
+        for (uint32_t i = 0; i < tx_len * 2; i++)
+            encoded[i] = toupper(encoded[i]);
+    }
 
     at_emit_command(userdata, "AT+CSIM=%u,\"%s\"", tx_len * 2, encoded);
     if (at_expect(userdata, &response, "+CSIM: ") != 0 || response == NULL)

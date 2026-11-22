@@ -11,6 +11,7 @@
 
 #define ENV_AT_DEBUG APDU_ENV_NAME(AT, DEBUG)
 #define ENV_AT_DEVICE APDU_ENV_NAME(AT, DEVICE)
+#define ENV_AT_HEX APDU_ENV_NAME(AT, HEX)
 
 struct at_userdata {
     char *default_device;
