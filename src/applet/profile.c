@@ -20,6 +20,10 @@ static const struct applet_entry *applets[] = {
 };
 
 static int applet_main(const int argc, char **argv) {
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
+            return applet_entry(argc, argv, applets); /* usage only, no card access */
+    }
     const int ret = main_init_euicc();
     if (ret != 0)
         return ret;

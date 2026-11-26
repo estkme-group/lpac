@@ -29,6 +29,11 @@ int applet_entry(int argc, char **argv, const struct applet_entry **entries) {
         return -1;
     }
 
+    if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
+        applet_usage(argv[0], entries);
+        return 0;
+    }
+
     while ((entry = *entries_cpy++)) {
         if (strcmp(argv[1], entry->name) == 0) {
             return entry->main(argc - 1, argv + 1);
