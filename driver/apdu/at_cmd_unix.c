@@ -112,7 +112,7 @@ int at_expect(struct at_userdata *userdata, char **response, const char *expecte
 
         AT_DEBUG_RX(line);
 
-        if (strcmp(line, "ERROR") == 0) {
+        if (strcmp(line, "ERROR") == 0 || strncmp(line, "+CME ERROR", 10) == 0 || strncmp(line, "+CMS ERROR", 10) == 0) {
             result = -1;
             goto end;
         }
