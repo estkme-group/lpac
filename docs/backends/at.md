@@ -52,3 +52,6 @@ Use the [AT+CSIM][unmanaged] command for APDU transmission.
   ([string](types.md#string-type), default: `/dev/ttyUSB0` on Unix-like platform and `COM3` on Windows)
 - `LPAC_APDU_AT_DEBUG`: enable debug output for AT APDU backend. \
   ([boolean](types.md#boolean-type), default: `false`)
+- `LPAC_APDU_AT_HEX`: force uppercase or lowercase hex output in AT+CSIM commands. \
+  Some modems (Qualcomm-based) reject lowercase hex. \
+  ([string](types.md#string-type), values: `UPPER` or `lower`, default: `lower`)
