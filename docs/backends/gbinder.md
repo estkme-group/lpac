@@ -14,6 +14,8 @@ This backend uses the [`android.hardware.radio@1.0::IRadio`] HIDL interface to s
 
 ## Environment Variables
 
+- `LPAC_APDU_GBINDER_UIM_SLOT`: specify which UIM slot to use. \
+  ([integer](types.md#integer-type), default: `-1`, for autodetect. Slot number starts from `1`)
 - `LPAC_APDU_GBINDER_DEBUG`: enable debug output for GBinder APDU backend. \
   ([boolean](types.md#boolean-type), default: `false`)
 
