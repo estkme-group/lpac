@@ -6,6 +6,11 @@
   ([integer](backends/types.md#integer-type), default: 120, min: 6, max: 255)
 - `LPAC_CUSTOM_ISD_R_AID`: specify which AID will be used to open the logic channel. \
   ([string](backends/types.md#string-type), hexadecimal string, default: `A0000005591010FFFFFFFF8900000100`)
+- `LPAC_CUSTOM_PROFILE_LIST_SKIP_ICON`: ask the eUICC not to return the profile icon in
+  `profile list`. Some modems cannot carry a response that large and fail the command
+  instead (a Telit FN990A40 over QMI answers `InsufficientResources`). With this set,
+  `iconType` and `icon` are reported as `null`. \
+  ([boolean](backends/types.md#boolean-type), default: `false`)
 - `LPAC_APDU_DEBUG`: enable debug output for APDU. \
   ([boolean](backends/types.md#boolean-type), default: `false`)
 - `LPAC_HTTP_DEBUG`: enable debug output for HTTP. \
