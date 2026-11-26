@@ -36,8 +36,18 @@ static int apdu_interface_connect(struct euicc_ctx *ctx) {
     return true;
 }
 
+static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint8_t channel);
+
 static void apdu_interface_disconnect(struct euicc_ctx *ctx) {
     struct at_userdata *userdata = ctx->apdu.interface->userdata;
+
+    for (int channel = 1; channel <= AT_MAX_LOGICAL_CHANNELS; channel++) {
+        if (at_channel_get(userdata, channel) == NULL)
+            continue;
+        fprintf(stderr, "Cleaning up leaked APDU channel %d\n", channel);
+        apdu_interface_logic_channel_close(ctx, (uint8_t)channel);
+    }
+
     at_device_close(userdata);
 }
 
@@ -94,6 +104,8 @@ exit:
 }
 
 static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, const uint8_t aid_len) {
+    struct at_userdata *userdata = ctx->apdu.interface->userdata;
+
     _cleanup_free_ char *aid_hex = malloc(aid_len * 2 + 1);
     euicc_hexutil_bin2hex(aid_hex, aid_len * 2 + 1, aid, aid_len);
 
@@ -109,9 +121,18 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     }
     uint8_t channel_byte = resp[0];
 
+    // Register the open channel, like at_etsi does, so a later disconnect can
+    // close it when a session aborts without a matching logic_channel_close
+    char identifier[4]; // logical channel numbers are 1..19
+    snprintf(identifier, sizeof(identifier), "%d", channel_byte);
+    if (at_channel_set(userdata, channel_byte, identifier) != 0) {
+        return -1;
+    }
+
     // Select AID
     _cleanup_free_ uint8_t *select_cmd = malloc(5 + aid_len);
     if (select_cmd == NULL) {
+        apdu_interface_logic_channel_close(ctx, channel_byte);
         return -1;
     }
     select_cmd[0] = channel_byte;
@@ -124,20 +145,28 @@ static int apdu_interface_logic_channel_open(struct euicc_ctx *ctx, const uint8_
     resp = NULL;
     resp_len = 0;
     if (apdu_interface_transmit(ctx, &resp, &resp_len, select_cmd, 5 + aid_len) != 0) {
+        apdu_interface_logic_channel_close(ctx, channel_byte);
         return -1;
     }
 
     if (resp_len < 2 || (resp[resp_len - 2] != 0x90 && resp[resp_len - 2] != 0x61)) {
+        apdu_interface_logic_channel_close(ctx, channel_byte);
         return -1;
     }
     return (int)channel_byte; // channel number
 }
 
 static void apdu_interface_logic_channel_close(struct euicc_ctx *ctx, const uint8_t channel) {
+    struct at_userdata *userdata = ctx->apdu.interface->userdata;
+
+    if (at_channel_get(userdata, channel) == NULL)
+        return;
+
     const uint8_t manage_close[] = {0x00, 0x70, 0x80, channel, 0x00};
     _cleanup_free_ uint8_t *resp = NULL;
     uint32_t resp_len = 0;
     apdu_interface_transmit(ctx, &resp, &resp_len, manage_close, sizeof(manage_close));
+    at_channel_set(userdata, channel, NULL);
 }
 
 static int libapduinterface_init(struct euicc_apdu_interface *ifstruct) {
