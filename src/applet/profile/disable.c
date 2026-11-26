@@ -51,6 +51,8 @@ static int applet_main(int argc, char **argv) {
 
     jprint_success(NULL);
 
+    euicc_ctx.profile_toggled = 1;
+
     return 0;
 }
 
