@@ -3,6 +3,7 @@
 #include "at_cmd.h"
 
 void at_warning_message(void);
+void at_apply_hex_case(char *hex);
 char *at_channel_get(struct at_userdata *userdata, int index);
 int at_channel_set(struct at_userdata *userdata, int index, const char *identifier);
 int at_channel_next_id(struct at_userdata *userdata);

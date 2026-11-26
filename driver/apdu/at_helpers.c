@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,29 @@ inline void at_warning_message(void) {
         fprintf(stderr, "\033[0;31m%s\033[0m", message);
     } else {
         fprintf(stderr, "%s", message);
+    }
+}
+
+// ETSI TS 127 007 defines the APDU payloads of AT+CSIM/AT+CGLA (and the AID of
+// AT+CCHO) as "hexadecimal character format; refer +CSCS", and its "HEX" TE
+// character set is defined — and every example given ("00 to FF", "032FE6") —
+// with uppercase digits only. Most modems accept either case, but some modems
+// (e.g. Sierra EM7565, Foxconn T99W696, Quectel RG502Q-EA) reject lowercase
+// payloads with a bare ERROR. See docs/DEVICE-SPECIFIC-CAVEATS.md.
+void at_apply_hex_case(char *hex) {
+    static const char upper[] = "UPPER";
+    const char *mode = getenv_or_default(ENV_AT_HEX, "LOWER");
+
+    for (size_t i = 0; i < sizeof(upper); i++) {
+        if (toupper((unsigned char)mode[i]) != upper[i]) {
+            return;
+        }
+    }
+
+    for (char *p = hex; *p != '\0'; p++) {
+        if (*p >= 'a' && *p <= 'f') {
+            *p -= 'a' - 'A';
+        }
     }
 }
 
