@@ -33,6 +33,8 @@ If you need to allow **non-root** users to access serial ports, read the followi
 
 - If you encounter the `+CME ERROR: 3` (Operation not allowed) issue, this may be related to device internal settings. \
   Please contact this modem FAE for instructions on how to resolve it.
+- AT commands that have a response deadline fail with `AT command timeout (<n> ms)` if the modem does not reply in time, \
+  instead of waiting indefinitely. Commands without a deadline still wait for the modem's reply.
 
 ## `at` Backend
 
