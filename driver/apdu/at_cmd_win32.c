@@ -90,7 +90,8 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
             goto end;
         }
 
-        DWORD wait_ms = AT_POLL_SLICE_MS;
+        // The largest value COMMTIMEOUTS accepts here (~49 days); a zero-byte read just retries.
+        DWORD wait_ms = MAXDWORD - 1;
         if (deadline_ms >= 0) {
             const ULONGLONG elapsed = GetTickCount64() - start;
             if (elapsed >= (ULONGLONG)deadline_ms) {
@@ -115,6 +116,12 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
         if (!ReadFile(userdata->hComm, userdata->at_read_buffer + userdata->at_read_buffer_len,
                       AT_BUFFER_SIZE - userdata->at_read_buffer_len, &bytes_read, NULL)) {
             fprintf(stderr, "ReadFile error: %lu\n", GetLastError());
+            goto end;
+        }
+        if (bytes_read == 0) {
+            if (deadline_ms < 0)
+                continue;
+            fprintf(stderr, "AT command timeout (%d ms)\n", deadline_ms);
             goto end;
         }
         userdata->at_read_buffer_len += bytes_read;
