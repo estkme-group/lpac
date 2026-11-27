@@ -121,7 +121,10 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
     }
 
 end:
-    SetCommTimeouts(userdata->hComm, &saved_timeouts);
+    if (!SetCommTimeouts(userdata->hComm, &saved_timeouts)) {
+        fprintf(stderr, "SetCommTimeouts error: %lu\n", GetLastError());
+        result = -1;
+    }
     if (result == 0 && response != NULL) {
         *response = found_response_data;
         found_response_data = NULL;

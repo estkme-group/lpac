@@ -189,8 +189,7 @@ static int at_deadline_wait(struct at_deadline *d, bool *timed_out) {
                 *timed_out = true;
                 return 0;
             }
-            const int remain = d->ms - elapsed;
-            timeout = remain > AT_POLL_SLICE_MS ? AT_POLL_SLICE_MS : remain;
+            timeout = d->ms - elapsed;
         }
 
         struct pollfd pfd;
