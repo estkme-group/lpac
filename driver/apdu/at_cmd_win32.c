@@ -65,10 +65,16 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
     char line[AT_BUFFER_SIZE];
     _cleanup_free_ char *found_response_data = NULL;
     const ULONGLONG start = GetTickCount64();
+    COMMTIMEOUTS saved_timeouts;
     int result = -1;
 
     if (response)
         *response = NULL;
+
+    if (!GetCommTimeouts(userdata->hComm, &saved_timeouts)) {
+        fprintf(stderr, "GetCommTimeouts error: %lu\n", GetLastError());
+        return -1;
+    }
 
     while (true) {
         if (at_pop_line(userdata->at_read_buffer, &userdata->at_read_buffer_len, line, sizeof(line)) == 0) {
@@ -96,11 +102,7 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
 
         // ReadFile returns as soon as any byte arrives, or with zero bytes after wait_ms.
         // https://learn.microsoft.com/en-us/windows/win32/api/winbase/ns-winbase-commtimeouts#remarks
-        COMMTIMEOUTS timeouts;
-        if (!GetCommTimeouts(userdata->hComm, &timeouts)) {
-            fprintf(stderr, "GetCommTimeouts error: %lu\n", GetLastError());
-            goto end;
-        }
+        COMMTIMEOUTS timeouts = saved_timeouts;
         timeouts.ReadIntervalTimeout = MAXDWORD;
         timeouts.ReadTotalTimeoutMultiplier = MAXDWORD;
         timeouts.ReadTotalTimeoutConstant = wait_ms;
@@ -119,6 +121,7 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
     }
 
 end:
+    SetCommTimeouts(userdata->hComm, &saved_timeouts);
     if (result == 0 && response != NULL) {
         *response = found_response_data;
         found_response_data = NULL;

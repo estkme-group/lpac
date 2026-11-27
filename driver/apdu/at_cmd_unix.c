@@ -80,7 +80,7 @@ static int at_deadline_init(struct at_deadline *d, int fd, int ms) {
     d->fd = fd;
     d->ms = ms;
     d->event_fd = -1;
-    if (ms < 0)
+    if (ms <= 0)
         return 0;
 
     d->event_fd = timerfd_create(CLOCK_MONOTONIC, 0);
@@ -139,7 +139,7 @@ static int at_deadline_init(struct at_deadline *d, int fd, int ms) {
     struct kevent changes[2];
     EV_SET(&changes[0], fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
     EV_SET(&changes[1], (uintptr_t)d, EVFILT_TIMER, EV_ADD | EV_ONESHOT, 0, ms, NULL);
-    if (kevent(d->event_fd, changes, ms < 0 ? 1 : 2, NULL, 0, NULL) < 0) {
+    if (kevent(d->event_fd, changes, ms > 0 ? 2 : 1, NULL, 0, NULL) < 0) {
         fprintf(stderr, "kevent register error: %s\n", strerror(errno));
         close(d->event_fd);
         return -1;
@@ -237,7 +237,9 @@ int at_expect_with_deadline(struct at_userdata *userdata, char **response, const
             goto end;
         }
 
-        if (at_deadline_wait(&deadline, &timed_out) < 0)
+        if (deadline_ms == 0)
+            timed_out = true;
+        else if (at_deadline_wait(&deadline, &timed_out) < 0)
             goto end;
         if (timed_out) {
             fprintf(stderr, "AT command timeout (%d ms)\n", deadline_ms);

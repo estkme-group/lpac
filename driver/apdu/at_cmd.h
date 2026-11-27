@@ -69,7 +69,8 @@ int at_match_line(const char *line, const char *expected, char **found_response_
 
 /*
  * Reads response lines until OK or ERROR, failing if `deadline_ms` passes first.
- * `deadline_ms` may be AT_DEADLINE_INFINITE.
+ * `deadline_ms` may be AT_DEADLINE_INFINITE to wait without a limit, or 0 to only
+ * consume lines that are already buffered.
  */
 int at_expect_with_deadline(struct at_userdata *userdata, char **response, const char *expected, int deadline_ms);
 
