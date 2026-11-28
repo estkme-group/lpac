@@ -3,6 +3,8 @@
 > [!CAUTION]
 >
 > **FOR DEMO PURPOSES ONLY.**
+>
+> The AT APDU backend is planned for **REMOVAL** in 3.0 version.
 > 
 > Only requests that strictly follow the [ETSI TS 127 007] specification are supported. \
 > Requests outside the specification will be **REJECTED**.
